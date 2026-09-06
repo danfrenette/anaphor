@@ -106,3 +106,14 @@ or disabled. Use a plain anchor for ordinary link semantics.
 - Use semantic HTML and native browser behavior before custom abstractions.
 - Start independent async work together and keep client bundles small.
 - Treat shadcn components as owned source that may deliberately diverge.
+
+## Morph Surface
+
+`MorphSurface` accepts `open`, `onOpenChange`, `title`, `icon`, and `children`. Position
+its wrapper at the desired bottom-right anchor. It supplies the trigger, close
+control, resizing/fade animation, viewport bounds, and keyboard focus return.
+
+Its animation is adapted from the user-supplied **Devouring Details Morph Surface**
+prototype ([reference](https://devouringdetails.com/resources/component-library)).
+The reference's fonts and global stylesheet are not included; our existing tokens
+provide the surface, text, and accent colors.

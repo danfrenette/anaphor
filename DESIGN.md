@@ -114,3 +114,16 @@ coordinates, or state labels appears only when it explains behavior.
   reduced-motion states according to component risk.
 - Exact runtime values live in package CSS; this document governs intent and
   constraints.
+
+## Morphing control surface
+
+The control tile is 44px square with the Card's 12px corners. It expands from
+its fixed bottom-right corner to a maximum width of 360px, with 16px screen
+margins and scrolling content on short screens. It opens only through explicit
+activation. Escape and Close return focus to the tile; it is nonmodal.
+
+Motion is adapted from the supplied Devouring Details Morph Surface prototype:
+width/height and content opacity use spring stiffness 550, damping 45, mass 0.7;
+closing geometry waits 80ms; the shared dot uses stiffness 350 and damping 35.
+The original pill, feedback form, and auto-loop are replaced with our square,
+component controls, and explicit open state. Reduced motion removes transitions.
