@@ -72,6 +72,10 @@ provide grouping before containers do.
 
 - Structural surfaces: square corners or 4px radius.
 - General compact surfaces: 8px radius.
+- Cards: 12px radius, a theme-neutral raised surface, no border or shadow.
+  Section padding is 24px, shared between adjacent sections. The outer card
+  has no padding or overflow clipping; edge-to-edge media rounds its own corners.
+  Width follows the available space and height follows content.
 - Tactile controls: 10px radius.
 - Pills and indicators: fully rounded only when shape communicates behavior.
 - Elevation: flat by default; layered shadow is reserved for temporary floating

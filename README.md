@@ -45,6 +45,20 @@ second Tailwind import are needed. Install `react`, `react-dom`, `tailwindcss`,
 and the Tailwind integration for your bundler (the demo uses
 `@tailwindcss/postcss`). Load this application stylesheet once at the root.
 
+## Card composition
+
+Card is a passive container with a 12px radius and a theme-neutral surface.
+Compose optional `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`,
+`CardContent`, and `CardFooter` from `@design-language/system`. They live in
+one module and work in Server Components without a client boundary.
+
+Sections own 24px padding, with shared spacing between adjacent sections.
+Place edge-to-edge media directly inside Card and use `rounded-t-card` when
+it touches the top corners. Card does not clip content or focus rings.
+Use `CardTitle as="h2"` (or another heading level) when the default `h3`
+does not fit the page hierarchy. Put navigation and actions in controls
+inside the card; Card itself has no interactive behavior.
+
 ## Button variants
 
 Use `solid`, `outline`, or `ghost` with accent or neutral tone. Use

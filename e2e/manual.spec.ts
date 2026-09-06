@@ -206,3 +206,17 @@ test("icon-only buttons stay square and centered while loading", async ({ page }
     }
   }
 });
+
+test("cards compose readable surfaces in both themes", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/#card");
+  await expect(page.getByRole("heading", { name: "Card", exact: true, level: 2 })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Card", exact: true })).toHaveAttribute("href", "#card");
+  const card = page.locator('[aria-labelledby="card-project-title"]');
+  for (const theme of ["light", "dark"] as const) {
+    await page.locator("html").evaluate((element, dark) => element.classList.toggle("dark", dark), theme === "dark");
+    const result = await new AxeBuilder({ page }).include("#card").withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
+    expect(result.violations).toEqual([]);
+    await expect(card).toHaveScreenshot(`card-${theme}.png`);
+  }
+});

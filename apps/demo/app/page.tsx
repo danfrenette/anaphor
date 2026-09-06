@@ -1,5 +1,6 @@
 import { Separator } from "@design-language/system";
 import { ButtonDemo } from "./button-demo";
+import { CardDemo } from "./card-demo";
 
 const index = [
   {
@@ -20,6 +21,10 @@ const index = [
   {
     label: "02 / Controls",
     links: [["Button", "#button"]],
+  },
+  {
+    label: "03 / Components",
+    links: [["Card", "#card"]],
   },
 ] as const;
 
@@ -280,6 +285,7 @@ export default function HomePage() {
           </section>
 
           <ButtonDemo />
+          <CardDemo />
         </article>
       </main>
     </div>

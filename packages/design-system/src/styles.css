@@ -57,6 +57,7 @@
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
   --radius-control: 0.625rem;
+  --radius-card: 0.75rem;
 }
 
 @layer base {
