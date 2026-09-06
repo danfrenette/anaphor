@@ -18,8 +18,8 @@ only when parallel task dependencies become costly to maintain.
 
 `@design-language/system` is private while its contract develops. Its root
 export is the only component API. Styles are exposed separately as
-`@design-language/system/styles.css` and imported once by the demo root
-layout.
+`@design-language/system/styles.css`. Each consumer imports it through its own
+stylesheet, loaded once at the application root.
 
 Do not add compatibility layers, generated entry points, or publishing
 automation before a real consumer requires them. Reference material under
@@ -34,6 +34,12 @@ CSS values are authoritative; `DESIGN.md` records intent and constraints.
 The demo may own layout styles specific to documentation composition, but
 must consume shared tokens rather than redefine them. Avoid TypeScript token
 mirrors until runtime metadata has a demonstrated use.
+
+The package registers only its own source files for Tailwind class discovery.
+Each consumer registers its own source paths in its stylesheet. Package source
+must not reference the demo or depend on its repository location. The current
+source distribution requires React 19.2, TypeScript/TSX transpilation, and a
+Tailwind v4 CSS pipeline; it does not require Next.js.
 
 Button text uses the exported `ButtonLabel` module, with icons as siblings.
 The label owns text grouping and optical alignment. Button does not infer

@@ -1,0 +1,3 @@
+@import "@design-language/system/styles.css";
+
+@source "./**/*.{ts,tsx}";
