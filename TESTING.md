@@ -66,12 +66,12 @@ coverage, automated accessibility, and visual state matrices.
 
 Playwright verifies behavior that a DOM test cannot prove reliably: real focus
 order, browser layout, theme rendering, responsive reflow, reduced motion, and
-package integration in the built specimen. Keep flows independent and
+package integration in the built demo. Keep flows independent and
 deterministic. Use role-based locators and wait for observable states rather than
 fixed delays.
 
 Visual baselines use approved defaults and cover representative states rather
-than every permutation. Experimental specimen controls reset before capture.
+than every permutation. Experimental demo controls reset before capture.
 
 ## Accessibility
 
@@ -84,6 +84,6 @@ motion review.
 ## Release Gate
 
 Lint, strict type checking, integration tests, browser smoke tests, and the
-production specimen build must pass. No known high-severity accessibility defect
+production demo build must pass. No known high-severity accessibility defect
 may ship. Deferred coverage is recorded against the component ticket rather than
 hidden in the suite.

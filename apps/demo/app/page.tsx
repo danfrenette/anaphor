@@ -1,4 +1,5 @@
 import { Separator } from "@design-language/system";
+import { ButtonDemo } from "./button-demo";
 
 const index = [
   {
@@ -16,14 +17,31 @@ const index = [
       ["Motion", "#motion"],
     ],
   },
+  {
+    label: "02 / Controls",
+    links: [["Button", "#button"]],
+  },
 ] as const;
 
-const colors = [
-  ["Canvas", "--dl-color-canvas", "bg-background"],
-  ["Surface", "--dl-color-surface", "bg-muted"],
-  ["Text", "--dl-color-text", "bg-foreground"],
-  ["Border", "--dl-color-border", "bg-border"],
-  ["Accent", "--dl-color-accent", "bg-primary"],
+const neutralRoles = [
+  ["Font / tertiary", "--dl-font-tertiary"],
+  ["Font / secondary", "--dl-font-secondary"],
+  ["Input / disabled", "--dl-input-disabled"],
+  ["Input / border", "--dl-input-border"],
+  ["Foreground", "--dl-foreground"],
+  ["Background", "--dl-background"],
+] as const;
+
+const chromaticRoles = [
+  ["Brand", "--dl-brand", "oklch(0.6217 0.185 39.44)"],
+  ["Focus", "--dl-focus", "oklch(0.618 0.161 39.44)"],
+  ["Danger", "--dl-danger", "oklch(0.4852 0.1691 10.14)"],
+  ["Danger / text", "--dl-danger-text", "oklch(0.4236 0.1691 10.14)"],
+] as const;
+
+const colorRoles = [
+  ...neutralRoles,
+  ...chromaticRoles.map(([label, token]) => [label, token] as const),
 ] as const;
 
 export default function HomePage() {
@@ -126,28 +144,111 @@ export default function HomePage() {
                   01.01 / Color
                 </p>
                 <h2 className="mt-3 text-2xl font-medium tracking-[-0.02em]">
-                  Semantic roles
+                  Theme roles
                 </h2>
               </div>
               <p className="font-mono text-label text-muted-foreground">
-                05 VALUES
+                OKLCH / 10 ROLES
               </p>
             </div>
 
-            <ul className="mt-6 grid border border-border bg-muted sm:grid-cols-5">
-              {colors.map(([label, token, className]) => (
-                <li
-                  key={token}
-                  className="border-b border-border p-4 last:border-b-0 sm:border-r sm:border-b-0 sm:last:border-r-0"
+            <p className="mt-4 max-w-[68ch] text-ui text-muted-foreground">
+              Six theme-aware neutrals carry type, structure, and disabled
+              states. Four shared chromatic roles carry brand, focus, and danger.
+              Component states derive from these values rather than introducing
+              more tokens.
+            </p>
+
+            <div className="mt-8 border-y border-border py-5">
+              <div className="flex items-baseline justify-between gap-4">
+                <h3 className="font-mono text-label tracking-[0.08em] uppercase">
+                  Neutral roles
+                </h3>
+                <p className="font-mono text-label text-muted-foreground">06 roles</p>
+              </div>
+              <ol className="mt-3 grid grid-cols-2 gap-px bg-border sm:grid-cols-3">
+                {neutralRoles.map(([label, token]) => (
+                  <li key={token} className="bg-background">
+                    <div className="grid grid-cols-2 gap-px bg-border">
+                      <div
+                        className="h-14"
+                        style={{ backgroundColor: `var(${token})` }}
+                        title="Light"
+                      />
+                      <div
+                        className="dark h-14"
+                        style={{ backgroundColor: `var(${token})` }}
+                        title="Dark"
+                      />
+                    </div>
+                    <div className="px-2 py-2">
+                      <p className="text-small font-medium">{label}</p>
+                      <p className="mt-1 truncate font-mono text-label text-muted-foreground">
+                        {token}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="border-b border-border py-5">
+              <div className="flex items-baseline justify-between gap-4">
+                <h3 className="font-mono text-label tracking-[0.08em] uppercase">
+                  Chromatic signals
+                </h3>
+                <p className="font-mono text-label text-muted-foreground">04 roles</p>
+              </div>
+              <ol className="mt-3 grid gap-px bg-border sm:grid-cols-2">
+                {chromaticRoles.map(([role, token, value]) => (
+                  <li key={role} className="relative bg-background">
+                    <div
+                      className="h-20"
+                      style={{ backgroundColor: `var(${token})` }}
+                    />
+                    <div className="px-3 py-2">
+                      <p className="text-small font-medium">{role}</p>
+                      <p className="mt-1 truncate font-mono text-label text-muted-foreground">
+                        {value}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="mt-8 grid gap-px border border-border bg-border sm:grid-cols-2">
+              {["light", "dark"].map((theme) => (
+                <div
+                  key={theme}
+                  className={`${theme === "dark" ? "dark" : ""} bg-background p-5 text-foreground`}
                 >
-                  <div className={`h-16 border border-border ${className}`} />
-                  <p className="mt-3 text-ui font-medium">{label}</p>
-                  <p className="mt-1 overflow-hidden font-mono text-label text-ellipsis whitespace-nowrap text-muted-foreground">
-                    {token}
-                  </p>
-                </li>
+                  <div className="flex items-baseline justify-between gap-4">
+                    <h3 className="font-mono text-label tracking-[0.08em] uppercase">
+                      {theme} roles
+                    </h3>
+                    <p className="font-mono text-label text-muted-foreground">10</p>
+                  </div>
+                  <ul className="mt-5 divide-y divide-border border-y border-border">
+                    {colorRoles.map(([label, token]) => (
+                      <li key={token} className="grid min-h-10 grid-cols-[20px_1fr] items-center gap-3 py-2">
+                        <span
+                          className="size-5 border border-border"
+                          style={{ backgroundColor: `var(${token})` }}
+                          aria-hidden="true"
+                        />
+                        <div className="min-w-0 sm:flex sm:items-baseline sm:justify-between sm:gap-3">
+                          <p className="text-small font-medium">{label}</p>
+                          <p className="truncate font-mono text-label text-muted-foreground">
+                            {token}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           </section>
 
           <Separator />
@@ -177,6 +278,8 @@ export default function HomePage() {
               relationships. If it explains none of these, remove it.
             </p>
           </section>
+
+          <ButtonDemo />
         </article>
       </main>
     </div>

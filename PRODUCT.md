@@ -13,7 +13,7 @@ able to understand the system without private context.
 ## Product Purpose
 
 Provide an executable reference manual for the principles, foundations,
-components, and interaction patterns used across personal work. The specimen
+components, and interaction patterns used across personal work. The demo
 application proves the package in realistic compositions; it is not a marketing
 site or a comprehensive component catalog.
 

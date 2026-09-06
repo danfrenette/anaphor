@@ -9,7 +9,7 @@ apps/demo/              Next.js reference manual and package consumer
 packages/design-system/ owned tokens, styles, primitives, and public API
 ```
 
-The specimen behaves as an external consumer. It imports design-system code and
+The demo behaves as an external consumer. It imports design-system code and
 styles through package exports, never through relative paths into the package.
 Root scripts run package and application checks explicitly; add orchestration
 only when parallel task dependencies become costly to maintain.
@@ -18,7 +18,7 @@ only when parallel task dependencies become costly to maintain.
 
 `@design-language/system` is private while its contract develops. Its root
 export is the only component API. Styles are exposed separately as
-`@design-language/system/styles.css` and imported once by the specimen root
+`@design-language/system/styles.css` and imported once by the demo root
 layout.
 
 Do not add compatibility layers, generated entry points, or publishing
@@ -31,7 +31,7 @@ The design-system package owns Tailwind CSS v4, its CSS-first `@theme` block,
 semantic custom properties, base element styles, and component classes. Runtime
 CSS values are authoritative; `DESIGN.md` records intent and constraints.
 
-The specimen may own layout styles specific to documentation composition, but
+The demo may own layout styles specific to documentation composition, but
 must consume shared tokens rather than redefine them. Avoid TypeScript token
 mirrors until runtime metadata has a demonstrated use.
 
@@ -50,7 +50,7 @@ Do not wrap a native element solely to create an abstraction.
 
 Components are Server Component-compatible by default. Add `"use client"` only
 to the smallest module that needs state, effects, browser APIs, or event
-handlers. Keep tokens, metadata, static specimens, and package exports free of
+handlers. Keep tokens, metadata, static demos, and package exports free of
 client-only code.
 
 Start independent asynchronous work together and await it near the rendering
