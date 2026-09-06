@@ -95,8 +95,7 @@ test("button color roles meet AA outside the documented solid accent exception",
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const demo = page.getByTestId("primary-button");
-  const field = demo.locator("..");
+  const field = page.getByRole("group", { name: "Primary button example" });
 
   for (const theme of ["light", "dark"] as const) {
     await field.evaluate((element, dark) => element.classList.toggle("dark", dark), theme === "dark");
@@ -123,7 +122,7 @@ test("loading preserves action colors while explicit disabled stays neutral", as
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#button");
   const demo = page.getByTestId("primary-button");
-  const field = page.getByTestId("primary-button").locator("..");
+  const field = page.getByRole("group", { name: "Primary button example" });
   const colors = () =>
     demo.evaluate((element) => {
       const style = getComputedStyle(element);
@@ -283,7 +282,7 @@ test("outline and ghost show pressed color with reduced motion", async ({ page }
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#button");
   const button = page.getByTestId("primary-button");
-  const field = page.getByTestId("primary-button").locator("..");
+  const field = page.getByRole("group", { name: "Primary button example" });
   for (const dark of [false, true]) {
     await field.evaluate((element, value) => element.classList.toggle("dark", value), dark);
     for (const tone of ["accent", "neutral"]) {

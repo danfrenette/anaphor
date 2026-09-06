@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, ButtonLabel, type ButtonProps } from "@design-language/system";
+import { Button, ButtonLabel, Card, CardContent, CardHeader, CardTitle, type ButtonProps } from "@design-language/system";
 import { ArrowRight, Trash } from "@phosphor-icons/react";
 import { useState, type CSSProperties, type ReactNode } from "react";
 
@@ -48,12 +48,11 @@ export function ButtonPlayground({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <div className="mt-10">
-        <div className="flex items-center justify-between font-mono text-label tracking-[0.08em] uppercase">
-          <p>Primary demo</p>
-          <p className="text-muted-foreground">Interactive</p>
-        </div>
-        <div className="mt-4 flex min-h-56 items-center justify-center border border-border bg-muted p-6">
+      <Card role="group" aria-label="Primary button example" className="mt-10">
+        <CardHeader>
+          <CardTitle className="font-mono text-label tracking-[0.08em] uppercase">Primary demo</CardTitle>
+        </CardHeader>
+        <CardContent className="flex min-h-56 items-center justify-center">
           <Button
             data-testid="primary-button"
             variant={controls.variant}
@@ -69,8 +68,8 @@ export function ButtonPlayground({ children }: { children: ReactNode }) {
             {!controls.iconOnly ? <ButtonLabel>{destructive ? "Delete item" : "Execute"}</ButtonLabel> : null}
             {destructive ? <Trash aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
           </Button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {children}
 

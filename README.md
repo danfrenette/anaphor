@@ -58,6 +58,8 @@ it touches the top corners. Card does not clip content or focus rings.
 Use `CardTitle as="h2"` (or another heading level) when the default `h3`
 does not fit the page hierarchy. Put navigation and actions in controls
 inside the card; Card itself has no interactive behavior.
+Use `CardTitle className="font-mono"` for monospaced headings; combine it with
+`text-label tracking-[0.08em] uppercase` for the manual’s technical labels.
 
 ## Button variants
 

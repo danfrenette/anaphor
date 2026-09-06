@@ -1,8 +1,8 @@
 import { Button, ButtonLabel, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@design-language/system";
 import { ArrowRight, Trash } from "@phosphor-icons/react/dist/ssr";
 import type { ReactNode } from "react";
-import { ButtonLoadingExample } from "./button-loading-example";
 import { ButtonPlayground } from "./button-playground";
+import { ButtonLoadingExample } from "./button-loading-example";
 
 const variants = ["solid", "destructive", "outline", "ghost"] as const;
 
@@ -26,7 +26,7 @@ export function ButtonDemo() {
             <p>State matrix</p>
             <p className="text-muted-foreground">04 states</p>
           </div>
-          <div className="mt-4 grid gap-px border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <State label="Default">
               <Button><ButtonLabel>Execute</ButtonLabel></Button>
             </State>
@@ -60,9 +60,9 @@ export function ButtonDemo() {
         </div>
         <p className="mt-3 text-ui text-muted-foreground">Click either button to try a 1.5-second action. Both return to idle automatically.</p>
 
-        <div className="mt-10">
-          <p className="font-mono text-label tracking-[0.08em] uppercase">Behavior</p>
-          <div className="mt-4 flex flex-wrap items-center gap-3 border border-border p-6">
+        <Card className="mt-10">
+          <CardHeader><CardTitle className="font-mono text-label tracking-[0.08em] uppercase">Behavior</CardTitle></CardHeader>
+          <CardContent className="flex flex-wrap items-center gap-3">
             <Button variant="outline">
               <ArrowRight aria-hidden="true" />
               <ButtonLabel>Composed</ButtonLabel>
@@ -77,22 +77,21 @@ export function ButtonDemo() {
             <Button nativeButton={false} render={<a href="#card" />} tone="neutral" variant="outline">
               <ButtonLabel>Explore Card</ButtonLabel>
             </Button>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="dark mt-10 bg-background p-6 text-foreground">
-          <div className="flex items-center justify-between font-mono text-label tracking-[0.08em] uppercase">
-            <p>Theme study / Dark</p>
-            <p className="text-muted-foreground">Contrast / AA</p>
-          </div>
-          <div className="mt-6 flex flex-wrap gap-3 border border-border bg-muted p-6">
+        <Card className="dark mt-10">
+          <CardHeader>
+            <CardTitle className="font-mono text-label tracking-[0.08em] uppercase">Theme study / Dark</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-3">
             {variants.map((variant) => (
               <Button key={variant} variant={variant}>
                 <ButtonLabel>{variant.charAt(0).toUpperCase() + variant.slice(1)}</ButtonLabel>
               </Button>
             ))}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </ButtonPlayground>
     </section>
   );
@@ -100,9 +99,9 @@ export function ButtonDemo() {
 
 function State({ children, label }: { children: ReactNode; label: string }) {
   return (
-    <div role="group" aria-label={`${label} button example`} className="flex min-h-36 flex-col items-center justify-center gap-5 bg-muted p-4">
+    <Card role="group" aria-label={`${label} button example`} className="flex min-h-36 flex-col items-center justify-center gap-5 p-4">
       {children}
       <p className="font-mono text-label text-muted-foreground uppercase">{label}</p>
-    </div>
+    </Card>
   );
 }
