@@ -80,10 +80,20 @@ import { Button, ButtonLabel } from "@design-language/system";
 
 Use `iconOnly` for an icon without text and supply `aria-label`. The same
 `size` values apply; `shape="round"` makes the square target circular. While
-loading, the spinner replaces the visible icon without changing the dimensions.
+loading, the spinner crossfades with the icon without changing the dimensions.
+Text buttons smoothly make room for the spinner while keeping their label.
+`loading` blocks activation and preserves focus and color; `disabled` applies
+the gray treatment. Combine both for a gray loading button. Reduced motion
+disables the transition and spinner rotation.
 
 `ButtonLabel` renders a span and owns the optical text offset. Raw text is not
 automatically wrapped or adjusted.
+
+For a button rendered as an anchor, pass `nativeButton={false}` and
+`render={<a href="#card" />}`. Base UI retains button semantics (including
+Space activation) and blocks ordinary pointer/keyboard navigation while loading
+or disabled. Use a plain anchor for ordinary link semantics.
+
 
 ## Working principles
 

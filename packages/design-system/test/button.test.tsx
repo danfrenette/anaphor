@@ -81,3 +81,27 @@ test("preserves a composed submit button's behavior and formatted action name", 
   expect(onSubmit).toHaveBeenCalledOnce();
   expect(onRenderClick).toHaveBeenCalledOnce();
 });
+
+test("composed anchors block navigation while loading and recover", async () => {
+  const user = userEvent.setup();
+  const activate = vi.fn();
+  const action = (loading: boolean) => (
+    <Button nativeButton={false} render={<a href="#card" />} loading={loading} onClick={activate}>
+      <ButtonLabel>Explore Card</ButtonLabel>
+    </Button>
+  );
+  const { rerender } = render(action(false));
+  const anchor = screen.getByRole("button", { name: "Explore Card" });
+  await user.tab();
+  await user.keyboard("{Enter} ");
+  expect(activate).toHaveBeenCalledTimes(2);
+  rerender(action(true));
+  expect(anchor).toHaveFocus();
+  const click = new MouseEvent("click", { bubbles: true, cancelable: true });
+  expect(anchor.dispatchEvent(click)).toBe(false);
+  await user.keyboard("{Enter} ");
+  expect(activate).toHaveBeenCalledTimes(2);
+  rerender(action(false));
+  await user.click(anchor);
+  expect(activate).toHaveBeenCalledTimes(3);
+});

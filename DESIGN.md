@@ -20,8 +20,8 @@ share `oklch(0.6217 0.185 39.44)` as the brand and action color. The quieter
 Danger elements use `oklch(0.4852 0.1691 10.14)`; danger text uses the darker
 `oklch(0.4236 0.1691 10.14)` step. Destructive buttons use the danger
 fill with a light theme-neutral label and the darker danger step on hover and
-press. Destructive color overrides accent/neutral tone; disabled and loading
-states retain the shared neutral treatment. Soft buttons are not supported.
+press. Destructive color overrides accent/neutral tone; explicitly disabled
+states use the shared neutral treatment. Soft buttons are not supported.
 
 Components consume these ten color roles directly. Interaction states derive by
 mixing the shared brand accent toward the appropriate neutral role rather than
@@ -29,11 +29,13 @@ adding more variables. The high-chroma orange stays clear against dark surfaces
 and vivid in light mode. Solid accent controls retain the approved
 bright-foreground visual exception.
 
-Disabled controls, including loading controls, always use `input-disabled` with
-`font-tertiary` for intentionally subdued contrast. Their
-previous tone and variant do not show through, while loading retains its label
-and progress indicator. Disabled treatments remain distinct from functional
-neutral controls.
+Disabled controls use `input-disabled` with `font-tertiary` for intentionally
+subdued contrast. Loading independently blocks activation, preserves focus and
+action color, and reveals a spinner while retaining the label. Combining loading
+and disabled shows the spinner with the neutral disabled treatment. Spinner entry
+and exit animate over 200ms; text buttons animate the space for the spinner,
+while icon-only buttons crossfade without resizing. Reduced motion skips both
+the transition and spinner rotation.
 
 ## Typography
 

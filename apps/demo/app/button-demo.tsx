@@ -1,6 +1,7 @@
-import { Button, ButtonLabel } from "@design-language/system";
+import { Button, ButtonLabel, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@design-language/system";
 import { ArrowRight, Trash } from "@phosphor-icons/react/dist/ssr";
 import type { ReactNode } from "react";
+import { ButtonLoadingExample } from "./button-loading-example";
 import { ButtonPlayground } from "./button-playground";
 
 const variants = ["solid", "destructive", "outline", "ghost"] as const;
@@ -41,6 +42,24 @@ export function ButtonDemo() {
           </div>
         </div>
 
+        <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          <Card role="group" aria-label="Loading transition example">
+            <CardHeader>
+              <CardTitle>Loading</CardTitle>
+              <CardDescription>Keeps its color while the spinner enters and exits.</CardDescription>
+            </CardHeader>
+            <CardContent><ButtonLoadingExample /></CardContent>
+          </Card>
+          <Card role="group" aria-label="Disabled loading transition example">
+            <CardHeader>
+              <CardTitle>Loading + disabled</CardTitle>
+              <CardDescription>Adds the gray disabled treatment while loading.</CardDescription>
+            </CardHeader>
+            <CardContent><ButtonLoadingExample disabledWhileLoading /></CardContent>
+          </Card>
+        </div>
+        <p className="mt-3 text-ui text-muted-foreground">Click either button to try a 1.5-second action. Both return to idle automatically.</p>
+
         <div className="mt-10">
           <p className="font-mono text-label tracking-[0.08em] uppercase">Behavior</p>
           <div className="mt-4 flex flex-wrap items-center gap-3 border border-border p-6">
@@ -55,8 +74,8 @@ export function ButtonDemo() {
             <Button shape="round" iconOnly aria-label="Continue">
               <ArrowRight aria-hidden="true" />
             </Button>
-            <Button render={<button data-composed="true" />} tone="neutral" variant="outline">
-              <ButtonLabel>Render prop</ButtonLabel>
+            <Button nativeButton={false} render={<a href="#card" />} tone="neutral" variant="outline">
+              <ButtonLabel>Explore Card</ButtonLabel>
             </Button>
           </div>
         </div>
