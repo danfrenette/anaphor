@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, type ButtonProps } from "@design-language/system";
+import { Button, ButtonLabel, type ButtonProps } from "@design-language/system";
 import { ArrowRight } from "@phosphor-icons/react";
 import { useState, type CSSProperties } from "react";
 
@@ -72,7 +72,7 @@ export function ButtonDemo() {
             disabled={controls.disabled}
             style={demoStyle}
           >
-            Execute
+            <ButtonLabel>Execute</ButtonLabel>
             <ArrowRight aria-hidden="true" />
           </Button>
         </div>
@@ -85,16 +85,16 @@ export function ButtonDemo() {
         </div>
         <div className="mt-4 grid gap-px border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
           <State label="Default">
-            <Button>Execute</Button>
+            <Button><ButtonLabel>Execute</ButtonLabel></Button>
           </State>
           <State label="Focus">
-            <Button className="outline-2 outline-offset-2 outline-ring">Execute</Button>
+            <Button className="outline-2 outline-offset-2 outline-ring"><ButtonLabel>Execute</ButtonLabel></Button>
           </State>
           <State label="Loading">
-            <Button loading>Execute</Button>
+            <Button loading><ButtonLabel>Execute</ButtonLabel></Button>
           </State>
           <State label="Disabled">
-            <Button disabled>Execute</Button>
+            <Button disabled><ButtonLabel>Execute</ButtonLabel></Button>
           </State>
         </div>
       </div>
@@ -104,13 +104,13 @@ export function ButtonDemo() {
         <div className="mt-4 flex flex-wrap items-center gap-3 border border-border p-6">
           <Button variant="soft">
             <ArrowRight aria-hidden="true" />
-            Composed
+            <ButtonLabel>Composed</ButtonLabel>
           </Button>
           <Button shape="round" data-icon-only aria-label="Continue">
             <ArrowRight aria-hidden="true" />
           </Button>
           <Button render={<button data-composed="true" />} tone="neutral" variant="outline">
-            Render prop
+            <ButtonLabel>Render prop</ButtonLabel>
           </Button>
         </div>
       </div>
@@ -123,7 +123,7 @@ export function ButtonDemo() {
         <div className="mt-6 flex flex-wrap gap-3 border border-border bg-muted p-6">
           {variants.map((variant) => (
             <Button key={variant} variant={variant}>
-              {variant.charAt(0).toUpperCase() + variant.slice(1)}
+              <ButtonLabel>{variant.charAt(0).toUpperCase() + variant.slice(1)}</ButtonLabel>
             </Button>
           ))}
         </div>

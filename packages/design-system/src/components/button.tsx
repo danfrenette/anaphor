@@ -2,7 +2,7 @@
 
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cn } from "#lib/utils";
-import { Children, type ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 const sizeStyles = {
   xs: "min-h-7 gap-1.5 px-2 text-small pointer-coarse:min-h-11",
@@ -102,16 +102,20 @@ function Button({
           contentStyles[size],
         )}
       >
-        {Children.map(children, (child) =>
-          typeof child === "string" || typeof child === "number" ? (
-            <span data-slot="button-label" className="relative -top-[1px]">
-              {child}
-            </span>
-          ) : child,
-        )}
+        {children}
       </span>
     </ButtonPrimitive>
   );
 }
 
-export { Button, type ButtonProps };
+function ButtonLabel({ className, ...props }: ComponentProps<"span">) {
+  return (
+    <span
+      {...props}
+      data-slot="button-label"
+      className={cn("relative -top-[1px]", className)}
+    />
+  );
+}
+
+export { Button, ButtonLabel, type ButtonProps };

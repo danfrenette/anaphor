@@ -24,6 +24,22 @@ pnpm test:browser
 pnpm build
 ```
 
+## Button composition
+
+Group all button text inside `ButtonLabel`, including interpolated or formatted
+text. Icons sit alongside it; icon-only buttons use an accessible name.
+
+```tsx
+import { Button, ButtonLabel } from "@design-language/system";
+
+<Button>
+  <ButtonLabel>Save {count} items</ButtonLabel>
+</Button>
+```
+
+`ButtonLabel` renders a span and owns the optical text offset. Raw text is not
+automatically wrapped or adjusted.
+
 ## Working principles
 
 - Consume components only through `@design-language/system`.

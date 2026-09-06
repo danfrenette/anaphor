@@ -1,11 +1,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { Button } from "@design-language/system";
+import { Button, ButtonLabel } from "@design-language/system";
 import { expect, test, vi } from "vitest";
 
 test("exposes a safe native button through the public package API", () => {
   const onClick = vi.fn();
 
-  render(<Button onClick={onClick}>Execute</Button>);
+  render(<Button onClick={onClick}><ButtonLabel>Execute</ButtonLabel></Button>);
   const button = screen.getByRole("button", { name: "Execute" });
 
   expect(button).toHaveAttribute("type", "button");
@@ -18,7 +18,7 @@ test("keeps its action named and suppresses activation while loading", () => {
 
   render(
     <Button loading onClick={onClick}>
-      Submit
+      <ButtonLabel>Submit</ButtonLabel>
     </Button>,
   );
   const button = screen.getByRole("button", { name: "Submit" });
@@ -33,7 +33,7 @@ test("composes a custom button through the Base UI render prop", () => {
   render(
     <Button render={<button data-composed="true" />}>
       <svg aria-hidden="true" />
-      Create project
+      <ButtonLabel>Create project</ButtonLabel>
     </Button>,
   );
 
@@ -42,33 +42,21 @@ test("composes a custom button through the Base UI render prop", () => {
   ).toHaveAttribute("data-composed", "true");
 });
 
-test("optically offsets direct text children without wrapping composed elements", () => {
-  const { container } = render(
+test("keeps interpolated and formatted text together as the action name", () => {
+  const count = 3;
+  render(
     <Button>
-      <svg data-testid="leading-icon" aria-hidden="true" />
-      Execute
-      {13}
-      <span data-testid="composed-child">Details</span>
+      <svg aria-hidden="true" />
+      <ButtonLabel>Save {count} <strong>items</strong></ButtonLabel>
     </Button>,
   );
 
-  const labels = container.querySelectorAll('[data-slot="button-label"]');
-  expect(labels).toHaveLength(2);
-  expect(labels[0]).toHaveTextContent("Execute");
-  expect(labels[1]).toHaveTextContent("13");
-  expect(labels[0]).toHaveClass("relative", "-top-[1px]");
-  expect(screen.getByTestId("leading-icon")).not.toHaveAttribute(
-    "data-slot",
-    "button-label",
-  );
-  expect(screen.getByTestId("composed-child")).not.toHaveAttribute(
-    "data-slot",
-    "button-label",
-  );
+  expect(screen.getByRole("button", { name: "Save 3 items" })).toBeEnabled();
+  expect(screen.getByText("items").tagName).toBe("STRONG");
 });
 
 test("exposes intentional appearance defaults and choices", () => {
-  const { rerender } = render(<Button>Default</Button>);
+  const { rerender } = render(<Button><ButtonLabel>Default</ButtonLabel></Button>);
   const button = screen.getByRole("button", { name: "Default" });
 
   expect(button).toHaveAttribute("data-variant", "solid");
@@ -78,7 +66,7 @@ test("exposes intentional appearance defaults and choices", () => {
 
   rerender(
     <Button variant="ghost" size="xs" tone="neutral" shape="round">
-      Default
+      <ButtonLabel>Default</ButtonLabel>
     </Button>,
   );
 
@@ -88,7 +76,7 @@ test("exposes intentional appearance defaults and choices", () => {
   expect(button).toHaveAttribute("data-shape", "round");
   expect(button).toHaveClass("text-small");
 
-  rerender(<Button size="lg">Default</Button>);
+  rerender(<Button size="lg"><ButtonLabel>Default</ButtonLabel></Button>);
   expect(button).toHaveClass("text-body");
   expect(button).not.toHaveClass("text-small");
 });

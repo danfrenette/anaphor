@@ -35,6 +35,10 @@ The demo may own layout styles specific to documentation composition, but
 must consume shared tokens rather than redefine them. Avoid TypeScript token
 mirrors until runtime metadata has a demonstrated use.
 
+Button text uses the exported `ButtonLabel` module, with icons as siblings.
+The label owns text grouping and optical alignment. Button does not infer
+content roles by inspecting React children.
+
 ## Component Source
 
 Components follow Base UI-oriented shadcn conventions: accessible primitive
