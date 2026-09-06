@@ -2,9 +2,10 @@
 
 import { Button, ButtonLabel, Card, CardContent, CardHeader, CardTitle, type ButtonProps } from "@design-language/system";
 import { ArrowRight, Trash } from "@phosphor-icons/react";
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { type CSSProperties, type ReactNode } from "react";
+import { useDemoControls } from "./demo-state";
 
-type Controls = {
+export type ButtonControls = {
   variant: NonNullable<ButtonProps["variant"]>;
   size: NonNullable<ButtonProps["size"]>;
   tone: NonNullable<ButtonProps["tone"]>;
@@ -17,7 +18,7 @@ type Controls = {
   duration: number;
 };
 
-const defaults: Controls = {
+export const buttonDefaults: ButtonControls = {
   variant: "solid",
   size: "md",
   tone: "accent",
@@ -33,18 +34,13 @@ const defaults: Controls = {
 const variants = ["solid", "destructive", "outline", "ghost"] as const;
 
 export function ButtonPlayground({ children }: { children: ReactNode }) {
-  const [controls, setControls] = useState(defaults);
+  const { button: controls } = useDemoControls();
   const destructive = controls.variant === "destructive";
-  const [panelOpen, setPanelOpen] = useState(true);
   const demoStyle = {
     "--dl-button-radius": `${controls.radius}px`,
     "--dl-button-press-scale": controls.pressScale,
     "--dl-button-duration": `${controls.duration}ms`,
   } as CSSProperties;
-
-  function update<Key extends keyof Controls>(key: Key, value: Controls[Key]) {
-    setControls((current) => ({ ...current, [key]: value }));
-  }
 
   return (
     <>
@@ -72,36 +68,20 @@ export function ButtonPlayground({ children }: { children: ReactNode }) {
       </Card>
 
       {children}
+    </>
+  );
+}
 
-      <aside className="mt-8 border border-border bg-background shadow-lg lg:fixed lg:right-6 lg:bottom-6 lg:z-30 lg:mt-0 lg:w-80">
-        <div className="flex min-h-12 items-center justify-between border-b border-border px-4">
-          <button
-            type="button"
-            className="flex min-h-8 items-center gap-2 font-mono text-label tracking-[0.08em] uppercase"
-            aria-controls="button-controls"
-            aria-expanded={panelOpen}
-            aria-label={panelOpen ? "Hide controls" : "Show controls"}
-            onClick={() => setPanelOpen((open) => !open)}
-          >
-            <span className="size-2 rounded-full bg-primary" aria-hidden="true" />
-            Button / Control
-          </button>
-          {panelOpen ? (
-            <button
-              type="button"
-              className="min-h-8 font-mono text-label text-muted-foreground uppercase hover:text-foreground"
-              onClick={() => setControls(defaults)}
-              aria-label="Reset controls"
-            >
-              Reset
-            </button>
-          ) : null}
-        </div>
-        {panelOpen ? <div id="button-controls" className="grid grid-cols-2 gap-4 p-4">
-          <Select label="Variant" value={controls.variant} options={variants} onChange={(value) => update("variant", value as Controls["variant"])} />
-          <Select label="Size" value={controls.size} options={["xs", "sm", "md", "lg"]} onChange={(value) => update("size", value as Controls["size"])} />
-          <Select label="Tone" value={controls.tone} options={["accent", "neutral"]} onChange={(value) => update("tone", value as Controls["tone"])} />
-          <Select label="Shape" value={controls.shape} options={["square", "round"]} onChange={(value) => update("shape", value as Controls["shape"])} />
+export function ButtonControlFields() {
+  const { button: controls, setButton } = useDemoControls();
+  function update<Key extends keyof ButtonControls>(key: Key, value: ButtonControls[Key]) {
+    setButton((current) => ({ ...current, [key]: value }));
+  }
+  return <div className="grid grid-cols-2 gap-4">
+          <Select label="Variant" value={controls.variant} options={variants} onChange={(value) => update("variant", value as ButtonControls["variant"])} />
+          <Select label="Size" value={controls.size} options={["xs", "sm", "md", "lg"]} onChange={(value) => update("size", value as ButtonControls["size"])} />
+          <Select label="Tone" value={controls.tone} options={["accent", "neutral"]} onChange={(value) => update("tone", value as ButtonControls["tone"])} />
+          <Select label="Shape" value={controls.shape} options={["square", "round"]} onChange={(value) => update("shape", value as ButtonControls["shape"])} />
           <Range label="Radius" value={controls.radius} min={0} max={24} step={2} unit="px" onChange={(value) => update("radius", value)} />
           <Range label="Press scale" value={controls.pressScale} min={0.94} max={1} step={0.01} onChange={(value) => update("pressScale", value)} />
           <Range label="Duration" value={controls.duration} min={0} max={250} step={25} unit="ms" onChange={(value) => update("duration", value)} />
@@ -110,13 +90,10 @@ export function ButtonPlayground({ children }: { children: ReactNode }) {
             <Check label="Loading" checked={controls.loading} onChange={(value) => update("loading", value)} />
             <Check label="Disabled" checked={controls.disabled} onChange={(value) => update("disabled", value)} />
           </div>
-        </div> : null}
-      </aside>
-    </>
-  );
+  </div>;
 }
 
-function Select({ label, value, options, onChange }: { label: string; value: string; options: readonly string[]; onChange: (value: string) => void }) {
+export function Select({ label, value, options, onChange }: { label: string; value: string; options: readonly string[]; onChange: (value: string) => void }) {
   return (
     <label className="grid gap-1.5 text-ui">
       <span>{label}</span>
@@ -131,15 +108,15 @@ function Range({ label, value, min, max, step, unit = "", onChange }: { label: s
   return (
     <label className="col-span-2 grid gap-1.5 text-ui">
       <span className="flex justify-between gap-4"><span>{label}</span><output className="font-mono text-label tabular-nums text-muted-foreground">{value}{unit}</output></span>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={(event) => onChange(event.target.valueAsNumber)} />
+      <input className="accent-primary" type="range" min={min} max={max} step={step} value={value} onChange={(event) => onChange(event.target.valueAsNumber)} />
     </label>
   );
 }
 
-function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
+export function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
   return (
     <label className="flex min-h-10 items-center gap-2 text-ui">
-      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
+      <input className="accent-primary" type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
       {label}
     </label>
   );

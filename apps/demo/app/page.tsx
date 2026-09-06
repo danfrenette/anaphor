@@ -1,3 +1,4 @@
+import { DemoControlsProvider } from "./demo-controls";
 import { Card, CardContent, CardHeader, CardTitle, Separator } from "@design-language/system";
 import { ButtonDemo } from "./button-demo";
 import { CardDemo } from "./card-demo";
@@ -289,8 +290,10 @@ export default function HomePage() {
             </p>
           </section>
 
-          <ButtonDemo />
-          <CardDemo />
+          <DemoControlsProvider>
+            <ButtonDemo />
+            <CardDemo />
+          </DemoControlsProvider>
         </article>
       </main>
     </div>

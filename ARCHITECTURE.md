@@ -65,8 +65,9 @@ to the smallest module that needs state, effects, browser APIs, or event
 handlers. Keep tokens, metadata, static demos, and package exports free of
 client-only code.
 
-The Button playground owns interactive state and its controls. Static examples
-are composed by the reference manual and passed through its children slot,
+The demo controls provider owns shared playground state. Button and Card
+playgrounds consume that state in small client components. Static examples
+are composed by the reference manual and passed through children slots,
 keeping the mobile reading order without moving static examples into client code.
 
 Start independent asynchronous work together and await it near the rendering
@@ -84,3 +85,12 @@ A design experiment becomes part of the system only through an intentional
 token or component change with corresponding documentation and verification.
 END-202 owns the first complete Button vertical slice; END-201 does not preempt
 that API.
+
+## Contextual demo controls
+
+The package exports a controlled `MorphSurface` for the expanding surface,
+reference animation, and focus return. The demo owns viewport section detection,
+Button/Card settings, and the controls shown inside it. State lives for the page
+session; Reset applies only to the current component. Focus or an active pointer
+interaction pins the component until interaction ends. Passive Card remains
+independent of the floating surface.

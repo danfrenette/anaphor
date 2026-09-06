@@ -1,4 +1,5 @@
-import { Button, ButtonLabel, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@design-language/system";
+import { CardPlayground } from "./card-playground";
+import { Button, ButtonLabel, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@design-language/system";
 
 export function CardDemo() {
   return (
@@ -15,17 +16,7 @@ export function CardDemo() {
       </header>
 
       <div className="mt-8 grid items-start gap-6 sm:grid-cols-2">
-        <Card aria-labelledby="card-project-title">
-          <CardHeader>
-            <CardTitle id="card-project-title">Personal workspace</CardTitle>
-            <CardDescription>A place for your next idea.</CardDescription>
-            <CardAction>
-              <Button size="xs" tone="neutral" variant="ghost"><ButtonLabel>Edit</ButtonLabel></Button>
-            </CardAction>
-          </CardHeader>
-          <CardContent><p>Keep your notes, experiments, and works in progress together.</p></CardContent>
-          <CardFooter><Button tone="neutral"><ButtonLabel>Open workspace</ButtonLabel></Button></CardFooter>
-        </Card>
+        <CardPlayground />
 
         <Card aria-labelledby="card-preview-title">
           <div className="flex min-h-40 items-center justify-center rounded-t-card bg-background" role="group" aria-label="Button preview">

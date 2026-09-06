@@ -43,10 +43,11 @@ test("skip link moves keyboard focus to the main content", async ({ page, browse
 test("button demo exposes bounded experiments and resets to approved defaults", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/#button");
+  await page.getByRole("button", { name: "Open Button controls" }).click();
 
   await expect(
-    page.getByRole("heading", { level: 2, name: "Button" }),
+    page.getByRole("heading", { level: 2, name: "Button", exact: true }),
   ).toBeVisible();
   const demo = page.getByTestId("primary-button");
   const variant = page.getByLabel("Variant");
@@ -66,9 +67,9 @@ test("button demo exposes bounded experiments and resets to approved defaults", 
   await expect(demo).toBeEnabled();
   await expect(demo).not.toHaveAttribute("aria-busy");
 
-  await page.getByRole("button", { name: "Hide controls" }).click();
+  await page.getByRole("button", { name: "Close controls" }).click();
   await expect(page.getByLabel("Variant")).toBeHidden();
-  await page.getByRole("button", { name: "Show controls" }).click();
+  await page.getByRole("button", { name: "Open Button controls" }).click();
   await expect(page.getByLabel("Variant")).toBeVisible();
 });
 
@@ -94,7 +95,8 @@ test("button color roles meet AA outside the documented solid accent exception",
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/#button");
+  await page.getByRole("button", { name: "Open Button controls" }).click();
   const field = page.getByRole("group", { name: "Primary button example" });
 
   for (const theme of ["light", "dark"] as const) {
@@ -121,6 +123,7 @@ test("button color roles meet AA outside the documented solid accent exception",
 test("loading preserves action colors while explicit disabled stays neutral", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#button");
+  await page.getByRole("button", { name: "Open Button controls" }).click();
   const demo = page.getByTestId("primary-button");
   const field = page.getByRole("group", { name: "Primary button example" });
   const colors = () =>
@@ -184,7 +187,8 @@ test("default and destructive buttons retain their approved visual appearance", 
 
 test("icon-only buttons stay square and centered while loading", async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/#button");
+  await page.getByRole("button", { name: "Open Button controls" }).click();
   await page.getByLabel("Icon only", { exact: true }).check();
   const button = page.getByTestId("primary-button");
   const desktopSizes = { xs: 28, sm: 32, md: 40, lg: 48 };
@@ -221,9 +225,49 @@ test("cards compose readable surfaces in both themes", async ({ page }) => {
   }
 });
 
+test("controls follow components, preserve edits, and return keyboard focus", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: /Open .* controls/ })).toHaveCount(0);
+  await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Button", exact: true }).click();
+  const trigger = page.getByRole("button", { name: "Open Button controls" });
+  await trigger.focus();
+  await page.keyboard.press("Enter");
+  const panel = page.getByRole("region", { name: "Button controls" });
+  await expect(panel).toBeFocused();
+  await page.getByLabel("Variant").selectOption("destructive");
+  await page.locator("#card").scrollIntoViewIfNeeded();
+  await expect(panel).toBeVisible();
+  await page.getByRole("heading", { level: 2, name: "Card", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Card controls" })).toBeVisible();
+  await page.getByLabel("Title font").selectOption("mono");
+  await page.getByRole("checkbox", { name: "Footer", exact: true }).uncheck();
+  await expect(page.getByRole("button", { name: "Open workspace" })).toHaveCount(0);
+  await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Button", exact: true }).click();
+  await expect(page.getByLabel("Variant")).toHaveValue("destructive");
+  await page.getByLabel("Variant").focus();
+  await page.keyboard.press("Escape");
+  await expect(trigger).toBeFocused();
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Card", exact: true }).click();
+  await page.getByRole("button", { name: "Open Card controls" }).click();
+  await expect(page.getByLabel("Title font")).toHaveValue("mono");
+  await page.getByRole("button", { name: "Reset controls" }).click();
+  await expect(page.getByLabel("Title font")).toHaveValue("sans");
+  await expect(page.getByRole("button", { name: "Open workspace" })).toBeVisible();
+  const cardPanel = page.getByRole("region", { name: "Card controls" });
+  const bounds = await cardPanel.boundingBox();
+  expect(bounds!.x).toBeGreaterThanOrEqual(0);
+  expect(bounds!.y).toBeGreaterThanOrEqual(0);
+  const accessibility = await new AxeBuilder({ page }).include('[role="region"][aria-label="Card controls"]').withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
+  expect(accessibility.violations).toEqual([]);
+});
+
+
 test("loading smoothly adds and removes spinner space without clipping", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#button");
+  await page.getByRole("button", { name: "Open Button controls" }).click();
   const button = page.getByTestId("primary-button");
   const loading = page.getByRole("checkbox", { name: "Loading", exact: true });
   const restingWidth = await button.evaluate((element) => element.getBoundingClientRect().width);
@@ -281,6 +325,7 @@ test("loading examples run independently and return to idle", async ({ page }) =
 test("outline and ghost show pressed color with reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#button");
+  await page.getByRole("button", { name: "Open Button controls" }).click();
   const button = page.getByTestId("primary-button");
   const field = page.getByRole("group", { name: "Primary button example" });
   for (const dark of [false, true]) {
