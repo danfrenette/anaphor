@@ -1,10 +1,10 @@
+import "@design-language/system/styles.css";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Design Language",
-  description: "A shared language for thoughtful interfaces.",
+  description: "An executable reference manual for interface decisions.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

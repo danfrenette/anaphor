@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+@source "../../../apps/demo/**/*.{ts,tsx}";
+@source "./**/*.{ts,tsx}";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+  --dl-neutral-0: #fcfcfb;
+  --dl-neutral-5: #f4f4f1;
+  --dl-neutral-25: #d8d8d4;
+  --dl-neutral-50: #a7a7a2;
+  --dl-neutral-65: #686866;
+  --dl-neutral-80: #393937;
+  --dl-neutral-90: #20201f;
+  --dl-neutral-95: #1c1c1a;
+  --dl-neutral-100: #171716;
+  --dl-orange-50: #ff895b;
+  --dl-orange-60: #f05a1f;
+
+  --dl-color-canvas: var(--dl-neutral-0);
+  --dl-color-surface: var(--dl-neutral-5);
+  --dl-color-text: var(--dl-neutral-95);
+  --dl-color-text-muted: var(--dl-neutral-65);
+  --dl-color-border: var(--dl-neutral-25);
+  --dl-color-accent: var(--dl-orange-60);
+  --dl-color-accent-foreground: var(--dl-neutral-95);
+  --dl-color-focus: var(--dl-neutral-95);
+}
+
+.dark {
+  color-scheme: dark;
+  --dl-color-canvas: var(--dl-neutral-100);
+  --dl-color-surface: var(--dl-neutral-90);
+  --dl-color-text: var(--dl-neutral-5);
+  --dl-color-text-muted: var(--dl-neutral-50);
+  --dl-color-border: var(--dl-neutral-80);
+  --dl-color-accent: var(--dl-orange-50);
+  --dl-color-focus: var(--dl-neutral-5);
+}
+
+@theme inline {
+  --color-background: var(--dl-color-canvas);
+  --color-foreground: var(--dl-color-text);
+  --color-muted: var(--dl-color-surface);
+  --color-muted-foreground: var(--dl-color-text-muted);
+  --color-border: var(--dl-color-border);
+  --color-primary: var(--dl-color-accent);
+  --color-primary-foreground: var(--dl-color-accent-foreground);
+  --color-ring: var(--dl-color-focus);
+
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1rem;
+  --text-ui: 0.875rem;
+  --text-ui--line-height: 1.25rem;
+  --text-body: 1rem;
+  --text-body--line-height: 1.625rem;
+  --text-title: 2.25rem;
+  --text-title--line-height: 2.5rem;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-control: 0.625rem;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: var(--dl-color-canvas);
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-width: 20rem;
+    min-height: 100svh;
+    margin: 0;
+    background: var(--dl-color-canvas);
+    color: var(--dl-color-text);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--dl-color-focus);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--dl-color-accent);
+    color: var(--dl-color-accent-foreground);
+  }
+}

@@ -3,24 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "pnpm --filter @design-language/demo dev",
+    "build": "pnpm --filter @design-language/demo build",
+    "start": "pnpm --filter @design-language/demo start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "next": "16.3.4",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "typecheck": "tsc --noEmit && pnpm --recursive typecheck",
+    "test": "vitest run",
+    "test:browser": "playwright test"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@axe-core/playwright": "latest",
+    "@playwright/test": "latest",
+    "@testing-library/jest-dom": "latest",
+    "@testing-library/react": "latest",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
-    "typescript": "^5"
+    "jsdom": "latest",
+    "typescript": "^5",
+    "vitest": "latest"
   },
   "packageManager": "pnpm@10.33.0"
 }

@@ -5,7 +5,7 @@
 Use a pnpm workspace without a task runner:
 
 ```text
-apps/specimen/          Next.js reference manual and package consumer
+apps/demo/              Next.js reference manual and package consumer
 packages/design-system/ owned tokens, styles, primitives, and public API
 ```
 
