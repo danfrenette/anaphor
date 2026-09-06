@@ -68,10 +68,13 @@ Playwright verifies behavior that a DOM test cannot prove reliably: real focus
 order, browser layout, theme rendering, responsive reflow, reduced motion, and
 package integration in the built demo. Keep flows independent and
 deterministic. Use role-based locators and wait for observable states rather than
-fixed delays.
+fixed delays. The browser command builds and serves the production demo on
+port 3105, separately from the development preview.
 
 Visual baselines use approved defaults and cover representative states rather
-than every permutation. Experimental demo controls reset before capture.
+than every permutation. Experimental demo controls reset before capture. Button baselines cover
+unconfigured defaults and destructive actions in both themes. Review image
+changes before accepting updated baselines.
 
 ## Accessibility
 
@@ -86,4 +89,6 @@ motion review.
 Lint, strict type checking, integration tests, browser smoke tests, and the
 production demo build must pass. No known high-severity accessibility defect
 may ship. Deferred coverage is recorded against the component ticket rather than
-hidden in the suite.
+hidden in the suite. The documented accent-solid contrast exception applies
+only to color-contrast checks on those controls; all other rules still run,
+and correcting that contrast must not cause a test failure.

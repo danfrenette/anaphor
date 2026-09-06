@@ -13,12 +13,15 @@ test("renders an accessible reference manual without horizontal overflow", async
 
   const accessibility = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
-    .exclude(
-      '[data-tone="accent"][data-variant="solid"], [data-tone="accent"][data-variant="solid"] *',
-    )
+    .disableRules(["color-contrast"])
     .analyze();
 
   expect(accessibility.violations).toEqual([]);
+  const contrast = await new AxeBuilder({ page })
+    .withRules(["color-contrast"])
+    .exclude('[data-tone="accent"][data-variant="solid"]')
+    .analyze();
+  expect(contrast.violations).toEqual([]);
   expect(
     await page.locator("html").evaluate((element) => {
       return element.scrollWidth <= element.clientWidth;
@@ -26,10 +29,12 @@ test("renders an accessible reference manual without horizontal overflow", async
   ).toBe(true);
 });
 
-test("skip link moves keyboard focus to the main content", async ({ page }) => {
+test("skip link moves keyboard focus to the main content", async ({ page, browserName }) => {
   await page.goto("/");
 
-  await page.getByRole("link", { name: "Skip to content" }).focus();
+  // macOS WebKit uses Option-Tab to include links in keyboard navigation.
+  await page.keyboard.press(browserName === "webkit" && process.platform === "darwin" ? "Alt+Tab" : "Tab");
+  await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
   await page.keyboard.press("Enter");
 
   await expect(page.getByRole("main")).toBeFocused();
@@ -44,16 +49,21 @@ test("button demo exposes bounded experiments and resets to approved defaults", 
     page.getByRole("heading", { level: 2, name: "Button" }),
   ).toBeVisible();
   const demo = page.getByTestId("primary-button");
-  await expect(demo).toHaveAttribute("data-variant", "solid");
-  await expect(demo).toHaveAttribute("data-size", "md");
-
-  await page.getByLabel("Variant").selectOption("ghost");
-  await page.getByLabel("Loading").check();
-  await expect(demo).toHaveAttribute("data-variant", "ghost");
+  const variant = page.getByLabel("Variant");
+  const size = page.getByLabel("Size");
+  await expect(variant).toHaveValue("solid");
+  await expect(size).toHaveValue("md");
+  await variant.selectOption("destructive");
+  await size.selectOption("lg");
+  await expect(demo).toHaveAccessibleName("Delete item");
+  await page.getByRole("checkbox", { name: "Loading", exact: true }).check();
   await expect(demo).toHaveAttribute("aria-busy", "true");
-
   await page.getByRole("button", { name: "Reset controls" }).click();
-  await expect(demo).toHaveAttribute("data-variant", "solid");
+  await expect(variant).toHaveValue("solid");
+  await expect(size).toHaveValue("md");
+  await expect(page.getByRole("checkbox", { name: "Loading", exact: true })).not.toBeChecked();
+  await expect(demo).toHaveAccessibleName("Execute");
+  await expect(demo).toBeEnabled();
   await expect(demo).not.toHaveAttribute("aria-busy");
 
   await page.getByRole("button", { name: "Hide controls" }).click();
@@ -68,7 +78,7 @@ test("button motion and touch sizing follow the active device preferences", asyn
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
 
-  const metrics = await page.getByTestId("primary-button").evaluate((button) => {
+  const metrics = await page.getByRole("group", { name: "Default button example" }).getByRole("button").evaluate((button) => {
     const styles = getComputedStyle(button);
     return {
       height: button.getBoundingClientRect().height,
@@ -83,6 +93,7 @@ test("button motion and touch sizing follow the active device preferences", asyn
 test("button color roles meet AA outside the documented solid accent exception", async ({
   page,
 }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   const demo = page.getByTestId("primary-button");
   const field = demo.locator("..");
@@ -93,19 +104,16 @@ test("button color roles meet AA outside the documented solid accent exception",
     for (const tone of ["accent", "neutral"] as const) {
       await page.getByLabel("Tone").selectOption(tone);
 
-      for (const variant of ["solid", "soft", "outline", "ghost"] as const) {
+      for (const variant of ["solid", "destructive", "outline", "ghost"] as const) {
         await page.getByLabel("Variant").selectOption(variant);
-        await page.waitForTimeout(150);
+        // Only this documented contrast exception is permitted; improvement is welcome.
+        if (tone === "accent" && variant === "solid") continue;
         const contrast = await new AxeBuilder({ page })
           .include('[data-testid="primary-button"]')
           .withRules(["color-contrast"])
           .analyze();
 
-        if (tone === "accent" && variant === "solid") {
-          expect(contrast.violations.map(({ id }) => id)).toEqual(["color-contrast"]);
-        } else {
-          expect(contrast.violations).toEqual([]);
-        }
+        expect(contrast.violations).toEqual([]);
       }
     }
   }
@@ -130,68 +138,71 @@ test("disabled and loading buttons share a neutral treatment", async ({ page }) 
       (element, dark) => element.classList.toggle("dark", dark),
       theme === "dark",
     );
-    await page.getByLabel("Disabled").check();
+    await page.getByRole("checkbox", { name: "Disabled", exact: true }).check();
     const disabledColors = await colors();
-
-    await page.getByLabel("Disabled").uncheck();
-    await page.getByLabel("Loading").check();
-    expect(await colors()).toEqual(disabledColors);
-    const loadingSpacing = await demo.evaluate((element) => {
-      const button = element.getBoundingClientRect();
-      const loader = element
-        .querySelector('[data-slot="button-loader"]')!
-        .getBoundingClientRect();
-      const content = element
-        .querySelector('[data-slot="button-content"]')!
-        .getBoundingClientRect();
-
-      return {
-        gap: content.left - loader.right,
-        leftInset: loader.left - button.left,
-        rightInset: button.right - content.right,
+    const expected = await demo.evaluate((element) => {
+      // Resolve tokens through the browser so equivalent color syntax compares equally.
+      const sample = document.createElement("span");
+      sample.style.backgroundColor = "var(--dl-input-disabled)";
+      sample.style.color = "var(--dl-font-tertiary)";
+      element.append(sample);
+      const style = getComputedStyle(sample);
+      const colors = {
+        background: style.backgroundColor,
+        foreground: style.color,
       };
+      sample.remove();
+      return colors;
     });
-    expect(loadingSpacing.gap).toBe(8);
-    expect(
-      Math.abs(loadingSpacing.leftInset - loadingSpacing.rightInset),
-    ).toBeLessThan(1);
+    expect(disabledColors).toEqual(expected);
 
+    await page.getByRole("checkbox", { name: "Disabled", exact: true }).uncheck();
+    await page.getByRole("checkbox", { name: "Loading", exact: true }).check();
+    expect(await colors()).toEqual(disabledColors);
     await page.getByLabel("Tone").selectOption("neutral");
     await page.getByLabel("Variant").selectOption("ghost");
     expect(await colors()).toEqual(disabledColors);
 
-    await page.getByLabel("Loading").uncheck();
-    await page.getByLabel("Disabled").check();
+    await page.getByRole("checkbox", { name: "Loading", exact: true }).uncheck();
+    await page.getByRole("checkbox", { name: "Disabled", exact: true }).check();
     expect(await colors()).toEqual(disabledColors);
-    await page.getByLabel("Disabled").uncheck();
+    await page.getByRole("checkbox", { name: "Disabled", exact: true }).uncheck();
   }
 });
 
-test("button icons center geometrically while labels use their optical offset", async ({
-  page,
-}) => {
+test("default and destructive buttons retain their approved visual appearance", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const demo = page.getByTestId("primary-button");
+  const defaultButton = page.getByRole("group", { name: "Default button example" }).getByRole("button");
+  const destructiveButton = page.getByRole("button", { name: "Delete item", exact: true });
+  for (const theme of ["light", "dark"] as const) {
+    await page.locator("html").evaluate((element, dark) => element.classList.toggle("dark", dark), theme === "dark");
+    await expect(defaultButton).toHaveScreenshot(`button-default-${theme}.png`);
+    await expect(destructiveButton).toHaveScreenshot(`button-destructive-${theme}.png`);
+  }
+});
 
+test("icon-only buttons stay square and centered while loading", async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await page.getByLabel("Icon only", { exact: true }).check();
+  const button = page.getByTestId("primary-button");
+  const desktopSizes = { xs: 28, sm: 32, md: 40, lg: 48 };
   for (const size of ["xs", "sm", "md", "lg"] as const) {
     await page.getByLabel("Size").selectOption(size);
-    const centers = await demo.evaluate((element) => {
-      const center = (target: Element) => {
-        const bounds = target.getBoundingClientRect();
-        return bounds.top + bounds.height / 2;
-      };
-
-      return {
-        button: center(element),
-        content: center(element.querySelector('[data-slot="button-content"]')!),
-        icon: center(element.querySelector("svg")!),
-        label: center(element.querySelector('[data-slot="button-label"]')!),
-      };
-    });
-
-    expect(Math.abs(centers.content - centers.button)).toBeLessThan(0.5);
-    expect(Math.abs(centers.icon - centers.button)).toBeLessThan(0.5);
-    expect(centers.label).toBeCloseTo(centers.icon - 1, 1);
+    const expected = testInfo.project.name === "mobile-webkit"
+      ? Math.max(44, desktopSizes[size]) : desktopSizes[size];
+    for (const loading of [false, true]) {
+      await page.getByRole("checkbox", { name: "Loading", exact: true }).setChecked(loading);
+      await expect(button).toHaveAccessibleName("Execute");
+      const bounds = await button.boundingBox();
+      expect(bounds?.width).toBe(expected);
+      expect(bounds?.height).toBe(expected);
+      const indicator = loading ? button.locator('[data-slot="button-loader"]') : button.locator("svg");
+      const icon = await indicator.boundingBox();
+      expect(icon).not.toBeNull();
+      expect(icon!.x + icon!.width / 2).toBeCloseTo(bounds!.x + expected / 2, 1);
+      expect(icon!.y + icon!.height / 2).toBeCloseTo(bounds!.y + expected / 2, 1);
+    }
   }
 });

@@ -43,7 +43,9 @@ Tailwind v4 CSS pipeline; it does not require Next.js.
 
 Button text uses the exported `ButtonLabel` module, with icons as siblings.
 The label owns text grouping and optical alignment. Button does not infer
-content roles by inspecting React children.
+content roles by inspecting React children. One local size definition supplies
+button dimensions, spacing, and icon dimensions; `iconOnly` changes the target
+geometry without introducing a second size scale.
 
 ## Component Source
 
@@ -62,6 +64,10 @@ Components are Server Component-compatible by default. Add `"use client"` only
 to the smallest module that needs state, effects, browser APIs, or event
 handlers. Keep tokens, metadata, static demos, and package exports free of
 client-only code.
+
+The Button playground owns interactive state and its controls. Static examples
+are composed by the reference manual and passed through its children slot,
+keeping the mobile reading order without moving static examples into client code.
 
 Start independent asynchronous work together and await it near the rendering
 boundary. Minimize values serialized from Server Components into client code.

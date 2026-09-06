@@ -18,7 +18,10 @@ the YoRHa beige and charcoal pairs without reproducing those values. Both themes
 share `oklch(0.6217 0.185 39.44)` as the brand and action color. The quieter
 `oklch(0.618 0.161 39.44)` value is reserved for focus.
 Danger elements use `oklch(0.4852 0.1691 10.14)`; danger text uses the darker
-`oklch(0.4236 0.1691 10.14)` step.
+`oklch(0.4236 0.1691 10.14)` step. Destructive buttons use the danger
+fill with a light theme-neutral label and the darker danger step on hover and
+press. Destructive color overrides accent/neutral tone; disabled and loading
+states retain the shared neutral treatment. Soft buttons are not supported.
 
 Components consume these ten color roles directly. Interaction states derive by
 mixing the shared brand accent toward the appropriate neutral role rather than
@@ -50,7 +53,9 @@ system sans and monospace stacks without external runtime requests.
 Use Phosphor Icons for interface symbols. Prefer the regular weight and preserve
 the library's native geometry rather than redrawing common icons. Buttons size
 icons to 14px at `xs` and 16px at `sm`, `md`, and `lg`; composed icon and text
-content shares a centered flex axis.
+content shares a centered flex axis. Icon-only buttons use equal width and height:
+28px, 32px, 40px, and 48px for `xs` through `lg`, increased to at least 44px
+on coarse-pointer devices. Shape controls the corners independently.
 
 ## Spacing And Layout
 

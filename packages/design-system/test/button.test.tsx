@@ -1,82 +1,83 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Button, ButtonLabel } from "@design-language/system";
+import type { FormEvent } from "react";
 import { expect, test, vi } from "vitest";
 
-test("exposes a safe native button through the public package API", () => {
+test("activates by pointer and keyboard without submitting its form", async () => {
+  const user = userEvent.setup();
   const onClick = vi.fn();
-
-  render(<Button onClick={onClick}><ButtonLabel>Execute</ButtonLabel></Button>);
+  const onSubmit = vi.fn((event: FormEvent) => event.preventDefault());
+  render(
+    <form onSubmit={onSubmit}>
+      <Button onClick={onClick}><ButtonLabel>Execute</ButtonLabel></Button>
+    </form>,
+  );
   const button = screen.getByRole("button", { name: "Execute" });
+  await user.tab();
+  expect(button).toHaveFocus();
+  await user.keyboard("{Enter}");
+  await user.keyboard(" ");
+  await user.click(button);
+  expect(onClick).toHaveBeenCalledTimes(3);
+  expect(onSubmit).not.toHaveBeenCalled();
+});
 
-  expect(button).toHaveAttribute("type", "button");
-  fireEvent.click(button);
+test("keeps focus and blocks activation while loading, then recovers", async () => {
+  const user = userEvent.setup();
+  const onClick = vi.fn();
+  const action = (loading: boolean) => (
+    <Button loading={loading} onClick={onClick}><ButtonLabel>Save</ButtonLabel></Button>
+  );
+  const { rerender } = render(action(false));
+  const button = screen.getByRole("button", { name: "Save" });
+  await user.tab();
+  expect(button).toHaveFocus();
+  rerender(action(true));
+  expect(button).toHaveFocus();
+  expect(button).toHaveAttribute("aria-busy", "true");
+  expect(button).toHaveAttribute("aria-disabled", "true");
+  await user.keyboard("{Enter} ");
+  await user.click(button);
+  expect(onClick).not.toHaveBeenCalled();
+  rerender(action(false));
+  expect(button).not.toHaveAttribute("aria-busy");
+  await user.click(button);
   expect(onClick).toHaveBeenCalledOnce();
 });
 
-test("keeps its action named and suppresses activation while loading", () => {
+test("disabled actions cannot activate and are skipped by keyboard navigation", async () => {
+  const user = userEvent.setup();
   const onClick = vi.fn();
-
   render(
-    <Button loading onClick={onClick}>
-      <ButtonLabel>Submit</ButtonLabel>
-    </Button>,
+    <>
+      <Button disabled onClick={onClick}><ButtonLabel>Delete item</ButtonLabel></Button>
+      <Button><ButtonLabel>Cancel</ButtonLabel></Button>
+    </>,
   );
-  const button = screen.getByRole("button", { name: "Submit" });
-
-  expect(button).toHaveAttribute("aria-busy", "true");
-  expect(button).toHaveAttribute("aria-disabled", "true");
-  fireEvent.click(button);
+  const button = screen.getByRole("button", { name: "Delete item" });
+  expect(button).toBeDisabled();
+  await user.click(button);
+  await user.tab();
+  expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus();
+  await user.keyboard("{Enter}");
   expect(onClick).not.toHaveBeenCalled();
 });
 
-test("composes a custom button through the Base UI render prop", () => {
-  render(
-    <Button render={<button data-composed="true" />}>
-      <svg aria-hidden="true" />
-      <ButtonLabel>Create project</ButtonLabel>
-    </Button>,
-  );
-
-  expect(
-    screen.getByRole("button", { name: "Create project" }),
-  ).toHaveAttribute("data-composed", "true");
-});
-
-test("keeps interpolated and formatted text together as the action name", () => {
+test("preserves a composed submit button's behavior and formatted action name", async () => {
+  const user = userEvent.setup();
+  const onSubmit = vi.fn((event: FormEvent) => event.preventDefault());
   const count = 3;
+  const onRenderClick = vi.fn();
   render(
-    <Button>
-      <svg aria-hidden="true" />
-      <ButtonLabel>Save {count} <strong>items</strong></ButtonLabel>
-    </Button>,
+    <form onSubmit={onSubmit}>
+      <Button render={<button onClick={onRenderClick} />} type="submit">
+        <svg aria-hidden="true" />
+        <ButtonLabel>Save {count} <strong>items</strong></ButtonLabel>
+      </Button>
+    </form>,
   );
-
-  expect(screen.getByRole("button", { name: "Save 3 items" })).toBeEnabled();
-  expect(screen.getByText("items").tagName).toBe("STRONG");
-});
-
-test("exposes intentional appearance defaults and choices", () => {
-  const { rerender } = render(<Button><ButtonLabel>Default</ButtonLabel></Button>);
-  const button = screen.getByRole("button", { name: "Default" });
-
-  expect(button).toHaveAttribute("data-variant", "solid");
-  expect(button).toHaveAttribute("data-size", "md");
-  expect(button).toHaveAttribute("data-tone", "accent");
-  expect(button).toHaveAttribute("data-shape", "square");
-
-  rerender(
-    <Button variant="ghost" size="xs" tone="neutral" shape="round">
-      <ButtonLabel>Default</ButtonLabel>
-    </Button>,
-  );
-
-  expect(button).toHaveAttribute("data-variant", "ghost");
-  expect(button).toHaveAttribute("data-size", "xs");
-  expect(button).toHaveAttribute("data-tone", "neutral");
-  expect(button).toHaveAttribute("data-shape", "round");
-  expect(button).toHaveClass("text-small");
-
-  rerender(<Button size="lg"><ButtonLabel>Default</ButtonLabel></Button>);
-  expect(button).toHaveClass("text-body");
-  expect(button).not.toHaveClass("text-small");
+  await user.click(screen.getByRole("button", { name: "Save 3 items" }));
+  expect(onSubmit).toHaveBeenCalledOnce();
+  expect(onRenderClick).toHaveBeenCalledOnce();
 });

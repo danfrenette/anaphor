@@ -45,6 +45,12 @@ second Tailwind import are needed. Install `react`, `react-dom`, `tailwindcss`,
 and the Tailwind integration for your bundler (the demo uses
 `@tailwindcss/postcss`). Load this application stylesheet once at the root.
 
+## Button variants
+
+Use `solid`, `outline`, or `ghost` with accent or neutral tone. Use
+`variant="destructive"` for destructive actions; its danger colors take
+precedence over tone. The former `soft` variant has been removed.
+
 ## Button composition
 
 Group all button text inside `ButtonLabel`, including interpolated or formatted
@@ -57,6 +63,10 @@ import { Button, ButtonLabel } from "@design-language/system";
   <ButtonLabel>Save {count} items</ButtonLabel>
 </Button>
 ```
+
+Use `iconOnly` for an icon without text and supply `aria-label`. The same
+`size` values apply; `shape="round"` makes the square target circular. While
+loading, the spinner replaces the visible icon without changing the dimensions.
 
 `ButtonLabel` renders a span and owns the optical text offset. Raw text is not
 automatically wrapped or adjusted.
