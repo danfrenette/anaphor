@@ -11,19 +11,26 @@ flat; only interactive or movable objects earn rounded geometry.
 Use a restrained palette. Orange marks primary action, focus, selection, active
 navigation, and measurement traces. It never represents warning or error.
 
-Current light values:
+Colors use OKLCH so lightness and chroma can be tuned independently. Six
+theme-aware neutrals cover `font-secondary`, `font-tertiary`, `input-disabled`,
+`input-border`, `foreground`, and `background`. They borrow the quiet warmth of
+the YoRHa beige and charcoal pairs without reproducing those values. Both themes
+share `oklch(0.6217 0.185 39.44)` as the brand and action color. The quieter
+`oklch(0.618 0.161 39.44)` value is reserved for focus.
+Danger elements use `oklch(0.4852 0.1691 10.14)`; danger text uses the darker
+`oklch(0.4236 0.1691 10.14)` step.
 
-- Paper `#FCFCFB`: page and navigation surfaces.
-- Field `#F4F4F1`: specimen and secondary surfaces.
-- Ink `#1C1C1A`: primary text and dark text on orange.
-- Graphite `#686866`: secondary text.
-- Rule `#D8D8D4`: dividers and boundaries.
-- Orange `#F05A1F`: action and active-state signal.
+Components consume these ten color roles directly. Interaction states derive by
+mixing the shared brand accent toward the appropriate neutral role rather than
+adding more variables. The high-chroma orange stays clear against dark surfaces
+and vivid in light mode. Solid accent controls retain the approved
+bright-foreground visual exception.
 
-Current dark studies use canvas `#171716`, field `#20201F`, rule `#393937`,
-primary text `#F4F4F1`, secondary text `#A7A7A2`, and bright orange text
-`#FF895B`. Every token and component requires intentional dark-theme coverage.
-Do not use white text on bright orange; ink on orange is the approved pairing.
+Disabled controls, including loading controls, always use `input-disabled` with
+`font-tertiary` for intentionally subdued contrast. Their
+previous tone and variant do not show through, while loading retains its label
+and progress indicator. Disabled treatments remain distinct from functional
+neutral controls.
 
 ## Typography
 
@@ -38,14 +45,21 @@ system sans and monospace stacks without external runtime requests.
 - Title: 36px / 40px, 500 weight, `-0.02em` tracking.
 - Instructional prose measure: 680px to 820px.
 
+## Iconography
+
+Use Phosphor Icons for interface symbols. Prefer the regular weight and preserve
+the library's native geometry rather than redrawing common icons. Buttons size
+icons to 14px at `xs` and 16px at `sm`, `md`, and `lg`; composed icon and text
+content shares a centered flex axis.
+
 ## Spacing And Layout
 
 Use a 4px base rhythm with 4, 8, 12, 16, 24, 32, 48, 64, and 96px steps.
-Desktop specimens use a 280px indexed rail and an 840px reading column inside a
+Desktop demos use a 280px indexed rail and an 840px reading column inside a
 1200px page region. Mobile uses 24px gutters and document flow; navigation must
 not force horizontal scrolling at 320px or 200% zoom.
 
-Spacing varies by purpose: compact inside controls, moderate within a specimen,
+Spacing varies by purpose: compact inside controls, moderate within a demo,
 and generous between instructional sections. Rules and shared alignment lanes
 provide grouping before containers do.
 
@@ -56,7 +70,7 @@ provide grouping before containers do.
 - Tactile controls: 10px radius.
 - Pills and indicators: fully rounded only when shape communicates behavior.
 - Elevation: flat by default; layered shadow is reserved for temporary floating
-  tools such as the specimen control surface.
+  tools such as the demo control surface.
 
 ## Density
 
@@ -72,9 +86,9 @@ documented reason. Avoid animation for repeated keyboard actions and content
 already present. Prefer transform and opacity; define reduced-motion behavior
 per component.
 
-## Specimens
+## Demos
 
-Opinionated specimens expose only meaningful variables. Approved values are the
+Opinionated demos expose only meaningful variables. Approved values are the
 defaults, reset restores them, experiments remain local, and deterministic
 defaults remain available for visual regression. Instrumentation such as rulers,
 coordinates, or state labels appears only when it explains behavior.
