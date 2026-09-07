@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, Field, FieldLabel, Input } from "@design-language/system";
-import { InputPlayground, InputValidationExample } from "./input-playground";
+import { InputPlayground, InputSearchExample, InputValidationExample } from "./input-playground";
 
 export function InputDemo() {
   return (
@@ -16,6 +16,10 @@ export function InputDemo() {
           <InputValidationExample />
           <p className="mt-6 text-ui text-muted-foreground">Leave an incomplete address or submit to see feedback. Start editing to clear it; typing pauses never bring the error back.</p>
         </CardContent>
+      </Card>
+      <Card className="mt-6">
+        <CardHeader><CardTitle>Input with an action</CardTitle></CardHeader>
+        <CardContent><InputSearchExample /></CardContent>
       </Card>
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {(["light", "dark"] as const).map((theme) => (

@@ -66,3 +66,23 @@ export function InputValidationExample() {
     </form>
   );
 }
+
+export function InputSearchExample() {
+  const [query, setQuery] = useState("");
+  return (
+    <form role="search" className="grid gap-3" onSubmit={(event) => {
+      event.preventDefault();
+      const value = new FormData(event.currentTarget).get("query");
+      setQuery(typeof value === "string" ? value.trim() : "");
+    }}>
+      <Field name="query">
+        <FieldLabel>Search the manual</FieldLabel>
+        <div className="flex flex-wrap gap-2">
+          <Input type="search" placeholder="Try “Input”" className="flex-1 basis-40" onChange={() => setQuery("")} />
+          <Button type="submit" tone="neutral"><ButtonLabel>Search</ButtonLabel></Button>
+        </div>
+      </Field>
+      <p role="status" className="min-h-5 text-ui text-muted-foreground">{query ? `Example search: “${query}”. Nothing was sent.` : ""}</p>
+    </form>
+  );
+}

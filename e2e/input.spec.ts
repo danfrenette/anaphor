@@ -85,3 +85,22 @@ test("visible validation feedback transitions without moving the form", async ({
   await expect(error).toHaveCSS("opacity", "0");
   expect(await spacing()).toBeCloseTo(before, 1);
 });
+
+
+test("search and button compose without overflow and preserve native editing", async ({ page }) => {
+  await page.goto("/#input");
+  const form = page.getByRole("search");
+  const input = form.getByRole("searchbox", { name: "Search the manual" });
+  await input.fill("Button");
+  await input.press("ControlOrMeta+A");
+  await input.pressSequentially("Input");
+  await expect(input).toHaveValue("Input");
+  await input.press("Enter");
+  await expect(form.getByRole("status")).toHaveText('Example search: “Input”. Nothing was sent.');
+  await input.clear();
+  await expect(form.getByRole("status")).toBeEmpty();
+  const bounds = await form.evaluate((element) => ({ width: element.clientWidth, scroll: element.scrollWidth }));
+  expect(bounds.scroll).toBeLessThanOrEqual(bounds.width);
+  const height = await input.evaluate((element) => element.getBoundingClientRect().height);
+  expect(await form.getByRole("button", { name: "Search" }).evaluate((element) => element.getBoundingClientRect().height)).toBe(height);
+});
