@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, ButtonLabel } from "@design-language/system";
+import { Button, ButtonLabel } from "@anaphor/system";
 import { useEffect, useState } from "react";
 
 export function ButtonLoadingExample({ disabledWhileLoading = false }: { disabledWhileLoading?: boolean }) {

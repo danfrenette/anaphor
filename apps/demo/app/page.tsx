@@ -1,5 +1,5 @@
 import { PlaygroundHost } from "./playground-host";
-import { Card, CardContent, CardHeader, CardTitle, Separator } from "@design-language/system";
+import { Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
 import { ButtonDemo } from "./button-demo";
 import { BadgeDemo } from "./badge-demo";
 import { CardDemo } from "./card-demo";
@@ -33,20 +33,20 @@ const index = [
 ] as const;
 
 const neutralRoles = [
-  ["Font / tertiary", "--dl-font-tertiary"],
-  ["Font / secondary", "--dl-font-secondary"],
-  ["Input / disabled", "--dl-input-disabled"],
-  ["Input / border", "--dl-input-border"],
-  ["Foreground", "--dl-foreground"],
-  ["Background", "--dl-background"],
+  ["Font / tertiary", "--anaphor-font-tertiary"],
+  ["Font / secondary", "--anaphor-font-secondary"],
+  ["Input / disabled", "--anaphor-input-disabled"],
+  ["Input / border", "--anaphor-input-border"],
+  ["Foreground", "--anaphor-foreground"],
+  ["Background", "--anaphor-background"],
 ] as const;
 
 const chromaticRoles = [
-  ["Brand", "--dl-brand", "oklch(0.6217 0.185 39.44)"],
-  ["Focus", "--dl-focus", "oklch(0.618 0.161 39.44)"],
-  ["Danger", "--dl-danger", "oklch(0.4852 0.1691 10.14)"],
-  ["Danger / hover", "--dl-danger-hover", "oklch(0.4236 0.1691 10.14)"],
-  ["Danger / text", "--dl-danger-text", "oklch(0.4236 0.1691 10.14)"],
+  ["Brand", "--anaphor-brand", "oklch(0.6217 0.185 39.44)"],
+  ["Focus", "--anaphor-focus", "oklch(0.618 0.161 39.44)"],
+  ["Danger", "--anaphor-danger", "oklch(0.4852 0.1691 10.14)"],
+  ["Danger / hover", "--anaphor-danger-hover", "oklch(0.4236 0.1691 10.14)"],
+  ["Danger / text", "--anaphor-danger-text", "oklch(0.4236 0.1691 10.14)"],
 ] as const;
 
 const colorRoles = [
@@ -115,7 +115,7 @@ export default function HomePage() {
               <p>Status / Draft</p>
             </div>
             <h1 className="mt-10 text-display font-medium tracking-[-0.02em]">
-              Design language
+              Anaphor
             </h1>
             <p className="mt-3 prose-reading text-pretty">
               An executable manual for the decisions that make personal software

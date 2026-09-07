@@ -21,7 +21,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm build && pnpm --filter @design-language/demo exec next start --port 3105",
+    command: "pnpm build && pnpm --filter @anaphor/demo exec next start --port 3105",
     url: "http://127.0.0.1:3105",
     reuseExistingServer: false,
     timeout: 120_000,

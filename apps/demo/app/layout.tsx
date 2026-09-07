@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
-  title: "Design Language",
+  title: "Anaphor",
   description: "An executable reference manual for interface decisions.",
 };
 

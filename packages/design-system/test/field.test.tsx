@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Field, FieldDescription, FieldError, FieldLabel, Input } from "@design-language/system";
+import { Field, FieldDescription, FieldError, FieldLabel, Input } from "@anaphor/system";
 import { expect, test } from "vitest";
 
 test("connects each field's label and messages without manual IDs", async () => {

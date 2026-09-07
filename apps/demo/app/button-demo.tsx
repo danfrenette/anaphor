@@ -1,4 +1,4 @@
-import { Button, ButtonLabel, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@design-language/system";
+import { Button, ButtonLabel, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
 import { ArrowRight, Trash } from "@phosphor-icons/react/dist/ssr";
 import type { ReactNode } from "react";
 import { ButtonPlayground } from "./button-playground";

@@ -2,7 +2,7 @@
 
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { Spinner } from "@phosphor-icons/react/dist/ssr";
-import { cn } from "#lib/utils";
+import { cn } from "../lib/utils";
 import type { ComponentProps, ReactNode } from "react";
 
 const sizeStyles = {
@@ -13,19 +13,19 @@ const sizeStyles = {
 } as const;
 
 const baseStyles =
-  "relative inline-flex min-h-[var(--button-size)] min-w-max items-center justify-center rounded-[var(--dl-button-radius,var(--radius-control))] border border-transparent font-sans font-medium whitespace-nowrap select-none touch-manipulation data-disabled:cursor-not-allowed data-muted:border-transparent data-muted:bg-[var(--dl-input-disabled)] data-muted:text-[var(--dl-font-tertiary)] motion-safe:transition-[background-color,border-color,color,transform] motion-safe:duration-[var(--dl-button-duration,125ms)] motion-safe:ease-in-out motion-safe:active:not-data-disabled:scale-[var(--dl-button-press-scale,0.97)] forced-colors:data-muted:border-[GrayText] forced-colors:data-muted:bg-[ButtonFace] forced-colors:data-muted:text-[GrayText] forced-colors:border-[ButtonText]";
+  "relative inline-flex min-h-[var(--button-size)] min-w-max items-center justify-center rounded-[var(--anaphor-button-radius,var(--radius-control))] border border-transparent font-sans font-medium whitespace-nowrap select-none touch-manipulation data-disabled:cursor-not-allowed data-muted:border-transparent data-muted:bg-[var(--anaphor-input-disabled)] data-muted:text-[var(--anaphor-font-tertiary)] motion-safe:transition-[background-color,border-color,color,transform] motion-safe:duration-[var(--anaphor-button-duration,125ms)] motion-safe:ease-in-out motion-safe:active:not-data-disabled:scale-[var(--anaphor-button-press-scale,0.97)] forced-colors:data-muted:border-[GrayText] forced-colors:data-muted:bg-[ButtonFace] forced-colors:data-muted:text-[GrayText] forced-colors:border-[ButtonText]";
 
 const variantStyles = {
-  "accent-solid": "bg-[var(--dl-brand)] text-primary-foreground hover:not-data-disabled:bg-[color-mix(in_oklch,var(--dl-brand)_94%,var(--dl-font-secondary))] active:not-data-disabled:bg-[color-mix(in_oklch,var(--dl-brand)_88%,var(--dl-font-secondary))]",
-  "accent-outline": "border-current text-[color-mix(in_oklch,var(--dl-brand)_65%,var(--dl-font-secondary))] hover:not-data-disabled:bg-[color-mix(in_oklch,var(--dl-brand)_26%,var(--dl-background))] active:not-data-disabled:bg-[color-mix(in_oklch,var(--dl-brand)_38%,var(--dl-background))]",
-  "accent-ghost": "text-[color-mix(in_oklch,var(--dl-brand)_65%,var(--dl-font-secondary))] hover:not-data-disabled:bg-[color-mix(in_oklch,var(--dl-brand)_26%,var(--dl-background))] active:not-data-disabled:bg-[color-mix(in_oklch,var(--dl-brand)_38%,var(--dl-background))]",
-  "neutral-solid": "bg-[var(--dl-font-secondary)] text-[var(--dl-background)] hover:not-data-disabled:bg-[color-mix(in_oklch,var(--dl-font-secondary)_90%,var(--dl-font-tertiary))] active:not-data-disabled:bg-[color-mix(in_oklch,var(--dl-font-secondary)_80%,var(--dl-font-tertiary))]",
-  "neutral-outline": "border-[var(--dl-input-border)] text-[var(--dl-font-secondary)] hover:not-data-disabled:bg-[var(--dl-input-disabled)] active:not-data-disabled:bg-[color-mix(in_oklch,var(--dl-input-disabled)_85%,var(--dl-font-secondary))]",
-  "neutral-ghost": "text-[var(--dl-font-secondary)] hover:not-data-disabled:bg-[var(--dl-input-disabled)] active:not-data-disabled:bg-[color-mix(in_oklch,var(--dl-input-disabled)_85%,var(--dl-font-secondary))]",
+  "accent-solid": "bg-[var(--anaphor-brand)] text-primary-foreground hover:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-brand)_94%,var(--anaphor-font-secondary))] active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-brand)_88%,var(--anaphor-font-secondary))]",
+  "accent-outline": "border-current text-[color-mix(in_oklch,var(--anaphor-brand)_65%,var(--anaphor-font-secondary))] hover:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-brand)_26%,var(--anaphor-background))] active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-brand)_38%,var(--anaphor-background))]",
+  "accent-ghost": "text-[color-mix(in_oklch,var(--anaphor-brand)_65%,var(--anaphor-font-secondary))] hover:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-brand)_26%,var(--anaphor-background))] active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-brand)_38%,var(--anaphor-background))]",
+  "neutral-solid": "bg-[var(--anaphor-font-secondary)] text-[var(--anaphor-background)] hover:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-font-secondary)_90%,var(--anaphor-font-tertiary))] active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-font-secondary)_80%,var(--anaphor-font-tertiary))]",
+  "neutral-outline": "border-[var(--anaphor-input-border)] text-[var(--anaphor-font-secondary)] hover:not-data-disabled:bg-[var(--anaphor-input-disabled)] active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-input-disabled)_85%,var(--anaphor-font-secondary))]",
+  "neutral-ghost": "text-[var(--anaphor-font-secondary)] hover:not-data-disabled:bg-[var(--anaphor-input-disabled)] active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-input-disabled)_85%,var(--anaphor-font-secondary))]",
 } as const;
 
 const destructiveStyles =
-  "bg-danger text-background dark:text-foreground hover:not-data-disabled:bg-[var(--dl-danger-hover)] active:not-data-disabled:bg-[var(--dl-danger-hover)]";
+  "bg-danger text-background dark:text-foreground hover:not-data-disabled:bg-[var(--anaphor-danger-hover)] active:not-data-disabled:bg-[var(--anaphor-danger-hover)]";
 
 type ButtonProps = ButtonPrimitive.Props & {
   iconOnly?: boolean;

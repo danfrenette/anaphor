@@ -10,7 +10,7 @@ press animation. Use a Button or link for actions.
 <Badge variant="solid"><Tag aria-hidden="true" />Published</Badge>
 ```
 
-Import Badge and BadgeProps from `@design-language/system`. Icons are Phosphor,
+Import Badge and BadgeProps from `@anaphor/system`. Icons are Phosphor,
 composed as children and marked decorative when the text supplies their meaning.
 
 - `variant`: `soft` (default), `solid`, `outline`; all use theme neutrals.

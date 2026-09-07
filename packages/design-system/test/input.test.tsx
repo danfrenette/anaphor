@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Input } from "@design-language/system";
+import { Input } from "@anaphor/system";
 import { createRef, useState } from "react";
 import { expect, test, vi } from "vitest";
 

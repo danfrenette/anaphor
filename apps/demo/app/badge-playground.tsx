@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Card, CardContent, CardHeader, CardTitle, type BadgeProps } from "@design-language/system";
+import { Badge, Card, CardContent, CardHeader, CardTitle, type BadgeProps } from "@anaphor/system";
 import { Tag } from "@phosphor-icons/react";
 import { useState } from "react";
 import { PlaygroundControls } from "./playground-host";

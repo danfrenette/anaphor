@@ -1,4 +1,4 @@
-# Design Language
+# Anaphor
 
 An executable reference manual and a source-owned component system.
 
@@ -24,32 +24,33 @@ pnpm test:browser
 pnpm build
 ```
 
-## Consuming the package
+## Installing from the private registry
 
-`@design-language/system` exports source for React 19.2 projects. Consumers need
-TypeScript/TSX transpilation and Tailwind CSS v4 processing. Next.js consumers
-add the package to `transpilePackages`; other bundlers must also process the
-exported TSX. The package remains private and is not published to a registry.
+Authenticate with GitHub, then install one component or the complete system:
 
-Import the package stylesheet from your application's CSS entry, then register
-your own source paths relative to that file:
+```sh
+gh auth login
+pnpm dlx shadcn@latest add danfrenette/anaphor/button
+pnpm dlx shadcn@latest add danfrenette/anaphor/ui
+```
+
+The commands copy source into the consuming project and install its npm
+dependencies. Import the generated stylesheet once from the application's CSS
+entry and register the application's source files:
 
 ```css
-@import "@design-language/system/styles.css";
-
+@import "@/components/anaphor.css";
 @source "./**/*.{ts,tsx}";
 ```
 
-The package registers its own sources and includes Tailwind; no demo paths or
-second Tailwind import are needed. Install `react`, `react-dom`, `tailwindcss`,
-and the Tailwind integration for your bundler (the demo uses
-`@tailwindcss/postcss`). Load this application stylesheet once at the root.
+The internal `@anaphor/system` workspace package powers the reference manual;
+it is private and is not published to npm.
 
 ## Card composition
 
 Card is a passive container with a 12px radius and a theme-neutral surface.
 Compose optional `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`,
-`CardContent`, and `CardFooter` from `@design-language/system`. They live in
+`CardContent`, and `CardFooter` from `@anaphor/system`. They live in
 one module and work in Server Components without a client boundary.
 
 Sections own 24px padding, with shared spacing between adjacent sections.
@@ -73,7 +74,7 @@ Group all button text inside `ButtonLabel`, including interpolated or formatted
 text. Icons sit alongside it; icon-only buttons use an accessible name.
 
 ```tsx
-import { Button, ButtonLabel } from "@design-language/system";
+import { Button, ButtonLabel } from "@anaphor/system";
 
 <Button>
   <ButtonLabel>Save {count} items</ButtonLabel>
@@ -99,7 +100,7 @@ or disabled. Use a plain anchor for ordinary link semantics.
 
 ## Working principles
 
-- Consume components only through `@design-language/system`.
+- Consume components only through `@anaphor/system`.
 - Prefer Server Components. Add `"use client"` only at an interaction boundary.
 - Keep code close to the route or component that owns it; extract after reuse appears.
 - Model valid states with TypeScript and validate data at runtime boundaries.

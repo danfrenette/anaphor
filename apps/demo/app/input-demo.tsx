@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle, Field, FieldLabel, Input } from "@design-language/system";
+import { Card, CardContent, CardHeader, CardTitle, Field, FieldLabel, Input } from "@anaphor/system";
 import { InputPlayground, InputSearchExample, InputValidationExample } from "./input-playground";
 
 export function InputDemo() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, ButtonLabel, Card, CardPreview, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@design-language/system";
+import { Button, ButtonLabel, Card, CardPreview, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@anaphor/system";
 import { useState } from "react";
 import { PlaygroundControls } from "./playground-host";
 import { Check, Select } from "./playground-fields";

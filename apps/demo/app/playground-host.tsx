@@ -1,6 +1,6 @@
 "use client";
 
-import { MorphSurface } from "@design-language/system";
+import { MorphSurface } from "@anaphor/system";
 import { SlidersHorizontal } from "@phosphor-icons/react";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";

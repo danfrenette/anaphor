@@ -1,0 +1,206 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "anaphor",
+  "homepage": "https://github.com/danfrenette/anaphor",
+  "items": [
+    {
+      "name": "ui",
+      "type": "registry:ui",
+      "title": "Anaphor UI",
+      "description": "Install the complete Anaphor component system.",
+      "registryDependencies": [
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/badge",
+        "danfrenette/anaphor/button",
+        "danfrenette/anaphor/card",
+        "danfrenette/anaphor/card-copy-button",
+        "danfrenette/anaphor/checkbox",
+        "danfrenette/anaphor/field",
+        "danfrenette/anaphor/field-feedback",
+        "danfrenette/anaphor/input",
+        "danfrenette/anaphor/morph-surface",
+        "danfrenette/anaphor/separator"
+      ]
+    },
+    {
+      "name": "style",
+      "type": "registry:style",
+      "title": "Anaphor Style",
+      "description": "Anaphor tokens, typography, fonts, themes, and shared component styles.",
+      "dependencies": ["tailwindcss"],
+      "files": [
+        {
+          "path": "packages/design-system/src/styles.css",
+          "type": "registry:file",
+          "target": "@components/anaphor.css"
+        },
+        {
+          "path": "packages/design-system/src/fonts/InterVariable.woff2",
+          "type": "registry:file",
+          "target": "@components/fonts/InterVariable.woff2"
+        },
+        {
+          "path": "packages/design-system/src/fonts/InterVariable-Italic.woff2",
+          "type": "registry:file",
+          "target": "@components/fonts/InterVariable-Italic.woff2"
+        },
+        {
+          "path": "packages/design-system/src/fonts/MagdaCleanMono-Regular.woff2",
+          "type": "registry:file",
+          "target": "@components/fonts/MagdaCleanMono-Regular.woff2"
+        },
+        {
+          "path": "packages/design-system/src/fonts/Inter-LICENSE.txt",
+          "type": "registry:file",
+          "target": "@components/fonts/Inter-LICENSE.txt"
+        },
+        {
+          "path": "packages/design-system/src/fonts/MagdaCleanMono-download-notice.txt",
+          "type": "registry:file",
+          "target": "@components/fonts/MagdaCleanMono-download-notice.txt"
+        }
+      ],
+      "docs": "Import the generated Anaphor stylesheet once from your application CSS entry, then add an @source rule for the application's TS/TSX files."
+    },
+    {
+      "name": "utils",
+      "type": "registry:lib",
+      "dependencies": ["cn"],
+      "files": [
+        {
+          "path": "packages/design-system/src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "@components/lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/badge.tsx",
+          "type": "registry:ui",
+          "target": "@ui/badge.tsx"
+        }
+      ]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "dependencies": ["@base-ui/react", "@phosphor-icons/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/button.tsx",
+          "type": "registry:ui",
+          "target": "@ui/button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/card.tsx",
+          "type": "registry:ui",
+          "target": "@ui/card.tsx"
+        }
+      ]
+    },
+    {
+      "name": "card-copy-button",
+      "type": "registry:ui",
+      "dependencies": ["@phosphor-icons/react"],
+      "registryDependencies": ["danfrenette/anaphor/button", "danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/card-copy-button.tsx",
+          "type": "registry:ui",
+          "target": "@ui/card-copy-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "dependencies": ["@base-ui/react", "@phosphor-icons/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/checkbox.tsx",
+          "type": "registry:ui",
+          "target": "@ui/checkbox.tsx"
+        }
+      ]
+    },
+    {
+      "name": "field",
+      "type": "registry:ui",
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/field.tsx",
+          "type": "registry:ui",
+          "target": "@ui/field.tsx"
+        }
+      ]
+    },
+    {
+      "name": "field-feedback",
+      "type": "registry:ui",
+      "dependencies": ["@phosphor-icons/react", "motion"],
+      "registryDependencies": ["danfrenette/anaphor/field", "danfrenette/anaphor/style"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/field-feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/field-feedback.tsx"
+        }
+      ]
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/input.tsx",
+          "type": "registry:ui",
+          "target": "@ui/input.tsx"
+        }
+      ]
+    },
+    {
+      "name": "morph-surface",
+      "type": "registry:ui",
+      "dependencies": ["motion"],
+      "registryDependencies": ["danfrenette/anaphor/style"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/morph-surface.tsx",
+          "type": "registry:ui",
+          "target": "@ui/morph-surface.tsx"
+        }
+      ]
+    },
+    {
+      "name": "separator",
+      "type": "registry:ui",
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/separator.tsx",
+          "type": "registry:ui",
+          "target": "@ui/separator.tsx"
+        }
+      ]
+    }
+  ]
+}

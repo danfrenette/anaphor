@@ -1,6 +1,6 @@
 "use client";
 
-import { Checkbox, Field, FieldLabel } from "@design-language/system";
+import { Checkbox, Field, FieldLabel } from "@anaphor/system";
 
 export function Select<const Value extends string>({ label, value, options, onChange }: { label: string; value: NoInfer<Value>; options: readonly Value[]; onChange: (value: NoInfer<Value>) => void }) {
   return (

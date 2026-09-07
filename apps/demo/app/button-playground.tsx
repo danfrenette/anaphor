@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, ButtonLabel, Card, CardContent, CardHeader, CardTitle, type ButtonProps } from "@design-language/system";
+import { Button, ButtonLabel, Card, CardContent, CardHeader, CardTitle, type ButtonProps } from "@anaphor/system";
 import { ArrowRight, Trash } from "@phosphor-icons/react";
 import { useState, type Dispatch, type SetStateAction, type CSSProperties, type ReactNode } from "react";
 import { PlaygroundControls } from "./playground-host";
@@ -38,9 +38,9 @@ export function ButtonPlayground({ children }: { children: ReactNode }) {
   const [controls, setButton] = useState(buttonDefaults);
   const destructive = controls.variant === "destructive";
   const demoStyle: CSSProperties & Record<`--${string}`, string | number> = {
-    "--dl-button-radius": `${controls.radius}px`,
-    "--dl-button-press-scale": controls.pressScale,
-    "--dl-button-duration": `${controls.duration}ms`,
+    "--anaphor-button-radius": `${controls.radius}px`,
+    "--anaphor-button-press-scale": controls.pressScale,
+    "--anaphor-button-duration": `${controls.duration}ms`,
   };
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, Checkbox, Field, FieldDescription, FieldLabel } from "@design-language/system";
+import { Card, CardContent, CardHeader, CardTitle, Checkbox, Field, FieldDescription, FieldLabel } from "@anaphor/system";
 import { useState } from "react";
 import { Check } from "./playground-fields";
 import { PlaygroundControls } from "./playground-host";

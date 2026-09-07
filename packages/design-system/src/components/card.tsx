@@ -1,14 +1,14 @@
-import { cn } from "#lib/utils";
+import { cn } from "../lib/utils";
 import type { ComponentProps } from "react";
 
 type CardProps = ComponentProps<"div"> & { variant?: "default" | "showcase" };
 
 function Card({ className, variant = "default", ...props }: CardProps) {
-  return <div data-slot="card" data-variant={variant} className={cn("w-full min-w-0 text-foreground", variant === "default" ? "rounded-card bg-muted [&>[data-card-section]+[data-card-section]]:pt-0" : "dl-card-showcase", className)} {...props} />;
+  return <div data-slot="card" data-variant={variant} className={cn("w-full min-w-0 text-foreground", variant === "default" ? "rounded-card bg-muted [&>[data-card-section]+[data-card-section]]:pt-0" : "anaphor-card-showcase", className)} {...props} />;
 }
 
 function CardPreview({ className, children, ...props }: ComponentProps<"div">) {
-  return <div data-slot="card-preview" className={cn("dl-card-preview", className)} {...props}><div data-slot="card-preview-surface">{children}</div></div>;
+  return <div data-slot="card-preview" className={cn("anaphor-card-preview", className)} {...props}><div data-slot="card-preview-surface">{children}</div></div>;
 }
 
 function CardHeader({ className, ...props }: ComponentProps<"div">) {

@@ -1,4 +1,4 @@
-import { Badge, Card, CardHeader, CardTitle, CardContent } from "@design-language/system";
+import { Badge, Card, CardHeader, CardTitle, CardContent } from "@anaphor/system";
 import { Tag } from "@phosphor-icons/react/dist/ssr";
 import { BadgePlayground } from "./badge-playground";
 

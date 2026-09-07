@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Checkbox, Field, FieldDescription, FieldLabel } from "@design-language/system";
+import { Checkbox, Field, FieldDescription, FieldLabel } from "@anaphor/system";
 import { expect, test } from "vitest";
 
 test("label activation updates the native form value and connects its description", async () => {

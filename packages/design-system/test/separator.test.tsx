@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { Separator } from "@design-language/system";
+import { Separator } from "@anaphor/system";
 import { expect, test } from "vitest";
 
 test("exposes separator semantics through the public package API", () => {

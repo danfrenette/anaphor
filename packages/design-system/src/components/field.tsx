@@ -2,7 +2,7 @@
 
 import { Field as FieldPrimitive } from "@base-ui/react/field";
 import type { ComponentProps } from "react";
-import { cn } from "#lib/utils";
+import { cn } from "../lib/utils";
 
 function Field({ className, ...props }: ComponentProps<typeof FieldPrimitive.Root>) {
   return <FieldPrimitive.Root data-slot="field" className={(state) => cn("grid gap-2", typeof className === "function" ? className(state) : className)} {...props} />;

@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 
 @source "./**/*.{ts,tsx}";
+@source "./ui/**/*.{ts,tsx}";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -30,43 +31,43 @@
 
 :root {
   color-scheme: light;
-  --dl-font-tertiary: oklch(0.46 0.014 65);
-  --dl-font-secondary: oklch(0.2 0.01 50);
-  --dl-input-disabled: oklch(0.86 0.015 85);
-  --dl-input-border: oklch(0.82 0.016 85);
-  --dl-foreground: oklch(0.95 0.012 85);
-  --dl-background: oklch(0.985 0.008 85);
-  --dl-checkbox-mark: oklch(0.985 0.008 85);
-  --dl-brand: oklch(0.6217 0.185 39.44);
-  --dl-focus: oklch(0.618 0.161 39.44);
-  --dl-danger: oklch(0.4852 0.1691 10.14);
-  --dl-danger-hover: oklch(0.4236 0.1691 10.14);
-  --dl-danger-text: oklch(0.4236 0.1691 10.14);
+  --anaphor-font-tertiary: oklch(0.46 0.014 65);
+  --anaphor-font-secondary: oklch(0.2 0.01 50);
+  --anaphor-input-disabled: oklch(0.86 0.015 85);
+  --anaphor-input-border: oklch(0.82 0.016 85);
+  --anaphor-foreground: oklch(0.95 0.012 85);
+  --anaphor-background: oklch(0.985 0.008 85);
+  --anaphor-checkbox-mark: oklch(0.985 0.008 85);
+  --anaphor-brand: oklch(0.6217 0.185 39.44);
+  --anaphor-focus: oklch(0.618 0.161 39.44);
+  --anaphor-danger: oklch(0.4852 0.1691 10.14);
+  --anaphor-danger-hover: oklch(0.4236 0.1691 10.14);
+  --anaphor-danger-text: oklch(0.4236 0.1691 10.14);
 }
 
 .dark {
-  --dl-danger-text: oklch(0.7 0.1691 10.14);
+  --anaphor-danger-text: oklch(0.7 0.1691 10.14);
   color-scheme: dark;
-  --dl-font-tertiary: oklch(0.7 0.016 78);
-  --dl-font-secondary: oklch(0.9 0.014 85);
-  --dl-input-disabled: oklch(0.46 0.014 65);
-  --dl-input-border: oklch(0.36 0.013 60);
-  --dl-foreground: oklch(0.28 0.012 55);
-  --dl-background: oklch(0.2 0.01 50);
+  --anaphor-font-tertiary: oklch(0.7 0.016 78);
+  --anaphor-font-secondary: oklch(0.9 0.014 85);
+  --anaphor-input-disabled: oklch(0.46 0.014 65);
+  --anaphor-input-border: oklch(0.36 0.013 60);
+  --anaphor-foreground: oklch(0.28 0.012 55);
+  --anaphor-background: oklch(0.2 0.01 50);
 }
 
 @theme inline {
-  --color-background: var(--dl-background);
-  --color-foreground: var(--dl-font-secondary);
-  --color-reading: color-mix(in oklch, var(--dl-font-secondary) 90%, transparent);
-  --color-muted: var(--dl-foreground);
-  --color-muted-foreground: var(--dl-font-tertiary);
-  --color-border: var(--dl-input-border);
-  --color-primary: var(--dl-brand);
-  --color-primary-foreground: light-dark(var(--dl-background), var(--dl-font-secondary));
-  --color-danger: var(--dl-danger);
-  --color-danger-foreground: var(--dl-danger-text);
-  --color-ring: var(--dl-focus);
+  --color-background: var(--anaphor-background);
+  --color-foreground: var(--anaphor-font-secondary);
+  --color-reading: color-mix(in oklch, var(--anaphor-font-secondary) 90%, transparent);
+  --color-muted: var(--anaphor-foreground);
+  --color-muted-foreground: var(--anaphor-font-tertiary);
+  --color-border: var(--anaphor-input-border);
+  --color-primary: var(--anaphor-brand);
+  --color-primary-foreground: light-dark(var(--anaphor-background), var(--anaphor-font-secondary));
+  --color-danger: var(--anaphor-danger);
+  --color-danger-foreground: var(--anaphor-danger-text);
+  --color-ring: var(--anaphor-focus);
 
   --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Magda Clean Mono", ui-monospace, monospace;
@@ -101,7 +102,7 @@
   }
 
   html {
-    background: var(--dl-background);
+    background: var(--anaphor-background);
     font-family: var(--font-sans);
     font-optical-sizing: auto;
     text-rendering: optimizeLegibility;
@@ -113,12 +114,12 @@
     min-width: 20rem;
     min-height: 100svh;
     margin: 0;
-    background: var(--dl-background);
-    color: var(--dl-font-secondary);
+    background: var(--anaphor-background);
+    color: var(--anaphor-font-secondary);
   }
 
   :focus-visible {
-    outline: 2px solid var(--dl-focus);
+    outline: 2px solid var(--anaphor-focus);
     outline-offset: 2px;
   }
 
@@ -133,8 +134,8 @@
   }
 
   ::selection {
-    background: var(--dl-brand);
-    color: light-dark(var(--dl-background), var(--dl-font-secondary));
+    background: var(--anaphor-brand);
+    color: light-dark(var(--anaphor-background), var(--anaphor-font-secondary));
   }
 }
 
@@ -142,49 +143,49 @@
   max-width: 65ch;
   font-size: var(--text-body);
   line-height: 1.6;
-  color: color-mix(in oklch, var(--dl-font-secondary) 90%, transparent);
+  color: color-mix(in oklch, var(--anaphor-font-secondary) 90%, transparent);
   overflow-wrap: break-word;
 }
 
-@keyframes dl-checkbox-enter {
+@keyframes anaphor-checkbox-enter {
   from { scale: 0; }
   to { scale: 1; }
 }
 
 @layer components {
-  .dl-card-preview {
+  .anaphor-card-preview {
     padding: 4px;
-    border: 1px solid color-mix(in oklch, var(--dl-input-border) 55%, var(--dl-background));
+    border: 1px solid color-mix(in oklch, var(--anaphor-input-border) 55%, var(--anaphor-background));
     border-radius: calc(var(--radius-card) + 5px);
-    background: var(--dl-background);
+    background: var(--anaphor-background);
     box-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 3px 6px oklch(0 0 0 / 0.025);
   }
-  .dl-card-preview > [data-slot="card-preview-surface"] {
+  .anaphor-card-preview > [data-slot="card-preview-surface"] {
     position: relative;
     display: grid;
     min-width: 0;
     overflow: hidden;
     aspect-ratio: var(--card-preview-ratio, 4 / 5);
-    border: 1px solid color-mix(in oklch, var(--dl-input-border) 65%, var(--dl-background));
+    border: 1px solid color-mix(in oklch, var(--anaphor-input-border) 65%, var(--anaphor-background));
     border-radius: var(--radius-card);
-    background: var(--dl-background);
+    background: var(--anaphor-background);
   }
-  .dl-card-copy-icons { display: grid; width: 1rem; height: 1rem; }
-  .dl-card-copy-icons > svg {
+  .anaphor-card-copy-icons { display: grid; width: 1rem; height: 1rem; }
+  .anaphor-card-copy-icons > svg {
     grid-area: 1 / 1;
     width: 1rem;
     height: 1rem;
     transition: opacity 160ms cubic-bezier(0.23, 1, 0.32, 1), transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
   }
-  .dl-card-copy-icons > svg:last-child { opacity: 0; transform: scale(0.9); }
-  .dl-card-copy[data-copied] .dl-card-copy-icons > svg:first-child { opacity: 0; transform: scale(0.9); }
-  .dl-card-copy[data-copied] .dl-card-copy-icons > svg:last-child { opacity: 1; transform: scale(1); }
+  .anaphor-card-copy-icons > svg:last-child { opacity: 0; transform: scale(0.9); }
+  .anaphor-card-copy[data-copied] .anaphor-card-copy-icons > svg:first-child { opacity: 0; transform: scale(0.9); }
+  .anaphor-card-copy[data-copied] .anaphor-card-copy-icons > svg:last-child { opacity: 1; transform: scale(1); }
   @media (prefers-reduced-motion: reduce) {
-    .dl-card-copy-icons > svg { transform: none !important; transition-property: opacity; }
+    .anaphor-card-copy-icons > svg { transform: none !important; transition-property: opacity; }
   }
 }
 
 @layer utilities {
-  .dl-card-showcase > [data-card-section] { padding: 0; margin-top: 1rem; }
-  .dl-card-showcase > [data-slot="card-header"] { gap: 0.25rem; }
+  .anaphor-card-showcase > [data-card-section] { padding: 0; margin-top: 1rem; }
+  .anaphor-card-showcase > [data-slot="card-header"] { gap: 0.25rem; }
 }

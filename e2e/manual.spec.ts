@@ -7,7 +7,7 @@ test("renders an accessible reference manual without horizontal overflow", async
   await page.goto("/");
 
   await expect(
-    page.getByRole("heading", { level: 1, name: "Design language" }),
+    page.getByRole("heading", { level: 1, name: "Anaphor" }),
   ).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Manual index" })).toBeVisible();
 
@@ -145,8 +145,8 @@ test("loading preserves action colors while explicit disabled stays neutral", as
     const expected = await demo.evaluate((element) => {
       // Resolve tokens through the browser so equivalent color syntax compares equally.
       const sample = document.createElement("span");
-      sample.style.backgroundColor = "var(--dl-input-disabled)";
-      sample.style.color = "var(--dl-font-tertiary)";
+      sample.style.backgroundColor = "var(--anaphor-input-disabled)";
+      sample.style.color = "var(--anaphor-font-tertiary)";
       element.append(sample);
       const style = getComputedStyle(sample);
       const colors = {

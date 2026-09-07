@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Button, ButtonLabel } from "@design-language/system";
+import { Button, ButtonLabel } from "@anaphor/system";
 import type { FormEvent } from "react";
 import { expect, test, vi } from "vitest";
 

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Badge } from "@design-language/system";
+import { Badge } from "@anaphor/system";
 import { expect, test } from "vitest";
 
 test("exposes a descriptive label without adding a keyboard stop", async () => {

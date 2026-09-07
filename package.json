@@ -1,11 +1,11 @@
 {
-  "name": "design-language",
+  "name": "anaphor",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm --filter @design-language/demo dev",
-    "build": "pnpm --filter @design-language/demo build",
-    "start": "pnpm --filter @design-language/demo start",
+    "dev": "pnpm --filter @anaphor/demo dev",
+    "build": "pnpm --filter @anaphor/demo build",
+    "start": "pnpm --filter @anaphor/demo start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit && pnpm --recursive typecheck",
     "test": "vitest run",

@@ -35,4 +35,4 @@ For a page centerpiece, compose a framed preview and an external caption:
 with a CSS class for another ratio. Its inner surface is positioned and clipped;
 children can place a badge with absolute positioning. Titles wrap naturally.
 Cards remain passive containers; use explicit links or buttons for actions.
-All components and prop types are exported from `@design-language/system`.
+All components and prop types are exported from `@anaphor/system`.

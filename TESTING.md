@@ -25,7 +25,7 @@ broad snapshots and mocks when semantic queries and real behavior are practical.
 ## Type Contracts
 
 The TypeScript compiler is the primary type test. Public API fixtures import only
-from `@design-language/system` and use `expectTypeOf` for important inferred
+from `@anaphor/system` and use `expectTypeOf` for important inferred
 results. Use `@ts-expect-error` for intentionally rejected consumer code so the
 test fails if the error disappears. Do not duplicate runtime assertions as type
 tests or assert obvious annotations.

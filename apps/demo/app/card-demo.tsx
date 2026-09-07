@@ -1,5 +1,5 @@
 import { CardPlayground } from "./card-playground";
-import { Badge, Button, ButtonLabel, Card, CardAction, CardCopyButton, CardPreview, CardContent, CardDescription, CardHeader, CardTitle } from "@design-language/system";
+import { Badge, Button, ButtonLabel, Card, CardAction, CardCopyButton, CardPreview, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
 
 export function CardDemo() {
   return (
@@ -47,7 +47,7 @@ export function CardDemo() {
                 <svg className="size-48 max-w-full translate-y-0.5 text-primary" viewBox="18 -22.5 1200 1200" fill="currentColor" focusable="false">
                   <path className="fill-muted" d="M549 165 141 862.5 213 990 549 405 742.5 720 879 720Z" />
                   <path className="fill-border" d="M549 165H684L1095 855H417L490.5 720H879Z" />
-                  <path className="fill-[var(--dl-input-disabled)]" d="M213 990H1030.5L1095 855H417L609 501 549 405Z" />
+                  <path className="fill-[var(--anaphor-input-disabled)]" d="M213 990H1030.5L1095 855H417L609 501 549 405Z" />
                   <path d="m1039.5 1005h-835.5l-78-142.5 3-7.5 411-705h153l417 702zm-817.5-30h799.5l57-121.5-402-673.5h-118.5l-399 682.5z" />
                   <path d="m225 1002-25.5-15 349.5-612 205.5 331.5-25.5 15-178.5-288z" />
                   <path d="m904.5 735h-409.5v-30h357l-315-531 25.5-15z" />

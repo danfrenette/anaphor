@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Card, CardCopyButton, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@design-language/system";
+import { Card, CardCopyButton, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@anaphor/system";
 import { expect, test, vi } from "vitest";
 
 test("composes a passive card with accessible headings and independent controls", async () => {

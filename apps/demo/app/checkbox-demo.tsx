@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle, Checkbox, Field, FieldDescription, FieldLabel } from "@design-language/system";
+import { Card, CardContent, CardHeader, CardTitle, Checkbox, Field, FieldDescription, FieldLabel } from "@anaphor/system";
 import { CheckboxPlayground, CheckboxRequiredExample, CheckboxSelectionExample } from "./checkbox-playground";
 
 export function CheckboxDemo() {

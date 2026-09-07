@@ -16,9 +16,9 @@ only when parallel task dependencies become costly to maintain.
 
 ## Package Boundary
 
-`@design-language/system` is private while its contract develops. Its root
+`@anaphor/system` is private while its contract develops. Its root
 export is the only component API. Styles are exposed separately as
-`@design-language/system/styles.css`. Each consumer imports it through its own
+`@anaphor/system/styles.css`. Each consumer imports it through its own
 stylesheet, loaded once at the application root.
 
 Do not add compatibility layers, generated entry points, or publishing
