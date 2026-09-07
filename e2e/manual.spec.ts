@@ -204,9 +204,9 @@ test("icon-only buttons stay square and centered while loading", async ({ page }
       expect(bounds?.height).toBe(expected);
       const indicator = loading ? button.locator('[data-slot="button-loader"]') : button.locator('[data-slot="button-content"] svg');
       const icon = await indicator.boundingBox();
-      expect(icon).not.toBeNull();
-      expect(icon!.x + icon!.width / 2).toBeCloseTo(bounds!.x + expected / 2, 1);
-      expect(icon!.y + icon!.height / 2).toBeCloseTo(bounds!.y + expected / 2, 1);
+      if (!icon || !bounds) throw new Error("Button and indicator must have visible bounds");
+      expect(icon.x + icon.width / 2).toBeCloseTo(bounds.x + expected / 2, 1);
+      expect(icon.y + icon.height / 2).toBeCloseTo(bounds.y + expected / 2, 1);
     }
   }
 });
@@ -257,8 +257,9 @@ test("controls follow components, preserve edits, and return keyboard focus", as
   await expect(page.getByRole("button", { name: "Open workspace" })).toBeVisible();
   const cardPanel = page.getByRole("region", { name: "Card controls" });
   const bounds = await cardPanel.boundingBox();
-  expect(bounds!.x).toBeGreaterThanOrEqual(0);
-  expect(bounds!.y).toBeGreaterThanOrEqual(0);
+  if (!bounds) throw new Error("The controls panel must have visible bounds");
+  expect(bounds.x).toBeGreaterThanOrEqual(0);
+  expect(bounds.y).toBeGreaterThanOrEqual(0);
   const accessibility = await new AxeBuilder({ page }).include('[role="region"][aria-label="Card controls"]').withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
   expect(accessibility.violations).toEqual([]);
 });
@@ -273,8 +274,9 @@ test("loading smoothly adds and removes spinner space without clipping", async (
   const restingWidth = await button.evaluate((element) => element.getBoundingClientRect().width);
   const sampleWidths = () => button.evaluate(async (element) => {
     const widths: number[] = [];
-    const loader = element.querySelector<SVGSVGElement>('[data-slot="button-loader"]')!;
-    const wrapper = loader.parentElement!;
+    const loader = element.querySelector('[data-slot="button-loader"]');
+    const wrapper = loader?.parentElement;
+    if (!loader || !wrapper) throw new Error("The loading indicator must be mounted");
     // Sample the transition itself, rather than sleeping and checking only its endpoint.
     for (let frame = 0; frame < 30; frame++) {
       await new Promise(requestAnimationFrame);
@@ -293,7 +295,8 @@ test("loading smoothly adds and removes spinner space without clipping", async (
   const opening = sampleWidths();
   await loading.check();
   const opened = await opening;
-  const expandedWidth = opened.at(-1)!;
+  const expandedWidth = opened.at(-1);
+  if (expandedWidth === undefined) throw new Error("Expected animation samples");
   expect(expandedWidth).toBeGreaterThan(restingWidth + 1);
   expect(opened.some((width) => width > restingWidth + 0.5 && width < expandedWidth - 0.5)).toBe(true);
   const closing = sampleWidths();

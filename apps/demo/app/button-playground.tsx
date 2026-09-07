@@ -36,11 +36,11 @@ const variants = ["solid", "destructive", "outline", "ghost"] as const;
 export function ButtonPlayground({ children }: { children: ReactNode }) {
   const { button: controls } = useDemoControls();
   const destructive = controls.variant === "destructive";
-  const demoStyle = {
+  const demoStyle: CSSProperties & Record<`--${string}`, string | number> = {
     "--dl-button-radius": `${controls.radius}px`,
     "--dl-button-press-scale": controls.pressScale,
     "--dl-button-duration": `${controls.duration}ms`,
-  } as CSSProperties;
+  };
 
   return (
     <>
@@ -78,10 +78,10 @@ export function ButtonControlFields() {
     setButton((current) => ({ ...current, [key]: value }));
   }
   return <div className="grid grid-cols-2 gap-4">
-          <Select label="Variant" value={controls.variant} options={variants} onChange={(value) => update("variant", value as ButtonControls["variant"])} />
-          <Select label="Size" value={controls.size} options={["xs", "sm", "md", "lg"]} onChange={(value) => update("size", value as ButtonControls["size"])} />
-          <Select label="Tone" value={controls.tone} options={["accent", "neutral"]} onChange={(value) => update("tone", value as ButtonControls["tone"])} />
-          <Select label="Shape" value={controls.shape} options={["square", "round"]} onChange={(value) => update("shape", value as ButtonControls["shape"])} />
+          <Select label="Variant" value={controls.variant} options={variants} onChange={(value) => update("variant", value)} />
+          <Select label="Size" value={controls.size} options={["xs", "sm", "md", "lg"]} onChange={(value) => update("size", value)} />
+          <Select label="Tone" value={controls.tone} options={["accent", "neutral"]} onChange={(value) => update("tone", value)} />
+          <Select label="Shape" value={controls.shape} options={["square", "round"]} onChange={(value) => update("shape", value)} />
           <Range label="Radius" value={controls.radius} min={0} max={24} step={2} unit="px" onChange={(value) => update("radius", value)} />
           <Range label="Press scale" value={controls.pressScale} min={0.94} max={1} step={0.01} onChange={(value) => update("pressScale", value)} />
           <Range label="Duration" value={controls.duration} min={0} max={250} step={25} unit="ms" onChange={(value) => update("duration", value)} />
@@ -93,11 +93,14 @@ export function ButtonControlFields() {
   </div>;
 }
 
-export function Select({ label, value, options, onChange }: { label: string; value: string; options: readonly string[]; onChange: (value: string) => void }) {
+export function Select<const Value extends string>({ label, value, options, onChange }: { label: string; value: NoInfer<Value>; options: readonly Value[]; onChange: (value: NoInfer<Value>) => void }) {
   return (
     <label className="grid gap-1.5 text-ui">
       <span>{label}</span>
-      <select className="min-h-10 rounded-md border border-border bg-background px-3" value={value} onChange={(event) => onChange(event.target.value)}>
+      <select className="min-h-10 rounded-md border border-border bg-background px-3" value={value} onChange={(event) => {
+        const selected = options.find((option) => option === event.target.value);
+        if (selected !== undefined) onChange(selected);
+      }}>
         {options.map((option) => <option key={option}>{option}</option>)}
       </select>
     </label>
