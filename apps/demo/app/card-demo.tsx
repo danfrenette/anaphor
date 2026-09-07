@@ -1,5 +1,5 @@
 import { CardPlayground } from "./card-playground";
-import { Button, ButtonLabel, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@design-language/system";
+import { Button, ButtonLabel, Card, CardAction, CardCopyButton, CardContent, CardDescription, CardHeader, CardTitle } from "@design-language/system";
 
 export function CardDemo() {
   return (
@@ -28,6 +28,14 @@ export function CardDemo() {
           </CardHeader>
         </Card>
       </div>
+
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle>Spacing tokens</CardTitle>
+          <CardAction><CardCopyButton value={"--space-1: 4px;\n--space-2: 8px;\n--space-3: 12px;"} aria-label="Copy spacing tokens" /></CardAction>
+        </CardHeader>
+        <CardContent><pre className="overflow-x-auto font-mono text-ui"><code>{"--space-1: 4px;\n--space-2: 8px;\n--space-3: 12px;"}</code></pre></CardContent>
+      </Card>
 
       <div className="dark mt-8 bg-background p-6 text-foreground">
         <p className="mb-6 text-label tracking-[0.08em] uppercase">Theme study / Dark</p>

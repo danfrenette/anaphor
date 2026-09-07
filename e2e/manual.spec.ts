@@ -353,3 +353,22 @@ test("composed anchor navigates by keyboard", async ({ page }) => {
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/#card$/);
 });
+
+test("card copy confirms a write", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: {
+      writeText: async (value: string) => { document.documentElement.dataset.copiedText = value; },
+    } });
+  });
+  await page.goto("/#card");
+  const copy = page.getByRole("button", { name: "Copy spacing tokens" });
+  await copy.click();
+  await expect(page.locator("#card").getByRole("status")).toHaveText("Copied to clipboard.");
+  await expect(page.locator("html")).toHaveAttribute("data-copied-text", "--space-1: 4px;\n--space-2: 8px;\n--space-3: 12px;");
+  await expect(page.locator("#card").getByRole("status")).toBeEmpty();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await copy.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#card").getByRole("status")).toHaveText("Copied to clipboard.");
+});
+

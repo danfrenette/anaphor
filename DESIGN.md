@@ -175,3 +175,11 @@ from artwork. Shape is independent: 8px corners by default, round for compact
 labels such as Study 01. Phosphor icons compose beside text. Long labels wrap.
 Badges stay server-compatible and passive, with no hover, press, loading, or
 motion behavior. The reference rationale lives in docs/components/badge.md.
+
+## Card copy feedback
+
+`CardCopyButton` composes inside `CardAction` and copies its explicit `value`.
+It confirms a successful clipboard write with a 160ms opacity/scale transition
+between Phosphor Copy and Check icons, returning after two seconds. Reduced
+motion keeps only the fade. The live status announces success or a retryable
+failure without moving focus. Static Card parts remain server-compatible.

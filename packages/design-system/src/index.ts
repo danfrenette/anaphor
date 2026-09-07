@@ -7,3 +7,4 @@ export { FieldFeedback, type FieldFeedbackProps } from "./components/field-feedb
 export { Field, FieldLabel, FieldDescription, FieldError } from "./components/field";
 export { Checkbox, CheckboxPrimitive } from "./components/checkbox";
 export { Badge, type BadgeProps } from "./components/badge";
+export { CardCopyButton, type CardCopyButtonProps } from "./components/card-copy-button";

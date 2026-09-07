@@ -150,3 +150,19 @@
   from { scale: 0; }
   to { scale: 1; }
 }
+
+@layer components {
+  .dl-card-copy-icons { display: grid; width: 1rem; height: 1rem; }
+  .dl-card-copy-icons > svg {
+    grid-area: 1 / 1;
+    width: 1rem;
+    height: 1rem;
+    transition: opacity 160ms cubic-bezier(0.23, 1, 0.32, 1), transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .dl-card-copy-icons > svg:last-child { opacity: 0; transform: scale(0.9); }
+  .dl-card-copy[data-copied] .dl-card-copy-icons > svg:first-child { opacity: 0; transform: scale(0.9); }
+  .dl-card-copy[data-copied] .dl-card-copy-icons > svg:last-child { opacity: 1; transform: scale(1); }
+  @media (prefers-reduced-motion: reduce) {
+    .dl-card-copy-icons > svg { transform: none !important; transition-property: opacity; }
+  }
+}
