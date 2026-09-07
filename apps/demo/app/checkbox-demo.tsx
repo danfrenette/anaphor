@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle, Checkbox, Field, FieldLabel } from "@design-language/system";
+import { Card, CardContent, CardHeader, CardTitle, Checkbox, Field, FieldDescription, FieldLabel } from "@design-language/system";
 import { CheckboxPlayground, CheckboxRequiredExample, CheckboxSelectionExample } from "./checkbox-playground";
 
 export function CheckboxDemo() {
@@ -9,12 +9,21 @@ export function CheckboxDemo() {
         <h2 className="mt-8 text-title font-medium tracking-[-0.02em]">Checkbox</h2>
         <p className="mt-3 prose-reading text-pretty">A small, deliberate choice. A quick fill confirms selection; labels give it room to breathe.</p>
       </header>
-      <div className="mt-8 grid items-start gap-4 sm:grid-cols-2">
+      <div className="mt-8"><CheckboxPlayground /></div>
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
         <div className="grid gap-4">
-          <CheckboxPlayground />
           <Card>
             <CardHeader className="p-4 pb-1"><CardTitle className="text-ui">Required choice</CardTitle></CardHeader>
             <CardContent className="p-4"><CheckboxRequiredExample /></CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="p-4 pb-1"><CardTitle className="text-ui">Supporting text</CardTitle></CardHeader>
+            <CardContent className="p-4">
+              <Field className="gap-0">
+                <FieldLabel className="flex min-h-8 items-center gap-3 pointer-coarse:min-h-11"><Checkbox defaultChecked />Include a plain-text version</FieldLabel>
+                <FieldDescription className="pl-8 text-pretty">Send a simpler copy alongside the formatted email.</FieldDescription>
+              </Field>
+            </CardContent>
           </Card>
         </div>
         <Card>
@@ -27,7 +36,7 @@ export function CheckboxDemo() {
           <p>State matrix</p>
           <p className="text-muted-foreground">05 states</p>
         </div>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
         {(["light", "dark"] as const).map((theme) => (
           <Card key={theme} className={theme === "dark" ? "@container dark" : "@container"} role="group" aria-label={`${theme} checkbox states`}>
             <CardHeader className="p-4 pb-1"><CardTitle className="text-label text-muted-foreground uppercase font-normal">{theme} / States</CardTitle></CardHeader>

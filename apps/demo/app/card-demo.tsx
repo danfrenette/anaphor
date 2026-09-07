@@ -69,16 +69,16 @@ export function CardDemo() {
         </div>
       </div>
 
-      <div className="dark mt-8 bg-background p-6 text-foreground">
-        <p className="mb-6 text-label tracking-[0.08em] uppercase">Theme study / Dark</p>
-        <Card aria-labelledby="card-dark-title">
-          <CardHeader>
-            <CardTitle id="card-dark-title">A quieter surface</CardTitle>
-            <CardDescription>The same shape, using the dark theme’s neutral colors.</CardDescription>
-          </CardHeader>
-          <CardContent><p>Content sets the height. Optional sections keep simple cards simple.</p></CardContent>
-        </Card>
-      </div>
+      <Card className="dark mt-8" aria-labelledby="card-dark-title">
+        <CardHeader>
+          <CardTitle className="text-label text-muted-foreground uppercase font-normal">Theme study / Dark</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CardTitle id="card-dark-title">A quieter surface</CardTitle>
+          <CardDescription className="mt-2">The same shape, using the dark theme’s neutral colors.</CardDescription>
+          <p className="mt-4">Content sets the height. Optional sections keep simple cards simple.</p>
+        </CardContent>
+      </Card>
     </section>
   );
 }

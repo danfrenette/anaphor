@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, type BadgeProps } from "@design-language/system";
+import { Badge, Card, CardContent, CardHeader, CardTitle, type BadgeProps } from "@design-language/system";
 import { Tag } from "@phosphor-icons/react";
 import { useState } from "react";
 import { PlaygroundControls } from "./playground-host";
@@ -18,8 +18,11 @@ export function BadgePlayground() {
         <Check label="Icon" checked={settings.icon} onChange={(icon) => setSettings(s => ({ ...s, icon }))} />
       </div>
     </PlaygroundControls>
-    <div className="flex min-h-32 items-center justify-center" aria-label="Badge preview" role="group">
+    <Card className="bg-background" aria-label="Badge preview" role="group">
+      <CardHeader className="p-4 pb-1"><CardTitle className="text-label text-muted-foreground uppercase font-normal">Primary demo</CardTitle></CardHeader>
+      <CardContent className="flex min-h-32 items-center justify-center p-6">
       <Badge size={settings.size} variant={settings.variant} shape={settings.shape}>{settings.icon && <Tag aria-hidden="true" />}Study 01</Badge>
-    </div>
+      </CardContent>
+    </Card>
   </>;
 }
