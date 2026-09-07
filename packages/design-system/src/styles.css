@@ -12,6 +12,7 @@
   --dl-input-border: oklch(0.82 0.016 85);
   --dl-foreground: oklch(0.95 0.012 85);
   --dl-background: oklch(0.985 0.008 85);
+  --dl-checkbox-mark: oklch(0.985 0.008 85);
   --dl-brand: oklch(0.6217 0.185 39.44);
   --dl-focus: oklch(0.618 0.161 39.44);
   --dl-danger: oklch(0.4852 0.1691 10.14);
@@ -91,4 +92,9 @@
     background: var(--dl-brand);
     color: light-dark(var(--dl-background), var(--dl-font-secondary));
   }
+}
+
+@keyframes dl-checkbox-enter {
+  from { scale: 0; }
+  to { scale: 1; }
 }

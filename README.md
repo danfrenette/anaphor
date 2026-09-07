@@ -145,3 +145,20 @@ The form owns validation: validate on blur or submit, clear the displayed error
 on the first edit, and do not revalidate during typing pauses. Clearing feedback
 does not mean the value is valid. The demo uses native email validity and performs
 no network requests. Ordinary valid fields return to neutral.
+
+## Checkbox
+
+`Checkbox` is a thin Base UI wrapper with a 20px box, 6px corners, and built-in
+Phosphor check/mixed marks. Compose it inside a `FieldLabel` with `min-h-11` for
+at least a 44px label target; use `FieldDescription` or `FieldFeedback` for help
+and errors. Labels and row layouts stay outside the primitive.
+
+Controlled and uncontrolled values, native form props, `inputRef`, read-only,
+and disabled behavior pass through to Base UI. `indeterminate` represents a
+partially selected set: derive it from child values, with `checked={false}` for
+the mixed state. Activation then selects the set; it is not a third toggle step.
+
+Selection scales in over 150ms; removal fades out. Reduced motion is immediate.
+The checkbox mark stays light in both themes so it contrasts with the accent
+fill. Required validation belongs to the form: the demo validates on submit and
+clears the error when checked, without validating on blur.
