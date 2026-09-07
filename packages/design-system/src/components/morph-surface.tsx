@@ -22,14 +22,6 @@ function MorphSurface({ open, onOpenChange, title, icon, children }: MorphSurfac
   const content = useRef<HTMLDivElement>(null);
   const wasOpen = useRef(false);
   const [height, setHeight] = useState(44);
-  const [width, setWidth] = useState(360);
-
-  useEffect(() => {
-    const resize = () => setWidth(Math.min(360, window.innerWidth - 32));
-    resize();
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
-  }, []);
 
   useLayoutEffect(() => {
     if (content.current) content.current.inert = !open;
@@ -55,7 +47,8 @@ function MorphSurface({ open, onOpenChange, title, icon, children }: MorphSurfac
     <motion.div
       className="relative overflow-hidden bg-muted text-foreground shadow-lg"
       initial={false}
-      animate={{ width: open ? width : 44, height: open ? height : 44, borderRadius: 12 }}
+      style={{ width: "calc(44px + (min(360px, 100vw - 32px) - 44px) * var(--morph-expansion))" }}
+      animate={{ "--morph-expansion": open ? 1 : 0, height: open ? height : 44, borderRadius: 12 }}
       transition={{ ...spring, delay: !open && !reducedMotion ? 0.08 : 0 }}
       onKeyDown={(event) => {
         if (event.key === "Escape" && open) {
@@ -89,7 +82,7 @@ function MorphSurface({ open, onOpenChange, title, icon, children }: MorphSurfac
             aria-label={title}
             tabIndex={-1}
             className="absolute right-0 bottom-0 flex max-h-[calc(100dvh-2rem)] flex-col outline-none"
-            style={{ width }}
+            style={{ width: "min(360px, calc(100vw - 32px))" }}
             initial={{ opacity: reducedMotion ? 1 : 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
