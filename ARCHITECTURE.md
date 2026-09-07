@@ -65,8 +65,8 @@ to the smallest module that needs state, effects, browser APIs, or event
 handlers. Keep tokens, metadata, static demos, and package exports free of
 client-only code.
 
-The demo controls provider owns shared playground state. Button, Card, and Input
-playgrounds consume that state in small client components. Static examples
+Each playground owns its typed settings and reset behavior in a small client
+component. PlaygroundHost shares only active-section metadata and a portal target. Static examples
 are composed by the reference manual and passed through children slots,
 keeping the mobile reading order without moving static examples into client code.
 
@@ -89,8 +89,15 @@ that API.
 ## Contextual demo controls
 
 The package exports a controlled `MorphSurface` for the expanding surface,
-reference animation, and focus return. The demo owns viewport section detection,
-Button/Card/Input settings, and the controls shown inside it. State lives for the page
-session; Reset applies only to the current component. Focus or an active pointer
-interaction pins the component until interaction ends. Passive Card remains
+reference animation, and focus return. The demo owns viewport section detection
+and the shared panel. Each playground registers its section ID and title through
+PlaygroundControls, which portals locally owned controls and Reset into that panel.
+Playgrounds stay mounted, so settings live for the page session; Reset applies
+only to the current component. The host has no component-specific types, imports,
+or rendering branches. Shared Select, Check, and Range fields live in
+`playground-fields.tsx`. Focus or an active pointer interaction pins the component until interaction ends. Passive Card remains
 independent of the floating surface.
+
+Portal events follow React ownership rather than DOM placement. The host observes
+DOM focus, pointer, and Escape events to preserve interaction pinning and focus
+return for portaled controls. Static examples remain server-composed children.

@@ -2,10 +2,11 @@
 
 import { Button, ButtonLabel, Card, CardContent, CardHeader, CardTitle, type ButtonProps } from "@design-language/system";
 import { ArrowRight, Trash } from "@phosphor-icons/react";
-import { type CSSProperties, type ReactNode } from "react";
-import { useDemoControls } from "./demo-state";
+import { useState, type Dispatch, type SetStateAction, type CSSProperties, type ReactNode } from "react";
+import { PlaygroundControls } from "./playground-host";
+import { Check, Range, Select } from "./playground-fields";
 
-export type ButtonControls = {
+type ButtonControls = {
   variant: NonNullable<ButtonProps["variant"]>;
   size: NonNullable<ButtonProps["size"]>;
   tone: NonNullable<ButtonProps["tone"]>;
@@ -18,7 +19,7 @@ export type ButtonControls = {
   duration: number;
 };
 
-export const buttonDefaults: ButtonControls = {
+const buttonDefaults: ButtonControls = {
   variant: "solid",
   size: "md",
   tone: "accent",
@@ -34,7 +35,7 @@ export const buttonDefaults: ButtonControls = {
 const variants = ["solid", "destructive", "outline", "ghost"] as const;
 
 export function ButtonPlayground({ children }: { children: ReactNode }) {
-  const { button: controls } = useDemoControls();
+  const [controls, setButton] = useState(buttonDefaults);
   const destructive = controls.variant === "destructive";
   const demoStyle: CSSProperties & Record<`--${string}`, string | number> = {
     "--dl-button-radius": `${controls.radius}px`,
@@ -44,6 +45,9 @@ export function ButtonPlayground({ children }: { children: ReactNode }) {
 
   return (
     <>
+      <PlaygroundControls sectionId="button" title="Button" onReset={() => setButton(buttonDefaults)}>
+        <ButtonControlFields controls={controls} setButton={setButton} />
+      </PlaygroundControls>
       <Card role="group" aria-label="Primary button example" className="mt-10">
         <CardHeader>
           <CardTitle className="font-mono text-label tracking-[0.08em] uppercase">Primary demo</CardTitle>
@@ -72,8 +76,7 @@ export function ButtonPlayground({ children }: { children: ReactNode }) {
   );
 }
 
-export function ButtonControlFields() {
-  const { button: controls, setButton } = useDemoControls();
+function ButtonControlFields({ controls, setButton }: { controls: ButtonControls; setButton: Dispatch<SetStateAction<ButtonControls>> }) {
   function update<Key extends keyof ButtonControls>(key: Key, value: ButtonControls[Key]) {
     setButton((current) => ({ ...current, [key]: value }));
   }
@@ -91,36 +94,4 @@ export function ButtonControlFields() {
             <Check label="Disabled" checked={controls.disabled} onChange={(value) => update("disabled", value)} />
           </div>
   </div>;
-}
-
-export function Select<const Value extends string>({ label, value, options, onChange }: { label: string; value: NoInfer<Value>; options: readonly Value[]; onChange: (value: NoInfer<Value>) => void }) {
-  return (
-    <label className="grid gap-1.5 text-ui">
-      <span>{label}</span>
-      <select className="min-h-10 rounded-md border border-border bg-background px-3" value={value} onChange={(event) => {
-        const selected = options.find((option) => option === event.target.value);
-        if (selected !== undefined) onChange(selected);
-      }}>
-        {options.map((option) => <option key={option}>{option}</option>)}
-      </select>
-    </label>
-  );
-}
-
-function Range({ label, value, min, max, step, unit = "", onChange }: { label: string; value: number; min: number; max: number; step: number; unit?: string; onChange: (value: number) => void }) {
-  return (
-    <label className="col-span-2 grid gap-1.5 text-ui">
-      <span className="flex justify-between gap-4"><span>{label}</span><output className="font-mono text-label tabular-nums text-muted-foreground">{value}{unit}</output></span>
-      <input className="accent-primary" type="range" min={min} max={max} step={step} value={value} onChange={(event) => onChange(event.target.valueAsNumber)} />
-    </label>
-  );
-}
-
-export function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
-  return (
-    <label className="flex min-h-10 items-center gap-2 text-ui">
-      <input className="accent-primary" type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
-      {label}
-    </label>
-  );
 }

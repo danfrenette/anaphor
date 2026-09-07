@@ -2,19 +2,34 @@
 
 import { Button, ButtonLabel, Card, CardContent, CardHeader, CardTitle, FieldFeedback, Input } from "@design-language/system";
 import { useRef, useState } from "react";
-import { useDemoControls } from "./demo-state";
+import { PlaygroundControls } from "./playground-host";
+import { Check, Select } from "./playground-fields";
+
+type InputControls = { size: "sm" | "md" | "lg"; type: "text" | "email" | "password" | "search"; disabled: boolean; readOnly: boolean; invalid: boolean };
+const inputDefaults: InputControls = { size: "md", type: "text", disabled: false, readOnly: false, invalid: false };
 
 export function InputPlayground() {
-  const { input } = useDemoControls();
+  const [input, setInput] = useState(inputDefaults);
   return (
-    <Card className="mt-10" role="group" aria-label="Primary input example">
-      <CardHeader><CardTitle className="font-mono text-label uppercase">Primary demo</CardTitle></CardHeader>
-      <CardContent className="grid gap-2">
-        <label htmlFor="input-preview" className="text-ui">Try an input</label>
-        <Input id="input-preview" size={input.size} type={input.type} disabled={input.disabled} readOnly={input.readOnly} aria-invalid={input.invalid || undefined} aria-describedby="input-preview-feedback" placeholder="Type something…" />
-        <FieldFeedback id="input-preview-feedback" hint="Explore sizes and states using the control panel." error="This value needs your attention." invalid={input.invalid} />
-      </CardContent>
-    </Card>
+    <>
+      <PlaygroundControls sectionId="input" title="Input" onReset={() => setInput(inputDefaults)}>
+        <div className="grid gap-3">
+          <Select label="Size" value={input.size} options={["sm", "md", "lg"]} onChange={(size) => setInput((current) => ({ ...current, size }))} />
+          <Select label="Type" value={input.type} options={["text", "email", "password", "search"]} onChange={(type) => setInput((current) => ({ ...current, type }))} />
+          {(["disabled", "readOnly", "invalid"] as const).map((key) => (
+            <Check key={key} label={key === "readOnly" ? "Read only" : key.charAt(0).toUpperCase() + key.slice(1)} checked={input[key]} onChange={(value) => setInput((current) => ({ ...current, [key]: value }))} />
+          ))}
+        </div>
+      </PlaygroundControls>
+      <Card className="mt-10" role="group" aria-label="Primary input example">
+        <CardHeader><CardTitle className="font-mono text-label uppercase">Primary demo</CardTitle></CardHeader>
+        <CardContent className="grid gap-2">
+          <label htmlFor="input-preview" className="text-ui">Try an input</label>
+          <Input id="input-preview" size={input.size} type={input.type} disabled={input.disabled} readOnly={input.readOnly} aria-invalid={input.invalid || undefined} aria-describedby="input-preview-feedback" placeholder="Type something…" />
+          <FieldFeedback id="input-preview-feedback" hint="Explore sizes and states using the control panel." error="This value needs your attention." invalid={input.invalid} />
+        </CardContent>
+      </Card>
+    </>
   );
 }
 
