@@ -6,3 +6,4 @@ export { Input, type InputProps } from "./components/input";
 export { FieldFeedback, type FieldFeedbackProps } from "./components/field-feedback";
 export { Field, FieldLabel, FieldDescription, FieldError } from "./components/field";
 export { Checkbox, CheckboxPrimitive } from "./components/checkbox";
+export { Badge, type BadgeProps } from "./components/badge";

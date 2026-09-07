@@ -165,3 +165,13 @@ the light-theme value. Axe measures dark text contrast at 6.25:1 on the page
 and 5.07:1 on cards (normal text AA requires 4.5:1). `--dl-danger-hover` owns the destructive Button's darker
 background independently. Input outline color transitions with its border;
 focus outline geometry appears immediately.
+
+## Badges
+
+Badges describe categories, counts, and statuses with theme neutrals. Their
+20/24/28px minimum heights and 12/12/14px text keep them subordinate to controls.
+Soft is the default; solid increases emphasis and outline separates the label
+from artwork. Shape is independent: 8px corners by default, round for compact
+labels such as Study 01. Phosphor icons compose beside text. Long labels wrap.
+Badges stay server-compatible and passive, with no hover, press, loading, or
+motion behavior. The reference rationale lives in docs/components/badge.md.
