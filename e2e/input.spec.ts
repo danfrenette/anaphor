@@ -13,6 +13,7 @@ test("email feedback clears on edit and stays clear until blur or submit", async
   await input.press("Tab");
   await expect(input).toHaveAttribute("aria-invalid", "true");
   await expect(input).toHaveAccessibleDescription("Enter a complete email address, such as you@example.com.");
+  await expect(page.getByRole("status").filter({ hasText: "Enter a complete email address" })).toHaveCount(1);
   expect(await spacing()).toBeCloseTo(before, 1);
   await input.focus();
   await expect(input).toHaveAttribute("aria-invalid", "true");

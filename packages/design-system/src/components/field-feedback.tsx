@@ -2,17 +2,16 @@
 
 import { WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { motion, useReducedMotion } from "motion/react";
+import { FieldDescription } from "./field";
 
-// Both messages participate in layout so wrapped errors never push the form.
-type FieldFeedbackProps = { id: string; hint: string; error: string; invalid: boolean };
+type FieldFeedbackProps = { id?: string; hint: string; error: string; invalid: boolean };
 
 function FieldFeedback({ id, hint, error, invalid }: FieldFeedbackProps) {
   const reducedMotion = useReducedMotion();
   const transition = { duration: reducedMotion ? 0 : 0.16, ease: "easeOut" as const };
   return (
     <div className="grid text-ui">
-      <span id={id} className="sr-only">{invalid ? error : hint}</span>
-      <span className="sr-only" role="status" aria-atomic="true">{invalid ? error : ""}</span>
+      <FieldDescription id={id} className="sr-only" role="status" aria-atomic="true">{invalid ? error : hint}</FieldDescription>
       <motion.span
         aria-hidden="true"
         className="col-start-1 row-start-1 text-muted-foreground"

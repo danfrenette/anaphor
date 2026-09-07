@@ -125,12 +125,21 @@ provide the surface, text, and accent colors.
 pass through to the native attribute. Native input props and refs remain available;
 `className` also accepts Base UI's state callback.
 
-Compose a visible label using `htmlFor`, and connect helper/error text using
-`aria-describedby`. `FieldFeedback` accepts `id`, `hint`, `error`, and `invalid`.
-It reserves room for both supplied messages, allows wrapping, and transitions
-between them without moving the input. Supply a concise error message before
-it is shown so its space can be reserved. Screen readers receive the active
-message and a polite error announcement. Reduced motion removes the transition.
+Compose `Field`, `FieldLabel`, `Input`, and `FieldDescription` to associate labels
+and descriptions automatically. `FieldError` wraps Base UI's error display;
+for externally controlled errors, render it conditionally with `match={true}`.
+Field props, native refs, render composition, and state-aware classes pass through.
+
+`FieldFeedback` belongs inside `Field` and accepts `hint`, `error`, `invalid`,
+and an optional `id`. It reserves space for both messages and uses one live
+accessible description alongside the animated visual text. Supply the error
+before it is shown so its space can be reserved. Reduced motion removes motion.
+Use it instead of a separate description/error pair when you want the animated
+hint-to-error treatment.
+
+Base UI's default `onSubmit` validation revalidates after submission. Our example
+uses a native form with `noValidate` and explicitly controls `Field invalid` to
+preserve the policy below; the wrapper does not install a validation engine.
 
 The form owns validation: validate on blur or submit, clear the displayed error
 on the first edit, and do not revalidate during typing pauses. Clearing feedback

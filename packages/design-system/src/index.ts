@@ -4,3 +4,4 @@ export { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent, 
 export { MorphSurface, type MorphSurfaceProps } from "./components/morph-surface";
 export { Input, type InputProps } from "./components/input";
 export { FieldFeedback, type FieldFeedbackProps } from "./components/field-feedback";
+export { Field, FieldLabel, FieldDescription, FieldError } from "./components/field";

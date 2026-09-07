@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle, Input } from "@design-language/system";
+import { Card, CardContent, CardHeader, CardTitle, Field, FieldLabel, Input } from "@design-language/system";
 import { InputPlayground, InputValidationExample } from "./input-playground";
 
 export function InputDemo() {
@@ -22,9 +22,9 @@ export function InputDemo() {
           <Card key={theme} className={theme === "dark" ? "dark" : undefined}>
             <CardHeader><CardTitle className="font-mono text-label uppercase">{theme} / States</CardTitle></CardHeader>
             <CardContent className="grid gap-5">
-              <label className="grid gap-2 text-ui">Project name<Input placeholder="Untitled project" /></label>
-              <label className="grid gap-2 text-ui">Workspace ID<Input readOnly defaultValue="workspace-001" /></label>
-              <label className="grid gap-2 text-ui">Unavailable<Input disabled placeholder="Not available" /></label>
+              <Field><FieldLabel>Project name</FieldLabel><Input placeholder="Untitled project" /></Field>
+              <Field><FieldLabel>Workspace ID</FieldLabel><Input readOnly defaultValue="workspace-001" /></Field>
+              <Field disabled><FieldLabel>Unavailable</FieldLabel><Input placeholder="Not available" /></Field>
             </CardContent>
           </Card>
         ))}
