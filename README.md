@@ -117,3 +117,22 @@ Its animation is adapted from the user-supplied **Devouring Details Morph Surfac
 prototype ([reference](https://devouringdetails.com/resources/component-library)).
 The reference's fonts and global stylesheet are not included; our existing tokens
 provide the surface, text, and accent colors.
+
+## Input and field feedback
+
+`Input` wraps Base UI Input with our theme, `sm`/`md`/`lg` sizes (default `md`),
+16px text, and a 44px minimum height on coarse pointers. Numeric `size` values
+pass through to the native attribute. Native input props and refs remain available;
+`className` also accepts Base UI's state callback.
+
+Compose a visible label using `htmlFor`, and connect helper/error text using
+`aria-describedby`. `FieldFeedback` accepts `id`, `hint`, `error`, and `invalid`.
+It reserves room for both supplied messages, allows wrapping, and transitions
+between them without moving the input. Supply a concise error message before
+it is shown so its space can be reserved. Screen readers receive the active
+message and a polite error announcement. Reduced motion removes the transition.
+
+The form owns validation: validate on blur or submit, clear the displayed error
+on the first edit, and do not revalidate during typing pauses. Clearing feedback
+does not mean the value is valid. The demo uses native email validity and performs
+no network requests. Ordinary valid fields return to neutral.

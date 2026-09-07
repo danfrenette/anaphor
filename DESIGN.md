@@ -127,3 +127,20 @@ width/height and content opacity use spring stiffness 550, damping 45, mass 0.7;
 closing geometry waits 80ms; the shared dot uses stiffness 350 and damping 35.
 The original pill, feedback form, and auto-loop are replaced with our square,
 component controls, and explicit open state. Reduced motion removes transitions.
+
+## Input feedback
+
+Inputs use the existing 10px control radius, neutral surfaces, 16px text, and
+Button-aligned heights. Focus is visible for pointer and keyboard interaction;
+invalid fields use danger feedback. Read-only values remain selectable.
+
+Validation is calm and corrective: show errors on blur or submit, clear them
+on the first edit, and wait for the next blur or submit before showing another.
+The field stays stationary. Helper and error messages share reserved space,
+wrap naturally, and transition with a 160ms fade and 2px movement; the Phosphor
+status icon enters with a restrained scale change. Reduced motion skips travel.
+Ordinary valid values return to neutral rather than showing a success badge.
+
+This combines coss's small Base UI wrapper structure with Devouring Details'
+interaction emphasis and Interior's stable inline feedback. Our timing policy,
+colors, typography, and restrained motion remain owned by this system.
