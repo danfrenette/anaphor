@@ -96,6 +96,6 @@ export function PlaygroundControls({ sectionId, title, onReset, children }: Play
   if (activeId !== sectionId || !target) return null;
   return createPortal(<>
     {children}
-    <button className="mt-4 min-h-11 rounded-md px-2 font-mono text-label uppercase" type="button" onClick={onReset}>Reset controls</button>
+    <button className="mt-4 min-h-11 rounded-md px-2 text-label uppercase" type="button" onClick={onReset}>Reset controls</button>
   </>, target);
 }

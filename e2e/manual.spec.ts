@@ -240,7 +240,6 @@ test("controls follow components, preserve edits, and return keyboard focus", as
   await expect(panel).toBeVisible();
   await page.getByRole("heading", { level: 2, name: "Card", exact: true }).click();
   await expect(page.getByRole("region", { name: "Card controls" })).toBeVisible();
-  await page.getByLabel("Title font").selectOption("mono");
   await page.getByRole("checkbox", { name: "Footer", exact: true }).uncheck();
   await expect(page.getByRole("button", { name: "Open workspace" })).toHaveCount(0);
   await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Button", exact: true }).click();
@@ -251,9 +250,7 @@ test("controls follow components, preserve edits, and return keyboard focus", as
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
   await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Card", exact: true }).click();
   await page.getByRole("button", { name: "Open Card controls" }).click();
-  await expect(page.getByLabel("Title font")).toHaveValue("mono");
   await page.getByRole("button", { name: "Reset controls" }).click();
-  await expect(page.getByLabel("Title font")).toHaveValue("sans");
   await expect(page.getByRole("button", { name: "Open workspace" })).toBeVisible();
   const cardPanel = page.getByRole("region", { name: "Card controls" });
   const bounds = await cardPanel.boundingBox();

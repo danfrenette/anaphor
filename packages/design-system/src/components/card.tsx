@@ -18,7 +18,7 @@ function CardTitle({ as: Heading = "h3", className, ...props }: CardTitleProps) 
 }
 
 function CardDescription({ className, ...props }: ComponentProps<"p">) {
-  return <p data-slot="card-description" className={cn("col-start-1 text-ui text-muted-foreground", className)} {...props} />;
+  return <p data-slot="card-description" className={cn("col-start-1 text-ui text-pretty text-muted-foreground", className)} {...props} />;
 }
 
 function CardAction({ className, ...props }: ComponentProps<"div">) {

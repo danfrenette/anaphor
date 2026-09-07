@@ -4,6 +4,30 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@font-face {
+  font-family: "Magda Clean Mono";
+  src: url("./fonts/MagdaCleanMono-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  src: url("./fonts/InterVariable.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  src: url("./fonts/InterVariable-Italic.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light;
   --dl-font-tertiary: oklch(0.46 0.014 65);
@@ -34,6 +58,7 @@
 @theme inline {
   --color-background: var(--dl-background);
   --color-foreground: var(--dl-font-secondary);
+  --color-reading: color-mix(in oklch, var(--dl-font-secondary) 90%, transparent);
   --color-muted: var(--dl-foreground);
   --color-muted-foreground: var(--dl-font-tertiary);
   --color-border: var(--dl-input-border);
@@ -43,19 +68,26 @@
   --color-danger-foreground: var(--dl-danger-text);
   --color-ring: var(--dl-focus);
 
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Magda Clean Mono", ui-monospace, monospace;
 
-  --text-label: 0.6875rem;
-  --text-label--line-height: 1rem;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.4;
   --text-small: 0.75rem;
-  --text-small--line-height: 1rem;
+  --text-small--line-height: 1.5;
   --text-ui: 0.875rem;
-  --text-ui--line-height: 1.25rem;
+  --text-ui--line-height: 1.5;
   --text-body: 1rem;
-  --text-body--line-height: 1.625rem;
+  --text-body--line-height: 1.6;
+  --text-heading: 1.5rem;
+  --text-heading--line-height: 1.2;
+  --text-heading--letter-spacing: -0.02em;
   --text-title: 2.25rem;
-  --text-title--line-height: 2.5rem;
+  --text-title--line-height: 1.1;
+  --text-title--letter-spacing: -0.02em;
+  --text-display: clamp(2.5rem, 5vw, 3.5rem);
+  --text-display--line-height: 1.1;
+  --text-display--letter-spacing: -0.035em;
 
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
@@ -71,8 +103,10 @@
   html {
     background: var(--dl-background);
     font-family: var(--font-sans);
+    font-optical-sizing: auto;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
@@ -88,10 +122,28 @@
     outline-offset: 2px;
   }
 
+  :where(h1, h2, h3, h4, h5, h6) {
+    text-wrap: balance;
+  }
+
+  a {
+    text-underline-position: from-font;
+    text-decoration-thickness: from-font;
+    text-decoration-skip-ink: auto;
+  }
+
   ::selection {
     background: var(--dl-brand);
     color: light-dark(var(--dl-background), var(--dl-font-secondary));
   }
+}
+
+@utility prose-reading {
+  max-width: 65ch;
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: color-mix(in oklch, var(--dl-font-secondary) 90%, transparent);
+  overflow-wrap: break-word;
 }
 
 @keyframes dl-checkbox-enter {

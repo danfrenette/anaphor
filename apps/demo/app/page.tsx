@@ -64,7 +64,7 @@ export default function HomePage() {
       </a>
 
       <aside className="border-b border-border px-6 py-8 lg:sticky lg:top-0 lg:h-svh lg:border-r lg:border-b-0 lg:px-12 lg:py-12">
-        <div className="flex items-center gap-2.5 font-mono text-xs font-medium tracking-[0.04em]">
+        <div className="flex items-center gap-2.5 text-xs font-normal tracking-[0.04em]">
           <span className="size-3.5 rounded-sm bg-primary" aria-hidden="true" />
           SYSTEM / 01
         </div>
@@ -73,7 +73,7 @@ export default function HomePage() {
           <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-1 lg:gap-9">
             {index.map((group) => (
               <li key={group.label}>
-                <p className="font-mono text-label tracking-[0.08em] text-muted-foreground uppercase">
+                <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">
                   {group.label}
                 </p>
                 <ul className="mt-2 grid gap-1">
@@ -96,7 +96,7 @@ export default function HomePage() {
 
         <div className="mt-12 hidden lg:block">
           <Separator />
-          <p className="pt-6 font-mono text-label text-muted-foreground">
+          <p className="pt-6 text-label text-muted-foreground">
             LIGHT / 100%
           </p>
         </div>
@@ -109,14 +109,14 @@ export default function HomePage() {
       >
         <article className="mx-auto max-w-[840px]">
           <header id="purpose" className="scroll-mt-8 pb-10">
-            <div className="flex items-center justify-between gap-6 font-mono text-label tracking-[0.08em] text-muted-foreground uppercase">
+            <div className="flex items-center justify-between gap-6 text-label tracking-[0.08em] text-muted-foreground uppercase">
               <p>00.01 / Contract</p>
               <p>Status / Draft</p>
             </div>
-            <h1 className="mt-10 text-title font-medium tracking-[-0.02em]">
+            <h1 className="mt-10 text-display font-medium tracking-[-0.02em]">
               Design language
             </h1>
-            <p className="mt-3 max-w-[70ch] text-body text-muted-foreground">
+            <p className="mt-3 prose-reading text-pretty">
               An executable manual for the decisions that make personal software
               coherent.
             </p>
@@ -125,22 +125,22 @@ export default function HomePage() {
           <Separator />
 
           <section id="principles" className="scroll-mt-8 py-12">
-            <p className="font-mono text-label tracking-[0.08em] uppercase">
+            <p className="text-label tracking-[0.08em] uppercase">
               Principles
             </p>
             <ol className="mt-6 divide-y divide-border border-y border-border">
               <li className="grid gap-2 py-5 sm:grid-cols-[48px_1fr]">
-                <span className="font-mono text-label text-muted-foreground">01</span>
+                <span className="text-label text-muted-foreground">01</span>
                 <p className="text-body">Prove every rule in running software.</p>
               </li>
               <li className="grid gap-2 py-5 sm:grid-cols-[48px_1fr]">
-                <span className="font-mono text-label text-muted-foreground">02</span>
+                <span className="text-label text-muted-foreground">02</span>
                 <p className="text-body">
                   Admit components only when a real composition needs them.
                 </p>
               </li>
               <li className="grid gap-2 py-5 sm:grid-cols-[48px_1fr]">
-                <span className="font-mono text-label text-muted-foreground">03</span>
+                <span className="text-label text-muted-foreground">03</span>
                 <p className="text-body">Borrow principles, not identity.</p>
               </li>
             </ol>
@@ -149,19 +149,19 @@ export default function HomePage() {
           <section id="color" className="scroll-mt-8 py-12">
             <div className="flex items-end justify-between gap-6">
               <div>
-                <p className="font-mono text-label tracking-[0.08em] uppercase">
+                <p className="text-label tracking-[0.08em] uppercase">
                   01.01 / Color
                 </p>
-                <h2 className="mt-3 text-2xl font-medium tracking-[-0.02em]">
+                <h2 className="mt-3 text-heading font-medium tracking-[-0.02em]">
                   Theme roles
                 </h2>
               </div>
-              <p className="font-mono text-label text-muted-foreground">
+              <p className="text-label text-muted-foreground">
                 OKLCH / 11 ROLES
               </p>
             </div>
 
-            <p className="mt-4 max-w-[68ch] text-ui text-muted-foreground">
+            <p className="mt-4 prose-reading text-pretty">
               Six theme-aware neutrals carry type, structure, and disabled
               states. Five chromatic roles carry brand, focus, and danger. Danger text
               uses a lighter shade of the same OKLCH hue in dark mode.
@@ -171,10 +171,10 @@ export default function HomePage() {
 
             <div className="mt-8 border-y border-border py-5">
               <div className="flex items-baseline justify-between gap-4">
-                <h3 className="font-mono text-label tracking-[0.08em] uppercase">
+                <h3 className="text-label tracking-[0.08em] uppercase">
                   Neutral roles
                 </h3>
-                <p className="font-mono text-label text-muted-foreground">06 roles</p>
+                <p className="text-label text-muted-foreground">06 roles</p>
               </div>
               <ol className="mt-3 grid gap-4 sm:grid-cols-3">
                 {neutralRoles.map(([label, token]) => (
@@ -194,7 +194,7 @@ export default function HomePage() {
                       </div>
                       <CardContent>
                         <p className="text-small font-medium">{label}</p>
-                        <p className="mt-1 truncate font-mono text-label text-muted-foreground">
+                        <p className="mt-1 break-words font-mono text-label text-muted-foreground">
                           {token}
                         </p>
                       </CardContent>
@@ -206,10 +206,10 @@ export default function HomePage() {
 
             <div className="border-b border-border py-5">
               <div className="flex items-baseline justify-between gap-4">
-                <h3 className="font-mono text-label tracking-[0.08em] uppercase">
+                <h3 className="text-label tracking-[0.08em] uppercase">
                   Chromatic signals
                 </h3>
-                <p className="font-mono text-label text-muted-foreground">05 roles</p>
+                <p className="text-label text-muted-foreground">05 roles</p>
               </div>
               <ol className="mt-3 grid gap-4 sm:grid-cols-2">
                 {chromaticRoles.map(([role, token, value]) => (
@@ -221,7 +221,7 @@ export default function HomePage() {
                       />
                       <CardContent>
                         <p className="text-small font-medium">{role}</p>
-                        <p className="mt-1 truncate font-mono text-label text-muted-foreground">
+                        <p className="mt-1 break-words font-mono text-label text-muted-foreground">
                           {value}
                         </p>
                       </CardContent>
@@ -238,7 +238,7 @@ export default function HomePage() {
                   className={theme === "dark" ? "dark" : undefined}
                 >
                   <CardHeader>
-                    <CardTitle className="font-mono text-label tracking-[0.08em] uppercase">
+                    <CardTitle className="text-label tracking-[0.08em] uppercase font-normal">
                       {theme} roles
                     </CardTitle>
                   </CardHeader>
@@ -253,7 +253,7 @@ export default function HomePage() {
                           />
                           <div className="min-w-0 sm:flex sm:items-baseline sm:justify-between sm:gap-3">
                             <p className="text-small font-medium">{label}</p>
-                            <p className="truncate font-mono text-label text-muted-foreground">
+                            <p className="break-words font-mono text-label text-muted-foreground">
                               {token}
                             </p>
                           </div>
@@ -269,26 +269,48 @@ export default function HomePage() {
           <Separator />
 
           <section id="typography" className="scroll-mt-8 py-12">
-            <p className="font-mono text-label tracking-[0.08em] uppercase">
+            <p className="text-label tracking-[0.08em] uppercase">
               01.02 / Typography
             </p>
+            <h2 className="mt-3 text-heading font-medium">One family, different registers</h2>
             <div className="mt-6 grid gap-8 sm:grid-cols-[1fr_2fr]">
-              <p className="font-mono text-label text-muted-foreground uppercase">
+              <p className="text-label text-muted-foreground uppercase">
                 Instructional measure
               </p>
-              <p className="max-w-[70ch] text-body">
-                Sans carries prose and controls. Mono identifies indexes,
-                measurements, state labels, and code. Hierarchy comes from
-                weight, scale, and space before decoration.
+              <p className="prose-reading">
+                Inter adapts from compact controls to open, expressive headings.
+                Optical sizing refines the letterforms at each size. Mono identifies
+                literal values, types, metrics, and code; weight and space establish hierarchy.
               </p>
+            </div>
+            <div className="mt-8 border-y border-border py-8">
+              <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">Display / 500</p>
+              <p className="mt-4 max-w-[18ch] text-display text-balance font-medium">A place for deliberate work.</p>
+            </div>
+            <div className="mt-8 grid gap-6 sm:grid-cols-2">
+              {["light", "dark"].map((theme) => (
+                <Card key={theme} className={theme === "dark" ? "dark" : undefined}>
+                  <CardHeader>
+                    <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">{theme} / Reading</p>
+                    <CardTitle className="mt-3">Room to think</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="prose-reading">Good interfaces leave room for the work. A clear heading establishes the subject; a steady rhythm carries the details. <strong>Emphasis has a purpose.</strong> The rest can feel <em>quiet and considered.</em></p>
+                    <div className="mt-6 flex items-baseline justify-between gap-3 border-t border-border pt-4 text-ui">
+                      <span className="font-medium">Reading progress</span>
+                      <span className="font-mono tabular-nums">08 / 24</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </section>
 
           <section id="motion" className="scroll-mt-8 border-t border-border py-12">
-            <p className="font-mono text-label tracking-[0.08em] uppercase">
+            <p className="text-label tracking-[0.08em] uppercase">
               01.03 / Motion
             </p>
-            <p className="mt-6 max-w-[70ch] text-body text-muted-foreground">
+            <p className="mt-6 prose-reading text-pretty">
               Motion explains feedback, causality, continuity, or spatial
               relationships. If it explains none of these, remove it.
             </p>

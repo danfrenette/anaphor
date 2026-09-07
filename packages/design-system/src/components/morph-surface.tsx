@@ -90,7 +90,7 @@ function MorphSurface({ open, onOpenChange, title, icon, children }: MorphSurfac
           >
             <div className="flex shrink-0 items-center gap-3 p-4">
               <motion.span aria-hidden="true" layoutId={reducedMotion ? undefined : `${id}-dot`} transition={dotTransition} className="size-2 shrink-0 rounded-full bg-primary" />
-              <h2 className="min-w-0 flex-1 font-mono text-label uppercase">{title}</h2>
+              <h2 className="min-w-0 flex-1 font-sans text-label uppercase">{title}</h2>
               <button type="button" aria-label="Close controls" className="flex size-11 shrink-0 items-center justify-center rounded-md text-body" onClick={() => onOpenChange(false)}>×</button>
             </div>
             <motion.div key={title} initial={{ opacity: reducedMotion ? 1 : 0 }} animate={{ opacity: 1 }} transition={spring} className="min-h-0 overflow-y-auto px-4 pb-4">{children}</motion.div>

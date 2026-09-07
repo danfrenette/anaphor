@@ -19,7 +19,7 @@ export function CheckboxPlayground() {
         </div>
       </PlaygroundControls>
       <Card role="group" aria-label="Primary checkbox example">
-        <CardHeader className="p-4 pb-1"><CardTitle className="font-mono text-label text-muted-foreground uppercase">Primary demo</CardTitle></CardHeader>
+        <CardHeader className="p-4 pb-1"><CardTitle className="text-label text-muted-foreground uppercase font-normal">Primary demo</CardTitle></CardHeader>
         <CardContent className="p-4">
           <Field className="gap-0" invalid={settings.invalid} disabled={settings.disabled}>
             <FieldLabel className="flex min-h-8 items-center gap-3 pointer-coarse:min-h-11">

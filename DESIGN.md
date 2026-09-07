@@ -39,16 +39,31 @@ the transition and spinner rotation.
 
 ## Typography
 
-Use IBM Plex Sans for prose and controls and IBM Plex Mono for indexes, labels,
-measurements, and code. Until font assets are owned by the package, fall back to
-system sans and monospace stacks without external runtime requests.
+Use self-hosted Inter 4.1 Variable for prose, headings, and controls. The package
+owns normal and true italic WOFF2 files, both covering weights 100–900. Automatic
+optical sizing moves from text to display drawings as size increases. Use system
+sans as the loading fallback. Magda Clean Mono is self-hosted for
+literal database values, types, expressions, metrics, tokens, and code, using its supplied regular (400) face. Do not
+synthesize bold or italic mono labels. All bundled web fonts must use WOFF2;
+do not add WOFF, TTF, or OTF assets. Use Inter for navigation, section labels,
+headings, and actions. Mono identifies data, not decorative technical styling.
 
-- Label: 11px / 16px, uppercase where categorical, `0.08em` tracking.
-- Small: 12px / 16px.
-- UI: 14px / 20px.
-- Body: 16px / 26px.
-- Title: 36px / 40px, 500 weight, `-0.02em` tracking.
-- Instructional prose measure: 680px to 820px.
+- Label: 12px / 1.4, uppercase where categorical, `0.08em` tracking.
+- Small: 12px / 1.5.
+- UI: 14px / 1.5; input text stays at 16px.
+- Body: 16px / 1.6, 400 weight, natural tracking.
+- Heading: 24px / 1.2, 500 weight, `-0.02em` tracking.
+- Title: 36px / 1.1, 500 weight, `-0.02em` tracking.
+- Display: fluid 40–56px / 1.1, 500 weight, `-0.035em` tracking.
+- Instructional prose measure: at most 65ch.
+
+Use `prose-reading` for instructional paragraphs: primary text color at 90%
+alpha, composited over the actual surface in either theme. Keep headings,
+controls, status feedback, and already-muted metadata at their own full-strength
+color roles. Never fade a parent container to soften text. Balance headings;
+pretty-wrap short descriptions, but leave long-form paragraphs at normal wrapping.
+Use tabular numbers for changing values and wrap token names rather than hiding
+them. Apply font smoothing once at the root.
 
 ## Iconography
 

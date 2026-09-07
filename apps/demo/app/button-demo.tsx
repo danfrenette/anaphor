@@ -10,19 +10,19 @@ export function ButtonDemo() {
   return (
     <section id="button" className="scroll-mt-8 border-t border-border py-12">
       <header>
-        <div className="flex items-center justify-between gap-6 font-mono text-label tracking-[0.08em] text-muted-foreground uppercase">
+        <div className="flex items-center justify-between gap-6 text-label tracking-[0.08em] text-muted-foreground uppercase">
           <p>02.01 / Control</p>
           <p>Status / Stable</p>
         </div>
         <h2 className="mt-8 text-title font-medium tracking-[-0.02em]">Button</h2>
-        <p className="mt-3 max-w-[70ch] text-body text-muted-foreground">
+        <p className="mt-3 prose-reading text-pretty">
           Triggers an immediate action. Use one primary action per surface.
         </p>
       </header>
 
       <ButtonPlayground>
         <div className="mt-10">
-          <div className="flex items-center justify-between font-mono text-label tracking-[0.08em] uppercase">
+          <div className="flex items-center justify-between text-label tracking-[0.08em] uppercase">
             <p>State matrix</p>
             <p className="text-muted-foreground">04 states</p>
           </div>
@@ -61,7 +61,7 @@ export function ButtonDemo() {
         <p className="mt-3 text-ui text-muted-foreground">Click either button to try a 1.5-second action. Both return to idle automatically.</p>
 
         <Card className="mt-10">
-          <CardHeader><CardTitle className="font-mono text-label tracking-[0.08em] uppercase">Behavior</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-label tracking-[0.08em] uppercase font-normal">Behavior</CardTitle></CardHeader>
           <CardContent className="flex flex-wrap items-center gap-3">
             <Button variant="outline">
               <ArrowRight aria-hidden="true" />
@@ -82,7 +82,7 @@ export function ButtonDemo() {
 
         <Card className="dark mt-10">
           <CardHeader>
-            <CardTitle className="font-mono text-label tracking-[0.08em] uppercase">Theme study / Dark</CardTitle>
+            <CardTitle className="text-label tracking-[0.08em] uppercase font-normal">Theme study / Dark</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
             {variants.map((variant) => (
@@ -101,7 +101,7 @@ function State({ children, label }: { children: ReactNode; label: string }) {
   return (
     <Card role="group" aria-label={`${label} button example`} className="flex min-h-36 flex-col items-center justify-center gap-5 p-4">
       {children}
-      <p className="font-mono text-label text-muted-foreground uppercase">{label}</p>
+      <p className="text-label text-muted-foreground uppercase">{label}</p>
     </Card>
   );
 }
