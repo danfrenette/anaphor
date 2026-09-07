@@ -22,7 +22,7 @@ function FieldFeedback({ id, hint, error, invalid }: FieldFeedbackProps) {
       >{hint}</motion.span>
       <motion.span
         aria-hidden="true"
-        className="col-start-1 row-start-1 flex items-start gap-1.5 text-danger dark:text-[color-mix(in_oklch,var(--dl-danger)_35%,var(--dl-font-secondary))]"
+        className="col-start-1 row-start-1 flex items-start gap-1.5 text-danger-foreground"
         initial={false}
         animate={{ opacity: invalid ? 1 : 0, y: !invalid && !reducedMotion ? 2 : 0 }}
         transition={transition}

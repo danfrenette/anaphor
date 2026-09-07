@@ -25,7 +25,7 @@ const variantStyles = {
 } as const;
 
 const destructiveStyles =
-  "bg-danger text-background dark:text-foreground hover:not-data-disabled:bg-[var(--dl-danger-text)] active:not-data-disabled:bg-[var(--dl-danger-text)]";
+  "bg-danger text-background dark:text-foreground hover:not-data-disabled:bg-[var(--dl-danger-hover)] active:not-data-disabled:bg-[var(--dl-danger-hover)]";
 
 type ButtonProps = ButtonPrimitive.Props & {
   iconOnly?: boolean;

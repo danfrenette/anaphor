@@ -43,6 +43,7 @@ const chromaticRoles = [
   ["Brand", "--dl-brand", "oklch(0.6217 0.185 39.44)"],
   ["Focus", "--dl-focus", "oklch(0.618 0.161 39.44)"],
   ["Danger", "--dl-danger", "oklch(0.4852 0.1691 10.14)"],
+  ["Danger / hover", "--dl-danger-hover", "oklch(0.4236 0.1691 10.14)"],
   ["Danger / text", "--dl-danger-text", "oklch(0.4236 0.1691 10.14)"],
 ] as const;
 
@@ -155,13 +156,14 @@ export default function HomePage() {
                 </h2>
               </div>
               <p className="font-mono text-label text-muted-foreground">
-                OKLCH / 10 ROLES
+                OKLCH / 11 ROLES
               </p>
             </div>
 
             <p className="mt-4 max-w-[68ch] text-ui text-muted-foreground">
               Six theme-aware neutrals carry type, structure, and disabled
-              states. Four shared chromatic roles carry brand, focus, and danger.
+              states. Five chromatic roles carry brand, focus, and danger. Danger text
+              uses a lighter shade of the same OKLCH hue in dark mode.
               Component states derive from these values rather than introducing
               more tokens.
             </p>
@@ -206,7 +208,7 @@ export default function HomePage() {
                 <h3 className="font-mono text-label tracking-[0.08em] uppercase">
                   Chromatic signals
                 </h3>
-                <p className="font-mono text-label text-muted-foreground">04 roles</p>
+                <p className="font-mono text-label text-muted-foreground">05 roles</p>
               </div>
               <ol className="mt-3 grid gap-4 sm:grid-cols-2">
                 {chromaticRoles.map(([role, token, value]) => (

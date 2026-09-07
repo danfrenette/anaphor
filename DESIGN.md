@@ -144,3 +144,9 @@ Ordinary valid values return to neutral rather than showing a success badge.
 This combines coss's small Base UI wrapper structure with Devouring Details'
 interaction emphasis and Interior's stable inline feedback. Our timing policy,
 colors, typography, and restrained motion remain owned by this system.
+
+Error text uses `--dl-danger-text` (`text-danger-foreground`), with `oklch(0.7 0.1691 10.14)` in dark mode: only lightness changes from
+the light-theme value. Axe measures dark text contrast at 6.25:1 on the page
+and 5.07:1 on cards (normal text AA requires 4.5:1). `--dl-danger-hover` owns the destructive Button's darker
+background independently. Input outline color transitions with its border;
+focus outline geometry appears immediately.

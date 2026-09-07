@@ -15,10 +15,12 @@
   --dl-brand: oklch(0.6217 0.185 39.44);
   --dl-focus: oklch(0.618 0.161 39.44);
   --dl-danger: oklch(0.4852 0.1691 10.14);
+  --dl-danger-hover: oklch(0.4236 0.1691 10.14);
   --dl-danger-text: oklch(0.4236 0.1691 10.14);
 }
 
 .dark {
+  --dl-danger-text: oklch(0.7 0.1691 10.14);
   color-scheme: dark;
   --dl-font-tertiary: oklch(0.7 0.016 78);
   --dl-font-secondary: oklch(0.9 0.014 85);
