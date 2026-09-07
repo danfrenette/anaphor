@@ -160,5 +160,5 @@ the mixed state. Activation then selects the set; it is not a third toggle step.
 
 Selection scales in over 150ms; removal fades out. Reduced motion is immediate.
 The checkbox mark stays light in both themes so it contrasts with the accent
-fill. Required validation belongs to the form: the demo validates on submit and
-clears the error when checked, without validating on blur.
+fill. Required validation belongs to the consuming form. The demo presents the
+required state without a standalone submission flow.

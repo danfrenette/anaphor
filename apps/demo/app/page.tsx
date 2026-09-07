@@ -2,6 +2,7 @@ import { PlaygroundHost } from "./playground-host";
 import { Card, CardContent, CardHeader, CardTitle, Separator } from "@design-language/system";
 import { ButtonDemo } from "./button-demo";
 import { CardDemo } from "./card-demo";
+import { CheckboxDemo } from "./checkbox-demo";
 import { InputDemo } from "./input-demo";
 
 const index = [
@@ -22,7 +23,7 @@ const index = [
   },
   {
     label: "02 / Controls",
-    links: [["Button", "#button"], ["Input", "#input"]],
+    links: [["Button", "#button"], ["Input", "#input"], ["Checkbox", "#checkbox"]],
   },
   {
     label: "03 / Components",
@@ -297,6 +298,7 @@ export default function HomePage() {
             <ButtonDemo />
             <CardDemo />
             <InputDemo />
+            <CheckboxDemo />
           </PlaygroundHost>
         </article>
       </main>
