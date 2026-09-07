@@ -183,3 +183,13 @@ It confirms a successful clipboard write with a 160ms opacity/scale transition
 between Phosphor Copy and Check icons, returning after two seconds. Reduced
 motion keeps only the fade. The live status announces success or a retryable
 failure without moving focus. Static Card parts remain server-compatible.
+
+## Showcase cards
+
+The default Card stays quiet and borderless. `variant="showcase"` places its
+sections on the page surface, with unpadded captions below the preview.
+`CardPreview` owns a double frame: a 4px inset, concentric corners, fine neutral
+outlines, and a restrained layered shadow. It is the explicit exception to flat
+card elevation for work presented as a page centerpiece. Its inner surface clips
+artwork; the outer Card never clips controls or focus rings. The default preview
+ratio is 4:5 and can be changed with `--card-preview-ratio`.

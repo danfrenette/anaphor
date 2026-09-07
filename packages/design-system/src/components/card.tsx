@@ -1,8 +1,14 @@
 import { cn } from "#lib/utils";
 import type { ComponentProps } from "react";
 
-function Card({ className, ...props }: ComponentProps<"div">) {
-  return <div data-slot="card" className={cn("w-full min-w-0 rounded-card bg-muted text-foreground [&>[data-card-section]+[data-card-section]]:pt-0", className)} {...props} />;
+type CardProps = ComponentProps<"div"> & { variant?: "default" | "showcase" };
+
+function Card({ className, variant = "default", ...props }: CardProps) {
+  return <div data-slot="card" data-variant={variant} className={cn("w-full min-w-0 text-foreground", variant === "default" ? "rounded-card bg-muted [&>[data-card-section]+[data-card-section]]:pt-0" : "dl-card-showcase", className)} {...props} />;
+}
+
+function CardPreview({ className, children, ...props }: ComponentProps<"div">) {
+  return <div data-slot="card-preview" className={cn("dl-card-preview", className)} {...props}><div data-slot="card-preview-surface">{children}</div></div>;
 }
 
 function CardHeader({ className, ...props }: ComponentProps<"div">) {
@@ -33,4 +39,4 @@ function CardFooter({ className, ...props }: ComponentProps<"div">) {
   return <div data-slot="card-footer" data-card-section="" className={cn("flex flex-wrap items-center gap-3 p-6", className)} {...props} />;
 }
 
-export { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter, type CardTitleProps };
+export { Card, CardPreview, CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter, type CardProps, type CardTitleProps };

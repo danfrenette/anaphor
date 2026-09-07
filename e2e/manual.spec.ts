@@ -236,7 +236,7 @@ test("controls follow components, preserve edits, and return keyboard focus", as
   const panel = page.getByRole("region", { name: "Button controls" });
   await expect(panel).toBeFocused();
   await page.getByLabel("Variant").selectOption("destructive");
-  await page.locator("#card").scrollIntoViewIfNeeded();
+  await page.locator("#card").evaluate((element) => element.scrollIntoView({ block: "start" }));
   await expect(panel).toBeVisible();
   await page.getByRole("heading", { level: 2, name: "Card", exact: true }).click();
   await expect(page.getByRole("region", { name: "Card controls" })).toBeVisible();
@@ -372,3 +372,14 @@ test("card copy confirms a write", async ({ page }) => {
   await expect(page.locator("#card").getByRole("status")).toHaveText("Copied to clipboard.");
 });
 
+test("showcase previews reflow in both themes", async ({ page }) => {
+  await page.goto("/#card");
+  await page.locator(".fixed").evaluateAll(elements => elements.forEach(element => (element as HTMLElement).style.visibility = "hidden"));
+  const showcase = page.locator('#card [data-variant="showcase"]').first();
+  await showcase.scrollIntoViewIfNeeded();
+  for (const theme of ["light", "dark"] as const) {
+    await page.locator("html").evaluate((element, dark) => element.classList.toggle("dark", dark), theme === "dark");
+    await expect(showcase).toHaveScreenshot(`card-showcase-${theme}.png`);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});

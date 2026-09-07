@@ -152,6 +152,23 @@
 }
 
 @layer components {
+  .dl-card-preview {
+    padding: 4px;
+    border: 1px solid color-mix(in oklch, var(--dl-input-border) 55%, var(--dl-background));
+    border-radius: calc(var(--radius-card) + 5px);
+    background: var(--dl-background);
+    box-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 3px 6px oklch(0 0 0 / 0.025);
+  }
+  .dl-card-preview > [data-slot="card-preview-surface"] {
+    position: relative;
+    display: grid;
+    min-width: 0;
+    overflow: hidden;
+    aspect-ratio: var(--card-preview-ratio, 4 / 5);
+    border: 1px solid color-mix(in oklch, var(--dl-input-border) 65%, var(--dl-background));
+    border-radius: var(--radius-card);
+    background: var(--dl-background);
+  }
   .dl-card-copy-icons { display: grid; width: 1rem; height: 1rem; }
   .dl-card-copy-icons > svg {
     grid-area: 1 / 1;
@@ -165,4 +182,9 @@
   @media (prefers-reduced-motion: reduce) {
     .dl-card-copy-icons > svg { transform: none !important; transition-property: opacity; }
   }
+}
+
+@layer utilities {
+  .dl-card-showcase > [data-card-section] { padding: 0; margin-top: 1rem; }
+  .dl-card-showcase > [data-slot="card-header"] { gap: 0.25rem; }
 }
