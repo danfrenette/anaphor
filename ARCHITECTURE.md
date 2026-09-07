@@ -65,7 +65,7 @@ to the smallest module that needs state, effects, browser APIs, or event
 handlers. Keep tokens, metadata, static demos, and package exports free of
 client-only code.
 
-The demo controls provider owns shared playground state. Button and Card
+The demo controls provider owns shared playground state. Button, Card, and Input
 playgrounds consume that state in small client components. Static examples
 are composed by the reference manual and passed through children slots,
 keeping the mobile reading order without moving static examples into client code.
@@ -90,7 +90,7 @@ that API.
 
 The package exports a controlled `MorphSurface` for the expanding surface,
 reference animation, and focus return. The demo owns viewport section detection,
-Button/Card settings, and the controls shown inside it. State lives for the page
+Button/Card/Input settings, and the controls shown inside it. State lives for the page
 session; Reset applies only to the current component. Focus or an active pointer
 interaction pins the component until interaction ends. Passive Card remains
 independent of the floating surface.

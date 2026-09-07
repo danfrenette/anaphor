@@ -3,13 +3,14 @@
 import { MorphSurface } from "@design-language/system";
 import { SlidersHorizontal } from "@phosphor-icons/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { DemoContext, cardDefaults } from "./demo-state";
+import { DemoContext, cardDefaults, inputDefaults } from "./demo-state";
 import { ButtonControlFields, buttonDefaults, Check, Select } from "./button-playground";
 
-type ComponentId = "button" | "card";
+type ComponentId = "button" | "card" | "input";
 
 export function DemoControlsProvider({ children }: { children: ReactNode }) {
   const [button, setButton] = useState(buttonDefaults);
+  const [input, setInput] = useState(inputDefaults);
   const [card, setCard] = useState(cardDefaults);
   const [active, setActive] = useState<ComponentId | null>(null);
   const [open, setOpen] = useState(false);
@@ -22,7 +23,7 @@ export function DemoControlsProvider({ children }: { children: ReactNode }) {
     const update = () => {
       if (dragging.current || panel.current?.querySelector('[role="region"]')?.contains(document.activeElement)) return;
       const line = window.innerHeight / 3;
-      const current = (["button", "card"] as const).find((id) => {
+      const current = (["button", "card", "input"] as const).find((id) => {
         const bounds = document.getElementById(id)?.getBoundingClientRect();
         return bounds && bounds.top <= line && bounds.bottom > line;
       });
@@ -51,7 +52,7 @@ export function DemoControlsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <DemoContext value={{ button, setButton, card, setCard }}>
+    <DemoContext value={{ button, setButton, card, setCard, input, setInput }}>
       {children}
       {active && (
         <div
@@ -60,8 +61,16 @@ export function DemoControlsProvider({ children }: { children: ReactNode }) {
           onPointerDown={() => { dragging.current = true; }}
           onBlur={() => refresh.current()}
         >
-          <MorphSurface open={open} onOpenChange={setOpen} icon={<SlidersHorizontal />} title={`${active === "button" ? "Button" : "Card"} controls`}>
-            {active === "button" ? <ButtonControlFields /> : (
+          <MorphSurface open={open} onOpenChange={setOpen} icon={<SlidersHorizontal />} title={`${active.charAt(0).toUpperCase() + active.slice(1)} controls`}>
+            {active === "button" ? <ButtonControlFields /> : active === "input" ? (
+              <div className="grid gap-3">
+                <Select label="Size" value={input.size} options={["sm", "md", "lg"]} onChange={(size) => setInput((current) => ({ ...current, size: size }))} />
+                <Select label="Type" value={input.type} options={["text", "email", "password", "search"]} onChange={(type) => setInput((current) => ({ ...current, type: type }))} />
+                {(["disabled", "readOnly", "invalid"] as const).map((key) => (
+                  <Check key={key} label={key === "readOnly" ? "Read only" : key.charAt(0).toUpperCase() + key.slice(1)} checked={input[key]} onChange={(value) => setInput((current) => ({ ...current, [key]: value }))} />
+                ))}
+              </div>
+            ) : (
               <div className="grid gap-3">
                 <Select label="Title font" value={card.mono ? "mono" : "sans"} options={["sans", "mono"]} onChange={(value) => setCard((current) => ({ ...current, mono: value === "mono" }))} />
                 {(["description", "action", "footer"] as const).map((key) => (
@@ -69,7 +78,7 @@ export function DemoControlsProvider({ children }: { children: ReactNode }) {
                 ))}
               </div>
             )}
-            <button className="mt-4 min-h-11 rounded-md px-2 font-mono text-label uppercase" type="button" onClick={() => active === "button" ? setButton(buttonDefaults) : setCard(cardDefaults)}>Reset controls</button>
+            <button className="mt-4 min-h-11 rounded-md px-2 font-mono text-label uppercase" type="button" onClick={() => active === "button" ? setButton(buttonDefaults) : active === "card" ? setCard(cardDefaults) : setInput(inputDefaults)}>Reset controls</button>
           </MorphSurface>
         </div>
       )}

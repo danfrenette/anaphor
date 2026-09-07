@@ -2,6 +2,7 @@ import { DemoControlsProvider } from "./demo-controls";
 import { Card, CardContent, CardHeader, CardTitle, Separator } from "@design-language/system";
 import { ButtonDemo } from "./button-demo";
 import { CardDemo } from "./card-demo";
+import { InputDemo } from "./input-demo";
 
 const index = [
   {
@@ -21,7 +22,7 @@ const index = [
   },
   {
     label: "02 / Controls",
-    links: [["Button", "#button"]],
+    links: [["Button", "#button"], ["Input", "#input"]],
   },
   {
     label: "03 / Components",
@@ -293,6 +294,7 @@ export default function HomePage() {
           <DemoControlsProvider>
             <ButtonDemo />
             <CardDemo />
+            <InputDemo />
           </DemoControlsProvider>
         </article>
       </main>
