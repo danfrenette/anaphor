@@ -35,19 +35,9 @@
           "target": "@components/anaphor.css"
         },
         {
-          "path": "packages/design-system/src/fonts/InterVariable.woff2",
+          "path": "packages/design-system/src/fonts.css",
           "type": "registry:file",
-          "target": "@components/fonts/InterVariable.woff2"
-        },
-        {
-          "path": "packages/design-system/src/fonts/InterVariable-Italic.woff2",
-          "type": "registry:file",
-          "target": "@components/fonts/InterVariable-Italic.woff2"
-        },
-        {
-          "path": "packages/design-system/src/fonts/MagdaCleanMono-Regular.woff2",
-          "type": "registry:file",
-          "target": "@components/fonts/MagdaCleanMono-Regular.woff2"
+          "target": "@components/fonts.css"
         },
         {
           "path": "packages/design-system/src/fonts/Inter-LICENSE.txt",

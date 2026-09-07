@@ -1,33 +1,10 @@
 @import "tailwindcss" source(none);
+@import "./fonts.css";
 
 @source "./**/*.{ts,tsx}";
 @source "./ui/**/*.{ts,tsx}";
 
 @custom-variant dark (&:where(.dark, .dark *));
-
-@font-face {
-  font-family: "Magda Clean Mono";
-  src: url("./fonts/MagdaCleanMono-Regular.woff2") format("woff2");
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Inter Variable";
-  src: url("./fonts/InterVariable.woff2") format("woff2");
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Inter Variable";
-  src: url("./fonts/InterVariable-Italic.woff2") format("woff2");
-  font-style: italic;
-  font-weight: 100 900;
-  font-display: swap;
-}
 
 :root {
   color-scheme: light;
