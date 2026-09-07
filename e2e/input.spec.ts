@@ -39,16 +39,16 @@ test("input controls preserve native states and reset", async ({ page }, testInf
   const input = page.getByLabel("Try an input", { exact: true });
   await page.getByRole("combobox", { name: "Size", exact: true }).selectOption("sm");
   expect(await input.evaluate((element) => element.getBoundingClientRect().height)).toBe(testInfo.project.name === "mobile-webkit" ? 44 : 32);
-  await page.getByLabel("Read only", { exact: true }).check();
+  await page.getByRole("region", { name: "Input controls" }).getByRole("checkbox", { name: "Read only", exact: true }).check();
   await expect(input).not.toBeEditable();
-  await page.getByLabel("Disabled", { exact: true }).check();
+  await page.getByRole("region", { name: "Input controls" }).getByRole("checkbox", { name: "Disabled", exact: true }).check();
   await expect(input).toBeDisabled();
-  await page.getByLabel("Invalid", { exact: true }).check();
+  await page.getByRole("region", { name: "Input controls" }).getByRole("checkbox", { name: "Invalid", exact: true }).check();
   await expect(input).toHaveAttribute("aria-invalid", "true");
   await page.getByRole("button", { name: "Reset controls" }).click();
   await expect(input).toBeEditable();
   await expect(input).not.toHaveAttribute("aria-invalid");
-  await page.getByLabel("Invalid", { exact: true }).check();
+  await page.getByRole("region", { name: "Input controls" }).getByRole("checkbox", { name: "Invalid", exact: true }).check();
   await page.getByRole("button", { name: "Close controls" }).click();
   for (const dark of [false, true]) {
   await page.locator("html").evaluate((element, value) => element.classList.toggle("dark", value), dark);

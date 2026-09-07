@@ -189,7 +189,7 @@ test("icon-only buttons stay square and centered while loading", async ({ page }
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#button");
   await page.getByRole("button", { name: "Open Button controls" }).click();
-  await page.getByLabel("Icon only", { exact: true }).check();
+  await page.getByRole("checkbox", { name: "Icon only", exact: true }).check();
   const button = page.getByTestId("primary-button");
   const desktopSizes = { xs: 28, sm: 32, md: 40, lg: 48 };
   for (const size of ["xs", "sm", "md", "lg"] as const) {

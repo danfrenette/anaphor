@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox, Field, FieldLabel } from "@design-language/system";
+
 export function Select<const Value extends string>({ label, value, options, onChange }: { label: string; value: NoInfer<Value>; options: readonly Value[]; onChange: (value: NoInfer<Value>) => void }) {
   return (
     <label className="grid gap-1.5 text-ui">
@@ -25,9 +27,11 @@ export function Range({ label, value, min, max, step, unit = "", onChange }: { l
 
 export function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
   return (
-    <label className="flex min-h-10 items-center gap-2 text-ui">
-      <input className="accent-primary" type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
-      {label}
-    </label>
+    <Field>
+      <FieldLabel className="flex min-h-11 items-center gap-2">
+        <Checkbox checked={checked} onCheckedChange={onChange} />
+        {label}
+      </FieldLabel>
+    </Field>
   );
 }
