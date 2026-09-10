@@ -134,7 +134,17 @@ or disabled. Use a plain anchor for ordinary link semantics.
 
 `MorphSurface` accepts `open`, `onOpenChange`, `title`, `icon`, and `children`. Position
 its wrapper at the desired bottom-right anchor. It supplies the trigger, close
-control, resizing/fade animation, viewport bounds, and keyboard focus return.
+control, clipped reveal, viewport bounds, and keyboard focus return.
+
+Inline and portaled content share Escape handling. Children can consume Escape
+before it closes the surface. Optional `onInteractionChange` reports whether focus
+is in the open content or a pointer is held on the surface, allowing a consumer to
+pin its own selection. Closed content stays mounted but becomes inert immediately.
+
+Pointer activation reveals from the bottom right over 250ms and closes over
+150ms, with unscaled text. Reveal and opacity share a strong ease-out.
+Keyboard activation and Escape are instant; reduced motion uses only an opacity
+fade of 200ms. Interrupted reveals reverse from their current state.
 
 Its animation is adapted from the user-supplied **Devouring Details Morph Surface**
 prototype ([reference](https://devouringdetails.com/resources/component-library)).
