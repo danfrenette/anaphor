@@ -77,7 +77,7 @@ function NotebookDiagram() {
               const source = sources[id];
               const Icon = sourceIcons[id];
               return (
-                <Node key={id} nodeId={id} className="rounded-card">
+                <Node key={id} nodeId={id} aria-label={source.title} className="rounded-card">
                   <Card>
                     <CardHeader>
                       <CardTitle>{source.title}</CardTitle>
@@ -102,7 +102,7 @@ function NotebookDiagram() {
 
           <div>
             <p className="mb-6 text-label uppercase tracking-[.08em] text-muted-foreground">02 / Organize</p>
-            <Node nodeId="notebook" id="diagram-notebook" className="rounded-card">
+            <Node nodeId="notebook" id="diagram-notebook" aria-label="Notebook" className="rounded-card">
               <Card>
                 <CardHeader>
                   <CardTitle>Notebook</CardTitle>
@@ -128,7 +128,7 @@ function NotebookDiagram() {
 
           <div className="flex flex-col gap-4">
             <p className="mb-2 text-label uppercase tracking-[.08em] text-muted-foreground">03 / Connect</p>
-            <Node nodeId="search" className="rounded-card">
+            <Node nodeId="search" aria-label="Search index" className="rounded-card">
               <OutputCard
                 title="Search index"
                 description="Makes captured material retrievable"
@@ -137,7 +137,7 @@ function NotebookDiagram() {
                 icon={MagnifyingGlassIcon}
               />
             </Node>
-            <Node nodeId="summary" className="rounded-card">
+            <Node nodeId="summary" aria-label="Summary" className="rounded-card">
               <OutputCard
                 title="Summary"
                 description="Distills the latest notebook context"

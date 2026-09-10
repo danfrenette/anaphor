@@ -28,11 +28,9 @@ function DiagramContent() {
     <>
       <div className="grid grid-cols-3 items-center gap-6 px-4 py-6">
         {nodes.map(({ id, label, icon: Icon }) => (
-          <Node key={id} nodeId={id} className="rounded-lg">
-            <div className="flex min-w-0 flex-col items-center gap-2 rounded-lg border border-border bg-muted px-2 py-4">
-              <Icon size={20} aria-hidden="true" />
-              <span className="text-small">{label}</span>
-            </div>
+          <Node key={id} nodeId={id} variant="surface" aria-label={label} className="flex flex-col items-center gap-2 px-2 py-4">
+            <Icon size={20} aria-hidden="true" />
+            <span className="text-small">{label}</span>
           </Node>
         ))}
       </div>

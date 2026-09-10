@@ -5,8 +5,11 @@ The original shared-state study is preserved in checkpoint commit `78f93a9`.
 
 ## Composition
 
-- `apps/demo/components/diagrams/graph.tsx`: reusable Graph, Node, Edge, and useGraph.
-  Measures ordinary JSX nodes, connects them, and renders cancellable pulses.
+- `apps/demo/components/diagrams/graph/`: reusable Graph, Node, Edge, and useGraph.
+  The public index preserves the `diagrams/graph` import. `graph.tsx` owns the
+  provider and pulse rendering; `node.tsx` owns node registration and feedback;
+  `edge.tsx` owns routes and endpoints. Shared context, measurement, and arrival
+  lifecycle hooks live beside them, along with the composition and pulse tests.
 - `apps/demo/components/diagrams/use-diagram-playback.ts`: reusable run/stop/loop
   lifecycle, running/error state, and cancellation on replacement or unmount.
   It knows nothing about notebook data, node names, status text, or routes.
@@ -36,6 +39,28 @@ and masked rim; only its origin and opacity change at runtime.
 Nodes are positioned with ordinary CSS/Tailwind. `nodeId` is graph-scoped and
 independent of native HTML `id`. The graph connects the right side of `from` to
 the left side of `to`. A reverse pulse traverses that same path in reverse.
+
+### Node and Card responsibilities
+
+Node owns registration, measurement attachment, and decorative arrival feedback.
+It renders an HTML group; name it with `aria-label` or `aria-labelledby`.
+It does not add a tab stop or button behavior. Actions remain native controls
+inside the group. Graph renders the SVG edges; Node content stays ordinary HTML.
+
+The default `variant="plain"` allows any child content, including a Card.
+`variant="surface"` supplies Node's own neutral surface and rounded geometry.
+The compact three-node demo uses that surface directly, without importing Card.
+Card owns only presentation and sections; it has no graph or animation dependency.
+
+```tsx
+<Node nodeId="capture" variant="surface" aria-label="Capture" className="p-4">
+  <Button onClick={capture}>Capture a note</Button>
+</Node>
+```
+
+These are authored illustrations, not graph editors. Selection and directional
+keyboard navigation are not implied by grouping. Flow descriptions and meaningful
+status announcements belong to the surrounding diagram.
 
 ```tsx
 function Controls() {
@@ -109,3 +134,13 @@ returned as defects to the waiting fiber, and pulse DOM resources are removed.
 Workflow tests use TestClock, Deferred, and Queue for controlled arrival ordering,
 including proving one fan-out destination stays unchanged while the other arrives.
 Renderer tests cover missing routes, callback failure cleanup, and interruption.
+
+### Refactoring and test conventions
+
+Graph composes measurement, pulse playback, and the SVG surface. `graph/use-pulses.ts` owns active pulse requests and arrival feedback; `graph/pulse.tsx` renders their SVG and samples live paths during playback; Node owns its optional surface and grouping semantics. Card is optional child content.
+
+Tests exercise the public exports with real Graph, Node, and Edge composition. Keyboard interactions use accessible roles and user-event. Pulse tests cover delivery, reverse delivery, reduced motion, missing routes, defects, interruption, and unmounting. Only browser geometry, animation timing, and Web Animations are substituted in jsdom. These tests do not establish visual fidelity; browser tests cover rendered layout. `graph.types.test.ts` checks native prop compatibility, required identifiers, supported variants, and the typed Effect result during type checking.
+
+This follows [Kent C. Dodds’s guidance on testing observable behavior](https://kentcdodds.com/blog/testing-implementation-details) and [Matt Pocock’s guidance on extending native React props](https://www.totaltypescript.com/react-props-typescript).
+
+Pulse SVG is declared in React, including its gradients and static attributes. React creates and removes each pulse; the frame loop updates only live path geometry, position, and opacity. Each request has an abort signal so interruption cancels its scheduled frame immediately, including before a pulse mounts. Graph unmounting fails outstanding requests, and concurrent pulses remain independent.
