@@ -31,6 +31,10 @@ const index = [
     label: "03 / Components",
     links: [["Card", "#card"], ["Badge", "#badge"], ["Node-edge graphs", "#node-edge-graphs"]],
   },
+  {
+    label: "04 / Studies",
+    links: [["Visual studies", "/studies"]],
+  },
 ] as const;
 
 const neutralRoles = [

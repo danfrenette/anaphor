@@ -1,66 +1,92 @@
-# Node-edge graph study
+# Node-edge diagrams
 
-Integrated on `feat/node-edge-graphs` at the manual’s `/#node-edge-graphs` section.
-The branch was created from `end-201` with existing uncommitted card-media and
-visual-study work preserved. The integrated graph and pulse illumination form the initial checkpoint.
+The manual’s `/#node-edge-graphs` section contains an authored notebook diagram.
+The original shared-state study is preserved in checkpoint commit `78f93a9`.
 
 ## Composition
 
-- `apps/demo/app/node-edge-demo.tsx` contains the declarative example and controls.
-- `apps/demo/app/use-node-edge-demo.ts` owns the optional Effect sequence, cancellation,
-  simulated updates, and playback actions. `node-edge-demo-state.ts` holds typed example data.
-- `apps/demo/app/node-edge-graph.tsx` contains demo-local Graph, Node, Edge, and pulse behavior.
-- `apps/demo/app/node-edge-demo.module.css` scopes geometry and illumination to the example.
-- Cards use the existing Card, CardHeader, CardTitle, CardDescription, CardContent,
-  and CardAction primitives. Controls use Button and Checkbox. No shared card API changed.
-- Node remains a measured wrapper around ordinary child content. Its `nodeId`
-  does not replace the native HTML `id`. Arrival light overlays the receiving card
-  from its connected side. Cards remain passive; explicit run buttons trigger updates.
-- Half-speed pulses, arrival updates, fan-out, policy → allowlist, and
-  play/stop/reset/loop carry forward from the original proof of concept.
+- `apps/demo/components/diagrams/graph.tsx`: reusable Graph, Node, Edge, and useGraph.
+  Measures ordinary JSX nodes, connects them, and renders cancellable pulses.
+- `apps/demo/components/diagrams/use-diagram-playback.ts`: reusable run/stop/loop
+  lifecycle, running/error state, and cancellation on replacement or unmount.
+  It knows nothing about notebook data, node names, status text, or routes.
+- `apps/demo/app/notebook-diagram.ts`: notebook data, typed capture rules, and
+  the bespoke capture → notebook → search/summary sequence.
+- `apps/demo/app/node-edge-demo.tsx`: Tailwind layout, Phosphor icons, local
+  notebook/status state, and controls that compose the two reusable APIs.
 
-The original reference is Kit Langton’s shared-state diagram:
-https://x.com/kitlangton/status/2096703869136867563
+The graph styles itself with Tailwind, SVG presentation attributes, and dynamic
+animation values. No demo CSS module is required. The components directory is
+included in the demo’s Tailwind sources. Arrival illumination uses a radial fill
+and masked rim; only its origin and opacity change at runtime.
 
-## Pause here for design review
+## Authoring
 
-The user requested integration first, followed by a discussion of spacing and
- typography. Standard card padding and type are now visible as a baseline; the
-wide diagram scrolls within the manual. Decide whether to make the composition
-more compact or give diagrams a wider presentation area. Keep the shared card
-primitives unless a demonstrated graph-specific need justifies an addition.
-Connection points and local arrival illumination currently need only composition.
+```tsx
+<Graph pulseSpeed={120}>
+  <Node nodeId="capture" className="rounded-card"><CaptureCard /></Node>
+  <Node nodeId="notebook" className="rounded-card"><NotebookCard /></Node>
+  <Edge edgeId="capture-notebook" from="capture" to="notebook" />
+  <Controls />
+</Graph>
+```
 
-Do not expand the framework while reviewing presentation. Duplicate identifiers,
-missing-edge failure semantics, moving layouts, and a second Rails example remain
-future work. This is a simulated study, not a published graph package.
+Nodes are positioned with ordinary CSS/Tailwind. `nodeId` is graph-scoped and
+independent of native HTML `id`. The graph connects the right side of `from` to
+the left side of `to`. A reverse pulse traverses that same path in reverse.
 
-## Motion refactor — 2026-09-09
+```tsx
+function Controls() {
+  const { pulse, clearGlows } = useGraph();
+  const playback = useDiagramPlayback();
+  const sequence = Effect.gen(function* () {
+    yield* pulse("capture-notebook");
+    yield* Effect.sync(() => updateNotebook());
+  });
+  return <button onClick={() => {
+    clearGlows();
+    playback.run(sequence);
+  }}>Capture</button>;
+}
+```
 
-Edges remain dim while pulses travel above them in a separate SVG layer.
-There is no full-route highlight or timed reveal before departure. Illumination
-uses a soft radial halo and a 40px falloff along the active route around each
-traveling pulse, plus the receiving card on arrival, matching
-the supplied reference. Stop, Reset, and interruption remove active pulses.
-Reduced motion retains endpoint feedback without travel. Glow and travel timings
-are preserved.
+`run(program)` replaces the current run. `run(program, { repeat: true })` repeats
+while Loop is enabled through `setLoop`; changing Loop does not restart a run.
+`stop()` interrupts active work. Unmount also interrupts it: the React useEffect
+is required for resource cleanup, not for reporting or deriving display state.
+Errors settle playback and are exposed to the caller. Caller-owned state updates
+inside the Effect sequence happen only after preceding pulses complete.
 
-Measurement and arrival illumination have focused internal hooks. Playback state
-stays in the demo hook; unused active/visited node state was removed. This follows
-Kent C. Dodds’s AHA guidance: concrete, colocated behavior rather than a generic
-sequence framework.
+React’s useEffect and the Effect library have different roles. Effect coordinates
+concurrency, sleeps, and interruption. The notebook business rules remain outside
+the playback hook; sources provide typed update functions rather than a switch in
+the mechanics. The hook also works independently of Graph for other authored
+Effect sequences.
 
-Earlier browser checks covered policy → allowlist propagation, fan-out, and
-Stop/Reset cancellation. Full-route highlighting was subsequently removed in
-favor of localized pulse illumination. TypeScript and targeted lint passed after the refactor.
+## Motion
 
-## Validation
+Pulses start immediately; no full-path highlight or timed reveal precedes them.
+A bright core, soft radial halo, and 40px falloff on the nearby active route carry
+light through bends. Arrival illuminates the receiving card from its connected
+side. The default speed is 120 CSS px/second with a 1,040ms minimum travel time.
+Reduced motion uses endpoint feedback instead of travel or moving route light.
+Stop, Reset, replacement, and unmount release pulse resources.
 
-Production build, demo TypeScript, and targeted lint passed. In the browser,
-verified six edges, models.dev arrival updating the catalogue to 49, policy
-propagating to an allowlist of 3, and Reset restoring values and clearing pulses
-and light. Confirmed horizontal overflow stays inside the diagram rather than
-widening the document. Local manual preview: http://localhost:3002/#node-edge-graphs.
+The notebook example has three inputs (audio, quick note, saved link). Each update
+arrives at the notebook before search and summary receive concurrent pulses.
+These are simulated updates; no recording, indexing, or AI service is invoked.
 
-Original study and fuller design history remain at
-`/Users/danfrenette/Documents/ChatGPT/Anaphor/HANDOFF.md`.
+## Validation and boundaries
+
+Focused tests cover completion, replacement, stop, unmount, looping, errors, and
+notebook updates on arrival. Browser validation covers capture, propagation,
+reset, rendering, and contained horizontal overflow.
+
+This remains an internal diagram module, not a published package. Moving layouts,
+obstacle routing, missing-edge failure semantics, duplicate identifiers, and
+seeking/pause remain future work. Shared card APIs are unchanged.
+
+Design approach: [Kent C. Dodds on colocation](https://kentcdodds.com/blog/colocation)
+and [Matt Pocock on inference and generics](https://www.totaltypescript.com/mental-model-for-typescript-generics).
+Motion reference: [Kit Langton’s diagrams](https://x.com/kitlangton/status/2096703869136867563).
+Preview: http://localhost:3002/#node-edge-graphs.

@@ -1,11 +1,10 @@
 "use client";
 
-// Throwaway study: JSX registration, DOM-measured edges, interruptible Effect pulses.
+// JSX registration, DOM-measured edges, and cancellable pulse rendering.
 import { createContext, useContext, useState, useRef, useId, useCallback, useLayoutEffect, type ReactNode, type HTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
 import * as Effect from 'effect/Effect';
 
-export const PLAYBACK_RATE = 0.5;
 
 type Box = { x: number; y: number; width: number; height: number };
 type GraphContext = {
@@ -19,11 +18,16 @@ type GraphContext = {
   pulse: (edge: string, reverse?: boolean) => Effect.Effect<void>;
 };
 const Context = createContext<GraphContext | null>(null);
-export function useGraph() {
+function useGraphContext() {
   const graph = useContext(Context);
   if (!graph) throw new Error('Nodes and edges need a Graph');
   return graph;
 }
+export function useGraph() {
+  const { pulse, clearGlows } = useGraphContext();
+  return { pulse, clearGlows };
+}
+
 function useNodeMeasurements() {
   const root = useRef<HTMLDivElement>(null);
   const nodes = useRef(new Map<string, HTMLElement>());
@@ -95,7 +99,11 @@ function useArrivalLights() {
   return { clearGlows, illuminate };
 }
 
-export function Graph({ children }: { children: ReactNode }) {
+export function Graph({ children, pulseSpeed = 120 }: {
+  children: ReactNode;
+  /** Travel speed in CSS pixels per second. */
+  pulseSpeed?: number;
+}) {
   const [paths] = useState(() => new Map<string, SVGPathElement>());
   const [endpoints] = useState(() => new Map<string, SVGGElement>());
   const [cardLights] = useState(() => new Map<string, HTMLSpanElement>());
@@ -118,7 +126,7 @@ export function Graph({ children }: { children: ReactNode }) {
     light.classList.add('pulse-route-light');
     light.innerHTML = `<defs><radialGradient id="${lightId}" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="40"><stop offset="0" stop-color="#f3f4ec" stop-opacity=".85"/><stop offset=".3" stop-color="#f3f4ec" stop-opacity=".45"/><stop offset=".7" stop-color="#f3f4ec" stop-opacity=".12"/><stop offset="1" stop-color="#f3f4ec" stop-opacity="0"/></radialGradient></defs>`;
     const routeLight = path.cloneNode(false) as SVGPathElement;
-    routeLight.setAttribute('stroke', `url(#${lightId})`);
+    routeLight.style.stroke = `url(#${lightId})`;
     routeLight.setAttribute('stroke-width', '1.5');
     light.appendChild(routeLight);
     light.style.opacity = '0';
@@ -131,7 +139,7 @@ export function Graph({ children }: { children: ReactNode }) {
       dot.remove();
     };
     const length = path.getTotalLength();
-    const duration = reduce ? 160 : Math.max(520, length / 0.24) / PLAYBACK_RATE;
+    const duration = reduce ? 160 : Math.max(1040, length / Math.max(1, pulseSpeed) * 1000);
     let frame = 0;
     let start: number | undefined;
     const tick = (now: number) => {
@@ -157,10 +165,10 @@ export function Graph({ children }: { children: ReactNode }) {
     };
     frame = requestAnimationFrame(tick);
     return Effect.sync(() => { cancelAnimationFrame(frame); removePulse(); });
-  }), [paths, endpoints, cardLights, illuminate, glowId]);
+  }), [paths, endpoints, cardLights, illuminate, glowId, pulseSpeed]);
   return <Context.Provider value={{ register, boxes, surface, paths, endpoints, cardLights, clearGlows, pulse }}>
-    <div className="graph-root" ref={root}>
-      <svg className="edge-surface" aria-hidden="true">
+    <div className="relative" ref={root}>
+      <svg className="pointer-events-none absolute inset-0 z-[3] h-full w-full overflow-hidden" aria-hidden="true">
         <defs>
           <radialGradient id={`${glowId}-halo`}>
             <stop offset="0" stopColor="#f3f4ec" stopOpacity=".55" />
@@ -176,14 +184,25 @@ export function Graph({ children }: { children: ReactNode }) {
     </div>
   </Context.Provider>;
 }
-export function Node({ nodeId, children, ...props }: HTMLAttributes<HTMLDivElement> & { nodeId: string }) {
-  const { register, cardLights } = useGraph();
+export function Node({ nodeId, children, className = "", ...props }: HTMLAttributes<HTMLDivElement> & { nodeId: string }) {
+  const { register, cardLights } = useGraphContext();
   const ref = useCallback((element: HTMLDivElement | null) => register(nodeId, element), [nodeId, register]);
   const lightRef = useCallback((element: HTMLSpanElement | null) => {
     if (element) cardLights.set(nodeId, element);
     else cardLights.delete(nodeId);
   }, [nodeId, cardLights]);
-  return <div {...props} ref={ref}>{children}<span ref={lightRef} className="card-arrival-light" aria-hidden="true" /></div>;
+  return (
+    <div {...props} ref={ref} className={`relative z-[2] ${className}`}>
+      {children}
+      <span
+        ref={lightRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute -inset-px z-[2] rounded-[inherit] opacity-0 bg-[radial-gradient(ellipse_125px_95px_at_var(--light-x,0%)_50%,rgba(246,248,231,.22),rgba(238,243,217,.085)_32%,rgba(238,243,217,.025)_60%,transparent_100%)]"
+      >
+        <span className="absolute inset-0 rounded-[inherit] p-px bg-[radial-gradient(ellipse_100px_90px_at_var(--light-x,0%)_50%,rgba(250,252,237,.85),rgba(234,242,208,.22)_45%,transparent_100%)] [mask:linear-gradient(#fff_0_0)_content-box_exclude,linear-gradient(#fff_0_0)]" />
+      </span>
+    </div>
+  );
 }
 function route(a: Box, b: Box) {
   const sx = a.x + a.width, sy = a.y + a.height / 2, tx = b.x, ty = b.y + b.height / 2;
@@ -193,7 +212,7 @@ function route(a: Box, b: Box) {
   return { sx, sy, tx, ty, d: Math.abs(ty - sy) < 1 ? `M${sx} ${sy}H${tx}` : `M${sx} ${sy}H${mid-r}Q${mid} ${sy} ${mid} ${sy+dir*r}V${ty-dir*r}Q${mid} ${ty} ${mid+r} ${ty}H${tx}` };
 }
 function EndpointGlow({ endpointId, nodeId, x, y }: { endpointId: string; nodeId: string; x: number; y: number }) {
-  const { endpoints } = useGraph();
+  const { endpoints } = useGraphContext();
   const ref = useCallback((element: SVGGElement | null) => {
     if (element) endpoints.set(endpointId, element);
     else endpoints.delete(endpointId);
@@ -209,14 +228,14 @@ function EndpointGlow({ endpointId, nodeId, x, y }: { endpointId: string; nodeId
   </g>;
 }
 export function Edge({ edgeId, from, to }: { edgeId: string; from: string; to: string }) {
-  const { boxes, surface, paths } = useGraph();
+  const { boxes, surface, paths } = useGraphContext();
   const ref = useCallback((element: SVGPathElement | null) => { if (element) paths.set(edgeId, element); else paths.delete(edgeId); }, [edgeId, paths]);
   const a = boxes.get(from), b = boxes.get(to);
   if (!a || !b || !surface) return null;
   const p = route(a, b);
   return createPortal(<g className="edge" data-edge-id={edgeId}>
-    <path d={p.d} ref={ref} fill="none" />
-    <circle cx={p.sx} cy={p.sy} r="2"/><circle cx={p.tx} cy={p.ty} r="2"/>
+    <path d={p.d} ref={ref} fill="none" className="stroke-border" strokeWidth="1" />
+    <circle cx={p.sx} cy={p.sy} r="2" className="fill-muted-foreground"/><circle cx={p.tx} cy={p.ty} r="2" className="fill-muted-foreground"/>
     <EndpointGlow endpointId={`${edgeId}:from`} nodeId={from} x={p.sx} y={p.sy}/>
     <EndpointGlow endpointId={`${edgeId}:to`} nodeId={to} x={p.tx} y={p.ty}/>
   </g>, surface);
