@@ -3,8 +3,7 @@
 import * as Effect from "effect/Effect";
 import { DownloadSimpleIcon, NotebookIcon, MagnifyingGlassIcon, PlayIcon, StopIcon } from "@phosphor-icons/react";
 import { Button, ButtonLabel } from "@anaphor/system";
-import { Graph, Node, Edge, useGraph } from "../components/diagrams/graph";
-import { useDiagramPlayback } from "../components/diagrams/use-diagram-playback";
+import { Graph, Node, Edge, useGraph, useGraphPlayback } from "../components/diagrams/graph";
 
 const nodes = [
   { id: "capture", label: "Capture", icon: DownloadSimpleIcon },
@@ -13,11 +12,10 @@ const nodes = [
 ] as const;
 
 function DiagramContent() {
-  const { pulse, clearGlows } = useGraph();
-  const { run, stop, running, error } = useDiagramPlayback();
+  const { pulse } = useGraph();
+  const { run, stop, running, error } = useGraphPlayback();
 
   function play() {
-    clearGlows();
     run(Effect.gen(function* () {
       yield* pulse("capture-organize");
       yield* pulse("organize-recall");
@@ -37,7 +35,7 @@ function DiagramContent() {
       <Edge edgeId="capture-organize" from="capture" to="organize" />
       <Edge edgeId="organize-recall" from="organize" to="recall" />
       <div className="relative z-[4] flex justify-center pb-4">
-        <Button variant="ghost" tone="neutral" size="sm" aria-label={running ? "Stop three-node diagram" : "Play three-node diagram"} onClick={running ? () => { stop(); clearGlows(); } : play}>
+        <Button variant="ghost" tone="neutral" size="sm" aria-label={running ? "Stop three-node diagram" : "Play three-node diagram"} onClick={running ? stop : play}>
           {running ? <StopIcon size={14} /> : <PlayIcon size={14} />}
           <ButtonLabel>{running ? "Stop" : "Play"}</ButtonLabel>
         </Button>

@@ -2,6 +2,13 @@
 
 import { useCallback, useLayoutEffect, useRef } from "react";
 
+import type { AttachmentSide, Endpoint } from "./graph-context";
+
+const origins = {
+  left: ['0%', '50%'], right: ['100%', '50%'],
+  top: ['50%', '0%'], bottom: ['50%', '100%'],
+} satisfies Record<AttachmentSide, [string, string]>;
+
 function useArrivalLights() {
   const glows = useRef(new Map<Element, Animation>());
   const clearGlows = useCallback(() => {
@@ -9,7 +16,13 @@ function useArrivalLights() {
     glows.current.clear();
   }, []);
   useLayoutEffect(() => clearGlows, [clearGlows]);
-  const illuminate = useCallback((targets: (Element | null | undefined)[], reduce: boolean) => {
+  const illuminate = useCallback((endpoint: Endpoint | undefined, nodeLight: HTMLSpanElement | undefined, reduce: boolean) => {
+    if (endpoint && nodeLight) {
+      const [x, y] = origins[endpoint.side];
+      nodeLight.style.setProperty("--light-x", x);
+      nodeLight.style.setProperty("--light-y", y);
+    }
+    const targets = [endpoint?.element, nodeLight];
     for (const target of targets) {
       if (!target) continue;
       glows.current.get(target)?.cancel();

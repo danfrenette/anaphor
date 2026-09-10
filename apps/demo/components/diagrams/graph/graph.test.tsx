@@ -1,12 +1,13 @@
 import "@testing-library/jest-dom/vitest";
-import { act, render, renderHook, screen, within } from "@testing-library/react";
+import { act, render, renderHook, screen, within, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as Effect from "effect/Effect";
+import * as Deferred from "effect/Deferred";
 import * as Fiber from "effect/Fiber";
 import * as Exit from "effect/Exit";
 import * as Cause from "effect/Cause";
 import * as Option from "effect/Option";
-import { Graph, Node, Edge, useGraph } from "./index";
+import { Graph, Node, Edge, useGraph, useGraphPlayback } from "./index";
 import { useState, type ReactNode } from "react";
 import userEvent from "@testing-library/user-event";
 
@@ -200,4 +201,111 @@ it('delivers once under React Strict Mode effect replay', async () => {
   expect(Exit.isSuccess(exit)).toBe(true);
   expect(arrived).toHaveBeenCalledOnce();
   expect(frames.size).toBe(0);
+});
+
+function useAuthoredDiagram() {
+  return { ...useGraph(), playback: useGraphPlayback() };
+}
+
+it('shares one run across controls and lets successful feedback fade until Stop', async () => {
+  const { result } = renderHook(() => ({ first: useAuthoredDiagram(), second: useGraphPlayback() }), { wrapper: ConnectedGraph });
+  const update = vi.fn();
+  await act(async () => result.current.first.playback.run(result.current.first.pulse('a-b').pipe(Effect.tap(() => Effect.sync(update)))));
+  expect(result.current.second.running).toBe(true);
+  await act(async () => { advanceFrame(0); advanceFrame(2000); });
+  await waitFor(() => expect(result.current.second.running).toBe(false));
+  expect(update).toHaveBeenCalledOnce();
+  const animations = vi.mocked(Element.prototype.animate).mock.results;
+  expect(animations).toHaveLength(2);
+  for (const animation of animations) {
+    if (animation.type === 'return') expect(animation.value.cancel).not.toHaveBeenCalled();
+  }
+  await act(async () => result.current.second.stop());
+  for (const animation of animations) {
+    if (animation.type === 'return') expect(animation.value.cancel).toHaveBeenCalledOnce();
+  }
+  expect(update).toHaveBeenCalledOnce();
+});
+
+it('replacement clears old feedback and cancels unfinished branches while keeping completed updates', async () => {
+  const { result } = renderHook(useAuthoredDiagram, { wrapper: ConnectedGraph });
+  const completed = vi.fn();
+  const unfinished = vi.fn();
+  const replacement = vi.fn();
+  const sequence = Effect.gen(function* () {
+    yield* result.current.pulse('a-b');
+    yield* Effect.sync(completed);
+    yield* result.current.pulse('a-b');
+    yield* Effect.sync(unfinished);
+  });
+  await act(async () => result.current.playback.run(sequence));
+  await act(async () => { advanceFrame(0); advanceFrame(2000); });
+  expect(completed).toHaveBeenCalledOnce();
+  expect(document.querySelectorAll('.pulse')).toHaveLength(1);
+  const previousFeedback = [...vi.mocked(Element.prototype.animate).mock.results];
+  await act(async () => result.current.playback.run(result.current.pulse('a-b', true).pipe(Effect.tap(() => Effect.sync(replacement)))));
+  for (const animation of previousFeedback) {
+    if (animation.type === 'return') expect(animation.value.cancel).toHaveBeenCalledOnce();
+  }
+  expect(document.querySelectorAll('.pulse')).toHaveLength(1);
+  await act(async () => { advanceFrame(3000); advanceFrame(5000); });
+  await waitFor(() => expect(result.current.playback.running).toBe(false));
+  expect(unfinished).not.toHaveBeenCalled();
+  expect(completed).toHaveBeenCalledOnce();
+  expect(replacement).toHaveBeenCalledOnce();
+});
+
+it.each(['failure', 'defect'] as const)('clears transient feedback on %s without rolling back completed updates', async failure => {
+  const { result } = renderHook(useAuthoredDiagram, { wrapper: ConnectedGraph });
+  const failNow = Effect.runSync(Deferred.make<void>());
+  const completed = vi.fn();
+  const unfinished = vi.fn();
+  const sequence = Effect.gen(function* () {
+    yield* result.current.pulse('a-b');
+    yield* Effect.sync(completed);
+    yield* Effect.all([
+      result.current.pulse('a-b').pipe(Effect.tap(() => Effect.sync(unfinished))),
+      Deferred.await(failNow).pipe(Effect.andThen(failure === 'failure' ? Effect.fail('delivery failed') : Effect.die('delivery failed'))),
+    ], { concurrency: 'unbounded' });
+  });
+  await act(async () => result.current.playback.run(sequence));
+  await act(async () => { advanceFrame(0); advanceFrame(2000); });
+  expect(document.querySelectorAll('.pulse')).toHaveLength(1);
+  await act(async () => { await Effect.runPromise(Deferred.succeed(failNow, undefined)); });
+  await waitFor(() => expect(result.current.playback.error).toContain('delivery failed'));
+  expect(result.current.playback.running).toBe(false);
+  expect(completed).toHaveBeenCalledOnce();
+  expect(unfinished).not.toHaveBeenCalled();
+  expect(document.querySelectorAll('.pulse, .pulse-route-light')).toHaveLength(0);
+  expect(frames.size).toBe(0);
+  for (const animation of vi.mocked(Element.prototype.animate).mock.results) {
+    if (animation.type === 'return') expect(animation.value.cancel).toHaveBeenCalledOnce();
+  }
+});
+
+it('Stop and unmount affect only the owning diagram', async () => {
+  const first = renderHook(useAuthoredDiagram, { wrapper: ConnectedGraph });
+  const second = renderHook(useAuthoredDiagram, { wrapper: ConnectedGraph });
+  const secondUpdate = vi.fn();
+  await act(async () => {
+    first.result.current.playback.run(first.result.current.pulse('a-b'));
+    second.result.current.playback.run(second.result.current.pulse('a-b').pipe(Effect.tap(() => Effect.sync(secondUpdate))));
+  });
+  await act(async () => first.result.current.playback.stop());
+  expect(first.result.current.playback.running).toBe(false);
+  expect(second.result.current.playback.running).toBe(true);
+  expect(document.querySelectorAll('.pulse')).toHaveLength(1);
+  first.unmount();
+  await act(async () => { advanceFrame(0); advanceFrame(2000); });
+  await waitFor(() => expect(second.result.current.playback.running).toBe(false));
+  expect(secondUpdate).toHaveBeenCalledOnce();
+  const animations = [...vi.mocked(Element.prototype.animate).mock.results];
+  expect(animations).toHaveLength(2);
+  for (const animation of animations) {
+    if (animation.type === 'return') expect(animation.value.cancel).not.toHaveBeenCalled();
+  }
+  second.unmount();
+  for (const animation of animations) {
+    if (animation.type === 'return') expect(animation.value.cancel).toHaveBeenCalledOnce();
+  }
 });

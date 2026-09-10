@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { createPortal } from "react-dom";
-import { useGraphContext, type Box } from "./graph-context";
+import { useGraphContext, type Box, type AttachmentSide } from "./graph-context";
 
 function route(source: Box, target: Box) {
   const startX = source.x + source.width;
@@ -21,16 +21,17 @@ function route(source: Box, target: Box) {
 interface EndpointGlowProps {
   endpointId: string;
   nodeId: string;
+  side: AttachmentSide;
   x: number;
   y: number;
 }
 
-function EndpointGlow({ endpointId, nodeId, x, y }: EndpointGlowProps) {
+function EndpointGlow({ endpointId, nodeId, side, x, y }: EndpointGlowProps) {
   const { endpoints } = useGraphContext();
   const ref = useCallback((element: SVGGElement | null) => {
-    if (element) endpoints.set(endpointId, element);
+    if (element) endpoints.set(endpointId, { element, nodeId, side });
     else endpoints.delete(endpointId);
-  }, [endpointId, endpoints]);
+  }, [endpointId, nodeId, side, endpoints]);
   return <g transform={`translate(${x} ${y})`}>
     <g ref={ref} data-node-id={nodeId} className="endpoint-glow" style={{ opacity: 0 }}>
       <circle r="11" fill="#f3f4ec" opacity=".025" />
@@ -56,8 +57,8 @@ function Edge({ edgeId, from, to }: EdgeProps) {
   return createPortal(<g className="edge" data-edge-id={edgeId}>
     <path d={path} ref={ref} fill="none" className="stroke-border" strokeWidth="1" />
     <circle cx={startX} cy={startY} r="2" className="fill-muted-foreground"/><circle cx={endX} cy={endY} r="2" className="fill-muted-foreground"/>
-    <EndpointGlow endpointId={`${edgeId}:from`} nodeId={from} x={startX} y={startY}/>
-    <EndpointGlow endpointId={`${edgeId}:to`} nodeId={to} x={endX} y={endY}/>
+    <EndpointGlow endpointId={`${edgeId}:from`} nodeId={from} side="right" x={startX} y={startY}/>
+    <EndpointGlow endpointId={`${edgeId}:to`} nodeId={to} side="left" x={endX} y={endY}/>
   </g>, surface);
 }
 

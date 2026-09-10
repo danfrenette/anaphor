@@ -10,8 +10,7 @@ import {
   Badge, Button, ButtonLabel, Card, CardHeader, CardTitle, CardDescription,
   CardContent, CardAction, CardFooter, Checkbox,
 } from "@anaphor/system";
-import { Graph, Node, Edge, useGraph } from "../components/diagrams/graph";
-import { useDiagramPlayback } from "../components/diagrams/use-diagram-playback";
+import { Graph, Node, Edge, useGraph, useGraphPlayback } from "../components/diagrams/graph";
 import {
   captureSource, initialNotebook, sourceOrder, sources, type SourceId,
 } from "./notebook-diagram";
@@ -30,7 +29,7 @@ const sourceMeta = {
 
 function NotebookDiagram() {
   const graph = useGraph();
-  const playback = useDiagramPlayback();
+  const playback = useGraphPlayback();
   const [notebook, setNotebook] = useState(initialNotebook);
   const [status, setStatus] = useState("Choose something to capture");
   const flow = { pulse: graph.pulse, update: setNotebook, report: setStatus };
@@ -38,13 +37,11 @@ function NotebookDiagram() {
   const synchronized = notebook.revision === notebook.indexedRevision && notebook.revision === notebook.summaryRevision;
 
   function capture(id: SourceId) {
-    graph.clearGlows();
     playback.setLoop(false);
     playback.run(captureSource(id, flow));
   }
 
   function play() {
-    graph.clearGlows();
     playback.run(Effect.gen(function* () {
       for (const id of sourceOrder) {
         yield* captureSource(id, flow);
@@ -56,13 +53,11 @@ function NotebookDiagram() {
 
   function stop() {
     playback.stop();
-    graph.clearGlows();
     setStatus("Stopped · capture something when you’re ready");
   }
 
   function reset() {
     playback.stop();
-    graph.clearGlows();
     setNotebook(initialNotebook);
     setStatus("Choose something to capture");
   }

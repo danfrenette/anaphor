@@ -8,18 +8,21 @@ import * as Exit from "effect/Exit";
 import * as Cause from "effect/Cause";
 
 /** Runs authored diagram sequences. Data, routes, and status copy belong to callers. */
-export function useDiagramPlayback() {
+export function useDiagramPlayback({ clearFeedback }: { clearFeedback?: () => void } = {}) {
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loop, setLoopState] = useState(false);
   const loopRef = useRef(false);
   const task = useRef<Fiber.Fiber<void, never> | null>(null);
   const generation = useRef(0);
+  const feedback = useRef(clearFeedback);
+  useEffect(() => { feedback.current = clearFeedback; }, [clearFeedback]);
 
   // This effect owns a resource lifetime; it does not mirror or derive render state.
   useEffect(() => () => {
     generation.current++;
     if (task.current) Effect.runFork(Fiber.interrupt(task.current));
+    feedback.current?.();
   }, []);
 
   function setLoop(enabled: boolean) {
@@ -34,6 +37,7 @@ export function useDiagramPlayback() {
       Effect.runFork(Fiber.interrupt(task.current));
       task.current = null;
     }
+    feedback.current?.();
     setRunning(false);
   }
 
@@ -56,7 +60,10 @@ export function useDiagramPlayback() {
       const result = yield* Effect.exit(sequence);
       if (generation.current !== ticket) return;
       setRunning(false);
-      if (Exit.isFailure(result)) setError(Cause.pretty(result.cause));
+      if (Exit.isFailure(result)) {
+        feedback.current?.();
+        setError(Cause.pretty(result.cause));
+      }
       task.current = null;
     }));
   }

@@ -5,13 +5,14 @@ The original shared-state study is preserved in checkpoint commit `78f93a9`.
 
 ## Composition
 
-- `apps/demo/components/diagrams/graph/`: reusable Graph, Node, Edge, and useGraph.
+- `apps/demo/components/diagrams/graph/`: reusable Graph, Node, Edge, useGraph, and useGraphPlayback.
   The public index preserves the `diagrams/graph` import. `graph.tsx` owns the
   provider and pulse rendering; `node.tsx` owns node registration and feedback;
   `edge.tsx` owns routes and endpoints. Shared context, measurement, and arrival
   lifecycle hooks live beside them, along with the composition and pulse tests.
 - `apps/demo/components/diagrams/use-diagram-playback.ts`: reusable run/stop/loop
   lifecycle, running/error state, and cancellation on replacement or unmount.
+  Graph owns one instance, exposed through useGraphPlayback, and supplies feedback cleanup.
   It knows nothing about notebook data, node names, status text, or routes.
 - `apps/demo/app/notebook-diagram.ts`: notebook data, typed capture rules, and
   the bespoke capture → notebook → search/summary sequence.
@@ -64,14 +65,13 @@ status announcements belong to the surrounding diagram.
 
 ```tsx
 function Controls() {
-  const { pulse, clearGlows } = useGraph();
-  const playback = useDiagramPlayback();
+  const { pulse } = useGraph();
+  const playback = useGraphPlayback();
   const sequence = Effect.gen(function* () {
     yield* pulse("capture-notebook");
     yield* Effect.sync(() => updateNotebook());
   });
   return <button onClick={() => {
-    clearGlows();
     playback.run(sequence);
   }}>Capture</button>;
 }
@@ -144,3 +144,11 @@ Tests exercise the public exports with real Graph, Node, and Edge composition. K
 This follows [Kent C. Dodds’s guidance on testing observable behavior](https://kentcdodds.com/blog/testing-implementation-details) and [Matt Pocock’s guidance on extending native React props](https://www.totaltypescript.com/react-props-typescript).
 
 Pulse SVG is declared in React, including its gradients and static attributes. React creates and removes each pulse; the frame loop updates only live path geometry, position, and opacity. Each request has an abort signal so interruption cancels its scheduled frame immediately, including before a pulse mounts. Graph unmounting fails outstanding requests, and concurrent pulses remain independent.
+
+### Authored playback ownership
+
+Each Graph owns one playback lifetime, shared by every `useGraphPlayback()` caller beneath it. Separate Graphs remain independent. Examples use `run`, `stop`, and loop controls without manually pairing them with `clearGlows`. The generic `useDiagramPlayback` remains independent of Graph; its optional `clearFeedback` callback is invoked on start/replacement, Stop, failure, and unmount, but not successful completion.
+
+Successful arrival feedback fades naturally. Stop or failure interrupts unfinished work and clears transient feedback while preserving completed data updates. Reset remains an example-owned operation: stop playback, then restore initial data and status. Concurrent branches belong to their parent sequence and are interrupted together on failure or replacement. Low-level `useGraph().pulse` remains available; authored sequences must run through Graph playback to participate in this shared lifetime.
+
+Connection direction and reverse playback are separate concepts. Edge supplies each endpoint’s node identity and attachment side; arrival rendering uses that side for its horizontal and vertical glow origin. Playback cleanup has no routing assumptions. Current routes still connect right to left; new right-to-left, top-to-bottom, and bottom-to-top routes are future work.

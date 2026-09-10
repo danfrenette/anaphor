@@ -30,9 +30,9 @@ function Node({ nodeId, children, variant = 'plain', className = "", ...props }:
       <span
         ref={lightRef}
         aria-hidden="true"
-        className="pointer-events-none absolute -inset-px z-[2] rounded-[inherit] opacity-0 bg-[radial-gradient(ellipse_125px_95px_at_var(--light-x,0%)_50%,rgba(246,248,231,.22),rgba(238,243,217,.085)_32%,rgba(238,243,217,.025)_60%,transparent_100%)]"
+        className="pointer-events-none absolute -inset-px z-[2] rounded-[inherit] opacity-0 bg-[radial-gradient(ellipse_125px_95px_at_var(--light-x,0%)_var(--light-y,50%),rgba(246,248,231,.22),rgba(238,243,217,.085)_32%,rgba(238,243,217,.025)_60%,transparent_100%)]"
       >
-        <span className="absolute inset-0 rounded-[inherit] p-px bg-[radial-gradient(ellipse_100px_90px_at_var(--light-x,0%)_50%,rgba(250,252,237,.85),rgba(234,242,208,.22)_45%,transparent_100%)] [mask:linear-gradient(#fff_0_0)_content-box_exclude,linear-gradient(#fff_0_0)]" />
+        <span className="absolute inset-0 rounded-[inherit] p-px bg-[radial-gradient(ellipse_100px_90px_at_var(--light-x,0%)_var(--light-y,50%),rgba(250,252,237,.85),rgba(234,242,208,.22)_45%,transparent_100%)] [mask:linear-gradient(#fff_0_0)_content-box_exclude,linear-gradient(#fff_0_0)]" />
       </span>
     </div>
   );

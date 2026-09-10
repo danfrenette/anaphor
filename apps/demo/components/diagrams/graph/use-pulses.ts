@@ -2,13 +2,13 @@
 
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import * as Effect from "effect/Effect";
-import { PulseUnavailable } from "./graph-context";
+import { PulseUnavailable, type Endpoint } from "./graph-context";
 import { useArrivalLights } from "./use-arrival-lights";
 import type { PulseProps } from "./pulse";
 
 interface PulseOptions {
   paths: ReadonlyMap<string, SVGPathElement>;
-  endpoints: ReadonlyMap<string, SVGGElement>;
+  endpoints: ReadonlyMap<string, Endpoint>;
   nodeLights: ReadonlyMap<string, HTMLSpanElement>;
   pulseSpeed: number;
 }
@@ -56,9 +56,8 @@ function usePulses({ paths, endpoints, nodeLights, pulseSpeed }: PulseOptions) {
       id, edge, path, reverse, reduce, pulseSpeed, finish, signal: controller.signal,
       arrive: () => {
         const endpoint = endpoints.get(`${edge}:${reverse ? 'from' : 'to'}`);
-        const nodeLight = endpoint ? nodeLights.get(endpoint.dataset.nodeId ?? '') : undefined;
-        nodeLight?.style.setProperty('--light-x', reverse ? '100%' : '0%');
-        illuminate([endpoint, nodeLight], reduce);
+        const nodeLight = endpoint ? nodeLights.get(endpoint.nodeId) : undefined;
+        illuminate(endpoint, nodeLight, reduce);
       },
     };
     setActivePulses(current => [...current, request]);
