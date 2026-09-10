@@ -30,9 +30,9 @@ export function CardDemo() {
         </Card>
       </div>
 
-      <Card className="mt-8">
+      <Card className="mt-8" role="group" aria-labelledby="spacing-tokens-title">
         <CardHeader>
-          <CardTitle>Spacing tokens</CardTitle>
+          <CardTitle id="spacing-tokens-title">Spacing tokens</CardTitle>
           <CardAction><CardCopyButton value={"--space-1: 4px;\n--space-2: 8px;\n--space-3: 12px;"} aria-label="Copy spacing tokens" /></CardAction>
         </CardHeader>
         <CardContent><pre className="overflow-x-auto font-mono text-ui"><code>{"--space-1: 4px;\n--space-2: 8px;\n--space-3: 12px;"}</code></pre></CardContent>

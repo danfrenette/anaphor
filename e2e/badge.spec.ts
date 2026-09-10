@@ -6,9 +6,11 @@ test("badges remain readable in both themes and controls reset", async ({ page }
   await expect(page.getByRole("heading", { name: "Badge", exact: true })).toBeVisible();
   const result = await new AxeBuilder({ page }).include("#badge").withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
   expect(result.violations).toEqual([]);
-  await page.locator(".fixed").evaluateAll(elements => elements.forEach(element => (element as HTMLElement).style.visibility = "hidden"));
+  const screenshotStyle = await page.addStyleTag({
+    content: ".fixed, .fixed * { visibility: hidden !important; }",
+  });
   await expect(page.locator("#badge")).toHaveScreenshot("badge.png");
-  await page.locator(".fixed").evaluateAll(elements => elements.forEach(element => (element as HTMLElement).style.visibility = ""));
+  await screenshotStyle.evaluate(element => element.parentNode?.removeChild(element));
   await page.getByRole("button", { name: "Open Badge controls" }).click();
   await page.getByRole("combobox", { name: "Variant", exact: true }).selectOption("outline");
   await page.getByRole("checkbox", { name: "Icon", exact: true }).check();

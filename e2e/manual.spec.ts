@@ -68,7 +68,10 @@ test("button demo exposes bounded experiments and resets to approved defaults", 
   await expect(demo).not.toHaveAttribute("aria-busy");
 
   await page.getByRole("button", { name: "Close controls" }).click();
-  await expect(page.getByLabel("Variant")).toBeHidden();
+  const closedPanel = page.getByRole("region", { name: "Button controls", includeHidden: true });
+  await expect(closedPanel).toHaveAttribute("aria-hidden", "true");
+  await expect(closedPanel).toHaveAttribute("inert", "");
+  await expect(closedPanel).toHaveCSS("opacity", "0");
   await page.getByRole("button", { name: "Open Button controls" }).click();
   await expect(page.getByLabel("Variant")).toBeVisible();
 });
@@ -362,14 +365,15 @@ test("card copy confirms a write", async ({ page }) => {
   });
   await page.goto("/#card");
   const copy = page.getByRole("button", { name: "Copy spacing tokens" });
+  const status = page.getByRole("group", { name: "Spacing tokens", exact: true }).getByRole("status");
   await copy.click();
-  await expect(page.locator("#card").getByRole("status")).toHaveText("Copied to clipboard.");
+  await expect(status).toHaveText("Copied to clipboard.");
   await expect(page.locator("html")).toHaveAttribute("data-copied-text", "--space-1: 4px;\n--space-2: 8px;\n--space-3: 12px;");
-  await expect(page.locator("#card").getByRole("status")).toBeEmpty();
+  await expect(status).toBeEmpty();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await copy.focus();
   await page.keyboard.press("Enter");
-  await expect(page.locator("#card").getByRole("status")).toHaveText("Copied to clipboard.");
+  await expect(status).toHaveText("Copied to clipboard.");
 });
 
 test("showcase previews reflow in both themes", async ({ page }) => {
