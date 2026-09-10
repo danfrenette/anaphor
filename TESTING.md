@@ -76,6 +76,30 @@ than every permutation. Experimental demo controls reset before capture. Button 
 unconfigured defaults and destructive actions in both themes. Review image
 changes before accepting updated baselines.
 
+## Registry Consumers
+
+`pnpm test:registry` exercises source installation independently of the workspace
+package. `scripts/verify-registry.mjs` builds the current registry with shadcn,
+redirects same-registry dependencies to those local item files, and installs into
+fresh copies of `test/registry-consumer/` in the OS temporary directory. The
+fixture supplies only React and its TypeScript/Vite/Tailwind build environment;
+the registry must supply its own runtime dependencies and source imports.
+
+Button is installed alone so the complete UI cannot hide its missing dependencies.
+A separate complete-UI install compiles every installed module and renders each
+advertised UI item. Chromium checks activation, input/checkbox behavior, opening
+the surface, generated Button dimensions, theme tokens, both font loads, and
+browser loading errors. These checks complement the existing package integration
+and reference-manual browser tests.
+
+This is a representative installation gate, not an exhaustive per-item matrix:
+independent installation of the other items, alternative aliases, Server Component
+consumption, GitHub credentials, and remote branch availability remain outside
+this check. Install Chromium with `pnpm exec playwright install chromium` on new
+machines. Package-registry access is required; dependencies declared by registry
+items intentionally resolve as in a new consumer. Failed temporary consumers
+retain their resolved lockfile and build output for diagnosis.
+
 ## Accessibility
 
 The release bar is WCAG 2.2 AA: semantic names and roles, complete keyboard
@@ -86,8 +110,8 @@ motion review.
 
 ## Release Gate
 
-Lint, strict type checking, integration tests, browser smoke tests, and the
-production demo build must pass. No known high-severity accessibility defect
+Lint, strict type checking, integration tests, browser smoke tests, registry
+consumer verification, and the production demo build must pass. No known high-severity accessibility defect
 may ship. Deferred coverage is recorded against the component ticket rather than
 hidden in the suite. The documented accent-solid contrast exception applies
 only to color-contrast checks on those controls; all other rules still run,

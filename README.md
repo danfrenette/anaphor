@@ -21,6 +21,7 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm test:browser
+pnpm test:registry
 pnpm build
 ```
 
@@ -45,6 +46,27 @@ entry and register the application's source files:
 
 The internal `@anaphor/system` workspace package powers the reference manual;
 it is private and is not published to npm.
+
+## Verifying registry installs
+
+Run `pnpm test:registry` to verify the current checkout with the pinned shadcn
+installer. On a new machine, install the browser first with
+`pnpm exec playwright install chromium`.
+
+The check builds temporary registry item files and installs Button alone and the
+full UI into two fresh React/Vite consumers outside the workspace. It compiles
+all installed source and checks browser interaction, generated styles, light/dark
+tokens, and both bundled fonts. The consumers have no `@anaphor/system` dependency.
+
+Only local registry dependency addresses are redirected to the built temporary
+files; source, targets, and npm dependency declarations go through the real
+installer unchanged. GitHub authentication and the published branch are not
+exercised. No registry server or publishing step is involved.
+
+The check requires package-registry access. Fixture tooling and the installer are
+pinned; registry-declared dependencies resolve as they would for a fresh user.
+Successful runs remove their temporary files. Failed runs print the retained
+consumer directory for inspection.
 
 ## Card composition
 

@@ -4,6 +4,8 @@
   controls used by consuming projects.
 - **Reference manual**: the demo application consuming the design system and
   demonstrating its supported behavior and bounded experiments.
+- **Registry consumer**: a project that installs and owns a copy of the design
+  system’s distributed source.
 - **Button**: an action control owning interaction state, appearance, and spacing
   between its label and icons.
 - **Button label**: one coherent text phrase inside a Button, including

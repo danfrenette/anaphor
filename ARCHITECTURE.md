@@ -25,6 +25,17 @@ Do not add compatibility layers, generated entry points, or publishing
 automation before a real consumer requires them. Reference material under
 `examples/` is excluded from packages and builds.
 
+## Registry Distribution
+
+The workspace package and source registry share the design-system implementation.
+The reference manual remains a workspace package consumer. Registry verification
+uses the real shadcn installer against disposable item files built from the
+current checkout, followed by an independent consumer build and browser checks.
+Only same-registry dependency addresses change to local paths for the check;
+installation transforms and dependency installation remain shadcn’s responsibility.
+The verification script and consumer fixture stay outside the design system and
+are not distributed registry items.
+
 ## Styling Ownership
 
 The design-system package owns Tailwind CSS v4, its CSS-first `@theme` block,
