@@ -37,6 +37,11 @@ children can place a badge with absolute positioning. Titles wrap naturally.
 Cards remain passive containers; use explicit links or buttons for actions.
 All components and prop types are exported from `@anaphor/system`.
 
+`Card` and `CardPreview` share the same restrained three-layer shadow: a 1px
+keyline, a compact near shadow, and a soft 2–4px falloff. Those styles live in
+the React components as Tailwind utilities. The package stylesheet only owns
+theme tokens, base rules, and utilities that cannot be expressed by composition.
+
 ## Artwork as child content
 
 The demo’s `#card-media` section includes a live **Rocaille 2** shader proof of

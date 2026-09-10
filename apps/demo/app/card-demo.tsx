@@ -16,11 +16,11 @@ export function CardDemo() {
         </p>
       </header>
 
-      <div className="mt-8 grid items-start gap-6 sm:grid-cols-2">
+      <div className="mt-8 grid items-stretch gap-6 sm:grid-cols-2">
         <CardPlayground />
 
-        <Card aria-labelledby="card-preview-title">
-          <div className="flex min-h-40 items-center justify-center rounded-t-card bg-background" role="group" aria-label="Button preview">
+        <Card className="flex flex-col" aria-labelledby="card-preview-title">
+          <div className="flex min-h-40 flex-1 items-center justify-center rounded-t-card bg-background" role="group" aria-label="Button preview">
             <Button variant="outline"><ButtonLabel>Execute</ButtonLabel></Button>
           </div>
           <CardHeader>

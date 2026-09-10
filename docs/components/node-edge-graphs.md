@@ -13,7 +13,9 @@ The original shared-state study is preserved in checkpoint commit `78f93a9`.
 - `apps/demo/app/notebook-diagram.ts`: notebook data, typed capture rules, and
   the bespoke capture → notebook → search/summary sequence.
 - `apps/demo/app/node-edge-demo.tsx`: Tailwind layout, Phosphor icons, local
-  notebook/status state, and controls that compose the two reusable APIs.
+  notebook/status state, and controls that compose the two reusable APIs. Every
+  node is built from Card sections and Badge/Button primitives; source metadata,
+  notebook synchronization, and downstream revision state remain visible.
 
 The graph styles itself with Tailwind, SVG presentation attributes, and dynamic
 animation values. No demo CSS module is required. The components directory is
@@ -83,8 +85,8 @@ notebook updates on arrival. Browser validation covers capture, propagation,
 reset, rendering, and contained horizontal overflow.
 
 This remains an internal diagram module, not a published package. Moving layouts,
-obstacle routing, duplicate identifiers, and
-seeking/pause remain future work. Shared card APIs are unchanged.
+obstacle routing, duplicate identifiers, and seeking/pause remain future work.
+Nodes inherit the shared default Card shadow; no graph-specific card CSS exists.
 
 Design approach: [Kent C. Dodds on colocation](https://kentcdodds.com/blog/colocation)
 and [Matt Pocock on inference and generics](https://www.totaltypescript.com/mental-model-for-typescript-generics).

@@ -7,8 +7,8 @@ import {
   SparkleIcon, PlayIcon, StopIcon, ArrowCounterClockwiseIcon,
 } from "@phosphor-icons/react";
 import {
-  Button, ButtonLabel, Card, CardHeader, CardTitle, CardDescription,
-  CardContent, CardAction, Checkbox,
+  Badge, Button, ButtonLabel, Card, CardHeader, CardTitle, CardDescription,
+  CardContent, CardAction, CardFooter, Checkbox,
 } from "@anaphor/system";
 import { Graph, Node, Edge, useGraph } from "../components/diagrams/graph";
 import { useDiagramPlayback } from "../components/diagrams/use-diagram-playback";
@@ -22,12 +22,20 @@ const sourceIcons = {
   link: LinkIcon,
 } satisfies Record<SourceId, typeof MicrophoneIcon>;
 
+const sourceMeta = {
+  audio: { format: "Audio", result: "+3 notes" },
+  note: { format: "Text", result: "+1 note" },
+  link: { format: "URL", result: "+1 source" },
+} satisfies Record<SourceId, { format: string; result: string }>;
+
 function NotebookDiagram() {
   const graph = useGraph();
   const playback = useDiagramPlayback();
   const [notebook, setNotebook] = useState(initialNotebook);
   const [status, setStatus] = useState("Choose something to capture");
   const flow = { pulse: graph.pulse, update: setNotebook, report: setStatus };
+  const capturedItems = notebook.notes + notebook.recordings + notebook.links;
+  const synchronized = notebook.revision === notebook.indexedRevision && notebook.revision === notebook.summaryRevision;
 
   function capture(id: SourceId) {
     graph.clearGlows();
@@ -62,7 +70,7 @@ function NotebookDiagram() {
   return (
     <>
       <div tabIndex={0} role="region" aria-label="Notebook diagram; scroll horizontally to explore" className="overflow-x-auto">
-        <div className="mx-auto grid w-[840px] grid-cols-[220px_240px_220px] items-center gap-x-[60px] px-5 py-12">
+        <div className="mx-auto grid w-[920px] grid-cols-[240px_260px_240px] items-center gap-x-[70px] px-5 py-12">
           <div className="flex flex-col gap-4">
             <p className="mb-2 text-label uppercase tracking-[.08em] text-muted-foreground">01 / Capture</p>
             {sourceOrder.map(id => {
@@ -80,6 +88,12 @@ function NotebookDiagram() {
                         </Button>
                       </CardAction>
                     </CardHeader>
+                    <CardContent className="px-6 pb-4 text-small">
+                      <div className="flex items-center justify-between gap-3 border-t border-border pt-3 text-muted-foreground">
+                        <span>Input / {sourceMeta[id].format}</span>
+                        <Badge variant="outline" size="sm">{sourceMeta[id].result}</Badge>
+                      </div>
+                    </CardContent>
                   </Card>
                 </Node>
               );
@@ -93,6 +107,7 @@ function NotebookDiagram() {
                 <CardHeader>
                   <CardTitle>Notebook</CardTitle>
                   <CardDescription>A home for what you learn</CardDescription>
+                  <CardAction><Badge variant="outline" size="sm">Rev {String(notebook.revision).padStart(2, "0")}</Badge></CardAction>
                 </CardHeader>
                 <CardContent>
                   <dl className="divide-y divide-border text-ui">
@@ -100,8 +115,13 @@ function NotebookDiagram() {
                     <Metric label="Recordings" value={notebook.recordings} />
                     <Metric label="Saved links" value={notebook.links} />
                   </dl>
-                  <p className="mt-4 text-small text-muted-foreground">Revision {notebook.revision}</p>
                 </CardContent>
+                <CardFooter className="px-6 pb-4 text-small">
+                  <div className="flex w-full items-center justify-between gap-3 border-t border-border pt-3 text-muted-foreground">
+                    <span>Downstream sync</span>
+                    <Badge variant={synchronized ? "soft" : "outline"} size="sm">{synchronized ? "Current" : "Updating"}</Badge>
+                  </div>
+                </CardFooter>
               </Card>
             </Node>
           </div>
@@ -109,22 +129,22 @@ function NotebookDiagram() {
           <div className="flex flex-col gap-4">
             <p className="mb-2 text-label uppercase tracking-[.08em] text-muted-foreground">03 / Connect</p>
             <Node nodeId="search" className="rounded-card">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Search index</CardTitle>
-                  <CardDescription className="col-span-full whitespace-nowrap tabular-nums">Revision {notebook.indexedRevision}</CardDescription>
-                  <CardAction><MagnifyingGlassIcon size={16} aria-hidden="true" /></CardAction>
-                </CardHeader>
-              </Card>
+              <OutputCard
+                title="Search index"
+                description="Makes captured material retrievable"
+                detail={`${capturedItems} ${capturedItems === 1 ? "item" : "items"} available`}
+                revision={notebook.indexedRevision}
+                icon={MagnifyingGlassIcon}
+              />
             </Node>
             <Node nodeId="summary" className="rounded-card">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Summary</CardTitle>
-                  <CardDescription className="col-span-full whitespace-nowrap tabular-nums">Revision {notebook.summaryRevision}</CardDescription>
-                  <CardAction><SparkleIcon size={16} aria-hidden="true" /></CardAction>
-                </CardHeader>
-              </Card>
+              <OutputCard
+                title="Summary"
+                description="Distills the latest notebook context"
+                detail={notebook.notes === 0 ? "Waiting for source material" : `${notebook.notes} ${notebook.notes === 1 ? "note" : "notes"} synthesized`}
+                revision={notebook.summaryRevision}
+                icon={SparkleIcon}
+              />
             </Node>
           </div>
         </div>
@@ -162,6 +182,33 @@ function Metric({ label, value }: { label: string; value: number }) {
       <dt>{label}</dt>
       <dd className="tabular-nums">{value}</dd>
     </div>
+  );
+}
+
+function OutputCard({ title, description, detail, revision, icon: Icon }: {
+  title: string;
+  description: string;
+  detail: string;
+  revision: number;
+  icon: typeof MagnifyingGlassIcon;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+        <CardAction><Icon size={16} aria-hidden="true" /></CardAction>
+      </CardHeader>
+      <CardContent className="px-6 pb-4 text-small">
+        <div className="border-t border-border pt-3 text-muted-foreground">{detail}</div>
+      </CardContent>
+      <CardFooter className="px-6 pb-4 text-small">
+        <div className="flex w-full items-center justify-between gap-3 border-t border-border pt-3 text-muted-foreground">
+          <span>Index revision</span>
+          <Badge variant="outline" size="sm">{String(revision).padStart(2, "0")}</Badge>
+        </div>
+      </CardFooter>
+    </Card>
   );
 }
 

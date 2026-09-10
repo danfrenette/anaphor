@@ -3,12 +3,33 @@ import type { ComponentProps } from "react";
 
 type CardProps = ComponentProps<"div"> & { variant?: "default" | "showcase" };
 
+const cardShadow = "shadow-[0_0_0_1px_color-mix(in_oklch,var(--anaphor-input-border)_55%,var(--anaphor-background)),0_1px_2px_-1px_oklch(0_0_0/0.06),0_2px_4px_oklch(0_0_0/0.04)]";
+
 function Card({ className, variant = "default", ...props }: CardProps) {
-  return <div data-slot="card" data-variant={variant} className={cn("w-full min-w-0 text-foreground", variant === "default" ? "rounded-card bg-muted [&>[data-card-section]+[data-card-section]]:pt-0" : "anaphor-card-showcase", className)} {...props} />;
+  return <div data-slot="card" data-variant={variant} className={cn(
+    "w-full min-w-0 text-foreground",
+    variant === "default"
+      ? cn("rounded-card bg-muted [&>[data-card-section]+[data-card-section]]:pt-0", cardShadow)
+      : "[&>[data-card-section]]:mt-4 [&>[data-card-section]]:p-0 [&>[data-slot=card-header]]:gap-1",
+    className,
+  )} {...props} />;
 }
 
 function CardPreview({ className, children, ...props }: ComponentProps<"div">) {
-  return <div data-slot="card-preview" className={cn("anaphor-card-preview", className)} {...props}><div data-slot="card-preview-surface">{children}</div></div>;
+  return (
+    <div
+      data-slot="card-preview"
+      className={cn("rounded-[calc(var(--radius-card)+5px)] bg-background p-1", cardShadow, className)}
+      {...props}
+    >
+      <div
+        data-slot="card-preview-surface"
+        className="relative grid min-w-0 overflow-hidden rounded-card border border-[color-mix(in_oklch,var(--anaphor-input-border)_65%,var(--anaphor-background))] bg-background [aspect-ratio:var(--card-preview-ratio,4/5)]"
+      >
+        {children}
+      </div>
+    </div>
+  );
 }
 
 function CardHeader({ className, ...props }: ComponentProps<"div">) {

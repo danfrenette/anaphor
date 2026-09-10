@@ -38,8 +38,11 @@ function CardCopyButton({ value, className, disabled, "aria-label": label = "Cop
   }
 
   return <>
-    <Button {...props} type="button" iconOnly size="sm" tone="neutral" variant="ghost" disabled={disabled} aria-busy={status === "pending" || undefined} aria-label={label} title={status === "copied" ? "Copied!" : label} onClick={copy} className={cn("anaphor-card-copy", className)} data-copied={status === "copied" || undefined}>
-      <span className="anaphor-card-copy-icons" aria-hidden="true"><Copy /><Check /></span>
+    <Button {...props} type="button" iconOnly size="sm" tone="neutral" variant="ghost" disabled={disabled} aria-busy={status === "pending" || undefined} aria-label={label} title={status === "copied" ? "Copied!" : label} onClick={copy} className={className}>
+      <span className="relative size-4" aria-hidden="true">
+        <Copy className={cn("absolute inset-0 size-4 transition-[opacity,transform] duration-[160ms] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transform-none motion-reduce:transition-opacity", status === "copied" && "scale-90 opacity-0")} />
+        <Check className={cn("absolute inset-0 size-4 transition-[opacity,transform] duration-[160ms] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transform-none motion-reduce:transition-opacity", status === "copied" ? "scale-100 opacity-100" : "scale-90 opacity-0")} />
+      </span>
     </Button>
     <span role="status" className="sr-only">{status === "copied" ? "Copied to clipboard." : status === "error" ? "Could not copy. Try again or copy the text manually." : ""}</span>
   </>;
