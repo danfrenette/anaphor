@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as Effect from "effect/Effect";
+import * as Schedule from "effect/Schedule";
 import * as Fiber from "effect/Fiber";
 import * as Exit from "effect/Exit";
 import * as Cause from "effect/Cause";
@@ -12,7 +13,7 @@ export function useDiagramPlayback() {
   const [error, setError] = useState<string | null>(null);
   const [loop, setLoopState] = useState(false);
   const loopRef = useRef(false);
-  const task = useRef<Fiber.RuntimeFiber<void, never> | null>(null);
+  const task = useRef<Fiber.Fiber<void, never> | null>(null);
   const generation = useRef(0);
 
   // This effect owns a resource lifetime; it does not mirror or derive render state.
@@ -42,13 +43,14 @@ export function useDiagramPlayback() {
     setRunning(true);
     setError(null);
 
-    const sequence = Effect.gen(function* () {
-      do {
-        yield* program;
-        // Yield even for synchronous programs so looping never blocks interaction.
-        yield* Effect.yieldNow();
-      } while (options.repeat && loopRef.current);
-    });
+    // Yield between iterations so synchronous caller programs remain interruptible.
+    const sequence = program.pipe(
+      Effect.tap(() => Effect.yieldNow),
+      Effect.repeat({
+        schedule: Schedule.forever,
+        while: () => Boolean(options.repeat && loopRef.current),
+      }),
+    );
 
     task.current = Effect.runFork(Effect.gen(function* () {
       const result = yield* Effect.exit(sequence);

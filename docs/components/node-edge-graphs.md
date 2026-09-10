@@ -83,10 +83,27 @@ notebook updates on arrival. Browser validation covers capture, propagation,
 reset, rendering, and contained horizontal overflow.
 
 This remains an internal diagram module, not a published package. Moving layouts,
-obstacle routing, missing-edge failure semantics, duplicate identifiers, and
+obstacle routing, duplicate identifiers, and
 seeking/pause remain future work. Shared card APIs are unchanged.
 
 Design approach: [Kent C. Dodds on colocation](https://kentcdodds.com/blog/colocation)
 and [Matt Pocock on inference and generics](https://www.totaltypescript.com/mental-model-for-typescript-generics).
 Motion reference: [Kit Langton’s diagrams](https://x.com/kitlangton/status/2096703869136867563).
 Preview: http://localhost:3002/#node-edge-graphs.
+
+## Effect v4 review
+
+Pinned to `effect@4.0.0-rc.113` (v4 release candidate). The upgrade uses
+`Effect.callback`, `Fiber.Fiber`, and `effect/testing` rather than v3 APIs.
+`Notebook.captureSource` uses `Effect.fn`; the React callback carries a named
+`Diagram.pulse` span with edge and direction attributes.
+Playback uses `Effect.repeat` with a schedule and a live Loop predicate; the
+React boundary reports failures while Stop and unmount interrupt owned fibers.
+
+Missing or removed edges fail with `PulseUnavailable`; they cannot advance the
+sequence as if arrival succeeded. Exceptions in animation-frame callbacks are
+returned as defects to the waiting fiber, and pulse DOM resources are removed.
+
+Workflow tests use TestClock, Deferred, and Queue for controlled arrival ordering,
+including proving one fan-out destination stays unchanged while the other arrives.
+Renderer tests cover missing routes, callback failure cleanup, and interruption.

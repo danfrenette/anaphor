@@ -4,6 +4,12 @@
 import { createContext, useContext, useState, useRef, useId, useCallback, useLayoutEffect, type ReactNode, type HTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
 import * as Effect from 'effect/Effect';
+import * as Schema from 'effect/Schema';
+
+export class PulseUnavailable extends Schema.TaggedError<PulseUnavailable>()('PulseUnavailable', {
+  edge: Schema.String,
+  reason: Schema.Literals(['missing-edge', 'unmounted-edge']),
+}) {}
 
 
 type Box = { x: number; y: number; width: number; height: number };
@@ -15,7 +21,7 @@ type GraphContext = {
   endpoints: Map<string, SVGGElement>;
   cardLights: Map<string, HTMLSpanElement>;
   clearGlows: () => void;
-  pulse: (edge: string, reverse?: boolean) => Effect.Effect<void>;
+  pulse: (edge: string, reverse?: boolean) => Effect.Effect<void, PulseUnavailable>;
 };
 const Context = createContext<GraphContext | null>(null);
 function useGraphContext() {
@@ -113,9 +119,13 @@ export function Graph({ children, pulseSpeed = 120 }: {
   const pulses = useRef<SVGGElement>(null);
   const glowId = useId().replace(/:/g, '');
   const pulseNumber = useRef(0);
-  const pulse = useCallback((edge: string, reverse = false) => Effect.async<void>(resume => {
+  const pulse = useCallback((edge: string, reverse = false) => Effect.callback<void, PulseUnavailable>(resume => {
     const path = paths.get(edge);
-    if (!path || !pulses.current) { resume(Effect.void); return; }
+    if (!path || !pulses.current) {
+      resume(Effect.fail(new PulseUnavailable({ edge, reason: 'missing-edge' })));
+      return;
+    }
+    let length = path.getTotalLength();
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const dot = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     dot.classList.add('pulse');
@@ -125,12 +135,15 @@ export function Graph({ children, pulseSpeed = 120 }: {
     const light = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     light.classList.add('pulse-route-light');
     light.innerHTML = `<defs><radialGradient id="${lightId}" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="40"><stop offset="0" stop-color="#f3f4ec" stop-opacity=".85"/><stop offset=".3" stop-color="#f3f4ec" stop-opacity=".45"/><stop offset=".7" stop-color="#f3f4ec" stop-opacity=".12"/><stop offset="1" stop-color="#f3f4ec" stop-opacity="0"/></radialGradient></defs>`;
-    const routeLight = path.cloneNode(false) as SVGPathElement;
+    const routeLight = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    routeLight.setAttribute('d', path.getAttribute('d') ?? '');
+    routeLight.setAttribute('fill', 'none');
     routeLight.style.stroke = `url(#${lightId})`;
     routeLight.setAttribute('stroke-width', '1.5');
     light.appendChild(routeLight);
     light.style.opacity = '0';
-    const gradient = light.querySelector('radialGradient')!;
+    const gradient = light.querySelector('radialGradient');
+    if (!gradient) { resume(Effect.die(new Error('Pulse gradient was not created'))); return; }
     dot.dataset.edgeId = edge;
     pulses.current.appendChild(light);
     pulses.current.appendChild(dot);
@@ -138,34 +151,50 @@ export function Graph({ children, pulseSpeed = 120 }: {
       light.remove();
       dot.remove();
     };
-    const length = path.getTotalLength();
     const duration = reduce ? 160 : Math.max(1040, length / Math.max(1, pulseSpeed) * 1000);
     let frame = 0;
     let start: number | undefined;
     const tick = (now: number) => {
-      start ??= now;
-      const t = Math.min((now - start) / duration, 1);
-      const position = reduce ? (reverse ? 0 : 1) : (reverse ? 1 - t : t);
-      const p = path.getPointAtLength(length * position);
-      gradient.setAttribute('gradientTransform', `translate(${p.x} ${p.y})`);
-      light.style.opacity = String(reduce ? 0 : Math.min(t * 12, 1));
-      dot.style.transform = `translate(${p.x}px, ${p.y}px)`;
-      dot.style.opacity = String(reduce ? 1 - t : Math.min(t * 12, 1));
-      if (t < 1) frame = requestAnimationFrame(tick);
-      else {
-        const endpoint = endpoints.get(`${edge}:${reverse ? 'from' : 'to'}`);
-        const cardLight = endpoint ? cardLights.get(endpoint.dataset.nodeId ?? '') : undefined;
-        if (cardLight) {
-          cardLight.style.setProperty('--light-x', reverse ? '100%' : '0%');
-        }
-        illuminate([endpoint, cardLight], reduce);
+      if (!path.isConnected || !pulses.current) {
         removePulse();
-        resume(Effect.void);
+        resume(Effect.fail(new PulseUnavailable({ edge, reason: 'unmounted-edge' })));
+        return;
+      }
+      try {
+        // Scrolling can move the measured edge while a pulse is in flight.
+        const route = path.getAttribute('d') ?? '';
+        if (routeLight.getAttribute('d') !== route) {
+          routeLight.setAttribute('d', route);
+          length = path.getTotalLength();
+        }
+        start ??= now;
+        const t = Math.min((now - start) / duration, 1);
+        const position = reduce ? (reverse ? 0 : 1) : (reverse ? 1 - t : t);
+        const p = path.getPointAtLength(length * position);
+        gradient.setAttribute('gradientTransform', `translate(${p.x} ${p.y})`);
+        light.style.opacity = String(reduce ? 0 : Math.min(t * 12, 1));
+        dot.style.transform = `translate(${p.x}px, ${p.y}px)`;
+        dot.style.opacity = String(reduce ? 1 - t : Math.min(t * 12, 1));
+        if (t < 1) frame = requestAnimationFrame(tick);
+        else {
+          const endpoint = endpoints.get(`${edge}:${reverse ? 'from' : 'to'}`);
+          const cardLight = endpoint ? cardLights.get(endpoint.dataset.nodeId ?? '') : undefined;
+          if (cardLight) {
+            cardLight.style.setProperty('--light-x', reverse ? '100%' : '0%');
+          }
+          illuminate([endpoint, cardLight], reduce);
+          removePulse();
+          resume(Effect.void);
+        }
+      } catch (cause) {
+        // Browser callbacks run outside the fiber; explicitly return defects to it.
+        removePulse();
+        resume(Effect.die(cause));
       }
     };
     frame = requestAnimationFrame(tick);
     return Effect.sync(() => { cancelAnimationFrame(frame); removePulse(); });
-  }), [paths, endpoints, cardLights, illuminate, glowId, pulseSpeed]);
+  }).pipe(Effect.withSpan("Diagram.pulse", { attributes: { edge, reverse } })), [paths, endpoints, cardLights, illuminate, glowId, pulseSpeed]);
   return <Context.Provider value={{ register, boxes, surface, paths, endpoints, cardLights, clearGlows, pulse }}>
     <div className="relative" ref={root}>
       <svg className="pointer-events-none absolute inset-0 z-[3] h-full w-full overflow-hidden" aria-hidden="true">

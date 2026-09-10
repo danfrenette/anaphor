@@ -1,20 +1,25 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import * as Effect from "effect/Effect";
+import * as Deferred from "effect/Deferred";
+import * as Queue from "effect/Queue";
 import { useDiagramPlayback } from "./use-diagram-playback";
 
 function pendingSequence() {
   const cleanup = vi.fn();
   const complete = vi.fn();
-  let resume: (() => void) | undefined;
+  const gates = Effect.runSync(Queue.unbounded<Deferred.Deferred<void>>());
   const program = Effect.gen(function* () {
-    yield* Effect.async<void>(done => {
-      resume = () => done(Effect.void);
-      return Effect.sync(cleanup);
-    });
+    const gate = yield* Deferred.make<void>();
+    yield* Queue.offer(gates, gate);
+    yield* Deferred.await(gate).pipe(Effect.onInterrupt(() => Effect.sync(cleanup)));
     yield* Effect.sync(complete);
   });
-  return { program, cleanup, complete, resume: () => resume?.() };
+  const resume = () => Effect.runPromise(Effect.gen(function* () {
+    const gate = yield* Queue.take(gates);
+    yield* Deferred.succeed(gate, undefined);
+  }));
+  return { program, cleanup, complete, resume };
 }
 
 describe("useDiagramPlayback", () => {

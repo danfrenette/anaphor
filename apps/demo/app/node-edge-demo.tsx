@@ -62,7 +62,7 @@ function NotebookDiagram() {
   return (
     <>
       <div tabIndex={0} role="region" aria-label="Notebook diagram; scroll horizontally to explore" className="overflow-x-auto">
-        <div className="grid min-w-[840px] grid-cols-[220px_240px_220px] items-center gap-x-[60px] px-5 py-12">
+        <div className="mx-auto grid w-[840px] grid-cols-[220px_240px_220px] items-center gap-x-[60px] px-5 py-12">
           <div className="flex flex-col gap-4">
             <p className="mb-2 text-label uppercase tracking-[.08em] text-muted-foreground">01 / Capture</p>
             {sourceOrder.map(id => {
@@ -112,7 +112,7 @@ function NotebookDiagram() {
               <Card>
                 <CardHeader>
                   <CardTitle>Search index</CardTitle>
-                  <CardDescription>Indexed revision {notebook.indexedRevision}</CardDescription>
+                  <CardDescription className="col-span-full whitespace-nowrap tabular-nums">Revision {notebook.indexedRevision}</CardDescription>
                   <CardAction><MagnifyingGlassIcon size={16} aria-hidden="true" /></CardAction>
                 </CardHeader>
               </Card>
@@ -121,7 +121,7 @@ function NotebookDiagram() {
               <Card>
                 <CardHeader>
                   <CardTitle>Summary</CardTitle>
-                  <CardDescription>Summarized revision {notebook.summaryRevision}</CardDescription>
+                  <CardDescription className="col-span-full whitespace-nowrap tabular-nums">Revision {notebook.summaryRevision}</CardDescription>
                   <CardAction><SparkleIcon size={16} aria-hidden="true" /></CardAction>
                 </CardHeader>
               </Card>

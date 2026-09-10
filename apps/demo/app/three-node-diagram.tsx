@@ -14,7 +14,7 @@ const nodes = [
 
 function DiagramContent() {
   const { pulse, clearGlows } = useGraph();
-  const { run, stop, running } = useDiagramPlayback();
+  const { run, stop, running, error } = useDiagramPlayback();
 
   function play() {
     clearGlows();
@@ -44,6 +44,7 @@ function DiagramContent() {
           <ButtonLabel>{running ? "Stop" : "Play"}</ButtonLabel>
         </Button>
       </div>
+      <p role="status" className="sr-only">{error ? "The diagram could not finish. Try again." : running ? "Following the three-node flow" : "Ready to play"}</p>
     </>
   );
 }

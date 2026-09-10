@@ -43,35 +43,33 @@ export type SourceId = keyof typeof sources;
 export const sourceOrder = ["audio", "note", "link"] as const satisfies readonly SourceId[];
 
 type NotebookFlow = {
-  pulse: (edgeId: string) => Effect.Effect<void>;
+  pulse: (edgeId: string) => Effect.Effect<void, unknown>;
   update: (change: (notebook: Notebook) => Notebook) => void;
   report: (message: string) => void;
 };
 
-export function captureSource(id: SourceId, { pulse, update, report }: NotebookFlow) {
-  return Effect.gen(function* () {
-    const source = sources[id];
-    yield* Effect.sync(() => report(`${source.title} → notebook`));
-    yield* pulse(`${id}-notebook`);
-    yield* Effect.sync(() => {
-      update(source.update);
-      report("Notebook updated · preparing search and summary");
-    });
-    yield* Effect.sleep(480);
-    yield* Effect.all([
-      Effect.gen(function* () {
-        yield* pulse("notebook-search");
-        yield* Effect.sync(() => update(current => ({
-          ...current, indexedRevision: current.revision,
-        })));
-      }),
-      Effect.gen(function* () {
-        yield* pulse("notebook-summary");
-        yield* Effect.sync(() => update(current => ({
-          ...current, summaryRevision: current.revision,
-        })));
-      }),
-    ], { concurrency: "unbounded" });
-    yield* Effect.sync(() => report("Notebook, search, and summary are up to date"));
+export const captureSource = Effect.fn("Notebook.captureSource")(function* (id: SourceId, { pulse, update, report }: NotebookFlow) {
+  const source = sources[id];
+  yield* Effect.sync(() => report(`${source.title} → notebook`));
+  yield* pulse(`${id}-notebook`);
+  yield* Effect.sync(() => {
+    update(source.update);
+    report("Notebook updated · preparing search and summary");
   });
-}
+  yield* Effect.sleep(480);
+  yield* Effect.all([
+    Effect.gen(function* () {
+      yield* pulse("notebook-search");
+      yield* Effect.sync(() => update(current => ({
+        ...current, indexedRevision: current.revision,
+      })));
+    }),
+    Effect.gen(function* () {
+      yield* pulse("notebook-summary");
+      yield* Effect.sync(() => update(current => ({
+        ...current, summaryRevision: current.revision,
+      })));
+    }),
+  ], { concurrency: "unbounded" });
+  yield* Effect.sync(() => report("Notebook, search, and summary are up to date"));
+});
