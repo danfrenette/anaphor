@@ -11,6 +11,11 @@ test("renders an accessible reference manual without horizontal overflow", async
   ).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Manual index" })).toBeVisible();
 
+  // Field labels register during hydration; audit the interactive page.
+  for (const checkbox of await page.getByRole("checkbox").all()) {
+    await expect(checkbox).toHaveAccessibleName(/\S/);
+  }
+
   const accessibility = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
     .disableRules(["color-contrast"])

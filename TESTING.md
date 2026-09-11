@@ -133,7 +133,8 @@ are canceled. Workflow permissions are read-only.
 
 Browser jobs use `mcr.microsoft.com/playwright:v1.63.0-noble` on Linux x86-64.
 Update that image and the exact `@playwright/test` dependency together. CI uses
-two workers, rejects focused tests, and retries a failing browser test once.
+two workers, allows 60 seconds per test for slower browser/accessibility checks,
+rejects focused tests, and retries a failing browser test once.
 The `playwright-report` artifact includes the HTML report, failure screenshots,
 and traces; download it and run `pnpm exec playwright show-report <report-path>`.
 Failed registry consumers are uploaded separately without their node_modules.
@@ -149,7 +150,8 @@ private repository with â€œUpgrade to GitHub Pro or make this repository publicâ
 Until that account capability changes, check all three results before merging;
 the workflow alone does not prevent a merge.
 
-Vercel should connect to this GitHub repository with the Next.js project root
-set to `apps/demo` and access to files outside the root enabled for the shared
-workspace package. Use `main` for production and pull requests for previews.
+The Vercel project `danrfrenettes-projects/anaphor` is connected to this GitHub
+repository. Its Next.js root is `apps/demo`, Node is 24.x, and access to files
+outside the root is enabled for the shared workspace package. `main` deploys to
+https://anaphor.vercel.app; branches receive preview deployments linked from PRs.
 Keep validation in GitHub Actions; the Vercel Git integration handles deployments.
