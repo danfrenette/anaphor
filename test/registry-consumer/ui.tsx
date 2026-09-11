@@ -9,6 +9,7 @@ import { Field, FieldLabel } from "./components/ui/field";
 import { FieldFeedback } from "./components/ui/field-feedback";
 import { Input } from "./components/ui/input";
 import { MorphSurface } from "./components/ui/morph-surface";
+import { Menu, MenuItem, MenuPopup, MenuTrigger } from "./components/ui/menu";
 import { Separator } from "./components/ui/separator";
 import { Text } from "./components/ui/text";
 import { Prose } from "./components/ui/prose";
@@ -29,6 +30,10 @@ function Consumer() {
         <Checkbox aria-label="Accept updates" />
         <Separator />
         <CardCopyButton value="Registry consumer" />
+        <Menu>
+          <MenuTrigger render={<Button tone="neutral" variant="outline" />}><ButtonLabel>Registry menu</ButtonLabel></MenuTrigger>
+          <MenuPopup><MenuItem>Installed action</MenuItem></MenuPopup>
+        </Menu>
         <p className="font-mono">Installed source</p>
       </CardContent>
     </Card>

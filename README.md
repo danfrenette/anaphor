@@ -202,3 +202,12 @@ Use `Text` variants for headings, body copy, interface text, labels, captions,
 and code. Wrap native article or rendered Markdown content in `Prose` for
 consistent spacing and 90% text alpha. Headings use Bell Gothic Black.
 See [Typography](docs/components/typography.md) for the API and examples.
+
+## Dropdown menu
+
+Use `Menu`, `MenuTrigger`, and `MenuPopup` for a trigger-anchored list of actions;
+groups, labels, separators, shortcuts, and a destructive item treatment are also
+included. Base UI owns focus, keyboard navigation, collision handling, dismissal,
+and focus return. The popup scales from Base UI's trigger-relative transform
+origin over 180ms; reduced motion keeps only a 200ms fade. The reference manual
+includes a file-actions example.
