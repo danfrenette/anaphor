@@ -209,5 +209,8 @@ Use `Menu`, `MenuTrigger`, and `MenuPopup` for a trigger-anchored list of action
 groups, labels, separators, shortcuts, and a destructive item treatment are also
 included. Base UI owns focus, keyboard navigation, collision handling, dismissal,
 and focus return. The popup scales from Base UI's trigger-relative transform
-origin over 180ms; reduced motion keeps only a 200ms fade. The reference manual
-includes a file-actions example.
+origin over 180ms while the trigger keeps a stable outer box. Pointer movement
+glides one shared highlight between nearby enabled actions without forwarding
+gap clicks; labels and separators break the path. Keyboard highlighting is
+immediate, and reduced motion removes travel. The reference manual includes a
+file-actions example.

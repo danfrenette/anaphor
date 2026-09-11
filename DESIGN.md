@@ -115,6 +115,19 @@ documented reason. Avoid animation for repeated keyboard actions and content
 already present. Prefer transform and opacity; define reduced-motion behavior
 per component.
 
+### Fluid hover
+
+Dense, stationary collections of peer actions may use one shared highlight that
+follows the nearest enabled item. Use it for menus, listboxes, tabs, and compact
+action lists where every item is interactive and the pointer can cross small
+gaps. Labels and separators form boundaries; disabled items are skipped. Keep
+keyboard feedback immediate, and remove highlight travel for reduced motion.
+
+Fluid hover is visual guidance, not permission to enlarge hit areas. Do not
+forward clicks from gaps, especially near destructive actions. Avoid the pattern
+for isolated controls, passive or mixed-interactivity cards, spacious layouts,
+reordering rows, and any collection where selecting the wrong item is costly.
+
 ## Demos
 
 Opinionated demos expose only meaningful variables. Approved values are the
@@ -189,10 +202,18 @@ items use the existing danger text role.
 
 The popup enters and exits along the same path with opacity and scale from 0.95,
 using the Base UI transform origin, the shared strong ease-out curve, and 180ms
-duration. Keyboard activation and Base UI instant transitions remain instant.
+duration. Its trigger keeps a stable outer box while pressed so anchor
+measurement cannot move the popup; press feedback scales only the trigger's
+content. Keyboard activation and Base UI instant transitions remain instant.
 Reduced motion removes scale and retains a 200ms opacity fade for pointer
-activation. The mechanical composition follows coss Menu; visual and motion
-decisions remain local to Anaphor.
+activation.
+
+Pointer hover uses one shared highlight. It fades over the fast 80ms spring and
+travels between enabled peers on the moderate 160ms critically damped spring.
+Labels and separators interrupt the path, clicks remain bound to their actual
+items, and keyboard highlighting stays immediate. Reduced motion removes travel.
+The mechanical composition follows coss Menu; visual and motion decisions remain
+local to Anaphor.
 
 ## Card copy feedback
 

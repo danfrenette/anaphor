@@ -1,11 +1,22 @@
 "use client";
 
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { cn } from "../lib/utils";
-import type { ComponentProps, ReactElement } from "react";
+import { useRef, useState } from "react";
+import type { ComponentProps, PointerEvent as ReactPointerEvent, ReactElement, ReactNode } from "react";
 
 const itemStyles =
-  "flex min-h-9 cursor-default select-none items-center gap-2 rounded-md px-3 py-2 text-ui text-foreground outline-none data-disabled:pointer-events-none data-disabled:text-muted-foreground data-highlighted:bg-[color-mix(in_oklch,var(--anaphor-brand)_14%,var(--anaphor-foreground))] data-inset:ps-9 data-[variant=destructive]:text-danger-foreground data-[variant=destructive]:data-highlighted:bg-[color-mix(in_oklch,var(--anaphor-danger)_14%,var(--anaphor-foreground))] pointer-coarse:min-h-11 [&>svg]:pointer-events-none [&>svg]:size-4 [&>svg]:shrink-0";
+  "relative z-10 flex min-h-9 cursor-default select-none items-center gap-2 rounded-md px-3 py-2 text-ui text-foreground outline-none data-disabled:pointer-events-none data-disabled:text-muted-foreground data-highlighted:bg-[color-mix(in_oklch,var(--anaphor-brand)_14%,var(--anaphor-foreground))] data-inset:ps-9 data-[variant=destructive]:text-danger-foreground data-[variant=destructive]:data-highlighted:bg-[color-mix(in_oklch,var(--anaphor-danger)_14%,var(--anaphor-foreground))] pointer-coarse:min-h-11 [&>svg]:pointer-events-none [&>svg]:size-4 [&>svg]:shrink-0";
+
+const fluidHoverFade = { type: "spring", duration: 0.08, bounce: 0 } as const;
+const fluidHoverTravel = { type: "spring", duration: 0.16, bounce: 0 } as const;
+
+type FluidHighlight = {
+  height: number;
+  top: number;
+  variant: "default" | "destructive";
+};
 
 const Menu: typeof MenuPrimitive.Root = MenuPrimitive.Root;
 const MenuPortal: typeof MenuPrimitive.Portal = MenuPrimitive.Portal;
@@ -14,9 +25,110 @@ function MenuTrigger({ className, ...props }: MenuPrimitive.Trigger.Props): Reac
   return (
     <MenuPrimitive.Trigger
       data-slot="menu-trigger"
+      data-stable-anchor=""
       className={className}
       {...props}
     />
+  );
+}
+
+function MenuItems({ children }: { children: ReactNode }): ReactElement {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const activeItemRef = useRef<HTMLElement | null>(null);
+  const [highlight, setHighlight] = useState<FluidHighlight | null>(null);
+  const reducedMotion = useReducedMotion();
+
+  function clearHighlight() {
+    activeItemRef.current = null;
+    setHighlight(null);
+  }
+
+  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const container = containerRef.current;
+    if (
+      !container ||
+      event.pointerType !== "mouse" ||
+      typeof window.matchMedia !== "function" ||
+      !window.matchMedia("(hover: hover) and (pointer: fine)").matches
+    ) {
+      clearHighlight();
+      return;
+    }
+
+    const structuralElements = container.querySelectorAll<HTMLElement>(
+      '[data-slot="menu-group-label"], [data-slot="menu-separator"]',
+    );
+    const overStructure = [...structuralElements].some((element) => {
+      const rect = element.getBoundingClientRect();
+      return event.clientY >= rect.top && event.clientY <= rect.bottom;
+    });
+    if (overStructure) {
+      clearHighlight();
+      return;
+    }
+
+    const items = [...container.querySelectorAll<HTMLElement>('[data-slot="menu-item"]:not([data-disabled])')];
+    let nearest: HTMLElement | null = null;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+    for (const item of items) {
+      const rect = item.getBoundingClientRect();
+      const distance = event.clientY < rect.top
+        ? rect.top - event.clientY
+        : event.clientY > rect.bottom
+          ? event.clientY - rect.bottom
+          : 0;
+      if (distance < nearestDistance) {
+        nearest = item;
+        nearestDistance = distance;
+      }
+    }
+
+    if (!nearest || nearest === activeItemRef.current) return;
+    activeItemRef.current = nearest;
+    const containerRect = container.getBoundingClientRect();
+    const itemRect = nearest.getBoundingClientRect();
+    setHighlight({
+      height: itemRect.height,
+      top: itemRect.top - containerRect.top + container.scrollTop,
+      variant: nearest.dataset.variant === "destructive" ? "destructive" : "default",
+    });
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      data-fluid-hover={highlight ? "" : undefined}
+      data-slot="menu-items"
+      className="relative max-h-[var(--available-height)] overflow-y-auto"
+      onPointerEnter={handlePointerMove}
+      onPointerLeave={clearHighlight}
+      onPointerMove={handlePointerMove}
+    >
+      <AnimatePresence initial={false}>
+        {highlight ? (
+          <motion.div
+            key="fluid-highlight"
+            aria-hidden="true"
+            data-slot="menu-fluid-highlight"
+            className={cn(
+              "pointer-events-none absolute inset-x-0 top-0 z-0 rounded-md",
+              highlight.variant === "destructive"
+                ? "bg-[color-mix(in_oklch,var(--anaphor-danger)_14%,var(--anaphor-foreground))]"
+                : "bg-[color-mix(in_oklch,var(--anaphor-brand)_14%,var(--anaphor-foreground))]",
+            )}
+            initial={{ opacity: 0, transform: `translate3d(0, ${highlight.top}px, 0)` }}
+            animate={{ opacity: 1, transform: `translate3d(0, ${highlight.top}px, 0)` }}
+            exit={{ opacity: 0, transition: { duration: 0.06 } }}
+            style={{ height: highlight.height }}
+            transition={{
+              opacity: fluidHoverFade,
+              transform: reducedMotion ? { duration: 0 } : fluidHoverTravel,
+            }}
+          />
+        ) : null}
+      </AnimatePresence>
+      {children}
+    </div>
   );
 }
 
@@ -61,9 +173,7 @@ function MenuPopup({
           }
           {...props}
         >
-          <div className="max-h-[var(--available-height)] overflow-y-auto">
-            {children}
-          </div>
+          <MenuItems>{children}</MenuItems>
         </MenuPrimitive.Popup>
       </MenuPrimitive.Positioner>
     </MenuPortal>
