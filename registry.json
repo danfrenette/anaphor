@@ -172,7 +172,7 @@
     {
       "name": "menu",
       "type": "registry:ui",
-      "dependencies": ["@base-ui/react"],
+      "dependencies": ["@base-ui/react", "motion"],
       "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
