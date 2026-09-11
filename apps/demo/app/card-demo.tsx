@@ -1,3 +1,4 @@
+import { CardMediaExamples } from "./card-media-examples";
 import { CardPlayground } from "./card-playground";
 import { Badge, Button, ButtonLabel, Card, CardAction, CardCopyButton, CardPreview, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
 
@@ -15,11 +16,11 @@ export function CardDemo() {
         </p>
       </header>
 
-      <div className="mt-8 grid items-start gap-6 sm:grid-cols-2">
+      <div className="mt-8 grid items-stretch gap-6 sm:grid-cols-2">
         <CardPlayground />
 
-        <Card aria-labelledby="card-preview-title">
-          <div className="flex min-h-40 items-center justify-center rounded-t-card bg-background" role="group" aria-label="Button preview">
+        <Card className="flex flex-col" aria-labelledby="card-preview-title">
+          <div className="flex min-h-40 flex-1 items-center justify-center rounded-t-card bg-background" role="group" aria-label="Button preview">
             <Button variant="outline"><ButtonLabel>Execute</ButtonLabel></Button>
           </div>
           <CardHeader>
@@ -29,9 +30,9 @@ export function CardDemo() {
         </Card>
       </div>
 
-      <Card className="mt-8">
+      <Card className="mt-8" role="group" aria-labelledby="spacing-tokens-title">
         <CardHeader>
-          <CardTitle>Spacing tokens</CardTitle>
+          <CardTitle id="spacing-tokens-title">Spacing tokens</CardTitle>
           <CardAction><CardCopyButton value={"--space-1: 4px;\n--space-2: 8px;\n--space-3: 12px;"} aria-label="Copy spacing tokens" /></CardAction>
         </CardHeader>
         <CardContent><pre className="overflow-x-auto font-mono text-ui"><code>{"--space-1: 4px;\n--space-2: 8px;\n--space-3: 12px;"}</code></pre></CardContent>
@@ -68,6 +69,8 @@ export function CardDemo() {
           </Card>
         </div>
       </div>
+
+      <CardMediaExamples />
 
       <Card className="dark mt-8" aria-labelledby="card-dark-title">
         <CardHeader>

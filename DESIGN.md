@@ -89,14 +89,15 @@ provide grouping before containers do.
 
 - Structural surfaces: square corners or 4px radius.
 - General compact surfaces: 8px radius.
-- Cards: 12px radius, a theme-neutral raised surface, no border or shadow.
+- Cards: 12px radius, a theme-neutral raised surface, and the shared card
+  shadow: a 1px keyline, compact near shadow, and soft 2–4px falloff.
   Section padding is 24px, shared between adjacent sections. The outer card
   has no padding or overflow clipping; edge-to-edge media rounds its own corners.
   Width follows the available space and height follows content.
 - Tactile controls: 10px radius.
 - Pills and indicators: fully rounded only when shape communicates behavior.
-- Elevation: flat by default; layered shadow is reserved for temporary floating
-  tools such as the demo control surface.
+- Elevation: structural surfaces stay flat. Cards and temporary floating tools
+  use restrained layered shadows appropriate to their scale.
 
 ## Density
 
@@ -186,10 +187,9 @@ failure without moving focus. Static Card parts remain server-compatible.
 
 ## Showcase cards
 
-The default Card stays quiet and borderless. `variant="showcase"` places its
+The default Card stays quiet and uses the shared card shadow. `variant="showcase"` places its
 sections on the page surface, with unpadded captions below the preview.
 `CardPreview` owns a double frame: a 4px inset, concentric corners, fine neutral
-outlines, and a restrained layered shadow. It is the explicit exception to flat
-card elevation for work presented as a page centerpiece. Its inner surface clips
+outlines, and the same restrained layered shadow as the default Card. Its inner surface clips
 artwork; the outer Card never clips controls or focus rings. The default preview
 ratio is 4:5 and can be changed with `--card-preview-ratio`.

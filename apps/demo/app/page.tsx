@@ -2,6 +2,7 @@ import { PlaygroundHost } from "./playground-host";
 import { Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
 import { ButtonDemo } from "./button-demo";
 import { BadgeDemo } from "./badge-demo";
+import { NodeEdgeDemo } from "./node-edge-demo";
 import { CardDemo } from "./card-demo";
 import { CheckboxDemo } from "./checkbox-demo";
 import { InputDemo } from "./input-demo";
@@ -28,7 +29,11 @@ const index = [
   },
   {
     label: "03 / Components",
-    links: [["Card", "#card"], ["Badge", "#badge"]],
+    links: [["Card", "#card"], ["Badge", "#badge"], ["Node-edge graphs", "#node-edge-graphs"]],
+  },
+  {
+    label: "04 / Studies",
+    links: [["Visual studies", "/studies"]],
   },
 ] as const;
 
@@ -106,7 +111,7 @@ export default function HomePage() {
       <main
         id="content"
         tabIndex={-1}
-        className="px-6 py-12 sm:px-12 lg:px-20 lg:py-14"
+        className="min-w-0 px-6 py-12 sm:px-12 lg:px-20 lg:py-14"
       >
         <article className="mx-auto max-w-[840px]">
           <header id="purpose" className="scroll-mt-8 pb-10">
@@ -321,6 +326,7 @@ export default function HomePage() {
             <ButtonDemo />
             <CardDemo />
             <BadgeDemo />
+            <NodeEdgeDemo />
             <InputDemo />
             <CheckboxDemo />
           </PlaygroundHost>

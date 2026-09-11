@@ -25,6 +25,17 @@ Do not add compatibility layers, generated entry points, or publishing
 automation before a real consumer requires them. Reference material under
 `examples/` is excluded from packages and builds.
 
+## Registry Distribution
+
+The workspace package and source registry share the design-system implementation.
+The reference manual remains a workspace package consumer. Registry verification
+uses the real shadcn installer against disposable item files built from the
+current checkout, followed by an independent consumer build and browser checks.
+Only same-registry dependency addresses change to local paths for the check;
+installation transforms and dependency installation remain shadcn’s responsibility.
+The verification script and consumer fixture stay outside the design system and
+are not distributed registry items.
+
 ## Styling Ownership
 
 The design-system package owns Tailwind CSS v4, its CSS-first `@theme` block,
@@ -89,7 +100,7 @@ that API.
 ## Contextual demo controls
 
 The package exports a controlled `MorphSurface` for the expanding surface,
-reference animation, and focus return. The demo owns viewport section detection
+trigger-anchored reveal, and focus return. The demo owns viewport section detection
 and the shared panel. Each playground registers its section ID and title through
 PlaygroundControls, which portals locally owned controls and Reset into that panel.
 Playgrounds stay mounted, so settings live for the page session; Reset applies
@@ -98,6 +109,19 @@ or rendering branches. Shared Select, Check, and Range fields live in
 `playground-fields.tsx`. Focus or an active pointer interaction pins the component until interaction ends. Passive Card remains
 independent of the floating surface.
 
-Portal events follow React ownership rather than DOM placement. The host observes
-DOM focus, pointer, and Escape events to preserve interaction pinning and focus
-return for portaled controls. Static examples remain server-composed children.
+MorphSurface observes DOM focus, pointer, and Escape events so inline and portaled
+content share one interaction contract. Its optional `onInteractionChange` reports
+focus within open content or a held pointer on the surface; the host uses that
+signal to pin viewport selection without querying the surface's internal markup.
+Escape already handled by child content is respected. Focus returns to the trigger
+on close, and closed content is inert immediately, including during its fade.
+Static examples remain server-composed children.
+
+The reveal preserves the reference's bottom-right origin and shared marker using
+Motion. A clip-path transition changes the visible surface while content keeps
+its natural dimensions. Reveal and opacity share an ease-out: 250ms opening,
+150ms closing, following the longer-entrance/shorter-exit principle in
+[4 principles of transition](https://interfaces.dev/magazine/issues/4-principles-of-transition).
+Closing reverses the reveal without delayed dismissal. Keyboard activation and Escape settle
+instantly; reduced motion keeps only the fade. No width/height animation or
+ResizeObserver is needed. Content remains mounted while the surface is closed.
