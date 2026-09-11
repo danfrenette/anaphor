@@ -4,6 +4,11 @@ import { expect, type Locator, type Page } from "@playwright/test";
 // real browser interpolation without racing the runner's frame rate.
 export async function holdAnimations(page: Page) {
   await page.addInitScript(() => {
+    const play = Animation.prototype.play;
+    Animation.prototype.play = function () {
+      play.call(this);
+      if (this.effect?.getTiming().iterations !== Infinity && Number(this.effect?.getTiming().duration) > 0) this.pause();
+    };
     const animate = Element.prototype.animate;
     Element.prototype.animate = function (...args) {
       const animation = animate.apply(this, args);

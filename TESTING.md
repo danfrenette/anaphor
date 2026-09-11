@@ -134,7 +134,9 @@ are canceled. Workflow permissions are read-only.
 Browser jobs use `mcr.microsoft.com/playwright:v1.63.0-noble` on Linux x86-64.
 Update that image and the exact `@playwright/test` dependency together. CI uses
 two workers, allows 60 seconds per test for slower browser/accessibility checks,
-rejects focused tests, and retries a failing browser test once.
+allows 15 seconds for individual assertions, rejects focused tests, and retries
+a failing browser test once. Motion tests pause and seek browser animations so
+intermediate-state checks do not depend on the runner's frame rate.
 The `playwright-report` artifact includes the HTML report, failure screenshots,
 and traces; download it and run `pnpm exec playwright show-report <report-path>`.
 Failed registry consumers are uploaded separately without their node_modules.
