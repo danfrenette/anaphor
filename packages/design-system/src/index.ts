@@ -8,5 +8,7 @@ export { FieldFeedback, type FieldFeedbackProps } from "./components/field-feedb
 export { Field, FieldLabel, FieldDescription, FieldError } from "./components/field";
 export { Checkbox, CheckboxPrimitive } from "./components/checkbox";
 export { Badge, type BadgeProps } from "./components/badge";
+export { Menu, MenuGroup, MenuGroupLabel, MenuItem, MenuPopup, MenuPortal, MenuSeparator, MenuShortcut, MenuTrigger, type MenuGroupLabelProps, type MenuItemProps, type MenuPopupProps } from "./components/menu";
+
 export { Text, type TextProps, type TextVariant } from "./components/text";
 export { Prose, type ProseProps } from "./components/prose";

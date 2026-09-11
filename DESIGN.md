@@ -179,6 +179,21 @@ labels such as Study 01. Phosphor icons compose beside text. Long labels wrap.
 Badges stay server-compatible and passive, with no hover, press, loading, or
 motion behavior. The reference rationale lives in docs/components/badge.md.
 
+## Dropdown menus
+
+Dropdown menus are temporary, trigger-anchored action surfaces. Their trigger is
+an ordinary Anaphor Button; the panel uses a 10px control radius, restrained
+layered elevation, compact grouping, and 36px items that expand to 44px for
+coarse pointers. Highlight uses a quiet brand-tinted neutral, while destructive
+items use the existing danger text role.
+
+The popup enters and exits along the same path with opacity and scale from 0.95,
+using the Base UI transform origin, the shared strong ease-out curve, and 180ms
+duration. Keyboard activation and Base UI instant transitions remain instant.
+Reduced motion removes scale and retains a 200ms opacity fade for pointer
+activation. The mechanical composition follows coss Menu; visual and motion
+decisions remain local to Anaphor.
+
 ## Card copy feedback
 
 `CardCopyButton` composes inside `CardAction` and copies its explicit `value`.

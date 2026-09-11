@@ -6,6 +6,7 @@ import { NodeEdgeDemo } from "./node-edge-demo";
 import { CardDemo } from "./card-demo";
 import { CheckboxDemo } from "./checkbox-demo";
 import { InputDemo } from "./input-demo";
+import { DropdownMenuDemo } from "./dropdown-menu-demo";
 
 const index = [
   {
@@ -25,7 +26,7 @@ const index = [
   },
   {
     label: "02 / Controls",
-    links: [["Button", "#button"], ["Input", "#input"], ["Checkbox", "#checkbox"]],
+    links: [["Button", "#button"], ["Input", "#input"], ["Checkbox", "#checkbox"], ["Dropdown menu", "#dropdown-menu"]],
   },
   {
     label: "03 / Components",
@@ -336,6 +337,7 @@ export default function HomePage() {
             <NodeEdgeDemo />
             <InputDemo />
             <CheckboxDemo />
+            <DropdownMenuDemo />
           </PlaygroundHost>
         </article>
       </main>
