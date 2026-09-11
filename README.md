@@ -195,3 +195,10 @@ Selection scales in over 150ms; removal fades out. Reduced motion is immediate.
 The checkbox mark stays light in both themes so it contrasts with the accent
 fill. Required validation belongs to the consuming form. The demo presents the
 required state without a standalone submission flow.
+
+## Typography
+
+Use `Text` variants for headings, body copy, interface text, labels, captions,
+and code. Wrap native article or rendered Markdown content in `Prose` for
+consistent spacing and 90% text alpha. Headings use Bell Gothic Black.
+See [Typography](docs/components/typography.md) for the API and examples.

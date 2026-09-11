@@ -47,6 +47,7 @@
   --color-ring: var(--anaphor-focus);
 
   --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Bell Gothic Black", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Magda Clean Mono", ui-monospace, monospace;
 
   --text-label: 0.75rem;
@@ -101,6 +102,8 @@
   }
 
   :where(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-heading);
+    font-weight: 900;
     text-wrap: balance;
   }
 
@@ -127,4 +130,45 @@
 @keyframes anaphor-checkbox-enter {
   from { scale: 0; }
   to { scale: 1; }
+}
+
+@layer components {
+  .anaphor-prose {
+    max-width: 65ch;
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    color: color-mix(in oklch, var(--anaphor-font-secondary) 90%, transparent);
+    overflow-wrap: break-word;
+  }
+
+  .anaphor-prose :where(h1, h2, h3, h4, h5, h6):not(:where([data-prose-exclude], [data-prose-exclude] *)) {
+    font-family: var(--font-heading);
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin-block: 1.5em 0.5em;
+  }
+  .anaphor-prose :where(h1):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: var(--text-title); }
+  .anaphor-prose :where(h2):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: var(--text-heading); }
+  .anaphor-prose :where(h3):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: 1.25rem; }
+  .anaphor-prose :where(h4, h5, h6):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: var(--text-body); }
+  .anaphor-prose :where(p, ul, ol, blockquote, pre, figure, table):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: 1em; }
+  .anaphor-prose :where(ul, ol):not(:where([data-prose-exclude], [data-prose-exclude] *)) { padding-inline-start: 1.5em; }
+  .anaphor-prose :where(ul):not(:where([data-prose-exclude], [data-prose-exclude] *)) { list-style-type: disc; }
+  .anaphor-prose :where(ol):not(:where([data-prose-exclude], [data-prose-exclude] *)) { list-style-type: decimal; }
+  .anaphor-prose :where(li + li):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block-start: 0.375em; }
+  .anaphor-prose :where(li > ul, li > ol):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: 0.375em; }
+  .anaphor-prose :where(a):not(:where([data-prose-exclude], [data-prose-exclude] *)) { color: inherit; text-decoration-line: underline; text-underline-offset: 0.15em; }
+  .anaphor-prose :where(strong):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-weight: 700; }
+  .anaphor-prose :where(blockquote):not(:where([data-prose-exclude], [data-prose-exclude] *)) { border-inline-start: 2px solid var(--anaphor-input-border); padding-inline-start: 1em; }
+  .anaphor-prose :where(code, pre):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-family: var(--font-mono); font-size: 0.875em; font-weight: 400; font-style: normal; }
+  .anaphor-prose :where(pre):not(:where([data-prose-exclude], [data-prose-exclude] *)) { overflow-x: auto; padding: 1em; background: var(--anaphor-foreground); border-radius: var(--radius-sm); }
+  .anaphor-prose :where(pre code):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: inherit; }
+  .anaphor-prose :where(figcaption):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block-start: 0.5em; font-size: var(--text-small); }
+  .anaphor-prose :where(table):not(:where([data-prose-exclude], [data-prose-exclude] *)) { width: 100%; border-collapse: collapse; }
+  .anaphor-prose :where(th, td):not(:where([data-prose-exclude], [data-prose-exclude] *)) { padding: 0.5em; border-bottom: 1px solid var(--anaphor-input-border); text-align: start; }
+  .anaphor-prose > :first-child { margin-block-start: 0; }
+  .anaphor-prose > :last-child { margin-block-end: 0; }
 }

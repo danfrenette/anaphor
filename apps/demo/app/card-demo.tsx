@@ -1,6 +1,6 @@
+import { Text, Badge, Button, ButtonLabel, Card, CardAction, CardCopyButton, CardPreview, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
 import { CardMediaExamples } from "./card-media-examples";
 import { CardPlayground } from "./card-playground";
-import { Badge, Button, ButtonLabel, Card, CardAction, CardCopyButton, CardPreview, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
 
 export function CardDemo() {
   return (
@@ -10,10 +10,10 @@ export function CardDemo() {
           <p>03.01 / Component</p>
           <p>Status / Draft</p>
         </div>
-        <h2 className="mt-8 text-title font-medium tracking-[-0.02em]">Card</h2>
-        <p className="mt-3 prose-reading text-pretty">
+        <Text as="h2" variant="title" className="mt-8">Card</Text>
+        <Text className="mt-3 max-w-[65ch] text-pretty">
           Groups related information on a quiet surface. Actions belong to the controls inside it.
-        </p>
+        </Text>
       </header>
 
       <div className="mt-8 grid items-stretch gap-6 sm:grid-cols-2">
@@ -39,8 +39,8 @@ export function CardDemo() {
       </Card>
 
       <div className="mt-12">
-        <h3 className="text-heading font-medium">Showcase</h3>
-        <p className="mt-3 prose-reading">A framed stage for the work, with its title and supporting details outside.</p>
+        <Text as="h3" variant="heading">Showcase</Text>
+        <Text className="mt-3 max-w-[65ch]">A framed stage for the work, with its title and supporting details outside.</Text>
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
           <Card variant="showcase">
             <CardPreview>

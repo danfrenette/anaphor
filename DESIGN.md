@@ -39,28 +39,28 @@ the transition and spinner rotation.
 
 ## Typography
 
-Use self-hosted Inter 4.1 Variable for prose, headings, and controls. The package
+Use self-hosted Inter 4.1 Variable for prose and controls. The package
 owns normal and true italic WOFF2 files, both covering weights 100–900. Automatic
 optical sizing moves from text to display drawings as size increases. Use system
 sans as the loading fallback. Magda Clean Mono is self-hosted for
 literal database values, types, expressions, metrics, tokens, and code, using its supplied regular (400) face. Do not
 synthesize bold or italic mono labels. All bundled web fonts must use WOFF2;
-do not add WOFF, TTF, or OTF assets. Use Inter for navigation, section labels,
-headings, and actions. Mono identifies data, not decorative technical styling.
+do not add WOFF, TTF, or OTF assets. Use Inter for navigation, section labels, and actions. Use Bell Gothic Black
+(900) for headings via Text and the shared heading font token. Mono identifies data, not decorative technical styling.
 
 - Label: 12px / 1.4, uppercase where categorical, `0.08em` tracking.
 - Small: 12px / 1.5.
 - UI: 14px / 1.5; input text stays at 16px.
 - Body: 16px / 1.6, 400 weight, natural tracking.
-- Heading: 24px / 1.2, 500 weight, `-0.02em` tracking.
-- Title: 36px / 1.1, 500 weight, `-0.02em` tracking.
-- Display: fluid 40–56px / 1.1, 500 weight, `-0.035em` tracking.
+- Heading: 24px / 1.2, 900 weight, `-0.02em` tracking.
+- Title: 36px / 1.1, 900 weight, `-0.02em` tracking.
+- Display: fluid 40–56px / 1.1, 900 weight, `-0.035em` tracking.
 - Instructional prose measure: at most 65ch.
 
-Use `prose-reading` for instructional paragraphs: primary text color at 90%
-alpha, composited over the actual surface in either theme. Keep headings,
-controls, status feedback, and already-muted metadata at their own full-strength
-color roles. Never fade a parent container to soften text. Balance headings;
+Use `Text` for purpose-based typography and `Prose` for article markup.
+Body text and all native text within Prose use primary text color at 90%
+alpha, composited over the actual surface in either theme. Outside Prose, headings, controls, status feedback, and muted metadata keep
+their own color roles. Inside Prose, headings inherit the reading color. Never fade a parent container to soften text. Balance headings;
 pretty-wrap short descriptions, but leave long-form paragraphs at normal wrapping.
 Use tabular numbers for changing values and wrap token names rather than hiding
 them. Apply font smoothing once at the root.
