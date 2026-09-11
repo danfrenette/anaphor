@@ -116,3 +116,45 @@ may ship. Deferred coverage is recorded against the component ticket rather than
 hidden in the suite. The documented accent-solid contrast exception applies
 only to color-contrast checks on those controls; all other rules still run,
 and correcting that contrast must not cause a test failure.
+
+## Continuous Integration
+
+`.github/workflows/ci.yml` runs on pull requests targeting `main`, pushes to
+`main`, and manual dispatch. Three independent jobs report on the PR:
+
+- **Code quality**: lint, strict types, and integration tests.
+- **Demo browser tests**: production build and the full Chromium/WebKit suite.
+- **Registry consumers**: fresh independent Button and complete-UI installations.
+
+The jobs use Node 24 and the pnpm version in `packageManager`. Dependencies install
+with the frozen workspace lockfile. Only the pnpm download store is cached;
+registry consumer installations and checks execute on every run. Superseded runs
+are canceled. Workflow permissions are read-only.
+
+Browser jobs use `mcr.microsoft.com/playwright:v1.63.0-noble` on Linux x86-64.
+Update that image and the exact `@playwright/test` dependency together. CI uses
+two workers, allows 60 seconds per test for slower browser/accessibility checks,
+allows 15 seconds for individual assertions, rejects focused tests, and retries
+a failing browser test once. Geometry tests pause and seek browser animations;
+interruption tests reverse when the browser creates the closing animation,
+before it can finish, without relying on a particular rendering frame rate.
+The `playwright-report` artifact includes the HTML report, failure screenshots,
+and traces; download it and run `pnpm exec playwright show-report <report-path>`.
+Failed registry consumers are uploaded separately without their node_modules.
+
+Linux screenshots are separate from the macOS baselines. Generate and review
+Linux baseline changes inside the same pinned image; never automatically accept
+screenshots during a normal CI run. A missing or changed baseline must fail.
+
+When repository branch protection is available, require **Code quality**,
+**Demo browser tests**, and **Registry consumers** on `main`, with the branch
+up to date before merging. GitHub currently rejects branch protection for this
+private repository with “Upgrade to GitHub Pro or make this repository public”.
+Until that account capability changes, check all three results before merging;
+the workflow alone does not prevent a merge.
+
+The Vercel project `danrfrenettes-projects/anaphor` is connected to this GitHub
+repository. Its Next.js root is `apps/demo`, Node is 24.x, and access to files
+outside the root is enabled for the shared workspace package. `main` deploys to
+https://anaphor.vercel.app; branches receive preview deployments linked from PRs.
+Keep validation in GitHub Actions; the Vercel Git integration handles deployments.

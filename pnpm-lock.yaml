@@ -12,7 +12,7 @@ importers:
         specifier: latest
         version: 4.13.0(playwright-core@1.63.0)
       '@playwright/test':
-        specifier: latest
+        specifier: 1.63.0
         version: 1.63.0
       '@testing-library/jest-dom':
         specifier: latest
