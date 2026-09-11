@@ -90,6 +90,9 @@ async function checkBrowser(browser, directory, item) {
       await page.getByRole("textbox", { name: "Email" }).fill("reader@example.com");
       await page.getByRole("checkbox", { name: "Accept updates" }).check();
       await expect(page.getByRole("checkbox", { name: "Accept updates" })).toBeChecked();
+      await page.getByRole("button", { name: "Registry menu" }).click();
+      await expect(page.getByRole("menuitem", { name: "Installed action" })).toBeVisible();
+      await page.keyboard.press("Escape");
       await page.getByRole("button", { name: "Open Registry controls" }).click();
       await expect(page.getByRole("region", { name: "Registry controls" })).toBeVisible();
     }

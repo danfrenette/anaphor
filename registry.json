@@ -18,6 +18,7 @@
         "danfrenette/anaphor/field",
         "danfrenette/anaphor/field-feedback",
         "danfrenette/anaphor/input",
+        "danfrenette/anaphor/menu",
         "danfrenette/anaphor/morph-surface",
         "danfrenette/anaphor/separator"
       ]
@@ -163,6 +164,19 @@
           "path": "packages/design-system/src/components/input.tsx",
           "type": "registry:ui",
           "target": "@ui/input.tsx"
+        }
+      ]
+    },
+    {
+      "name": "menu",
+      "type": "registry:ui",
+      "dependencies": ["@base-ui/react", "motion"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/menu.tsx",
+          "type": "registry:ui",
+          "target": "@ui/menu.tsx"
         }
       ]
     },
