@@ -1,4 +1,4 @@
-import { Button, ButtonLabel, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
+import { Text, Button, ButtonLabel, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
 import { ArrowRight, Trash } from "@phosphor-icons/react/dist/ssr";
 import type { ReactNode } from "react";
 import { ButtonPlayground } from "./button-playground";
@@ -14,10 +14,10 @@ export function ButtonDemo() {
           <p>02.01 / Control</p>
           <p>Status / Stable</p>
         </div>
-        <h2 className="mt-8 text-title font-medium tracking-[-0.02em]">Button</h2>
-        <p className="mt-3 prose-reading text-pretty">
+        <Text as="h2" variant="title" className="mt-8">Button</Text>
+        <Text className="mt-3 max-w-[65ch] text-pretty">
           Triggers an immediate action. Use one primary action per surface.
-        </p>
+        </Text>
       </header>
 
       <ButtonPlayground>

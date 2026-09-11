@@ -1,5 +1,7 @@
 "use client";
 
+import { Text } from "@anaphor/system";
+
 import { useState } from "react";
 import * as Effect from "effect/Effect";
 import {
@@ -214,8 +216,8 @@ export function NodeEdgeDemo() {
         <div className="flex items-center justify-between gap-6 text-label uppercase tracking-[.08em] text-muted-foreground">
           <p>03.03 / Component</p><p>Status / Study</p>
         </div>
-        <h2 className="mt-8 text-title font-medium tracking-[-.02em]">Node-edge graphs</h2>
-        <p className="prose-reading mt-3 text-pretty">From a fleeting thought to connected knowledge. Capture something, watch it reach the notebook, then follow the update into search and a summary.</p>
+        <Text as="h2" variant="title" className="mt-8">Node-edge graphs</Text>
+        <Text className="max-w-[65ch] mt-3 text-pretty">From a fleeting thought to connected knowledge. Capture something, watch it reach the notebook, then follow the update into search and a summary.</Text>
       </header>
       <div className="mt-8"><NotebookExample /></div>
       <p className="mt-4 text-small text-muted-foreground">An authored illustration with simulated data. Pulse illumination inspired by <a className="underline underline-offset-4" href="https://x.com/kitlangton/status/2096703869136867563" target="_blank" rel="noreferrer">Kit Langton’s diagrams</a>.</p>

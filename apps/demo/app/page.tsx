@@ -1,5 +1,5 @@
+import { Prose, Text, Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
 import { PlaygroundHost } from "./playground-host";
-import { Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
 import { ButtonDemo } from "./button-demo";
 import { BadgeDemo } from "./badge-demo";
 import { NodeEdgeDemo } from "./node-edge-demo";
@@ -119,13 +119,13 @@ export default function HomePage() {
               <p>00.01 / Contract</p>
               <p>Status / Draft</p>
             </div>
-            <h1 className="mt-10 text-display font-medium tracking-[-0.02em]">
+            <Text as="h1" variant="display" className="mt-10">
               Anaphor
-            </h1>
-            <p className="mt-3 prose-reading text-pretty">
+            </Text>
+            <Text className="mt-3 max-w-[65ch] text-pretty">
               An executable manual for the decisions that make personal software
               coherent.
-            </p>
+            </Text>
           </header>
 
           <Separator />
@@ -158,28 +158,28 @@ export default function HomePage() {
                 <p className="text-label tracking-[0.08em] uppercase">
                   01.01 / Color
                 </p>
-                <h2 className="mt-3 text-heading font-medium tracking-[-0.02em]">
+                <Text as="h2" variant="heading" className="mt-3">
                   Theme roles
-                </h2>
+                </Text>
               </div>
               <p className="text-label text-muted-foreground">
                 OKLCH / 11 ROLES
               </p>
             </div>
 
-            <p className="mt-4 prose-reading text-pretty">
+            <Text className="mt-4 max-w-[65ch] text-pretty">
               Six theme-aware neutrals carry type, structure, and disabled
               states. Five chromatic roles carry brand, focus, and danger. Danger text
               uses a lighter shade of the same OKLCH hue in dark mode.
               Component states derive from these values rather than introducing
               more tokens.
-            </p>
+            </Text>
 
             <div className="mt-8 border-y border-border py-5">
               <div className="flex items-baseline justify-between gap-4">
-                <h3 className="text-label tracking-[0.08em] uppercase">
+                <Text as="h3" variant="label" className="uppercase">
                   Neutral roles
-                </h3>
+                </Text>
                 <p className="text-label text-muted-foreground">06 roles</p>
               </div>
               <ol className="mt-3 grid gap-4 sm:grid-cols-3">
@@ -212,9 +212,9 @@ export default function HomePage() {
 
             <div className="border-b border-border py-5">
               <div className="flex items-baseline justify-between gap-4">
-                <h3 className="text-label tracking-[0.08em] uppercase">
+                <Text as="h3" variant="label" className="uppercase">
                   Chromatic signals
-                </h3>
+                </Text>
                 <p className="text-label text-muted-foreground">05 roles</p>
               </div>
               <ol className="mt-3 grid gap-4 sm:grid-cols-2">
@@ -278,20 +278,20 @@ export default function HomePage() {
             <p className="text-label tracking-[0.08em] uppercase">
               01.02 / Typography
             </p>
-            <h2 className="mt-3 text-heading font-medium">One family, different registers</h2>
+            <Text as="h2" variant="heading" className="mt-3">Type with a purpose</Text>
             <div className="mt-6 grid gap-8 sm:grid-cols-[1fr_2fr]">
               <p className="text-label text-muted-foreground uppercase">
                 Instructional measure
               </p>
-              <p className="prose-reading">
-                Inter adapts from compact controls to open, expressive headings.
-                Optical sizing refines the letterforms at each size. Mono identifies
-                literal values, types, metrics, and code; weight and space establish hierarchy.
-              </p>
+              <Text className="max-w-[65ch]">
+                Bell Gothic Black gives headings their voice. Inter carries the reading
+                and interface text. Magda Clean Mono identifies literal values and code.
+                Purpose sets the font, size, and rhythm.
+              </Text>
             </div>
             <div className="mt-8 border-y border-border py-8">
-              <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">Display / 500</p>
-              <p className="mt-4 max-w-[18ch] text-display text-balance font-medium">A place for deliberate work.</p>
+              <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">Bell Gothic Black / 900</p>
+              <Text as="p" variant="display" className="mt-4 max-w-[18ch]">A place for deliberate work.</Text>
             </div>
             <div className="mt-8 grid gap-6 sm:grid-cols-2">
               {["light", "dark"].map((theme) => (
@@ -301,7 +301,13 @@ export default function HomePage() {
                     <CardTitle className="mt-3">Room to think</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="prose-reading">Good interfaces leave room for the work. A clear heading establishes the subject; a steady rhythm carries the details. <strong>Emphasis has a purpose.</strong> The rest can feel <em>quiet and considered.</em></p>
+                    <Prose aria-label={`${theme} article example`}>
+                      <p>Good interfaces leave room for the work. A clear heading establishes the subject; a steady rhythm carries the details. <strong>Emphasis has a purpose.</strong> The rest can feel <em>quiet and considered.</em></p>
+                      <h3>A steady reading rhythm</h3>
+                      <p>Article text shares one reading color, including <a href="#typography">links</a>, lists, and <code>inline code</code>.</p>
+                      <ul><li>Give each idea room.</li><li>Keep nested <strong>emphasis</strong> at the same text opacity.</li></ul>
+                      <blockquote><p>Clear typography lets the writing lead.</p></blockquote>
+                    </Prose>
                     <div className="mt-6 flex items-baseline justify-between gap-3 border-t border-border pt-4 text-ui">
                       <span className="font-medium">Reading progress</span>
                       <span className="font-mono tabular-nums">08 / 24</span>
@@ -316,10 +322,10 @@ export default function HomePage() {
             <p className="text-label tracking-[0.08em] uppercase">
               01.03 / Motion
             </p>
-            <p className="mt-6 prose-reading text-pretty">
+            <Text className="mt-6 max-w-[65ch] text-pretty">
               Motion explains feedback, causality, continuity, or spatial
               relationships. If it explains none of these, remove it.
-            </p>
+            </Text>
           </section>
 
           <PlaygroundHost>

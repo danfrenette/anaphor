@@ -1,3 +1,4 @@
+import { Text } from "./text";
 import { cn } from "../lib/utils";
 import type { ComponentProps } from "react";
 
@@ -41,7 +42,7 @@ type CardTitleProps = ComponentProps<"h3"> & {
 };
 
 function CardTitle({ as: Heading = "h3", className, ...props }: CardTitleProps) {
-  return <Heading data-slot="card-title" className={cn("col-start-1 text-body font-medium", className)} {...props} />;
+  return <Text as={Heading} variant="subheading" data-slot="card-title" className={cn("col-start-1", className)} {...props} />;
 }
 
 function CardDescription({ className, ...props }: ComponentProps<"p">) {

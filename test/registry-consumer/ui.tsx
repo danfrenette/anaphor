@@ -10,13 +10,16 @@ import { FieldFeedback } from "./components/ui/field-feedback";
 import { Input } from "./components/ui/input";
 import { MorphSurface } from "./components/ui/morph-surface";
 import { Separator } from "./components/ui/separator";
+import { Text } from "./components/ui/text";
+import { Prose } from "./components/ui/prose";
 import "./styles.css";
 
 function Consumer() {
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
   return <main className="p-6 font-sans">
-    <h1>Registry consumer</h1>
+    <Text as="h1" variant="title">Registry consumer</Text>
+    <Prose><p>Installed prose with <strong>emphasis</strong>.</p></Prose>
     <Card>
       <CardHeader><CardTitle>Installed UI</CardTitle></CardHeader>
       <CardContent>

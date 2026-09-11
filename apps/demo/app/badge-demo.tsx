@@ -1,4 +1,4 @@
-import { Badge, Card, CardHeader, CardTitle, CardContent } from "@anaphor/system";
+import { Text, Badge, Card, CardHeader, CardTitle, CardContent } from "@anaphor/system";
 import { Tag } from "@phosphor-icons/react/dist/ssr";
 import { BadgePlayground } from "./badge-playground";
 
@@ -6,8 +6,8 @@ export function BadgeDemo() {
   return <section id="badge" className="scroll-mt-8 border-t border-border py-12">
     <header>
       <div className="flex justify-between gap-6 text-label tracking-[0.08em] text-muted-foreground uppercase"><p>03.02 / Component</p><p>Status / Draft</p></div>
-      <h2 className="mt-8 text-title font-medium tracking-[-0.02em]">Badge</h2>
-      <p className="mt-3 prose-reading">A small label for a category, count, or status. Badges describe; buttons act.</p>
+      <Text as="h2" variant="title" className="mt-8">Badge</Text>
+      <Text className="mt-3 max-w-[65ch]">A small label for a category, count, or status. Badges describe; buttons act.</Text>
     </header>
     <div className="mt-8"><BadgePlayground /></div>
     <div className="mt-6 grid gap-6 md:grid-cols-2">

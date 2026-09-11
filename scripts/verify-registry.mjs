@@ -87,6 +87,7 @@ async function checkBrowser(browser, directory, item) {
     const dark = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--anaphor-background"));
     assert.notEqual(light, dark, "Installed dark theme must change tokens");
     if (item === "ui") {
+      assert.ok(fonts.includes("Bell Gothic Black"), "Installed heading font must load");
       await page.getByRole("textbox", { name: "Email" }).fill("reader@example.com");
       await page.getByRole("checkbox", { name: "Accept updates" }).check();
       await expect(page.getByRole("checkbox", { name: "Accept updates" })).toBeChecked();
