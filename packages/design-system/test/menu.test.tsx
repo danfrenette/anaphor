@@ -42,3 +42,30 @@ test("activates an item and closes the menu", async () => {
   expect(onRename).toHaveBeenCalledOnce();
   expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 });
+
+test("does not activate disabled items and continues navigation", async () => {
+  const user = userEvent.setup();
+  const onUnavailable = vi.fn();
+  render(
+    <Menu>
+      <MenuTrigger>File actions</MenuTrigger>
+      <MenuPopup>
+        <MenuItem>Rename</MenuItem>
+        <MenuItem disabled onClick={onUnavailable}>Unavailable</MenuItem>
+        <MenuItem>Share</MenuItem>
+      </MenuPopup>
+    </Menu>,
+  );
+
+  await user.tab();
+  await user.keyboard("{Enter}");
+  expect(screen.getByRole("menuitem", { name: "Rename" })).toHaveFocus();
+  await user.keyboard("{ArrowDown}");
+  expect(screen.getByRole("menuitem", { name: "Unavailable" })).toHaveAttribute("aria-disabled", "true");
+  expect(screen.getByRole("menuitem", { name: "Unavailable" })).toHaveFocus();
+  await user.keyboard("{Enter}");
+  expect(onUnavailable).not.toHaveBeenCalled();
+  expect(screen.getByRole("menu")).toBeVisible();
+  await user.keyboard("{ArrowDown}");
+  expect(screen.getByRole("menuitem", { name: "Share" })).toHaveFocus();
+});

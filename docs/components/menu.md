@@ -36,6 +36,17 @@ UI marks keyboard activation as instant, so repeated key-driven actions never wa
 for motion. Reduced motion removes scale and keeps a 200ms opacity fade for pointer
 activation.
 
+The trigger's outer box stays at full scale while pressed so Base UI always
+measures a stable anchor. Its inner label and icon retain the Button's 0.97 press
+feedback without shifting the popup.
+
+Pointer movement uses one shared highlight rather than independent row
+backgrounds. The highlight fades in over 80ms and travels between the nearest
+enabled peers over a 160ms critically damped spring. Group labels and separators
+form boundaries, and clicks remain attached to the actual rows rather than being
+forwarded from gaps. Keyboard highlighting is immediate. Reduced motion keeps
+the fade but snaps the highlight to its next row.
+
 ## Reference decisions
 
 [coss Menu](https://coss.com/ui/docs/components/menu) supplies the mechanical
