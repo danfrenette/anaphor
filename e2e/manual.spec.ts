@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { seekAnimations } from "./animation";
 
 test("renders an accessible reference manual without horizontal overflow", async ({
   page,
@@ -277,36 +278,37 @@ test("loading smoothly adds and removes spinner space without clipping", async (
   const button = page.getByTestId("primary-button");
   const loading = page.getByRole("checkbox", { name: "Loading", exact: true });
   const restingWidth = await button.evaluate((element) => element.getBoundingClientRect().width);
-  const sampleWidths = () => button.evaluate(async (element) => {
+  // Give CSS transitions time to be captured, then seek their real interpolation.
+  await page.addStyleTag({ content: '[data-testid="primary-button"] * { transition-duration: 10s !important; }' });
+  const sampleWidths = async () => {
     const widths: number[] = [];
-    const loader = element.querySelector('[data-slot="button-loader"]');
-    const wrapper = loader?.parentElement;
-    if (!loader || !wrapper) throw new Error("The loading indicator must be mounted");
-    // Sample the transition itself, rather than sleeping and checking only its endpoint.
-    for (let frame = 0; frame < 30; frame++) {
-      await new Promise(requestAnimationFrame);
-      widths.push(element.getBoundingClientRect().width);
-      const style = getComputedStyle(wrapper);
-      if (Number(style.opacity) > 0) {
-        const ring = loader.getBoundingClientRect();
-        const bounds = wrapper.getBoundingClientRect();
-        if (style.overflowX !== "visible" && (bounds.width < ring.width || bounds.height < ring.height)) {
-          throw new Error("The visible spinner is clipped during its transition");
+    for (const progress of [0.1, 0.3, 0.6, 1]) {
+      await seekAnimations(button, progress);
+      widths.push(await button.evaluate(element => {
+        const loader = element.querySelector('[data-slot="button-loader"]');
+        const wrapper = loader?.parentElement;
+        if (!loader || !wrapper) throw new Error("The loading indicator must be mounted");
+        const style = getComputedStyle(wrapper);
+        if (Number(style.opacity) > 0) {
+          const ring = loader.getBoundingClientRect();
+          const bounds = wrapper.getBoundingClientRect();
+          if (style.overflowX !== "visible" && (bounds.width < ring.width || bounds.height < ring.height)) {
+            throw new Error("The visible spinner is clipped during its transition");
+          }
         }
-      }
+        return element.getBoundingClientRect().width;
+      }));
     }
     return widths;
-  });
-  const opening = sampleWidths();
+  };
   await loading.check();
-  const opened = await opening;
+  const opened = await sampleWidths();
   const expandedWidth = opened.at(-1);
   if (expandedWidth === undefined) throw new Error("Expected animation samples");
   expect(expandedWidth).toBeGreaterThan(restingWidth + 1);
   expect(opened.some((width) => width > restingWidth + 0.5 && width < expandedWidth - 0.5)).toBe(true);
-  const closing = sampleWidths();
   await loading.uncheck();
-  const closed = await closing;
+  const closed = await sampleWidths();
   expect(closed.at(-1)).toBeCloseTo(restingWidth, 1);
   expect(closed.some((width) => width > restingWidth + 0.5 && width < expandedWidth - 0.5)).toBe(true);
 });
