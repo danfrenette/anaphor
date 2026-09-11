@@ -195,3 +195,12 @@ Selection scales in over 150ms; removal fades out. Reduced motion is immediate.
 The checkbox mark stays light in both themes so it contrasts with the accent
 fill. Required validation belongs to the consuming form. The demo presents the
 required state without a standalone submission flow.
+
+## Dropdown menu
+
+Use `Menu`, `MenuTrigger`, and `MenuPopup` for a trigger-anchored list of actions;
+groups, labels, separators, shortcuts, and a destructive item treatment are also
+included. Base UI owns focus, keyboard navigation, collision handling, dismissal,
+and focus return. The popup scales from Base UI's trigger-relative transform
+origin over 180ms; reduced motion keeps only a 200ms fade. The reference manual
+includes a file-actions example.

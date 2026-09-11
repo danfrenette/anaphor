@@ -20,6 +20,8 @@
   --anaphor-danger: oklch(0.4852 0.1691 10.14);
   --anaphor-danger-hover: oklch(0.4236 0.1691 10.14);
   --anaphor-danger-text: oklch(0.4236 0.1691 10.14);
+  --anaphor-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --anaphor-menu-duration: 180ms;
 }
 
 .dark {
@@ -127,4 +129,33 @@
 @keyframes anaphor-checkbox-enter {
   from { scale: 0; }
   to { scale: 1; }
+}
+
+[data-slot="menu-popup"] {
+  transition:
+    opacity var(--anaphor-menu-duration) var(--anaphor-ease-out),
+    transform var(--anaphor-menu-duration) var(--anaphor-ease-out);
+}
+
+[data-slot="menu-popup"]:is([data-starting-style], [data-ending-style]) {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+[data-slot="menu-popup"][data-instant] {
+  transition-duration: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="menu-popup"] {
+    transition: opacity 200ms var(--anaphor-ease-out);
+  }
+
+  [data-slot="menu-popup"]:is([data-starting-style], [data-ending-style]) {
+    transform: none;
+  }
+
+  [data-slot="menu-popup"][data-instant] {
+    transition-duration: 0ms;
+  }
 }
