@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "latest",
-    "@playwright/test": "latest",
+    "@playwright/test": "1.63.0",
     "@testing-library/jest-dom": "latest",
     "@testing-library/react": "latest",
     "@testing-library/user-event": "^14.6.7",
