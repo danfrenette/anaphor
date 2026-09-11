@@ -140,6 +140,11 @@ test("a closing reveal can reverse without hiding or remounting the controls", a
   expect(closing).toBeGreaterThan(0);
   expect(closing).toBeLessThan(1);
   await trigger.dispatchEvent("click", { detail: 1 });
+  // The previous closing animation can still exist until the next render.
+  await expect.poll(() => panel.evaluate(element => element.getAnimations().some(animation => {
+    const frames = (animation.effect as KeyframeEffect).getKeyframes();
+    return Number(frames.at(-1)?.opacity) === 1;
+  }))).toBe(true);
   await seekAnimations(panel, 1);
   await expect(panel).toHaveCSS("opacity", "1");
   await expect(panel).toHaveCSS("clip-path", "inset(0px round 12px)");
