@@ -35,7 +35,10 @@
   --anaphor-background: oklch(0.2 0.01 50);
 }
 
+/* Numeric spacing utilities use the shared 4px rhythm (gap-6 = 24px).
+   Keep Tailwind's numbering rather than introducing a second spacing scale. */
 @theme {
+  --spacing: 0.25rem;
   --container-reading: 65ch;
 }
 
@@ -67,12 +70,18 @@
   --text-heading: 1.5rem;
   --text-heading--line-height: 1.2;
   --text-heading--letter-spacing: -0.02em;
+  --text-title-small: 1.75rem;
+  --text-title-small--line-height: 1.1;
+  --text-title-small--letter-spacing: -0.02em;
   --text-title: 2.25rem;
   --text-title--line-height: 1.1;
   --text-title--letter-spacing: -0.02em;
   --text-display: clamp(2.5rem, 5vw, 3.5rem);
   --text-display--line-height: 1.1;
   --text-display--letter-spacing: -0.035em;
+
+  --leading-reading: 1.6;
+  --tracking-heading: -0.02em;
 
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;

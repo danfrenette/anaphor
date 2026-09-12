@@ -54,7 +54,7 @@ export function StudyProvider({ children, bare = false }: { children: ReactNode;
     setRevision(value => value + 1);
   }
   return <StudyContext.Provider value={{ dark, setDark, playing, setPlaying, zoom, setZoom, revision, reset, clock, composition, setComposition, advance, reducedMotion, background: { clock: backgroundClock, composition: backgroundComposition, setComposition: setBackgroundComposition, advance: advanceBackground } }}>
-    {bare ? children : <div className={dark ? "studies-root dark" : "studies-root"}>{children}</div>}
+    {bare ? children : <div className={dark ? "studies-root min-h-svh bg-background text-foreground dark" : "studies-root min-h-svh bg-background text-foreground"}>{children}</div>}
   </StudyContext.Provider>;
 }
 export function useStudy() {

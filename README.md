@@ -214,3 +214,19 @@ glides one shared highlight between nearby enabled actions without forwarding
 gap clicks; labels and separators break the path. Keyboard highlighting is
 immediate, and reduced motion removes travel. The reference manual includes a
 file-actions example.
+
+## Shared Tailwind tokens
+
+The library's `src/styles.css` is the Tailwind v4 configuration consumed by the
+manual and copied by the registry. Use semantic color utilities (`bg-background`,
+`text-muted-foreground`, `border-border`), named text sizes (`text-ui`,
+`text-body`, `text-heading`, `text-title-small`, `text-title`), and named radii
+(`rounded-sm`, `rounded-md`, `rounded-control`, `rounded-card`). Numeric spacing
+uses the configured 4px base: `gap-2` is 8px and `p-6` is 24px. Keep Tailwind's
+numbering instead of introducing another spacing scale.
+
+Prefer utilities directly in demo markup. For remaining relational/responsive
+CSS, `@reference "@anaphor/system/styles.css"` makes the same tokens available to
+`@apply` without emitting a second copy of the library styles. Dynamic artwork
+colors and rendering geometry remain local while those experiments mature.
+See [the migration plan](docs/demo-library-migration.md) for scope and next steps.

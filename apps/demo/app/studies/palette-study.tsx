@@ -79,10 +79,10 @@ export function PaletteStudy({ expanded = false }: { expanded?: boolean }) {
     <Button variant="ghost" tone="neutral" size="sm" disabled={reducedMotion} aria-pressed={playing && !reducedMotion} onClick={() => setPlaying(!playing)}>
       {playing && !reducedMotion ? <Pause /> : <Play />}<ButtonLabel>{playing && !reducedMotion ? "Pause background" : "Play background"}</ButtonLabel>
     </Button>
-    <span>Rocaille 2 by <a className="study-credit" href="https://x.com/XorDev/status/2015813875833225715">Xor / @XorDev</a></span>
+    <span>Rocaille 2 by <a className="study-credit underline underline-offset-3" href="https://x.com/XorDev/status/2015813875833225715">Xor / @XorDev</a></span>
   </div>;
-  const selection = <div className="palette-selection" role="group" aria-label="Select a swatch">
-    {steps.map(i => <button key={i} type="button" className="palette-select" aria-label={`Swatch ${i + 1}`} aria-pressed={selected === i} onClick={() => setSelected(i)}><span style={{ background: swatchColor(color, i) }} /><span>{i + 1}</span></button>)}
+  const selection = <div className="palette-selection mt-6 flex flex-wrap gap-2" role="group" aria-label="Select a swatch">
+    {steps.map(i => <button key={i} type="button" className="palette-select inline-flex items-center justify-center gap-2 min-w-11 min-h-11 p-2 rounded-control border border-transparent text-ui cursor-pointer" aria-label={`Swatch ${i + 1}`} aria-pressed={selected === i} onClick={() => setSelected(i)}><span style={{ background: swatchColor(color, i) }} /><span>{i + 1}</span></button>)}
   </div>;
   const content = expanded ? <>
     {visual}
@@ -91,7 +91,7 @@ export function PaletteStudy({ expanded = false }: { expanded?: boolean }) {
       <section aria-labelledby="palette-start">
         <h2 id="palette-start">Start with a color.</h2>
         <p>This one starts with orange. Move the hue until something catches your eye.</p>
-        <div className="essay-color-row" aria-hidden="true">{steps.map(i => <span key={i} style={{ background: swatchColor(color, i) }} />)}</div>
+        <div className="essay-color-row flex gap-3 mt-8 mx-0 mb-6" aria-hidden="true">{steps.map(i => <span key={i} style={{ background: swatchColor(color, i) }} />)}</div>
         <div className="palette-controls">
           <label><span>Hue <output>{color.hue.toFixed(1)}°</output></span><input aria-label="Hue" type="range" min="0" max="360" step="0.1" value={color.hue} onChange={e => setColor({ ...color, hue: Number(e.target.value) })} /></label>
         </div>
@@ -111,15 +111,15 @@ export function PaletteStudy({ expanded = false }: { expanded?: boolean }) {
         <h2 id="palette-between">Enjoy the in-between.</h2>
         <p>Two colors can take more than one route around the hue wheel. Try the other way.</p>
         <div className="essay-gradient" role="img" aria-label={`Gradient following the ${longWay ? "longer" : "shorter"} hue path`} style={{ background: `linear-gradient(90deg in oklch ${longWay ? "longer" : "shorter"} hue, ${swatchColor(color, 3)}, oklch(${color.lightness} ${color.chroma} ${(color.hue + 110) % 360}))` }} />
-        <div className="essay-route" role="group" aria-label="Hue path">
+        <div className="essay-route flex gap-2" role="group" aria-label="Hue path">
           <Button variant={longWay ? "ghost" : "outline"} tone="neutral" size="sm" aria-pressed={!longWay} onClick={() => setLongWay(false)}>Short way</Button>
           <Button variant={longWay ? "outline" : "ghost"} tone="neutral" size="sm" aria-pressed={longWay} onClick={() => setLongWay(true)}>Long way</Button>
         </div>
       </section>
-      <footer className="essay-footer">
+      <footer className="essay-footer mt-16 pt-6 border-t border-border">
         <Button variant="ghost" tone="neutral" size="sm" onClick={() => { reset(); setLongWay(false); }}><ArrowCounterClockwise /><ButtonLabel>Reset palette</ButtonLabel></Button>
         <p>A small experiment starting from Anaphor’s orange. Colors outside your display’s gamut are mapped by your browser.</p>
-        <p>Inspired by <a className="study-credit" href="https://oklch.fyi/">oklch.fyi</a>.</p>
+        <p>Inspired by <a className="study-credit underline underline-offset-3" href="https://oklch.fyi/">oklch.fyi</a>.</p>
       </footer>
     </div>
   </> : <>
@@ -133,15 +133,15 @@ export function PaletteStudy({ expanded = false }: { expanded?: boolean }) {
     </Card>
     {playback}
     {selection}
-    <p className="study-instructions">Choose a swatch, then open the study.</p>
+    <p className="study-instructions max-w-[65ch] mt-4 text-ui leading-reading text-muted-foreground">Choose a swatch, then open the study.</p>
   </>;
-  if (!expanded) return <section id="palette" className="palette-study" aria-label="Palette study">{content}</section>;
+  if (!expanded) return <section id="palette" className="palette-study mt-16" aria-label="Palette study">{content}</section>;
   return <main className="studies-page palette-article">
-    <nav className="studies-nav" aria-label="Studies navigation">
-      <Link href="/studies#palette" className="study-back"><ArrowLeft size={16} aria-hidden="true" />All studies</Link>
+    <nav className="studies-nav flex items-center justify-between gap-6" aria-label="Studies navigation">
+      <Link href="/studies#palette" className="study-back inline-flex min-h-11 items-center gap-2 text-ui hover:text-primary"><ArrowLeft size={16} aria-hidden="true" />All studies</Link>
       <Button variant="ghost" tone="neutral" size="sm" iconOnly aria-label={dark ? "Use light theme" : "Use dark theme"} onClick={() => setDark(!dark)}>{dark ? <Sun /> : <Moon />}</Button>
     </nav>
-    <header className="studies-heading"><h1>A palette, unfolded</h1><p>A few colors, a little movement, and room to play.</p></header>
+    <header className="studies-heading mt-12 mx-0 mb-8"><h1>A palette, unfolded</h1><p>A few colors, a little movement, and room to play.</p></header>
     {content}
   </main>;
 }
