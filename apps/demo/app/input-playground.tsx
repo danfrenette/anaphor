@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, ButtonLabel, Card, CardContent, CardHeader, CardTitle, Field, FieldLabel, FieldFeedback, Input } from "@anaphor/system";
+import { FieldGroup, Button, ButtonLabel, Card, CardContent, CardHeader, CardTitle, Field, FieldLabel, FieldFeedback, Input } from "@anaphor/system";
 import { useRef, useState } from "react";
 import { PlaygroundControls } from "./playground-host";
 import { Check, Select } from "./playground-fields";
@@ -13,13 +13,13 @@ export function InputPlayground() {
   return (
     <>
       <PlaygroundControls sectionId="input" title="Input" onReset={() => setInput(inputDefaults)}>
-        <div className="grid gap-3">
+        <FieldGroup>
           <Select label="Size" value={input.size} options={["sm", "md", "lg"]} onChange={(size) => setInput((current) => ({ ...current, size }))} />
           <Select label="Type" value={input.type} options={["text", "email", "password", "search"]} onChange={(type) => setInput((current) => ({ ...current, type }))} />
           {(["disabled", "readOnly", "invalid"] as const).map((key) => (
             <Check key={key} label={key === "readOnly" ? "Read only" : key.charAt(0).toUpperCase() + key.slice(1)} checked={input[key]} onChange={(value) => setInput((current) => ({ ...current, [key]: value }))} />
           ))}
-        </div>
+        </FieldGroup>
       </PlaygroundControls>
       <Card className="mt-10" role="group" aria-label="Primary input example">
         <CardHeader><CardTitle variant="label">Primary demo</CardTitle></CardHeader>

@@ -5,7 +5,7 @@ export { CardCopyButton, type CardCopyButtonProps } from "./components/card-copy
 export { MorphSurface, type MorphSurfaceProps } from "./components/morph-surface";
 export { Input, type InputProps } from "./components/input";
 export { FieldFeedback, type FieldFeedbackProps } from "./components/field-feedback";
-export { Field, FieldLabel, FieldDescription, FieldError } from "./components/field";
+export { Field, FieldContent, FieldGroup, FieldLabel, FieldDescription, FieldError, type FieldProps } from "./components/field";
 export { Checkbox, CheckboxPrimitive } from "./components/checkbox";
 export { Badge, type BadgeProps } from "./components/badge";
 export { Menu, MenuGroup, MenuGroupLabel, MenuItem, MenuPopup, MenuPortal, MenuSeparator, MenuShortcut, MenuTrigger, type MenuGroupLabelProps, type MenuItemProps, type MenuPopupProps } from "./components/menu";

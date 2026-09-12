@@ -27,11 +27,9 @@ export function Range({ label, value, min, max, step, unit = "", onChange }: { l
 
 export function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
   return (
-    <Field>
-      <FieldLabel className="flex min-h-11 items-center gap-2">
-        <Checkbox checked={checked} onCheckedChange={onChange} />
-        {label}
-      </FieldLabel>
+    <Field orientation="horizontal">
+      <Checkbox checked={checked} onCheckedChange={onChange} />
+      <FieldLabel>{label}</FieldLabel>
     </Field>
   );
 }

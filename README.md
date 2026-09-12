@@ -182,9 +182,9 @@ no network requests. Ordinary valid fields return to neutral.
 ## Checkbox
 
 `Checkbox` is a thin Base UI wrapper with a 20px box, 6px corners, and built-in
-Phosphor check/mixed marks. Compose it inside a `FieldLabel` with `min-h-11` for
-at least a 44px label target; use `FieldDescription` or `FieldFeedback` for help
-and errors. Labels and row layouts stay outside the primitive.
+Phosphor check/mixed marks. Compose it with `Field orientation="horizontal"` and a sibling `FieldLabel`
+for a 44px label target. Put the label and description in `FieldContent` when
+the row needs supporting text. Checkbox stays focused on the control itself.
 
 Controlled and uncontrolled values, native form props, `inputRef`, read-only,
 and disabled behavior pass through to Base UI. `indeterminate` represents a
@@ -229,4 +229,29 @@ Prefer utilities directly in demo markup. For remaining relational/responsive
 CSS, `@reference "@anaphor/system/styles.css"` makes the same tokens available to
 `@apply` without emitting a second copy of the library styles. Dynamic artwork
 colors and rendering geometry remain local while those experiments mature.
-See [the migration plan](docs/demo-library-migration.md) for scope and next steps.
+
+## Field composition
+
+`Field` keeps Base UI's automatic labels, descriptions, validation, render
+composition, refs, and state-aware classes. Its default vertical layout is
+unchanged. Use `orientation="horizontal"` for checkbox rows; the label has a
+44px minimum target. `FieldContent` groups a label and description beside the
+control without manual indentation. `FieldGroup` stacks related fields with
+16px gaps; it is a layout div, so keep a native fieldset/legend when the group
+needs a semantic name. Both wrappers accept native div props and refs.
+
+```tsx
+<FieldGroup>
+  <Field orientation="horizontal">
+    <Checkbox name="updates" />
+    <FieldContent>
+      <FieldLabel>Keep me updated</FieldLabel>
+      <FieldDescription>Occasional product news.</FieldDescription>
+    </FieldContent>
+  </Field>
+</FieldGroup>
+```
+
+The composition vocabulary borrows from shadcn/ui Field; behavior remains a thin
+Base UI wrapper in the style of Coss. FieldFeedback and the consuming form's
+validation timing are unchanged.

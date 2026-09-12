@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, ButtonLabel, Card, CardPreview, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@anaphor/system";
+import { FieldGroup, Button, ButtonLabel, Card, CardPreview, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@anaphor/system";
 import { useState } from "react";
 import { PlaygroundControls } from "./playground-host";
 import { Check, Select } from "./playground-fields";
@@ -12,12 +12,12 @@ export function CardPlayground() {
   return (
     <>
       <PlaygroundControls sectionId="card" title="Card" onReset={() => setCard(cardDefaults)}>
-        <div className="grid gap-3">
+        <FieldGroup>
           <Select label="Variant" value={card.variant} options={["default", "showcase"] as const} onChange={(variant) => setCard((current) => ({ ...current, variant }))} />
           {(["description", "action", "footer"] as const).map((key) => (
             <Check key={key} label={key === "action" ? "Header action" : key.charAt(0).toUpperCase() + key.slice(1)} checked={card[key]} onChange={(value) => setCard((current) => ({ ...current, [key]: value }))} />
           ))}
-        </div>
+        </FieldGroup>
       </PlaygroundControls>
       <Card className="flex flex-col" variant={card.variant} aria-labelledby="card-project-title">
         {card.variant === "showcase" && <CardPreview><div className="grid place-items-center p-6 text-heading font-medium">Space for your next idea.</div></CardPreview>}
