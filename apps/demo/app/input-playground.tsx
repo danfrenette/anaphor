@@ -22,7 +22,7 @@ export function InputPlayground() {
         </div>
       </PlaygroundControls>
       <Card className="mt-10" role="group" aria-label="Primary input example">
-        <CardHeader><CardTitle className="text-label uppercase font-normal">Primary demo</CardTitle></CardHeader>
+        <CardHeader><CardTitle variant="label">Primary demo</CardTitle></CardHeader>
         <CardContent>
           <Field invalid={input.invalid} disabled={input.disabled}>
             <FieldLabel>Try an input</FieldLabel>

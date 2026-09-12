@@ -14,7 +14,7 @@ function FieldFeedback({ id, hint, error, invalid }: FieldFeedbackProps) {
       <FieldDescription id={id} className="sr-only" role="status" aria-atomic="true">{invalid ? error : hint}</FieldDescription>
       <motion.span
         aria-hidden="true"
-        className="col-start-1 row-start-1 text-muted-foreground"
+        className="col-start-1 row-start-1 text-pretty text-muted-foreground [overflow-wrap:break-word]"
         initial={false}
         animate={{ opacity: invalid ? 0 : 1, y: invalid && !reducedMotion ? -2 : 0 }}
         transition={transition}

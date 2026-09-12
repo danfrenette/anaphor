@@ -50,7 +50,7 @@ export function ButtonPlayground({ children }: { children: ReactNode }) {
       </PlaygroundControls>
       <Card role="group" aria-label="Primary button example" className="mt-10">
         <CardHeader>
-          <CardTitle className="text-label tracking-[0.08em] uppercase font-normal">Primary demo</CardTitle>
+          <CardTitle variant="label">Primary demo</CardTitle>
         </CardHeader>
         <CardContent className="flex min-h-56 items-center justify-center">
           <Button

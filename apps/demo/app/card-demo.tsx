@@ -11,7 +11,7 @@ export function CardDemo() {
           <p>Status / Draft</p>
         </div>
         <Text as="h2" variant="title" className="mt-8">Card</Text>
-        <Text className="mt-3 max-w-[65ch] text-pretty">
+        <Text variant="description" className="mt-3">
           Groups related information on a quiet surface. Actions belong to the controls inside it.
         </Text>
       </header>
@@ -40,7 +40,7 @@ export function CardDemo() {
 
       <div className="mt-12">
         <Text as="h3" variant="heading">Showcase</Text>
-        <Text className="mt-3 max-w-[65ch]">A framed stage for the work, with its title and supporting details outside.</Text>
+        <Text className="mt-3">A framed stage for the work, with its title and supporting details outside.</Text>
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
           <Card variant="showcase">
             <CardPreview>
@@ -74,7 +74,7 @@ export function CardDemo() {
 
       <Card className="dark mt-8" aria-labelledby="card-dark-title">
         <CardHeader>
-          <CardTitle className="text-label text-muted-foreground uppercase font-normal">Theme study / Dark</CardTitle>
+          <CardTitle variant="label">Theme study / Dark</CardTitle>
         </CardHeader>
         <CardContent>
           <CardTitle id="card-dark-title">A quieter surface</CardTitle>

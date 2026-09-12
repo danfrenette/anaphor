@@ -217,7 +217,7 @@ export function NodeEdgeDemo() {
           <p>03.03 / Component</p><p>Status / Study</p>
         </div>
         <Text as="h2" variant="title" className="mt-8">Node-edge graphs</Text>
-        <Text className="max-w-[65ch] mt-3 text-pretty">From a fleeting thought to connected knowledge. Capture something, watch it reach the notebook, then follow the update into search and a summary.</Text>
+        <Text variant="description" className="mt-3">From a fleeting thought to connected knowledge. Capture something, watch it reach the notebook, then follow the update into search and a summary.</Text>
       </header>
       <div className="mt-8"><NotebookExample /></div>
       <p className="mt-4 text-small text-muted-foreground">An authored illustration with simulated data. Pulse illumination inspired by <a className="underline underline-offset-4" href="https://x.com/kitlangton/status/2096703869136867563" target="_blank" rel="noreferrer">Kit Langton’s diagrams</a>.</p>

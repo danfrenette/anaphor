@@ -60,8 +60,10 @@ do not add WOFF, TTF, or OTF assets. Use Inter for navigation, section labels, a
 Use `Text` for purpose-based typography and `Prose` for article markup.
 Body text and all native text within Prose use primary text color at 90%
 alpha, composited over the actual surface in either theme. Outside Prose, headings, controls, status feedback, and muted metadata keep
-their own color roles. Inside Prose, headings inherit the reading color. Never fade a parent container to soften text. Balance headings;
-pretty-wrap short descriptions, but leave long-form paragraphs at normal wrapping.
+their own color roles. Inside Prose, headings inherit the reading color. Never fade a parent container to soften text. Balance headings.
+The description variant owns pretty wrapping; body and Prose keep normal wrapping.
+Body and description variants own the shared 65ch reading measure. Callers choose
+purpose and placement, without repeating font, wrap, color, or reading-width rules.
 Use tabular numbers for changing values and wrap token names rather than hiding
 them. Apply font smoothing once at the root.
 
@@ -193,3 +195,8 @@ sections on the page surface, with unpadded captions below the preview.
 outlines, and the same restrained layered shadow as the default Card. Its inner surface clips
 artwork; the outer Card never clips controls or focus rings. The default preview
 ratio is 4:5 and can be changed with `--card-preview-ratio`.
+
+CardTitle's label variant owns categorical labels: Inter medium, label sizing,
+uppercase tracking, and muted color. Consumers select the variant rather than
+assembling typography utility overrides. Semantic element selection preserves
+Text's purpose-defined weight and wrapping.

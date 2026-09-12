@@ -7,7 +7,7 @@ export function CheckboxDemo() {
       <header>
         <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">02.03 / Control</p>
         <Text as="h2" variant="title" className="mt-8">Checkbox</Text>
-        <Text className="mt-3 max-w-[65ch] text-pretty">A small, deliberate choice. A quick fill confirms selection; labels give it room to breathe.</Text>
+        <Text variant="description" className="mt-3">A small, deliberate choice. A quick fill confirms selection; labels give it room to breathe.</Text>
       </header>
       <div className="mt-8"><CheckboxPlayground /></div>
       <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -21,7 +21,7 @@ export function CheckboxDemo() {
             <CardContent className="p-4">
               <Field className="gap-0">
                 <FieldLabel className="flex min-h-8 items-center gap-3 pointer-coarse:min-h-11"><Checkbox defaultChecked />Include a plain-text version</FieldLabel>
-                <FieldDescription className="pl-8 text-pretty">Send a simpler copy alongside the formatted email.</FieldDescription>
+                <FieldDescription className="pl-8">Send a simpler copy alongside the formatted email.</FieldDescription>
               </Field>
             </CardContent>
           </Card>
@@ -39,7 +39,7 @@ export function CheckboxDemo() {
         <div className="mt-4 grid gap-4 md:grid-cols-2">
         {(["light", "dark"] as const).map((theme) => (
           <Card key={theme} className={theme === "dark" ? "@container dark" : "@container"} role="group" aria-label={`${theme} checkbox states`}>
-            <CardHeader className="p-4 pb-1"><CardTitle className="text-label text-muted-foreground uppercase font-normal">{theme} / States</CardTitle></CardHeader>
+            <CardHeader className="p-4 pb-1"><CardTitle variant="label">{theme} / States</CardTitle></CardHeader>
             <CardContent className="grid gap-x-4 p-5 @min-[18rem]:grid-cols-2">
               <Field><FieldLabel className="flex min-h-11 items-center gap-3"><Checkbox />Unchecked</FieldLabel></Field>
               <Field><FieldLabel className="flex min-h-11 items-center gap-3"><Checkbox defaultChecked />Checked</FieldLabel></Field>

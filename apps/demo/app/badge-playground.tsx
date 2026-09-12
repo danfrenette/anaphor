@@ -19,7 +19,7 @@ export function BadgePlayground() {
       </div>
     </PlaygroundControls>
     <Card className="bg-background" aria-label="Badge preview" role="group">
-      <CardHeader className="p-4 pb-1"><CardTitle className="text-label text-muted-foreground uppercase font-normal">Primary demo</CardTitle></CardHeader>
+      <CardHeader className="p-4 pb-1"><CardTitle variant="label">Primary demo</CardTitle></CardHeader>
       <CardContent className="flex min-h-32 items-center justify-center p-6">
       <Badge size={settings.size} variant={settings.variant} shape={settings.shape}>{settings.icon && <Tag aria-hidden="true" />}Study 01</Badge>
       </CardContent>

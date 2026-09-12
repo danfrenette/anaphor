@@ -7,7 +7,7 @@ export function InputDemo() {
       <header>
         <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">02.02 / Control</p>
         <Text as="h2" variant="title" className="mt-8">Input</Text>
-        <Text className="mt-3 max-w-[65ch] text-pretty">A quiet place to type. Clear feedback when you need it, room to correct when you don’t.</Text>
+        <Text variant="description" className="mt-3">A quiet place to type. Clear feedback when you need it, room to correct when you don’t.</Text>
       </header>
       <InputPlayground />
       <Card className="mt-6">
@@ -24,7 +24,7 @@ export function InputDemo() {
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {(["light", "dark"] as const).map((theme) => (
           <Card key={theme} className={theme === "dark" ? "dark" : undefined}>
-            <CardHeader><CardTitle className="text-label uppercase font-normal">{theme} / States</CardTitle></CardHeader>
+            <CardHeader><CardTitle variant="label">{theme} / States</CardTitle></CardHeader>
             <CardContent className="grid gap-5">
               <Field><FieldLabel>Project name</FieldLabel><Input placeholder="Untitled project" /></Field>
               <Field><FieldLabel>Workspace ID</FieldLabel><Input readOnly defaultValue="workspace-001" /></Field>

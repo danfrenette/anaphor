@@ -15,7 +15,7 @@ export function ButtonDemo() {
           <p>Status / Stable</p>
         </div>
         <Text as="h2" variant="title" className="mt-8">Button</Text>
-        <Text className="mt-3 max-w-[65ch] text-pretty">
+        <Text variant="description" className="mt-3">
           Triggers an immediate action. Use one primary action per surface.
         </Text>
       </header>
@@ -61,7 +61,7 @@ export function ButtonDemo() {
         <p className="mt-3 text-ui text-muted-foreground">Click either button to try a 1.5-second action. Both return to idle automatically.</p>
 
         <Card className="mt-10">
-          <CardHeader><CardTitle className="text-label tracking-[0.08em] uppercase font-normal">Behavior</CardTitle></CardHeader>
+          <CardHeader><CardTitle variant="label">Behavior</CardTitle></CardHeader>
           <CardContent className="flex flex-wrap items-center gap-3">
             <Button variant="outline">
               <ArrowRight aria-hidden="true" />
@@ -82,7 +82,7 @@ export function ButtonDemo() {
 
         <Card className="dark mt-10">
           <CardHeader>
-            <CardTitle className="text-label tracking-[0.08em] uppercase font-normal">Theme study / Dark</CardTitle>
+            <CardTitle variant="label">Theme study / Dark</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
             {variants.map((variant) => (
