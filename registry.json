@@ -31,6 +31,9 @@
       "title": "Anaphor Style",
       "description": "Anaphor tokens, typography, fonts, themes, and shared component styles.",
       "dependencies": ["tailwindcss"],
+      "css": {
+        "@import \"@/components/anaphor.css\"": {}
+      },
       "files": [
         {
           "path": "packages/design-system/src/styles.css",
@@ -53,7 +56,7 @@
           "target": "@components/fonts/MagdaCleanMono-download-notice.txt"
         }
       ],
-      "docs": "Import the generated Anaphor stylesheet once from your application CSS entry, then add an @source rule for the application's TS/TSX files."
+      "docs": "The Anaphor stylesheet is imported automatically into your configured application CSS entry."
     },
     {
       "name": "utils",

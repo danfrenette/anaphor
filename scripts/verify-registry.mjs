@@ -68,6 +68,8 @@ async function checkBrowser(browser, directory, item) {
   page.on("response", response => { if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`); });
   try {
     await page.goto(url);
+    await expect(page.getByRole("main")).toHaveCSS("padding-top", "24px");
+    await expect(page.locator("body")).toHaveCSS("margin", "0px");
     const button = page.getByRole("button", { name: "Count 0", exact: true });
     await expect(button).toBeVisible();
     await expect(button).toHaveCSS("height", "40px");
@@ -115,11 +117,15 @@ try {
     const consumer = path.join(temporary, item);
     await cp(path.join(root, "test/registry-consumer"), consumer, { recursive: true });
     await mkdir(path.join(consumer, "src"));
-    await writeFile(path.join(consumer, "src/styles.css"), '@import "tailwindcss";\n');
+    await writeFile(path.join(consumer, "src/styles.css"), '@import "tailwindcss";\nbody { margin: 0; }\n');
     await run("pnpm", ["install", "--ignore-workspace"], consumer);
     await run(process.execPath, [installer, "add", path.join(registryDirectory, `${item}.json`), "--cwd", consumer, "--yes"], consumer);
     await cp(path.join(consumer, `${item}.tsx`), path.join(consumer, "src/main.tsx"));
-    await writeFile(path.join(consumer, "src/styles.css"), '@import "./components/anaphor.css";\n@source "./**/*.{ts,tsx}";\n');
+    const installedCss = await readFile(path.join(consumer, "src/styles.css"), "utf8");
+    assert.ok(installedCss.includes('@import "@/components/anaphor.css"'), "Installer must import the shared stylesheet");
+    assert.ok(installedCss.includes("body { margin: 0; }"), "Installer must preserve application CSS");
+    await run(process.execPath, [installer, "add", path.join(registryDirectory, `${item}.json`), "--cwd", consumer, "--yes"], consumer);
+    assert.equal(await readFile(path.join(consumer, "src/styles.css"), "utf8"), installedCss, "Reinstalling must not duplicate the stylesheet import");
     await run("pnpm", ["run", "build"], consumer);
     await checkBrowser(browser, consumer, item);
     console.log(`${item}: installed source, build, interaction, themes, and fonts passed`);
