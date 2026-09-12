@@ -39,14 +39,15 @@ function CardHeader({ className, ...props }: ComponentProps<"div">) {
 
 type CardTitleProps = ComponentProps<"h3"> & {
   as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+  variant?: "heading" | "label";
 };
 
-function CardTitle({ as: Heading = "h3", className, ...props }: CardTitleProps) {
-  return <Text as={Heading} variant="subheading" data-slot="card-title" className={cn("col-start-1", className)} {...props} />;
+function CardTitle({ as: Heading = "h3", variant = "heading", className, ...props }: CardTitleProps) {
+  return <Text as={Heading} variant={variant === "label" ? "label" : "subheading"} data-slot="card-title" className={cn("col-start-1", variant === "label" && "text-muted-foreground", className)} {...props} />;
 }
 
 function CardDescription({ className, ...props }: ComponentProps<"p">) {
-  return <p data-slot="card-description" className={cn("col-start-1 text-ui text-pretty text-muted-foreground", className)} {...props} />;
+  return <Text as="p" variant="description" data-slot="card-description" className={cn("col-start-1 max-w-none text-ui text-muted-foreground", className)} {...props} />;
 }
 
 function CardAction({ className, ...props }: ComponentProps<"div">) {

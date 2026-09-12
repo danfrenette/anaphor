@@ -13,7 +13,7 @@ function FieldLabel({ className, ...props }: ComponentProps<typeof FieldPrimitiv
 }
 
 function FieldDescription({ className, ...props }: ComponentProps<typeof FieldPrimitive.Description>) {
-  return <FieldPrimitive.Description data-slot="field-description" className={(state) => cn("text-ui text-muted-foreground", typeof className === "function" ? className(state) : className)} {...props} />;
+  return <FieldPrimitive.Description data-slot="field-description" className={(state) => cn("font-sans text-ui text-pretty text-muted-foreground [overflow-wrap:break-word]", typeof className === "function" ? className(state) : className)} {...props} />;
 }
 
 function FieldError({ className, ...props }: ComponentProps<typeof FieldPrimitive.Error>) {

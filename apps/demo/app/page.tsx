@@ -122,7 +122,7 @@ export default function HomePage() {
             <Text as="h1" variant="display" className="mt-10">
               Anaphor
             </Text>
-            <Text className="mt-3 max-w-[65ch] text-pretty">
+            <Text variant="description" className="mt-3">
               An executable manual for the decisions that make personal software
               coherent.
             </Text>
@@ -167,7 +167,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <Text className="mt-4 max-w-[65ch] text-pretty">
+            <Text variant="description" className="mt-4">
               Six theme-aware neutrals carry type, structure, and disabled
               states. Five chromatic roles carry brand, focus, and danger. Danger text
               uses a lighter shade of the same OKLCH hue in dark mode.
@@ -244,7 +244,7 @@ export default function HomePage() {
                   className={theme === "dark" ? "dark" : undefined}
                 >
                   <CardHeader>
-                    <CardTitle className="text-label tracking-[0.08em] uppercase font-normal">
+                    <CardTitle variant="label">
                       {theme} roles
                     </CardTitle>
                   </CardHeader>
@@ -283,7 +283,7 @@ export default function HomePage() {
               <p className="text-label text-muted-foreground uppercase">
                 Instructional measure
               </p>
-              <Text className="max-w-[65ch]">
+              <Text>
                 Bell Gothic Black gives headings their voice. Inter carries the reading
                 and interface text. Magda Clean Mono identifies literal values and code.
                 Purpose sets the font, size, and rhythm.
@@ -292,6 +292,7 @@ export default function HomePage() {
             <div className="mt-8 border-y border-border py-8">
               <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">Bell Gothic Black / 900</p>
               <Text as="p" variant="display" className="mt-4 max-w-[18ch]">A place for deliberate work.</Text>
+              <Text variant="caption" className="mt-4">Headings balance their lines. Body copy keeps a steady reading measure.</Text>
             </div>
             <div className="mt-8 grid gap-6 sm:grid-cols-2">
               {["light", "dark"].map((theme) => (
@@ -309,7 +310,7 @@ export default function HomePage() {
                       <blockquote><p>Clear typography lets the writing lead.</p></blockquote>
                     </Prose>
                     <div className="mt-6 flex items-baseline justify-between gap-3 border-t border-border pt-4 text-ui">
-                      <span className="font-medium">Reading progress</span>
+                      <Text variant="ui">Reading progress</Text>
                       <span className="font-mono tabular-nums">08 / 24</span>
                     </div>
                   </CardContent>
@@ -322,7 +323,7 @@ export default function HomePage() {
             <p className="text-label tracking-[0.08em] uppercase">
               01.03 / Motion
             </p>
-            <Text className="mt-6 max-w-[65ch] text-pretty">
+            <Text variant="description" className="mt-6">
               Motion explains feedback, causality, continuity, or spatial
               relationships. If it explains none of these, remove it.
             </Text>

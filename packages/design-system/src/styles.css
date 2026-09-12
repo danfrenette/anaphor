@@ -33,6 +33,10 @@
   --anaphor-background: oklch(0.2 0.01 50);
 }
 
+@theme {
+  --container-reading: 65ch;
+}
+
 @theme inline {
   --color-background: var(--anaphor-background);
   --color-foreground: var(--anaphor-font-secondary);
@@ -119,8 +123,9 @@
   }
 }
 
+/* Legacy paragraph utility for older consumers; prefer Text or Prose. */
 @utility prose-reading {
-  max-width: 65ch;
+  max-width: var(--container-reading);
   font-size: var(--text-body);
   line-height: 1.6;
   color: color-mix(in oklch, var(--anaphor-font-secondary) 90%, transparent);
@@ -134,10 +139,12 @@
 
 @layer components {
   .anaphor-prose {
-    max-width: 65ch;
+    max-width: var(--container-reading);
     font-family: var(--font-sans);
     font-size: var(--text-body);
     line-height: var(--text-body--line-height);
+    font-weight: 400;
+    text-wrap: wrap;
     color: color-mix(in oklch, var(--anaphor-font-secondary) 90%, transparent);
     overflow-wrap: break-word;
   }
@@ -150,7 +157,7 @@
     text-wrap: balance;
     margin-block: 1.5em 0.5em;
   }
-  .anaphor-prose :where(h1):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: var(--text-title); }
+  .anaphor-prose :where(h1):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: var(--text-title); line-height: var(--text-title--line-height); }
   .anaphor-prose :where(h2):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: var(--text-heading); }
   .anaphor-prose :where(h3):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: 1.25rem; }
   .anaphor-prose :where(h4, h5, h6):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: var(--text-body); }
@@ -169,6 +176,6 @@
   .anaphor-prose :where(figcaption):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block-start: 0.5em; font-size: var(--text-small); }
   .anaphor-prose :where(table):not(:where([data-prose-exclude], [data-prose-exclude] *)) { width: 100%; border-collapse: collapse; }
   .anaphor-prose :where(th, td):not(:where([data-prose-exclude], [data-prose-exclude] *)) { padding: 0.5em; border-bottom: 1px solid var(--anaphor-input-border); text-align: start; }
-  .anaphor-prose > :first-child { margin-block-start: 0; }
-  .anaphor-prose > :last-child { margin-block-end: 0; }
+  .anaphor-prose > :first-child:not([data-prose-exclude]) { margin-block-start: 0; }
+  .anaphor-prose > :last-child:not([data-prose-exclude]) { margin-block-end: 0; }
 }

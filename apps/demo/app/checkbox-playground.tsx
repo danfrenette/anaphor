@@ -19,14 +19,14 @@ export function CheckboxPlayground() {
         </div>
       </PlaygroundControls>
       <Card role="group" aria-label="Primary checkbox example">
-        <CardHeader className="p-4 pb-1"><CardTitle className="text-label text-muted-foreground uppercase font-normal">Primary demo</CardTitle></CardHeader>
+        <CardHeader className="p-4 pb-1"><CardTitle variant="label">Primary demo</CardTitle></CardHeader>
         <CardContent className="flex min-h-32 items-center justify-center p-6">
           <Field className="gap-0" invalid={settings.invalid} disabled={settings.disabled}>
             <FieldLabel className="flex min-h-8 items-center gap-3 pointer-coarse:min-h-11">
               <Checkbox checked={settings.checked} indeterminate={settings.indeterminate} disabled={settings.disabled} readOnly={settings.readOnly} aria-invalid={settings.invalid || undefined} onCheckedChange={(checked) => setSettings((current) => ({ ...current, checked, indeterminate: false }))} />
               Keep me updated
             </FieldLabel>
-            <FieldDescription className="pl-8 text-pretty">Occasional updates about the design system.</FieldDescription>
+            <FieldDescription className="pl-8">Occasional updates about the design system.</FieldDescription>
           </Field>
         </CardContent>
       </Card>
@@ -41,7 +41,7 @@ export function CheckboxRequiredExample() {
         <Checkbox name="agreement" required />
         I agree to the example terms
       </FieldLabel>
-      <FieldDescription className="pl-8 text-pretty">Required when submitting a form.</FieldDescription>
+      <FieldDescription className="pl-8">Required when submitting a form.</FieldDescription>
     </Field>
   );
 }
