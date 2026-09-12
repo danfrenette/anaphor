@@ -11,7 +11,7 @@ export default function NodeEdgeStudyPage() {
         <Link href="/studies" className="inline-flex min-h-11 items-center text-ui hover:text-primary">← All studies</Link>
       </nav>
       <header className="mb-8 mt-12">
-        <h1 className="text-title font-medium tracking-[-.02em]">Node-edge graphs</h1>
+        <h1 className="text-title font-medium tracking-heading">Node-edge graphs</h1>
         <p className="mt-3 max-w-[60ch] text-body text-muted-foreground">Follow a thought from capture to connected knowledge. Pulses carry each update into the notebook, then onward to search and a summary.</p>
       </header>
       <NotebookExample />
