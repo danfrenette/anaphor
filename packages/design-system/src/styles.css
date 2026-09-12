@@ -37,9 +37,15 @@
 
 /* Numeric spacing utilities use the shared 4px rhythm (gap-6 = 24px).
    Keep Tailwind's numbering rather than introducing a second spacing scale. */
-@theme {
+@theme static {
   --spacing: 0.25rem;
   --container-reading: 65ch;
+  --leading-reading: 1.6;
+  --tracking-heading: -0.02em;
+  --tracking-label: 0.08em;
+  /* Article rhythm and code remain relative to the surrounding font size. */
+  --spacing-prose: 1em;
+  --text-prose-code: 0.875em;
 }
 
 @theme inline {
@@ -66,22 +72,19 @@
   --text-ui: 0.875rem;
   --text-ui--line-height: 1.5;
   --text-body: 1rem;
-  --text-body--line-height: 1.6;
+  --text-body--line-height: var(--leading-reading);
   --text-heading: 1.5rem;
   --text-heading--line-height: 1.2;
-  --text-heading--letter-spacing: -0.02em;
+  --text-heading--letter-spacing: var(--tracking-heading);
   --text-title-small: 1.75rem;
   --text-title-small--line-height: 1.1;
-  --text-title-small--letter-spacing: -0.02em;
+  --text-title-small--letter-spacing: var(--tracking-heading);
   --text-title: 2.25rem;
   --text-title--line-height: 1.1;
-  --text-title--letter-spacing: -0.02em;
+  --text-title--letter-spacing: var(--tracking-heading);
   --text-display: clamp(2.5rem, 5vw, 3.5rem);
   --text-display--line-height: 1.1;
   --text-display--letter-spacing: -0.035em;
-
-  --leading-reading: 1.6;
-  --tracking-heading: -0.02em;
 
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
@@ -138,8 +141,8 @@
 @utility prose-reading {
   max-width: var(--container-reading);
   font-size: var(--text-body);
-  line-height: 1.6;
-  color: color-mix(in oklch, var(--anaphor-font-secondary) 90%, transparent);
+  line-height: var(--leading-reading);
+  @apply text-reading;
   overflow-wrap: break-word;
 }
 
@@ -154,39 +157,39 @@
     font-family: var(--font-sans);
     font-size: var(--text-body);
     line-height: var(--text-body--line-height);
-    font-weight: 400;
+    font-weight: var(--font-weight-normal);
     text-wrap: wrap;
-    color: color-mix(in oklch, var(--anaphor-font-secondary) 90%, transparent);
+    @apply text-reading;
     overflow-wrap: break-word;
   }
 
   .anaphor-prose :where(h1, h2, h3, h4, h5, h6):not(:where([data-prose-exclude], [data-prose-exclude] *)) {
     font-family: var(--font-heading);
-    font-weight: 900;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    font-weight: var(--font-weight-black);
+    line-height: var(--text-heading--line-height);
+    letter-spacing: var(--tracking-heading);
     text-wrap: balance;
-    margin-block: 1.5em 0.5em;
+    margin-block: calc(var(--spacing-prose) * 1.5) calc(var(--spacing-prose) * 0.5);
   }
   .anaphor-prose :where(h1):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: var(--text-title); line-height: var(--text-title--line-height); }
   .anaphor-prose :where(h2):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: var(--text-heading); }
-  .anaphor-prose :where(h3):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: 1.25rem; }
+  .anaphor-prose :where(h3):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: var(--text-xl); }
   .anaphor-prose :where(h4, h5, h6):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: var(--text-body); }
-  .anaphor-prose :where(p, ul, ol, blockquote, pre, figure, table):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: 1em; }
-  .anaphor-prose :where(ul, ol):not(:where([data-prose-exclude], [data-prose-exclude] *)) { padding-inline-start: 1.5em; }
+  .anaphor-prose :where(p, ul, ol, blockquote, pre, figure, table):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: var(--spacing-prose); }
+  .anaphor-prose :where(ul, ol):not(:where([data-prose-exclude], [data-prose-exclude] *)) { padding-inline-start: calc(var(--spacing-prose) * 1.5); }
   .anaphor-prose :where(ul):not(:where([data-prose-exclude], [data-prose-exclude] *)) { list-style-type: disc; }
   .anaphor-prose :where(ol):not(:where([data-prose-exclude], [data-prose-exclude] *)) { list-style-type: decimal; }
-  .anaphor-prose :where(li + li):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block-start: 0.375em; }
-  .anaphor-prose :where(li > ul, li > ol):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: 0.375em; }
+  .anaphor-prose :where(li + li):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block-start: calc(var(--spacing-prose) * 0.375); }
+  .anaphor-prose :where(li > ul, li > ol):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: calc(var(--spacing-prose) * 0.375); }
   .anaphor-prose :where(a):not(:where([data-prose-exclude], [data-prose-exclude] *)) { color: inherit; text-decoration-line: underline; text-underline-offset: 0.15em; }
-  .anaphor-prose :where(strong):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-weight: 700; }
-  .anaphor-prose :where(blockquote):not(:where([data-prose-exclude], [data-prose-exclude] *)) { border-inline-start: 2px solid var(--anaphor-input-border); padding-inline-start: 1em; }
-  .anaphor-prose :where(code, pre):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-family: var(--font-mono); font-size: 0.875em; font-weight: 400; font-style: normal; }
-  .anaphor-prose :where(pre):not(:where([data-prose-exclude], [data-prose-exclude] *)) { overflow-x: auto; padding: 1em; background: var(--anaphor-foreground); border-radius: var(--radius-sm); }
+  .anaphor-prose :where(strong):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-weight: var(--font-weight-bold); }
+  .anaphor-prose :where(blockquote):not(:where([data-prose-exclude], [data-prose-exclude] *)) { border-inline-start: 2px solid var(--anaphor-input-border); padding-inline-start: var(--spacing-prose); }
+  .anaphor-prose :where(code, pre):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-family: var(--font-mono); font-size: var(--text-prose-code); font-weight: var(--font-weight-normal); font-style: normal; }
+  .anaphor-prose :where(pre):not(:where([data-prose-exclude], [data-prose-exclude] *)) { overflow-x: auto; padding: var(--spacing-prose); background: var(--anaphor-foreground); border-radius: var(--radius-sm); }
   .anaphor-prose :where(pre code):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: inherit; }
-  .anaphor-prose :where(figcaption):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block-start: 0.5em; font-size: var(--text-small); }
+  .anaphor-prose :where(figcaption):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block-start: calc(var(--spacing-prose) * 0.5); font-size: var(--text-small); }
   .anaphor-prose :where(table):not(:where([data-prose-exclude], [data-prose-exclude] *)) { width: 100%; border-collapse: collapse; }
-  .anaphor-prose :where(th, td):not(:where([data-prose-exclude], [data-prose-exclude] *)) { padding: 0.5em; border-bottom: 1px solid var(--anaphor-input-border); text-align: start; }
+  .anaphor-prose :where(th, td):not(:where([data-prose-exclude], [data-prose-exclude] *)) { padding: calc(var(--spacing-prose) * 0.5); border-bottom: 1px solid var(--anaphor-input-border); text-align: start; }
   .anaphor-prose > :first-child:not([data-prose-exclude]) { margin-block-start: 0; }
   .anaphor-prose > :last-child:not([data-prose-exclude]) { margin-block-end: 0; }
 }

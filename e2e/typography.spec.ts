@@ -104,3 +104,31 @@ test("semantic overrides retain purpose styling and prose respects exclusions", 
   await expect(prose.locator("[data-prose-exclude]").first()).toHaveCSS("margin-block-start", "24px");
   await expect(prose.locator("[data-prose-exclude]").last()).toHaveCSS("margin-block-end", "24px");
 });
+
+test("Text and Prose respond to shared typography tokens", async ({ page }) => {
+  await page.goto("/#typography");
+  await page.evaluate(() => {
+    const tokens = document.documentElement.style;
+    tokens.setProperty("--tracking-heading", "0.04em");
+    tokens.setProperty("--tracking-label", "0.12em");
+    tokens.setProperty("--leading-reading", "2");
+    tokens.setProperty("--spacing-prose", "2em");
+    tokens.setProperty("--radius-sm", "12px");
+    tokens.setProperty("--text-xl", "22px");
+    const article = document.createElement("article");
+    article.className = "anaphor-prose";
+    article.dataset.testTypography = "tokens";
+    article.innerHTML = '<h2>Token heading</h2><h3>Token subheading</h3><p>First paragraph</p><p>Second paragraph</p><pre><code>Example</code></pre>';
+    document.body.append(article);
+  });
+  const heading = page.locator('[data-slot="text"][data-variant="heading"]').first();
+  await expect(heading).toHaveCSS("letter-spacing", "0.96px");
+  await expect(page.locator('[data-slot="text"][data-variant="label"]').first()).toHaveCSS("letter-spacing", "1.44px");
+  await expect(page.locator('[data-slot="text"][data-variant="body"]').first()).toHaveCSS("line-height", "32px");
+  const prose = page.locator('[data-test-typography="tokens"]');
+  await expect(prose).toHaveCSS("line-height", "32px");
+  await expect(prose.locator("h2")).toHaveCSS("letter-spacing", "0.96px");
+  await expect(prose.locator("h3")).toHaveCSS("font-size", "22px");
+  await expect(prose.locator("p").first()).toHaveCSS("margin-top", "32px");
+  await expect(prose.locator("pre")).toHaveCSS("border-radius", "12px");
+});

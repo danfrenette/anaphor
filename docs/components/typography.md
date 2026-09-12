@@ -83,3 +83,13 @@ opt-out also preserves the first and last child's own margins.
 Deferred: nested bold/italic markup inside mono content can still request
 unavailable faces. Leave that behavior unchanged until additional font licenses
 and assets are acquired.
+
+## Shared token ownership
+
+Text's utilities and Prose's stylesheet consume the package theme. Reading
+line-height uses `--leading-reading`; heading and label tracking use
+`--tracking-heading` and `--tracking-label`. Prose shares the reading color
+utility and uses the standard `--text-xl` size for article h3 headings.
+`--spacing-prose` (1em) and `--text-prose-code` (0.875em) retain article-relative
+spacing and code sizing. These tokens can be adjusted without editing component
+styles. Prose code-block radii continue to use `--radius-sm`.

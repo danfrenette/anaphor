@@ -9,7 +9,7 @@ const variants = {
   body: "max-w-reading font-sans text-body font-normal text-reading text-wrap",
   description: "max-w-reading font-sans text-body font-normal text-reading text-pretty",
   ui: "font-sans text-ui font-normal text-wrap",
-  label: "font-sans text-label font-medium tracking-[0.08em] uppercase text-wrap",
+  label: "font-sans text-label font-medium tracking-label uppercase text-wrap",
   caption: "font-sans text-small font-normal text-muted-foreground text-wrap",
   code: "font-mono text-ui font-normal not-italic text-wrap",
 } as const;
