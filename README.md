@@ -27,7 +27,9 @@ pnpm build
 
 ## Installing from the private registry
 
-Authenticate with GitHub, then install one component or the complete system:
+Start with a Tailwind v4 application initialized for shadcn, using the standard
+`@/components` alias. Authenticate with GitHub, then install one component or the
+complete system:
 
 ```sh
 gh auth login
@@ -35,14 +37,11 @@ pnpm dlx shadcn@latest add danfrenette/anaphor/button
 pnpm dlx shadcn@latest add danfrenette/anaphor/ui
 ```
 
-The commands copy source into the consuming project and install its npm
-dependencies. Import the generated stylesheet once from the application's CSS
-entry and register the application's source files:
-
-```css
-@import "@/components/anaphor.css";
-@source "./**/*.{ts,tsx}";
-```
+The commands copy source, tokens, and fonts into the consuming project, install
+its npm dependencies, and add the Anaphor stylesheet import to the CSS entry
+configured in `components.json`. No manual CSS edits are needed. Tailwind's
+existing application scanning and the installed stylesheet's component sources
+cover utility generation. Reinstalling does not duplicate the import.
 
 The internal `@anaphor/system` workspace package powers the reference manual;
 it is private and is not published to npm.
@@ -55,8 +54,10 @@ installer. On a new machine, install the browser first with
 
 The check builds temporary registry item files and installs Button alone and the
 full UI into two fresh React/Vite consumers outside the workspace. It compiles
-all installed source and checks browser interaction, generated styles, light/dark
-tokens, and both bundled fonts. The consumers have no `@anaphor/system` dependency.
+all installed source and checks automatic stylesheet setup, preservation of
+application CSS, repeat installation, browser interaction, generated styles,
+light/dark tokens, and bundled fonts. The consumers have no `@anaphor/system`
+dependency, and the check does not add CSS imports or source rules after installing.
 
 Only local registry dependency addresses are redirected to the built temporary
 files; source, targets, and npm dependency declarations go through the real
