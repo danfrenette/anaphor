@@ -71,7 +71,7 @@ test("selection animates at a fixed size and reduced motion settles immediately"
   });
   expect(frames.some(({ scale }) => scale > 0 && scale < 1)).toBe(true);
   expect(frames.every(({ width }) => width === 20)).toBe(true);
-  await pausedMotion.evaluate((element) => element.remove());
+  await pausedMotion.evaluate((element) => element.parentNode?.removeChild(element));
   await checkbox.uncheck();
   await expect(checkbox.locator('[data-slot="checkbox-indicator"]')).toHaveCSS("opacity", "0");
   await page.emulateMedia({ reducedMotion: "reduce" });
