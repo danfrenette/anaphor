@@ -5,7 +5,7 @@ import { Button, ButtonLabel } from "./components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
 import { CardCopyButton } from "./components/ui/card-copy-button";
 import { Checkbox } from "./components/ui/checkbox";
-import { Field, FieldLabel } from "./components/ui/field";
+import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel } from "./components/ui/field";
 import { FieldFeedback } from "./components/ui/field-feedback";
 import { Input } from "./components/ui/input";
 import { MorphSurface } from "./components/ui/morph-surface";
@@ -27,7 +27,7 @@ function Consumer() {
         <Badge>Ready</Badge>
         <Button onClick={() => setCount(count + 1)}><ButtonLabel>Count {count}</ButtonLabel></Button>
         <Field><FieldLabel>Email</FieldLabel><Input type="email" /><FieldFeedback hint="Your email address" error="Enter an email" invalid={false} /></Field>
-        <Checkbox aria-label="Accept updates" />
+        <FieldGroup><Field orientation="horizontal"><Checkbox /><FieldContent><FieldLabel>Accept updates</FieldLabel><FieldDescription>Occasional product news.</FieldDescription></FieldContent></Field></FieldGroup>
         <Separator />
         <CardCopyButton value="Registry consumer" />
         <Menu>

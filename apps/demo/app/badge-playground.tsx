@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Card, CardContent, CardHeader, CardTitle, type BadgeProps } from "@anaphor/system";
+import { FieldGroup, Badge, Card, CardContent, CardHeader, CardTitle, type BadgeProps } from "@anaphor/system";
 import { Tag } from "@phosphor-icons/react";
 import { useState } from "react";
 import { PlaygroundControls } from "./playground-host";
@@ -11,12 +11,12 @@ export function BadgePlayground() {
   const [settings, setSettings] = useState<Required<Pick<BadgeProps, "size" | "variant" | "shape">> & { icon: boolean }>(defaults);
   return <>
     <PlaygroundControls sectionId="badge" title="Badge" onReset={() => setSettings(defaults)}>
-      <div className="grid gap-3">
+      <FieldGroup>
         <Select label="Variant" value={settings.variant} options={["solid", "soft", "outline"] as const} onChange={(variant) => setSettings(s => ({ ...s, variant }))} />
         <Select label="Size" value={settings.size} options={["sm", "md", "lg"] as const} onChange={(size) => setSettings(s => ({ ...s, size }))} />
         <Select label="Shape" value={settings.shape} options={["square", "round"] as const} onChange={(shape) => setSettings(s => ({ ...s, shape }))} />
         <Check label="Icon" checked={settings.icon} onChange={(icon) => setSettings(s => ({ ...s, icon }))} />
-      </div>
+      </FieldGroup>
     </PlaygroundControls>
     <Card className="bg-background" aria-label="Badge preview" role="group">
       <CardHeader className="p-4 pb-1"><CardTitle variant="label">Primary demo</CardTitle></CardHeader>
