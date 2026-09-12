@@ -70,6 +70,8 @@ test("dropdown motion is restrained and reduced motion removes travel", async ({
   await page.goto("/#dropdown-menu");
   await page.getByRole("button", { name: "File actions" }).click();
   const popup = page.locator('[data-slot="menu-popup"]');
+  // Base UI temporarily disables transitions while positioning the mounted popup.
+  await expect(popup).toHaveCSS("transition-duration", "0.18s, 0.18s");
   const motion = await popup.evaluate((element) => {
     const styles = getComputedStyle(element);
     return {
@@ -93,6 +95,7 @@ test("dropdown motion is restrained and reduced motion removes travel", async ({
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
   await page.getByRole("button", { name: "File actions" }).click();
+  await expect(popup).toHaveCSS("transition-duration", "0.2s");
   const reduced = await popup.evaluate((element) => {
     const styles = getComputedStyle(element);
     return { duration: styles.transitionDuration, property: styles.transitionProperty };

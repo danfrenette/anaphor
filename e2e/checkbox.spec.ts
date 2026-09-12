@@ -52,23 +52,30 @@ test("selection animates at a fixed size and reduced motion settles immediately"
   await page.goto("/#checkbox");
   const checkbox = page.getByRole("checkbox", { name: "Keep me updated" });
   await checkbox.scrollIntoViewIfNeeded();
-  const frames = await checkbox.evaluate(async (element) => {
-    const samples: { scale: number; width: number }[] = [];
-    element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-    for (let frame = 0; frame < 25; frame++) {
-      await new Promise(requestAnimationFrame);
-      const indicator = element.querySelector('[data-slot="checkbox-indicator"]');
-      if (indicator) samples.push({ scale: parseFloat(getComputedStyle(indicator).scale), width: element.getBoundingClientRect().width });
-    }
-    return samples;
+  // Pause before selection so a busy browser cannot skip the 150ms animation.
+  const pausedMotion = await page.addStyleTag({ content: '[data-slot="checkbox-indicator"] { animation-play-state: paused !important; }' });
+  await checkbox.check();
+  const indicator = checkbox.locator('[data-slot="checkbox-indicator"]');
+  await expect(indicator).toHaveCSS("animation-name", "anaphor-checkbox-enter");
+  await expect(indicator).toHaveCSS("animation-duration", "0.15s");
+  const frames = await indicator.evaluate((element) => {
+    const animation = element.getAnimations().find((entry) => entry instanceof CSSAnimation && entry.animationName === "anaphor-checkbox-enter");
+    if (!animation) throw new Error("Missing checkbox selection animation");
+    return [0, 75, 149].map((time) => {
+      animation.currentTime = time;
+      return {
+        scale: parseFloat(getComputedStyle(element).scale),
+        width: element.parentElement!.getBoundingClientRect().width,
+      };
+    });
   });
   expect(frames.some(({ scale }) => scale > 0 && scale < 1)).toBe(true);
   expect(frames.every(({ width }) => width === 20)).toBe(true);
+  await pausedMotion.evaluate((element) => element.remove());
   await checkbox.uncheck();
   await expect(checkbox.locator('[data-slot="checkbox-indicator"]')).toHaveCSS("opacity", "0");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await checkbox.check();
-  const indicator = checkbox.locator('[data-slot="checkbox-indicator"]');
   await expect(indicator).toHaveCSS("transition-duration", "0s");
   await expect(indicator).toHaveCSS("animation-name", "none");
   await expect(indicator).toHaveCSS("opacity", "1");
