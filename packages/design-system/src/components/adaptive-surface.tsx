@@ -12,7 +12,6 @@ import {
   type ReactNode,
 } from "react";
 
-const defaultMobileQuery = "(max-width: 47.999rem)";
 const mediaQueries = new Map<string, MediaQueryList>();
 
 function getMediaQuery(query: string) {
@@ -51,8 +50,8 @@ type AdaptiveSurfaceProviderProps = {
   children: ReactNode;
   desktopOpen: boolean;
   mobileOpen: boolean;
-  mobileQuery?: string;
-  onDesktopOpenChange: (open: boolean, eventDetails?: Dialog.Root.ChangeEventDetails) => void;
+  mobileQuery: string;
+  onDesktopOpenChange: (open: boolean) => void;
   onMobileOpenChange: (open: boolean, eventDetails?: Dialog.Root.ChangeEventDetails) => void;
 };
 
@@ -60,7 +59,7 @@ function AdaptiveSurfaceProvider({
   children,
   desktopOpen,
   mobileOpen,
-  mobileQuery = defaultMobileQuery,
+  mobileQuery,
   onDesktopOpenChange,
   onMobileOpenChange,
 }: AdaptiveSurfaceProviderProps) {

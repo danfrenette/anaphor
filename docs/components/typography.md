@@ -7,11 +7,11 @@ import { Text, Prose } from "@anaphor/system";
 
 <Text variant="display" as="h1">The article title</Text>
 <Text variant="heading" as="h2">A section</Text>
-<Text>Body copy includes its reading width and 90% color.</Text>
-<Text variant="description">Short introductory copy wraps naturally.</Text>
-<Text variant="label">Category</Text>
-<Text variant="caption">Updated yesterday</Text>
-<Text variant="code">account_id</Text>
+<Text as="p" variant="body">Body copy includes its reading width and 90% color.</Text>
+<Text as="p" variant="description">Short introductory copy wraps naturally.</Text>
+<Text as="span" variant="label">Category</Text>
+<Text as="p" variant="caption">Updated yesterday</Text>
+<Text as="code" variant="code">account_id</Text>
 
 <Prose as="article">
   <h2>A section</h2>
@@ -20,7 +20,7 @@ import { Text, Prose } from "@anaphor/system";
 </Prose>
 ```
 
-| Variant | Default HTML | Font | Size |
+| Variant | Suggested HTML | Font | Size |
 | --- | --- | --- | --- |
 | display | h1 | Bell Gothic Black / 900 | fluid 40–56px |
 | title | h2 | Bell Gothic Black / 900 | 36px |
@@ -68,14 +68,14 @@ The old `prose-reading` utility remains only for compatibility with older consum
 
 ## Semantics and card labels
 
-`as` selects native HTML, including its ref and event types. Omitting `as` uses
-that variant's documented element. For example, `variant="ui"` defaults to a
-span and accepts a span ref; `as="h2"` accepts a heading ref while retaining the
-UI variant's regular weight and normal wrapping.
+`Text` requires both `as` and `variant`. `as` selects native HTML, including
+its ref and event types. For example, `as="span" variant="ui"` accepts a span
+ref; `as="h2" variant="ui"` accepts a heading ref while retaining the UI
+variant's regular weight and normal wrapping. `Prose` also requires `as`.
 
-Use `<CardTitle variant="label">States</CardTitle>` for categorical card labels.
+Use `<CardTitle as="h3" variant="label">States</CardTitle>` for categorical card labels.
 It owns Inter, medium weight, uppercase presentation, tracking, and muted color.
-The default card heading stays Bell Gothic Black. Both preserve heading semantics.
+`variant="heading"` stays Bell Gothic Black. Both preserve heading semantics.
 
 Prose title-sized headings use the shared title line-height. Its embedded-content
 opt-out also preserves the first and last child's own margins.

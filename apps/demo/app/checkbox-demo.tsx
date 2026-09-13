@@ -7,17 +7,17 @@ export function CheckboxDemo() {
       <header>
         <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">02.03 / Control</p>
         <Text as="h2" variant="title" className="mt-8">Checkbox</Text>
-        <Text variant="description" className="mt-3">A small, deliberate choice. A quick fill confirms selection; labels give it room to breathe.</Text>
+        <Text as="p" variant="description" className="mt-3">A small, deliberate choice. A quick fill confirms selection; labels give it room to breathe.</Text>
       </header>
       <div className="mt-8"><CheckboxPlayground /></div>
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <div className="grid gap-4">
-          <Card>
-            <CardHeader className="p-4 pb-1"><CardTitle className="text-ui">Required choice</CardTitle></CardHeader>
+          <Card variant="default">
+            <CardHeader className="p-4 pb-1"><CardTitle as="h3" variant="heading" className="text-ui">Required choice</CardTitle></CardHeader>
             <CardContent className="p-4"><CheckboxRequiredExample /></CardContent>
           </Card>
-          <Card>
-            <CardHeader className="p-4 pb-1"><CardTitle className="text-ui">Supporting text</CardTitle></CardHeader>
+          <Card variant="default">
+            <CardHeader className="p-4 pb-1"><CardTitle as="h3" variant="heading" className="text-ui">Supporting text</CardTitle></CardHeader>
             <CardContent className="p-4">
               <Field orientation="horizontal">
                 <Checkbox defaultChecked />
@@ -26,8 +26,8 @@ export function CheckboxDemo() {
             </CardContent>
           </Card>
         </div>
-        <Card>
-          <CardHeader className="p-4 pb-1"><CardTitle className="text-ui">Related choices</CardTitle></CardHeader>
+        <Card variant="default">
+          <CardHeader className="p-4 pb-1"><CardTitle as="h3" variant="heading" className="text-ui">Related choices</CardTitle></CardHeader>
           <CardContent className="p-4"><CheckboxSelectionExample /></CardContent>
         </Card>
       </div>
@@ -38,8 +38,8 @@ export function CheckboxDemo() {
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
         {(["light", "dark"] as const).map((theme) => (
-          <Card key={theme} className={theme === "dark" ? "@container dark" : "@container"} role="group" aria-label={`${theme} checkbox states`}>
-            <CardHeader className="p-4 pb-1"><CardTitle variant="label">{theme} / States</CardTitle></CardHeader>
+          <Card variant="default" key={theme} className={theme === "dark" ? "@container dark" : "@container"} role="group" aria-label={`${theme} checkbox states`}>
+            <CardHeader className="p-4 pb-1"><CardTitle as="h3" variant="label">{theme} / States</CardTitle></CardHeader>
             <CardContent className="grid gap-x-4 p-5 @min-[18rem]:grid-cols-2">
               <Field orientation="horizontal"><Checkbox /><FieldLabel>Unchecked</FieldLabel></Field>
               <Field orientation="horizontal"><Checkbox defaultChecked /><FieldLabel>Checked</FieldLabel></Field>

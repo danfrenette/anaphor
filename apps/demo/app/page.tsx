@@ -21,7 +21,6 @@ const chromaticRoles = [
   ["Brand", "--anaphor-brand", "oklch(0.6217 0.185 39.44)"],
   ["Focus", "--anaphor-focus", "oklch(0.618 0.161 39.44)"],
   ["Danger", "--anaphor-danger", "oklch(0.4852 0.1691 10.14)"],
-  ["Danger / hover", "--anaphor-danger-hover", "oklch(0.4236 0.1691 10.14)"],
   ["Danger / text", "--anaphor-danger-text", "oklch(0.4236 0.1691 10.14)"],
 ] as const;
 
@@ -46,13 +45,13 @@ export default function HomePage() {
             <Text as="h1" variant="display" className="mt-10">
               Anaphor
             </Text>
-            <Text variant="description" className="mt-3">
+            <Text as="p" variant="description" className="mt-3">
               An executable manual for the decisions that make personal software
               coherent.
             </Text>
           </header>
 
-          <Separator />
+          <Separator orientation="horizontal" />
 
           <section id="principles" className="scroll-mt-8 py-12">
             <p className="text-label tracking-[0.08em] uppercase">
@@ -87,13 +86,13 @@ export default function HomePage() {
                 </Text>
               </div>
               <p className="text-label text-muted-foreground">
-                OKLCH / 11 ROLES
+                OKLCH / {colorRoles.length} ROLES
               </p>
             </div>
 
-            <Text variant="description" className="mt-4">
+            <Text as="p" variant="description" className="mt-4">
               Six theme-aware neutrals carry type, structure, and disabled
-              states. Five chromatic roles carry brand, focus, and danger. Danger text
+              states. Chromatic roles carry brand, focus, and danger. Danger text
               uses a lighter shade of the same OKLCH hue in dark mode.
               Component states derive from these values rather than introducing
               more tokens.
@@ -109,7 +108,7 @@ export default function HomePage() {
               <ol className="mt-3 grid gap-4 sm:grid-cols-3">
                 {neutralRoles.map(([label, token]) => (
                   <li key={token}>
-                    <Card>
+                    <Card variant="default">
                       <div className="grid grid-cols-2">
                         <div
                           className="h-14 rounded-tl-card"
@@ -139,12 +138,12 @@ export default function HomePage() {
                 <Text as="h3" variant="label" className="uppercase">
                   Chromatic signals
                 </Text>
-                <p className="text-label text-muted-foreground">05 roles</p>
+                <p className="text-label text-muted-foreground">{String(chromaticRoles.length).padStart(2, "0")} roles</p>
               </div>
               <ol className="mt-3 grid gap-4 sm:grid-cols-2">
                 {chromaticRoles.map(([role, token, value]) => (
                   <li key={role}>
-                    <Card>
+                    <Card variant="default">
                       <div
                         className="h-20 rounded-t-card"
                         style={{ backgroundColor: `var(${token})` }}
@@ -163,12 +162,12 @@ export default function HomePage() {
 
             <div className="mt-8 grid items-start gap-6 sm:grid-cols-2">
               {["light", "dark"].map((theme) => (
-                <Card
+                <Card variant="default"
                   key={theme}
                   className={theme === "dark" ? "dark" : undefined}
                 >
                   <CardHeader>
-                    <CardTitle variant="label">
+                    <CardTitle as="h3" variant="label">
                       {theme} roles
                     </CardTitle>
                   </CardHeader>
@@ -196,7 +195,7 @@ export default function HomePage() {
             </div>
           </section>
 
-          <Separator />
+          <Separator orientation="horizontal" />
 
           <section id="typography" className="scroll-mt-8 py-12">
             <p className="text-label tracking-[0.08em] uppercase">
@@ -207,7 +206,7 @@ export default function HomePage() {
               <p className="text-label text-muted-foreground uppercase">
                 Instructional measure
               </p>
-              <Text>
+              <Text as="p" variant="body">
                 Bell Gothic Black gives headings their voice. Inter carries the reading
                 and interface text. Magda Clean Mono identifies literal values and code.
                 Purpose sets the font, size, and rhythm.
@@ -216,17 +215,17 @@ export default function HomePage() {
             <div className="mt-8 border-y border-border py-8">
               <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">Bell Gothic Black / 900</p>
               <Text as="p" variant="display" className="mt-4 max-w-[18ch]">A place for deliberate work.</Text>
-              <Text variant="caption" className="mt-4">Headings balance their lines. Body copy keeps a steady reading measure.</Text>
+              <Text as="p" variant="caption" className="mt-4">Headings balance their lines. Body copy keeps a steady reading measure.</Text>
             </div>
             <div className="mt-8 grid gap-6 sm:grid-cols-2">
               {["light", "dark"].map((theme) => (
-                <Card key={theme} className={theme === "dark" ? "dark" : undefined}>
+                <Card variant="default" key={theme} className={theme === "dark" ? "dark" : undefined}>
                   <CardHeader>
                     <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">{theme} / Reading</p>
-                    <CardTitle className="mt-3">Room to think</CardTitle>
+                    <CardTitle as="h3" variant="heading" className="mt-3">Room to think</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Prose aria-label={`${theme} article example`}>
+                    <Prose as="div" aria-label={`${theme} article example`}>
                       <p>Good interfaces leave room for the work. A clear heading establishes the subject; a steady rhythm carries the details. <strong>Emphasis has a purpose.</strong> The rest can feel <em>quiet and considered.</em></p>
                       <h3>A steady reading rhythm</h3>
                       <p>Article text shares one reading color, including <a href="#typography">links</a>, lists, and <code>inline code</code>.</p>
@@ -234,7 +233,7 @@ export default function HomePage() {
                       <blockquote><p>Clear typography lets the writing lead.</p></blockquote>
                     </Prose>
                     <div className="mt-6 flex items-baseline justify-between gap-3 border-t border-border pt-4 text-ui">
-                      <Text variant="ui">Reading progress</Text>
+                      <Text as="span" variant="ui">Reading progress</Text>
                       <span className="font-mono tabular-nums">08 / 24</span>
                     </div>
                   </CardContent>
@@ -247,7 +246,7 @@ export default function HomePage() {
             <p className="text-label tracking-[0.08em] uppercase">
               01.03 / Motion
             </p>
-            <Text variant="description" className="mt-6">
+            <Text as="p" variant="description" className="mt-6">
               Motion explains feedback, causality, continuity, or spatial
               relationships. If it explains none of these, remove it.
             </Text>

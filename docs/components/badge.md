@@ -5,18 +5,18 @@ span with native span attributes. It adds no role, tab stop, hover effect, or
 press animation. Use a Button or link for actions.
 
 ```tsx
-<Badge>Draft</Badge>
+<Badge size="md" variant="soft" shape="square">Draft</Badge>
 <Badge variant="outline" shape="round" size="lg">Study 01</Badge>
-<Badge variant="solid"><Tag aria-hidden="true" />Published</Badge>
+<Badge size="md" shape="square" variant="solid"><Tag aria-hidden="true" />Published</Badge>
 ```
 
 Import Badge and BadgeProps from `@anaphor/system`. Icons are Phosphor,
 composed as children and marked decorative when the text supplies their meaning.
 
-- `variant`: `soft` (default), `solid`, `outline`; all use theme neutrals.
-- `size`: `sm`, `md` (default), `lg`; minimum heights 20/24/28px, horizontal
+- `variant`: required; `soft`, `solid`, `outline`; all use theme neutrals.
+- `size`: required; `sm`, `md`, `lg`; minimum heights 20/24/28px, horizontal
   padding 6/8/10px, text 12/12/14px, icons 12/12/14px.
-- `shape`: `square` (default, 8px corners) or `round`.
+- `shape`: required; `square` (8px corners) or `round`.
 
 Long labels can wrap; height is a minimum, not a clipping boundary. Keep badge
 copy short. Native span props remain available, but interaction belongs in a

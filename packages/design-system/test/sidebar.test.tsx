@@ -45,7 +45,7 @@ beforeEach(() => {
 
 function Example() {
   return (
-    <SidebarProvider>
+    <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false}>
       <Sidebar>
         <SidebarClose />
         <SidebarMenu>
@@ -53,12 +53,12 @@ function Example() {
             <SidebarMenuButton isActive render={<a href="#button" />}>Button</SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton render={<a href="#card" />}>Card</SidebarMenuButton>
+            <SidebarMenuButton isActive={false} render={<a href="#card" />}>Card</SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </Sidebar>
       <SidebarInset>
-        <SidebarTrigger />
+        <SidebarTrigger target="desktop" />
         <SidebarTrigger target="mobile">Mobile navigation</SidebarTrigger>
       </SidebarInset>
     </SidebarProvider>
@@ -108,11 +108,23 @@ test("supports the conventional command shortcut", () => {
   expect(provider).toHaveAttribute("data-desktop-open", "false");
 });
 
+test("reports controlled changes without changing the supplied open state", () => {
+  const onOpenChange = vi.fn();
+  const { container } = render(
+    <SidebarProvider mode="controlled" open={true} onOpenChange={onOpenChange} shortcut={null} resizable={false}>
+      <SidebarTrigger target="desktop" />
+    </SidebarProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Collapse sidebar" }));
+  expect(onOpenChange).toHaveBeenCalledWith(false);
+  expect(container.firstElementChild).toHaveAttribute("data-desktop-open", "true");
+});
+
 test("keeps the resize rail opt-in and supports keyboard resizing", () => {
-  const { container, rerender } = render(<SidebarProvider><Sidebar><SidebarRail /></Sidebar></SidebarProvider>);
+  const { container, rerender } = render(<SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false}><Sidebar><SidebarRail /></Sidebar></SidebarProvider>);
   expect(screen.queryByRole("button", { name: "Adjust or collapse sidebar" })).not.toBeInTheDocument();
 
-  rerender(<SidebarProvider resizable><Sidebar><SidebarRail /></Sidebar></SidebarProvider>);
+  rerender(<SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable><Sidebar><SidebarRail /></Sidebar></SidebarProvider>);
   const rail = screen.getByRole("button", { name: "Adjust or collapse sidebar" });
   fireEvent.keyDown(rail, { key: "ArrowRight" });
   expect(container.firstElementChild).toHaveStyle("--anaphor-sidebar-drag-width: 16px");
@@ -121,7 +133,7 @@ test("keeps the resize rail opt-in and supports keyboard resizing", () => {
 });
 
 test("uses each interaction's motion preference and allows consumers to cancel toggles", () => {
-  const { container, rerender } = render(<SidebarProvider><SidebarTrigger /></SidebarProvider>);
+  const { container, rerender } = render(<SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false}><SidebarTrigger target="desktop" /></SidebarProvider>);
   const trigger = screen.getByRole("button");
   fireEvent.click(trigger, { detail: 0 });
   expect(container.firstElementChild).toHaveAttribute("data-motion", "instant");
@@ -129,7 +141,7 @@ test("uses each interaction's motion preference and allows consumers to cancel t
   expect(container.firstElementChild).toHaveAttribute("data-motion", "animate");
   expect(container.firstElementChild).toHaveAttribute("data-desktop-open", "true");
 
-  rerender(<SidebarProvider><SidebarTrigger onClick={event => event.preventDefault()} /></SidebarProvider>);
+  rerender(<SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false}><SidebarTrigger target="desktop" onClick={event => event.preventDefault()} /></SidebarProvider>);
   fireEvent.click(trigger);
   expect(container.firstElementChild).toHaveAttribute("data-desktop-open", "true");
 });

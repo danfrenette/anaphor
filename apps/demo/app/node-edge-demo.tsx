@@ -74,13 +74,13 @@ function NotebookDiagram() {
               const source = sources[id];
               const Icon = sourceIcons[id];
               return (
-                <Node key={id} nodeId={id} aria-label={source.title} className="rounded-card">
-                  <Card>
+                <Node variant="plain" key={id} nodeId={id} aria-label={source.title} className="rounded-card">
+                  <Card variant="default">
                     <CardHeader>
-                      <CardTitle>{source.title}</CardTitle>
+                      <CardTitle as="h3" variant="heading">{source.title}</CardTitle>
                       <CardDescription>{source.description}</CardDescription>
                       <CardAction>
-                        <Button variant="outline" tone="neutral" size="sm" iconOnly aria-label={`Capture from ${source.title}`} onClick={() => capture(id)}>
+                        <Button loading={false} nativeButton={true} type="button" shape="square" variant="outline" tone="neutral" size="sm" iconOnly aria-label={`Capture from ${source.title}`} onClick={() => capture(id)}>
                           <Icon size={16} aria-hidden="true" />
                         </Button>
                       </CardAction>
@@ -88,7 +88,7 @@ function NotebookDiagram() {
                     <CardContent className="px-6 pb-4 text-small">
                       <div className="flex items-center justify-between gap-3 border-t border-border pt-3 text-muted-foreground">
                         <span>Input / {sourceMeta[id].format}</span>
-                        <Badge variant="outline" size="sm">{sourceMeta[id].result}</Badge>
+                        <Badge shape="square" variant="outline" size="sm">{sourceMeta[id].result}</Badge>
                       </div>
                     </CardContent>
                   </Card>
@@ -99,12 +99,12 @@ function NotebookDiagram() {
 
           <div>
             <p className="mb-6 text-label uppercase tracking-[.08em] text-muted-foreground">02 / Organize</p>
-            <Node nodeId="notebook" id="diagram-notebook" aria-label="Notebook" className="rounded-card">
-              <Card>
+            <Node variant="plain" nodeId="notebook" id="diagram-notebook" aria-label="Notebook" className="rounded-card">
+              <Card variant="default">
                 <CardHeader>
-                  <CardTitle>Notebook</CardTitle>
+                  <CardTitle as="h3" variant="heading">Notebook</CardTitle>
                   <CardDescription>A home for what you learn</CardDescription>
-                  <CardAction><Badge variant="outline" size="sm">Rev {String(notebook.revision).padStart(2, "0")}</Badge></CardAction>
+                  <CardAction><Badge shape="square" variant="outline" size="sm">Rev {String(notebook.revision).padStart(2, "0")}</Badge></CardAction>
                 </CardHeader>
                 <CardContent>
                   <dl className="divide-y divide-border text-ui">
@@ -116,7 +116,7 @@ function NotebookDiagram() {
                 <CardFooter className="px-6 pb-4 text-small">
                   <div className="flex w-full items-center justify-between gap-3 border-t border-border pt-3 text-muted-foreground">
                     <span>Downstream sync</span>
-                    <Badge variant={synchronized ? "soft" : "outline"} size="sm">{synchronized ? "Current" : "Updating"}</Badge>
+                    <Badge shape="square" variant={synchronized ? "soft" : "outline"} size="sm">{synchronized ? "Current" : "Updating"}</Badge>
                   </div>
                 </CardFooter>
               </Card>
@@ -125,7 +125,7 @@ function NotebookDiagram() {
 
           <div className="flex flex-col gap-4">
             <p className="mb-2 text-label uppercase tracking-[.08em] text-muted-foreground">03 / Connect</p>
-            <Node nodeId="search" aria-label="Search index" className="rounded-card">
+            <Node variant="plain" nodeId="search" aria-label="Search index" className="rounded-card">
               <OutputCard
                 title="Search index"
                 description="Makes captured material retrievable"
@@ -134,7 +134,7 @@ function NotebookDiagram() {
                 icon={MagnifyingGlassIcon}
               />
             </Node>
-            <Node nodeId="summary" aria-label="Summary" className="rounded-card">
+            <Node variant="plain" nodeId="summary" aria-label="Summary" className="rounded-card">
               <OutputCard
                 title="Summary"
                 description="Distills the latest notebook context"
@@ -153,11 +153,11 @@ function NotebookDiagram() {
 
       <div className="relative z-[4] flex flex-wrap items-center justify-between gap-4 border-t border-border bg-background px-6 py-5">
         <div className="flex items-center gap-3">
-          <Button variant="outline" tone="neutral" size="sm" onClick={playback.running ? stop : play}>
+          <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" variant="outline" tone="neutral" size="sm" onClick={playback.running ? stop : play}>
             {playback.running ? <StopIcon size={16} aria-hidden="true" /> : <PlayIcon size={16} aria-hidden="true" />}
             <ButtonLabel>{playback.running ? "Stop flow" : "Play flow"}</ButtonLabel>
           </Button>
-          <Button variant="ghost" tone="neutral" size="sm" iconOnly aria-label="Reset diagram" onClick={reset}>
+          <Button loading={false} nativeButton={true} type="button" shape="square" variant="ghost" tone="neutral" size="sm" iconOnly aria-label="Reset diagram" onClick={reset}>
             <ArrowCounterClockwiseIcon size={16} aria-hidden="true" />
           </Button>
           <label className="flex cursor-pointer items-center gap-3 text-ui">
@@ -190,9 +190,9 @@ function OutputCard({ title, description, detail, revision, icon: Icon }: {
   icon: typeof MagnifyingGlassIcon;
 }) {
   return (
-    <Card>
+    <Card variant="default">
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle as="h3" variant="heading">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
         <CardAction><Icon size={16} aria-hidden="true" /></CardAction>
       </CardHeader>
@@ -202,7 +202,7 @@ function OutputCard({ title, description, detail, revision, icon: Icon }: {
       <CardFooter className="px-6 pb-4 text-small">
         <div className="flex w-full items-center justify-between gap-3 border-t border-border pt-3 text-muted-foreground">
           <span>Index revision</span>
-          <Badge variant="outline" size="sm">{String(revision).padStart(2, "0")}</Badge>
+          <Badge shape="square" variant="outline" size="sm">{String(revision).padStart(2, "0")}</Badge>
         </div>
       </CardFooter>
     </Card>
@@ -217,7 +217,7 @@ export function NodeEdgeDemo() {
           <p>03.03 / Component</p><p>Status / Study</p>
         </div>
         <Text as="h2" variant="title" className="mt-8">Node-edge graphs</Text>
-        <Text variant="description" className="mt-3">From a fleeting thought to connected knowledge. Capture something, watch it reach the notebook, then follow the update into search and a summary.</Text>
+        <Text as="p" variant="description" className="mt-3">From a fleeting thought to connected knowledge. Capture something, watch it reach the notebook, then follow the update into search and a summary.</Text>
       </header>
       <div className="mt-8"><NotebookExample /></div>
       <p className="mt-4 text-small text-muted-foreground">An authored illustration with simulated data. Pulse illumination inspired by <a className="underline underline-offset-4" href="https://x.com/kitlangton/status/2096703869136867563" target="_blank" rel="noreferrer">Kit Langton’s diagrams</a>.</p>
@@ -231,7 +231,7 @@ export function NotebookExample() {
         <div className="flex flex-wrap justify-between gap-3 border-b border-border px-6 py-5 text-small">
           <span>A connected notebook</span><span>Choose a capture source to follow its path</span>
         </div>
-        <Graph><NotebookDiagram /></Graph>
+        <Graph pulseSpeed={120}><NotebookDiagram /></Graph>
       </div>
   );
 }

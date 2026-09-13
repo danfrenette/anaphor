@@ -10,7 +10,7 @@ test("activates by pointer and keyboard without submitting its form", async () =
   const onSubmit = vi.fn((event: FormEvent) => event.preventDefault());
   render(
     <form onSubmit={onSubmit}>
-      <Button onClick={onClick}><ButtonLabel>Execute</ButtonLabel></Button>
+      <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" onClick={onClick}><ButtonLabel>Execute</ButtonLabel></Button>
     </form>,
   );
   const button = screen.getByRole("button", { name: "Execute" });
@@ -27,7 +27,7 @@ test("keeps focus and blocks activation while loading, then recovers", async () 
   const user = userEvent.setup();
   const onClick = vi.fn();
   const action = (loading: boolean) => (
-    <Button loading={loading} onClick={onClick}><ButtonLabel>Save</ButtonLabel></Button>
+    <Button iconOnly={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" loading={loading} onClick={onClick}><ButtonLabel>Save</ButtonLabel></Button>
   );
   const { rerender } = render(action(false));
   const button = screen.getByRole("button", { name: "Save" });
@@ -51,8 +51,8 @@ test("disabled actions cannot activate and are skipped by keyboard navigation", 
   const onClick = vi.fn();
   render(
     <>
-      <Button disabled onClick={onClick}><ButtonLabel>Delete item</ButtonLabel></Button>
-      <Button><ButtonLabel>Cancel</ButtonLabel></Button>
+      <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" disabled onClick={onClick}><ButtonLabel>Delete item</ButtonLabel></Button>
+      <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid"><ButtonLabel>Cancel</ButtonLabel></Button>
     </>,
   );
   const button = screen.getByRole("button", { name: "Delete item" });
@@ -71,7 +71,7 @@ test("preserves a composed submit button's behavior and formatted action name", 
   const onRenderClick = vi.fn();
   render(
     <form onSubmit={onSubmit}>
-      <Button render={<button onClick={onRenderClick} />} type="submit">
+      <Button iconOnly={false} loading={false} nativeButton={true} shape="square" size="md" tone="accent" variant="solid" render={<button onClick={onRenderClick} />} type="submit">
         <svg aria-hidden="true" />
         <ButtonLabel>Save {count} <strong>items</strong></ButtonLabel>
       </Button>
@@ -86,7 +86,7 @@ test("composed anchors block navigation while loading and recover", async () => 
   const user = userEvent.setup();
   const activate = vi.fn();
   const action = (loading: boolean) => (
-    <Button nativeButton={false} render={<a href="#card" />} loading={loading} onClick={activate}>
+    <Button iconOnly={false} shape="square" size="md" tone="accent" variant="solid" nativeButton={false} render={<a href="#card" />} loading={loading} onClick={activate}>
       <ButtonLabel>Explore Card</ButtonLabel>
     </Button>
   );

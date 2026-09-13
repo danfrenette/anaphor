@@ -30,8 +30,8 @@ and masked rim; only its origin and opacity change at runtime.
 
 ```tsx
 <Graph pulseSpeed={120}>
-  <Node nodeId="capture" className="rounded-card"><CaptureCard /></Node>
-  <Node nodeId="notebook" className="rounded-card"><NotebookCard /></Node>
+  <Node variant="plain" nodeId="capture" className="rounded-card"><CaptureCard /></Node>
+  <Node variant="plain" nodeId="notebook" className="rounded-card"><NotebookCard /></Node>
   <Edge edgeId="capture-notebook" from="capture" to="notebook" />
   <Controls />
 </Graph>
@@ -48,14 +48,14 @@ It renders an HTML group; name it with `aria-label` or `aria-labelledby`.
 It does not add a tab stop or button behavior. Actions remain native controls
 inside the group. Graph renders the SVG edges; Node content stays ordinary HTML.
 
-The default `variant="plain"` allows any child content, including a Card.
+The required `variant="plain"` allows any child content, including a Card.
 `variant="surface"` supplies Node's own neutral surface and rounded geometry.
 The compact three-node demo uses that surface directly, without importing Card.
 Card owns only presentation and sections; it has no graph or animation dependency.
 
 ```tsx
 <Node nodeId="capture" variant="surface" aria-label="Capture" className="p-4">
-  <Button onClick={capture}>Capture a note</Button>
+  <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" onClick={capture}>Capture a note</Button>
 </Node>
 ```
 
@@ -95,7 +95,7 @@ Effect sequences.
 Pulses start immediately; no full-path highlight or timed reveal precedes them.
 A bright core, soft radial halo, and 40px falloff on the nearby active route carry
 light through bends. Arrival illuminates the receiving card from its connected
-side. The default speed is 120 CSS px/second with a 1,040ms minimum travel time.
+side. Examples set the required `pulseSpeed` to 120 CSS px/second, with a 1,040ms minimum travel time.
 Reduced motion uses endpoint feedback instead of travel or moving route light.
 Stop, Reset, replacement, and unmount release pulse resources.
 

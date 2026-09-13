@@ -8,7 +8,7 @@ test("forwards refs to the variant default and explicitly selected native elemen
   const heading = createRef<HTMLHeadingElement>();
   const article = createRef<HTMLElement>();
   render(<Prose as="article" ref={article} aria-label="Notes">
-    <Text variant="ui" ref={span}>Reading progress</Text>
+    <Text as="span" variant="ui" ref={span}>Reading progress</Text>
     <Text as="h2" variant="caption" ref={heading}>Details</Text>
   </Prose>);
   expect(span.current).toBe(screen.getByText("Reading progress"));

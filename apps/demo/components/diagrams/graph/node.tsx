@@ -6,10 +6,10 @@ import { useGraphContext } from "./graph-context";
 interface NodeProps extends ComponentPropsWithoutRef<"div"> {
   nodeId: string;
   /** Use a node-owned surface, or compose your own child surface. */
-  variant?: 'plain' | 'surface';
+  variant: 'plain' | 'surface';
 }
 
-function Node({ nodeId, children, variant = 'plain', className = "", ...props }: NodeProps) {
+function Node({ nodeId, children, variant, className, ...props }: NodeProps) {
   const { register, nodeLights } = useGraphContext();
   const ref = useCallback((element: HTMLDivElement | null) => register(nodeId, element), [nodeId, register]);
   const lightRef = useCallback((element: HTMLSpanElement | null) => {
@@ -24,7 +24,7 @@ function Node({ nodeId, children, variant = 'plain', className = "", ...props }:
       data-node-id={nodeId}
       data-variant={variant}
       ref={ref}
-      className={`relative z-[2] min-w-0 ${variant === 'surface' ? 'rounded-lg border border-border bg-muted text-foreground' : ''} ${className}`}
+      className={`relative z-[2] min-w-0 ${variant === 'surface' ? 'rounded-lg border border-border bg-muted text-foreground' : ''} ${className ?? ""}`}
     >
       {children}
       <span

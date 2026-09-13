@@ -10,7 +10,7 @@ export function CardDemo() {
           <p>Status / Draft</p>
         </div>
         <Text as="h2" variant="title" className="mt-8">Card</Text>
-        <Text variant="description" className="mt-3">
+        <Text as="p" variant="description" className="mt-3">
           Groups related information on a quiet surface. Actions belong to the controls inside it.
         </Text>
       </header>
@@ -18,20 +18,20 @@ export function CardDemo() {
       <div className="mt-8 grid items-stretch gap-6 sm:grid-cols-2">
         <CardPlayground />
 
-        <Card className="flex flex-col" aria-labelledby="card-preview-title">
+        <Card variant="default" className="flex flex-col" aria-labelledby="card-preview-title">
           <div className="flex min-h-40 flex-1 items-center justify-center rounded-t-card bg-background" role="group" aria-label="Button preview">
-            <Button variant="outline"><ButtonLabel>Execute</ButtonLabel></Button>
+            <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="outline"><ButtonLabel>Execute</ButtonLabel></Button>
           </div>
           <CardHeader>
-            <CardTitle id="card-preview-title">Room to explore</CardTitle>
+            <CardTitle as="h3" variant="heading" id="card-preview-title">Room to explore</CardTitle>
             <CardDescription>Previews can extend to the edges, with supporting details below.</CardDescription>
           </CardHeader>
         </Card>
       </div>
 
-      <Card className="mt-8" role="group" aria-labelledby="spacing-tokens-title">
+      <Card variant="default" className="mt-8" role="group" aria-labelledby="spacing-tokens-title">
         <CardHeader>
-          <CardTitle id="spacing-tokens-title">Spacing tokens</CardTitle>
+          <CardTitle as="h3" variant="heading" id="spacing-tokens-title">Spacing tokens</CardTitle>
           <CardAction><CardCopyButton value={"--space-1: 4px;\n--space-2: 8px;\n--space-3: 12px;"} aria-label="Copy spacing tokens" /></CardAction>
         </CardHeader>
         <CardContent><pre className="overflow-x-auto font-mono text-ui"><code>{"--space-1: 4px;\n--space-2: 8px;\n--space-3: 12px;"}</code></pre></CardContent>
@@ -39,7 +39,7 @@ export function CardDemo() {
 
       <div className="mt-12">
         <Text as="h3" variant="heading">Showcase</Text>
-        <Text className="mt-3">A framed stage for the work, with its title and supporting details outside.</Text>
+        <Text as="p" variant="body" className="mt-3">A framed stage for the work, with its title and supporting details outside.</Text>
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
           <Card variant="showcase">
             <CardPreview>
@@ -56,25 +56,25 @@ export function CardDemo() {
               </div>
               <Badge variant="outline" shape="round" size="lg" className="absolute top-3 right-3">Study 01</Badge>
             </CardPreview>
-            <CardHeader><CardTitle>Form follows feeling</CardTitle><CardDescription>Geometry, surface, and a little warmth.</CardDescription></CardHeader>
+            <CardHeader><CardTitle as="h3" variant="heading">Form follows feeling</CardTitle><CardDescription>Geometry, surface, and a little warmth.</CardDescription></CardHeader>
           </Card>
           <Card variant="showcase">
             <CardPreview>
               <div className="grid grid-cols-2 grid-rows-2 bg-muted">
-                {(["solid", "outline", "ghost", "destructive"] as const).map((variant) => <div key={variant} className="grid place-items-center border-border p-3 odd:border-r [&:nth-child(-n+2)]:border-b"><Button variant={variant} tone="neutral" size="sm"><ButtonLabel>{variant.charAt(0).toUpperCase() + variant.slice(1)}</ButtonLabel></Button></div>)}
+                {(["solid", "outline", "ghost", "destructive"] as const).map((variant) => <div key={variant} className="grid place-items-center border-border p-3 odd:border-r [&:nth-child(-n+2)]:border-b"><Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" {...(variant === "destructive" ? { variant } : { variant, tone: "neutral" })} size="sm"><ButtonLabel>{variant.charAt(0).toUpperCase() + variant.slice(1)}</ButtonLabel></Button></div>)}
               </div>
             </CardPreview>
-            <CardHeader><CardTitle>A study in contrast</CardTitle><CardDescription>Four ways to give an action its place.</CardDescription></CardHeader>
+            <CardHeader><CardTitle as="h3" variant="heading">A study in contrast</CardTitle><CardDescription>Four ways to give an action its place.</CardDescription></CardHeader>
           </Card>
         </div>
       </div>
 
-      <Card className="dark mt-8" aria-labelledby="card-dark-title">
+      <Card variant="default" className="dark mt-8" aria-labelledby="card-dark-title">
         <CardHeader>
-          <CardTitle variant="label">Theme study / Dark</CardTitle>
+          <CardTitle as="h3" variant="label">Theme study / Dark</CardTitle>
         </CardHeader>
         <CardContent>
-          <CardTitle id="card-dark-title">A quieter surface</CardTitle>
+          <CardTitle as="h3" variant="heading" id="card-dark-title">A quieter surface</CardTitle>
           <CardDescription className="mt-2">The same shape, using the dark theme’s neutral colors.</CardDescription>
           <p className="mt-4">Content sets the height. Optional sections keep simple cards simple.</p>
         </CardContent>

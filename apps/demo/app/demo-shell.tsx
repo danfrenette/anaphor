@@ -74,7 +74,7 @@ function DemoSidebar() {
   const pathname = usePathname();
   const [activeId, setActiveId] = useState("purpose");
   const { setMobileOpen } = useSidebar();
-  const closeMobile = () => setMobileOpen(false);
+  const closeMobile = () => setMobileOpen(false, true);
 
   useEffect(() => {
     if (pathname !== "/") return;
@@ -111,10 +111,10 @@ function DemoSidebar() {
           <span className="min-w-0"><strong className="block text-small leading-tight">Anaphor</strong><small className="block text-label text-muted-foreground">Component manual</small></span>
           <CaretRight className="size-4 text-muted-foreground" aria-hidden="true" />
         </Link>
-        <Button size="sm" variant="ghost" tone="neutral" className="mt-1 w-full justify-start text-muted-foreground">
+        <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="sm" variant="ghost" tone="neutral" className="mt-1 w-full justify-start text-muted-foreground">
           <MagnifyingGlass aria-hidden="true" /><ButtonLabel>Search components</ButtonLabel><kbd className="ms-auto font-mono text-label">⌘K</kbd>
         </Button>
-        <Button size="sm" variant="ghost" tone="neutral" className="w-full justify-start text-muted-foreground">
+        <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="sm" variant="ghost" tone="neutral" className="w-full justify-start text-muted-foreground">
           <Plus aria-hidden="true" /><ButtonLabel>New component</ButtonLabel>
         </Button>
       </SidebarHeader>
@@ -146,7 +146,7 @@ function DemoSidebar() {
 
 export function DemoShell({ children }: { children: ReactNode }) {
   return (
-    <SidebarProvider>
+    <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false}>
       <a href="#content" className="fixed start-3 top-3 z-50 -translate-y-[200%] bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0">Skip to content</a>
       <DemoSidebar />
       <SidebarInset>

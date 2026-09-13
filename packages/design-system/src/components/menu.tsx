@@ -131,23 +131,23 @@ function MenuItems({ children }: { children: ReactNode }): ReactElement {
 }
 
 type MenuPopupProps = MenuPrimitive.Popup.Props & {
-  align?: MenuPrimitive.Positioner.Props["align"];
+  align: NonNullable<MenuPrimitive.Positioner.Props["align"]>;
   alignOffset?: MenuPrimitive.Positioner.Props["alignOffset"];
   anchor?: MenuPrimitive.Positioner.Props["anchor"];
   portalProps?: MenuPrimitive.Portal.Props;
-  side?: MenuPrimitive.Positioner.Props["side"];
-  sideOffset?: MenuPrimitive.Positioner.Props["sideOffset"];
+  side: NonNullable<MenuPrimitive.Positioner.Props["side"]>;
+  sideOffset: number;
 };
 
 function MenuPopup({
-  align = "center",
+  align,
   alignOffset,
   anchor,
   children,
   className,
   portalProps,
-  side = "bottom",
-  sideOffset = 6,
+  side,
+  sideOffset,
   ...props
 }: MenuPopupProps): ReactElement {
   return (
@@ -184,10 +184,10 @@ function MenuGroup(props: MenuPrimitive.Group.Props): ReactElement {
 
 type MenuItemProps = MenuPrimitive.Item.Props & {
   inset?: boolean;
-  variant?: "default" | "destructive";
+  variant: "default" | "destructive";
 };
 
-function MenuItem({ className, inset, variant = "default", ...props }: MenuItemProps): ReactElement {
+function MenuItem({ className, inset, variant, ...props }: MenuItemProps): ReactElement {
   return (
     <MenuPrimitive.Item
       data-inset={inset || undefined}

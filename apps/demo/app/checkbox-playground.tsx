@@ -18,8 +18,8 @@ export function CheckboxPlayground() {
           ))}
         </FieldGroup>
       </PlaygroundControls>
-      <Card role="group" aria-label="Primary checkbox example">
-        <CardHeader className="p-4 pb-1"><CardTitle variant="label">Primary demo</CardTitle></CardHeader>
+      <Card variant="default" role="group" aria-label="Primary checkbox example">
+        <CardHeader className="p-4 pb-1"><CardTitle as="h3" variant="label">Primary demo</CardTitle></CardHeader>
         <CardContent className="flex min-h-32 items-center justify-center p-6">
           <Field orientation="horizontal" invalid={settings.invalid} disabled={settings.disabled}>
             <Checkbox checked={settings.checked} indeterminate={settings.indeterminate} disabled={settings.disabled} readOnly={settings.readOnly} aria-invalid={settings.invalid || undefined} onCheckedChange={(checked) => setSettings((current) => ({ ...current, checked, indeterminate: false }))} />

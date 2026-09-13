@@ -15,9 +15,9 @@ export function DropdownMenuDemo() {
         </p>
       </header>
 
-      <Card className="mt-8">
+      <Card variant="default" className="mt-8">
         <CardHeader>
-          <CardTitle>File actions</CardTitle>
+          <CardTitle as="h3" variant="heading">File actions</CardTitle>
           <CardDescription>
             The panel grows from its trigger. Arrow keys move through actions; Escape closes and returns focus.
           </CardDescription>

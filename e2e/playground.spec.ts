@@ -46,7 +46,7 @@ test("panel stays within the viewport when resized open or closed", async ({ pag
   }
   await page.getByRole("button", { name: "Close controls" }).click();
   await page.setViewportSize({ width: 320, height: 800 });
-  await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Button", exact: true }).click();
+  await page.locator("#button").evaluate(element => element.scrollIntoView());
   await expect(trigger).toHaveCSS("width", "44px");
   await expect(trigger).toHaveCSS("height", "44px");
   await trigger.click();
@@ -98,7 +98,7 @@ test("keyboard opening is instant and reduced motion fades without a moving reve
   await expect(trigger).toBeFocused();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
-  await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Button", exact: true }).click();
+  await page.locator("#button").evaluate(element => element.scrollIntoView());
   await trigger.dispatchEvent("click", { detail: 1 });
   await seekAnimations(panel, 0.5);
   await expect(panel).toHaveCSS("clip-path", "inset(0px round 12px)");

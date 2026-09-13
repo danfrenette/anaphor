@@ -25,31 +25,35 @@ const variantStyles = {
 } as const;
 
 const destructiveStyles =
-  "bg-danger text-background dark:text-foreground hover:not-data-disabled:bg-[var(--anaphor-danger-hover)] active:not-data-disabled:bg-[var(--anaphor-danger-hover)]";
+  "bg-danger text-background dark:text-foreground hover:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-danger)_88%,black)] active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-danger)_88%,black)]";
 
-type ButtonProps = ButtonPrimitive.Props & {
-  iconOnly?: boolean;
-  loading?: boolean;
-  shape?: "square" | "round";
-  size?: keyof typeof sizeStyles;
-  tone?: "accent" | "neutral";
-  variant?: "solid" | "destructive" | "outline" | "ghost";
+type ButtonProps = Omit<ButtonPrimitive.Props, "nativeButton" | "type"> & {
+  iconOnly: boolean;
+  loading: boolean;
+  shape: "square" | "round";
+  size: keyof typeof sizeStyles;
   children?: ReactNode;
-};
+} & (
+  | { variant: "destructive"; tone?: never }
+  | { variant: "solid" | "outline" | "ghost"; tone: "accent" | "neutral" }
+) & (
+  | { nativeButton: true; type: "button" | "submit" | "reset" }
+  | { nativeButton: false; render: NonNullable<ButtonPrimitive.Props["render"]>; type?: never }
+);
 
 function Button({
   children,
   className,
   disabled,
   focusableWhenDisabled,
-  iconOnly = false,
-  loading = false,
-  nativeButton = true,
-  shape = "square",
-  size = "md",
-  tone = "accent",
-  type = nativeButton ? "button" : undefined,
-  variant = "solid",
+  iconOnly,
+  loading,
+  nativeButton,
+  shape,
+  size,
+  tone,
+  type,
+  variant,
   ...props
 }: ButtonProps) {
   return (

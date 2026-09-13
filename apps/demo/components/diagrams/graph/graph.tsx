@@ -10,10 +10,10 @@ import { usePulses } from "./use-pulses";
 type GraphProps = {
   children: ReactNode;
   /** Travel speed in CSS pixels per second. */
-  pulseSpeed?: number;
+  pulseSpeed: number;
 };
 
-function Graph({ children, pulseSpeed = 120 }: GraphProps) {
+function Graph({ children, pulseSpeed }: GraphProps) {
   const [paths] = useState(() => new Map<string, SVGPathElement>());
   const [endpoints] = useState(() => new Map<string, Endpoint>());
   const [nodeLights] = useState(() => new Map<string, HTMLSpanElement>());

@@ -9,7 +9,7 @@ type CardSettings = {
   description: boolean;
   action: boolean;
   footer: boolean;
-  variant: NonNullable<ComponentProps<typeof Card>["variant"]>;
+  variant: ComponentProps<typeof Card>["variant"];
 };
 const cardDefaults: CardSettings = { description: true, action: true, footer: true, variant: "default" };
 
@@ -28,12 +28,12 @@ export function CardPlayground() {
       <Card className="flex flex-col" variant={card.variant} aria-labelledby="card-project-title">
         {card.variant === "showcase" && <CardPreview><div className="grid place-items-center p-6 text-heading font-medium">Space for your next idea.</div></CardPreview>}
         <CardHeader>
-          <CardTitle id="card-project-title">Personal workspace</CardTitle>
+          <CardTitle as="h3" variant="heading" id="card-project-title">Personal workspace</CardTitle>
           {card.description && <CardDescription>A place for your next idea.</CardDescription>}
-          {card.action && <CardAction><Button size="xs" tone="neutral" variant="ghost"><ButtonLabel>Edit</ButtonLabel></Button></CardAction>}
+          {card.action && <CardAction><Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="xs" tone="neutral" variant="ghost"><ButtonLabel>Edit</ButtonLabel></Button></CardAction>}
         </CardHeader>
         <CardContent className="flex-1"><p>Keep your notes, experiments, and works in progress together.</p></CardContent>
-        {card.footer && <CardFooter><Button tone="neutral"><ButtonLabel>Open workspace</ButtonLabel></Button></CardFooter>}
+        {card.footer && <CardFooter><Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" variant="solid" tone="neutral"><ButtonLabel>Open workspace</ButtonLabel></Button></CardFooter>}
       </Card>
     </>
   );

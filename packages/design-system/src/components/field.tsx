@@ -5,10 +5,10 @@ import type { ComponentProps } from "react";
 import { cn } from "../lib/utils";
 
 type FieldProps = ComponentProps<typeof FieldPrimitive.Root> & {
-  orientation?: "vertical" | "horizontal";
+  orientation: "vertical" | "horizontal";
 };
 
-function Field({ className, orientation = "vertical", ...props }: FieldProps) {
+function Field({ className, orientation, ...props }: FieldProps) {
   return <FieldPrimitive.Root {...props} data-slot="field" data-orientation={orientation} className={(state) => cn(
     "group/field min-w-0 gap-2",
     orientation === "horizontal"

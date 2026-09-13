@@ -18,7 +18,6 @@
   --anaphor-brand: oklch(0.6217 0.185 39.44);
   --anaphor-focus: oklch(0.618 0.161 39.44);
   --anaphor-danger: oklch(0.4852 0.1691 10.14);
-  --anaphor-danger-hover: oklch(0.4236 0.1691 10.14);
   --anaphor-danger-text: oklch(0.4236 0.1691 10.14);
   --anaphor-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --anaphor-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);

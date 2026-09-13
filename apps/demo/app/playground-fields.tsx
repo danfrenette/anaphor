@@ -16,7 +16,7 @@ export function Select<const Value extends string>({ label, value, options, onCh
   );
 }
 
-export function Range({ label, value, min, max, step, unit = "", onChange }: { label: string; value: number; min: number; max: number; step: number; unit?: string; onChange: (value: number) => void }) {
+export function Range({ label, value, min, max, step, unit, onChange }: { label: string; value: number; min: number; max: number; step: number; unit: string; onChange: (value: number) => void }) {
   return (
     <label className="col-span-2 grid gap-1.5 text-ui">
       <span className="flex justify-between gap-4"><span>{label}</span><output className="font-mono text-label tabular-nums text-muted-foreground">{value}{unit}</output></span>

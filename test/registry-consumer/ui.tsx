@@ -20,19 +20,19 @@ function Consumer() {
   const [open, setOpen] = useState(false);
   return <main className="p-6 font-sans">
     <Text as="h1" variant="title">Registry consumer</Text>
-    <Prose><p>Installed prose with <strong>emphasis</strong>.</p></Prose>
-    <Card>
-      <CardHeader><CardTitle>Installed UI</CardTitle></CardHeader>
+    <Prose as="div"><p>Installed prose with <strong>emphasis</strong>.</p></Prose>
+    <Card variant="default">
+      <CardHeader><CardTitle as="h3" variant="heading">Installed UI</CardTitle></CardHeader>
       <CardContent>
-        <Badge>Ready</Badge>
-        <Button onClick={() => setCount(count + 1)}><ButtonLabel>Count {count}</ButtonLabel></Button>
-        <Field><FieldLabel>Email</FieldLabel><Input type="email" /><FieldFeedback hint="Your email address" error="Enter an email" invalid={false} /></Field>
+        <Badge size="md" variant="soft" shape="square">Ready</Badge>
+        <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" onClick={() => setCount(count + 1)}><ButtonLabel>Count {count}</ButtonLabel></Button>
+        <Field orientation="vertical"><FieldLabel>Email</FieldLabel><Input size="md" type="email" /><FieldFeedback hint="Your email address" error="Enter an email" invalid={false} /></Field>
         <FieldGroup><Field orientation="horizontal"><Checkbox /><FieldContent><FieldLabel>Accept updates</FieldLabel><FieldDescription>Occasional product news.</FieldDescription></FieldContent></Field></FieldGroup>
-        <Separator />
-        <CardCopyButton value="Registry consumer" />
+        <Separator orientation="horizontal" />
+        <CardCopyButton value="Registry consumer" aria-label="Copy to clipboard" />
         <Menu>
-          <MenuTrigger render={<Button tone="neutral" variant="outline" />}><ButtonLabel>Registry menu</ButtonLabel></MenuTrigger>
-          <MenuPopup><MenuItem>Installed action</MenuItem></MenuPopup>
+          <MenuTrigger render={<Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="neutral" variant="outline" />}><ButtonLabel>Registry menu</ButtonLabel></MenuTrigger>
+          <MenuPopup align="center" side="bottom" sideOffset={6}><MenuItem variant="default">Installed action</MenuItem></MenuPopup>
         </Menu>
         <p className="font-mono">Installed source</p>
       </CardContent>

@@ -13,7 +13,7 @@ test("edits controlled values and submits native form data", async () => {
     return (
       <form onSubmit={(event) => { event.preventDefault(); submit(new FormData(event.currentTarget).get("email")); }}>
         <label htmlFor="email">Email</label>
-        <Input ref={ref} id="email" name="email" type="email" value={value} onValueChange={setValue} />
+        <Input size="md" ref={ref} id="email" name="email" type="email" value={value} onValueChange={setValue} />
         <button type="submit">Send</button>
       </form>
     );
@@ -30,8 +30,8 @@ test("edits controlled values and submits native form data", async () => {
 test("read-only stays focusable while disabled is skipped", async () => {
   const user = userEvent.setup();
   render(<>
-    <Input aria-label="Unavailable" disabled />
-    <Input aria-label="Identifier" readOnly defaultValue="workspace-001" />
+    <Input size="md" aria-label="Unavailable" disabled />
+    <Input size="md" aria-label="Identifier" readOnly defaultValue="workspace-001" />
   </>);
   await user.tab();
   const input = screen.getByRole("textbox", { name: "Identifier" });

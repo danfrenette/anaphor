@@ -3,7 +3,7 @@
 import { Button, ButtonLabel } from "@anaphor/system";
 import { useEffect, useState } from "react";
 
-export function ButtonLoadingExample({ disabledWhileLoading = false }: { disabledWhileLoading?: boolean }) {
+export function ButtonLoadingExample({ disabledWhileLoading }: { disabledWhileLoading: boolean }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -13,7 +13,7 @@ export function ButtonLoadingExample({ disabledWhileLoading = false }: { disable
   }, [loading]);
 
   return (
-    <Button
+    <Button iconOnly={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid"
       loading={loading}
       disabled={disabledWhileLoading && loading}
       onClick={() => setLoading(true)}

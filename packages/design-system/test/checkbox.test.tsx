@@ -5,7 +5,7 @@ import { expect, test } from "vitest";
 
 test("label activation updates the native form value and connects its description", async () => {
   const user = userEvent.setup();
-  render(<form aria-label="Preferences"><Field>
+  render(<form aria-label="Preferences"><Field orientation="vertical">
     <FieldLabel><Checkbox name="updates" value="yes" />Send updates</FieldLabel>
     <FieldDescription>Only occasional news.</FieldDescription>
   </Field></form>);
@@ -26,7 +26,7 @@ test("read-only remains focusable while disabled is skipped", async () => {
   const user = userEvent.setup();
   render(<>
     <Checkbox aria-label="Fixed preference" defaultChecked readOnly />
-    <Field disabled><FieldLabel><Checkbox />Unavailable preference</FieldLabel></Field>
+    <Field orientation="vertical" disabled><FieldLabel><Checkbox />Unavailable preference</FieldLabel></Field>
     <button>Continue</button>
   </>);
   const readOnly = screen.getByRole("checkbox", { name: "Fixed preference" });

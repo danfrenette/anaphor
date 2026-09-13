@@ -36,8 +36,8 @@ test("group and content forward refs while field associations stay independent",
   const group = createRef<HTMLDivElement>();
   const content = createRef<HTMLDivElement>();
   render(<FieldGroup ref={group} role="group" aria-label="Contact">
-    <Field><FieldLabel>Name</FieldLabel><Input /></Field>
-    <Field><FieldContent ref={content}><FieldLabel>Email</FieldLabel><FieldDescription>For replies.</FieldDescription></FieldContent><Input type="email" /></Field>
+    <Field orientation="vertical"><FieldLabel>Name</FieldLabel><Input size="md" /></Field>
+    <Field orientation="vertical"><FieldContent ref={content}><FieldLabel>Email</FieldLabel><FieldDescription>For replies.</FieldDescription></FieldContent><Input size="md" type="email" /></Field>
   </FieldGroup>);
   expect(group.current).toBe(screen.getByRole("group", { name: "Contact" }));
   expect(content.current).toContainElement(screen.getByText("Email"));
@@ -48,15 +48,15 @@ test("group and content forward refs while field associations stay independent",
 test("connects each field's label and messages without manual IDs", async () => {
   const user = userEvent.setup();
   render(<>
-    <Field invalid>
+    <Field orientation="vertical" invalid>
       <FieldLabel>Email</FieldLabel>
-      <Input type="email" />
+      <Input size="md" type="email" />
       <FieldDescription>Used for receipts.</FieldDescription>
       <FieldError match>Please enter a complete address.</FieldError>
     </Field>
-    <Field disabled>
+    <Field orientation="vertical" disabled>
       <FieldLabel>Workspace</FieldLabel>
-      <Input defaultValue="Personal" />
+      <Input size="md" defaultValue="Personal" />
       <FieldDescription>Assigned automatically.</FieldDescription>
     </Field>
   </>);

@@ -3,9 +3,9 @@
 Use the default card for grouped content. Add a copy control through composition:
 
 ```tsx
-<Card>
+<Card variant="default">
   <CardHeader>
-    <CardTitle>Spacing tokens</CardTitle>
+    <CardTitle as="h3" variant="heading">Spacing tokens</CardTitle>
     <CardAction>
       <CardCopyButton value="--space-1: 4px;" aria-label="Copy spacing tokens" />
     </CardAction>
@@ -25,7 +25,7 @@ For a page centerpiece, compose a framed preview and an external caption:
 <Card variant="showcase">
   <CardPreview>{/* artwork, image, code, or an interactive example */}</CardPreview>
   <CardHeader>
-    <CardTitle>Introduction</CardTitle>
+    <CardTitle as="h3" variant="heading">Introduction</CardTitle>
     <CardDescription>May 2026</CardDescription>
   </CardHeader>
 </Card>

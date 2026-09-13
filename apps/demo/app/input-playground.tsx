@@ -21,10 +21,10 @@ export function InputPlayground() {
           ))}
         </FieldGroup>
       </PlaygroundControls>
-      <Card className="mt-10" role="group" aria-label="Primary input example">
-        <CardHeader><CardTitle variant="label">Primary demo</CardTitle></CardHeader>
+      <Card variant="default" className="mt-10" role="group" aria-label="Primary input example">
+        <CardHeader><CardTitle as="h3" variant="label">Primary demo</CardTitle></CardHeader>
         <CardContent>
-          <Field invalid={input.invalid} disabled={input.disabled}>
+          <Field orientation="vertical" invalid={input.invalid} disabled={input.disabled}>
             <FieldLabel>Try an input</FieldLabel>
             <Input size={input.size} type={input.type} readOnly={input.readOnly} aria-invalid={input.invalid || undefined} placeholder="Type something…" />
             <FieldFeedback hint="Explore sizes and states using the control panel." error="This value needs your attention." invalid={input.invalid} />
@@ -49,9 +49,9 @@ export function InputValidationExample() {
       setSubmitted(valid);
       if (!valid) email.focus();
     }}>
-      <Field invalid={invalid}>
+      <Field orientation="vertical" invalid={invalid}>
         <FieldLabel>Email address</FieldLabel>
-        <Input
+        <Input size="md"
           ref={emailRef} name="email" type="email" autoComplete="email" required
           placeholder="you@example.com"
           onBlur={(event) => setInvalid(!event.currentTarget.validity.valid)}
@@ -60,7 +60,7 @@ export function InputValidationExample() {
         <FieldFeedback hint="Used only for this example. Nothing is sent." error="Enter a complete email address, such as you@example.com." invalid={invalid} />
       </Field>
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit"><ButtonLabel>Submit example</ButtonLabel></Button>
+        <Button iconOnly={false} loading={false} nativeButton={true} shape="square" size="md" tone="accent" variant="solid" type="submit"><ButtonLabel>Submit example</ButtonLabel></Button>
         <p role="status" className="text-ui">{submitted ? "Example complete. Nothing was sent." : ""}</p>
       </div>
     </form>
@@ -75,11 +75,11 @@ export function InputSearchExample() {
       const value = new FormData(event.currentTarget).get("query");
       setQuery(typeof value === "string" ? value.trim() : "");
     }}>
-      <Field name="query">
+      <Field orientation="vertical" name="query">
         <FieldLabel>Search the manual</FieldLabel>
         <div className="flex flex-wrap gap-2">
-          <Input type="search" placeholder="Try “Input”" className="flex-1 basis-40" onChange={() => setQuery("")} />
-          <Button type="submit" tone="neutral"><ButtonLabel>Search</ButtonLabel></Button>
+          <Input size="md" type="search" placeholder="Try “Input”" className="flex-1 basis-40" onChange={() => setQuery("")} />
+          <Button iconOnly={false} loading={false} nativeButton={true} shape="square" size="md" variant="solid" type="submit" tone="neutral"><ButtonLabel>Search</ButtonLabel></Button>
         </div>
       </Field>
       <p role="status" className="min-h-5 text-ui text-muted-foreground">{query ? `Example search: “${query}”. Nothing was sent.` : ""}</p>

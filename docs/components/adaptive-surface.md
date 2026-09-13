@@ -6,7 +6,7 @@ locking, dismissal, and focus return—while the consumer continues to own its
 layout and visual styling.
 
 ```tsx
-<AdaptiveSurfaceProvider
+<AdaptiveSurfaceProvider mobileQuery="(max-width: 47.999rem)"
   desktopOpen={desktopOpen}
   mobileOpen={mobileOpen}
   onDesktopOpenChange={setDesktopOpen}
@@ -20,8 +20,8 @@ layout and visual styling.
 </AdaptiveSurfaceProvider>
 ```
 
-The default mobile query matches Tailwind's `md` boundary. Pass `mobileQuery`
-when a surface changes modality at a different boundary. Visual responsiveness
+The required `mobileQuery` in this example matches Tailwind's `md` boundary.
+Use a different query when a surface changes modality at another boundary. Visual responsiveness
 should still use Tailwind variants; the query exists only because modal and
 in-flow surfaces have different accessibility behavior.
 

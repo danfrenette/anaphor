@@ -11,10 +11,10 @@ const sizeStyles = {
 } as const;
 
 type InputProps = Omit<ComponentProps<typeof InputPrimitive>, "size"> & {
-  size?: keyof typeof sizeStyles | number;
+  size: keyof typeof sizeStyles | number;
 };
 
-function Input({ className, size = "md", ...props }: InputProps) {
+function Input({ className, size, ...props }: InputProps) {
   return (
     <InputPrimitive
       data-slot="input"

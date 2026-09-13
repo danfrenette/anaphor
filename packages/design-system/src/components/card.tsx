@@ -2,11 +2,11 @@ import { Text } from "./text";
 import { cn } from "../lib/utils";
 import type { ComponentProps } from "react";
 
-type CardProps = ComponentProps<"div"> & { variant?: "default" | "showcase" };
+type CardProps = ComponentProps<"div"> & { variant: "default" | "showcase" };
 
 const cardShadow = "shadow-[0_0_0_1px_color-mix(in_oklch,var(--anaphor-input-border)_55%,var(--anaphor-background)),0_1px_2px_-1px_oklch(0_0_0/0.06),0_2px_4px_oklch(0_0_0/0.04)]";
 
-function Card({ className, variant = "default", ...props }: CardProps) {
+function Card({ className, variant, ...props }: CardProps) {
   return <div data-slot="card" data-variant={variant} className={cn(
     "w-full min-w-0 text-foreground",
     variant === "default"
@@ -38,11 +38,11 @@ function CardHeader({ className, ...props }: ComponentProps<"div">) {
 }
 
 type CardTitleProps = ComponentProps<"h3"> & {
-  as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
-  variant?: "heading" | "label";
+  as: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+  variant: "heading" | "label";
 };
 
-function CardTitle({ as: Heading = "h3", variant = "heading", className, ...props }: CardTitleProps) {
+function CardTitle({ as: Heading, variant, className, ...props }: CardTitleProps) {
   return <Text as={Heading} variant={variant === "label" ? "label" : "subheading"} data-slot="card-title" className={cn("col-start-1", variant === "label" && "text-muted-foreground", className)} {...props} />;
 }
 

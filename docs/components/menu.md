@@ -5,12 +5,12 @@ names follow Base UI and coss ui.
 
 ```tsx
 <Menu>
-  <MenuTrigger render={<Button variant="outline" />}>File actions</MenuTrigger>
-  <MenuPopup align="start">
+  <MenuTrigger render={<Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="outline" />}>File actions</MenuTrigger>
+  <MenuPopup side="bottom" sideOffset={6} align="start">
     <MenuGroup>
       <MenuGroupLabel>Document</MenuGroupLabel>
-      <MenuItem>Rename</MenuItem>
-      <MenuItem>Move to…</MenuItem>
+      <MenuItem variant="default">Rename</MenuItem>
+      <MenuItem variant="default">Move to…</MenuItem>
     </MenuGroup>
     <MenuSeparator />
     <MenuItem variant="destructive">Delete</MenuItem>
@@ -19,7 +19,7 @@ names follow Base UI and coss ui.
 ```
 
 Base UI owns focus, dismissal, collision handling, keyboard navigation, and focus
-return. `MenuPopup` owns the portal and positioner, defaults to a 6px gap, and
+return. `MenuPopup` owns the portal and positioner, requires explicit `align`, `side`, and `sideOffset`, and
 accepts `side`, `align`, their offsets, `anchor`, and `portalProps`.
 
 Items have a 36px minimum height, expanding to 44px for coarse pointers. Use

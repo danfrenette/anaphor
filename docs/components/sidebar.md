@@ -5,7 +5,7 @@ layout, open state, resize rail, keyboard shortcut, and motion; an application
 supplies only its navigation groups and destinations.
 
 ```tsx
-<SidebarProvider>
+<SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false}>
   <Sidebar>
     <SidebarHeader>{/* identity and actions */}</SidebarHeader>
     <SidebarContent>
@@ -24,7 +24,7 @@ supplies only its navigation groups and destinations.
     <SidebarClose />
   </Sidebar>
   <SidebarInset>
-    <SidebarTrigger />
+    <SidebarTrigger target="desktop" />
     {/* page content */}
   </SidebarInset>
 </SidebarProvider>
@@ -53,14 +53,20 @@ mobile width, resize limits, and transition duration use
 Typography, spacing, touch targets, colors, and breakpoints use Anaphor and
 Tailwind design-system values.
 
-Resizing is disabled by default. To enable it, set `resizable` on
+Keep resizing off with `resizable={false}`. To enable it, set `resizable={true}` on
 `SidebarProvider` and render `SidebarRail` inside `Sidebar`. Drag the rail to
 resize within the width limits, or focus it and use Left/Right arrows. Clicking
 the rail or pressing Enter/Space collapses the sidebar. Its width token is
 resolved on the provider so each sidebar can resize independently.
 
-The default desktop trigger responds to Command+B or Control+B. Keyboard
+With `shortcut="b"`, the desktop trigger responds to Command+B or Control+B. Keyboard
 toggles are intentionally instant; pointer toggles retain the spatial motion.
 Set `shortcut`
 to another key or `null` on `SidebarProvider` when an application owns that
 shortcut. Use `target="mobile"` for the trigger shown below the `md` breakpoint.
+
+Provider configuration is explicit: `shortcut` and `resizable` are required.
+Use `mode="uncontrolled"` with `defaultOpen` for component-owned state, or
+`mode="controlled"` with `open` and `onOpenChange` for caller-owned state.
+Controlled providers reject `defaultOpen`; uncontrolled providers reject `open`.
+Triggers require `target`, and menu buttons require `isActive`.

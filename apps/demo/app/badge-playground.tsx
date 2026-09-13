@@ -18,8 +18,8 @@ export function BadgePlayground() {
         <Check label="Icon" checked={settings.icon} onChange={(icon) => setSettings(s => ({ ...s, icon }))} />
       </FieldGroup>
     </PlaygroundControls>
-    <Card className="bg-background" aria-label="Badge preview" role="group">
-      <CardHeader className="p-4 pb-1"><CardTitle variant="label">Primary demo</CardTitle></CardHeader>
+    <Card variant="default" className="bg-background" aria-label="Badge preview" role="group">
+      <CardHeader className="p-4 pb-1"><CardTitle as="h3" variant="label">Primary demo</CardTitle></CardHeader>
       <CardContent className="flex min-h-32 items-center justify-center p-6">
       <Badge size={settings.size} variant={settings.variant} shape={settings.shape}>{settings.icon && <Tag aria-hidden="true" />}Study 01</Badge>
       </CardContent>

@@ -36,14 +36,14 @@ afterEach(() => {
   Reflect.deleteProperty(SVGElement.prototype, "getPointAtLength");
 });
 function ConnectedGraph({ children }: { children: ReactNode }) {
-  return <Graph><Node nodeId="a">A</Node><Node nodeId="b">B</Node><Edge edgeId="a-b" from="a" to="b" />{children}</Graph>;
+  return <Graph pulseSpeed={120}><Node variant="plain" nodeId="a">A</Node><Node variant="plain" nodeId="b">B</Node><Edge edgeId="a-b" from="a" to="b" />{children}</Graph>;
 }
 
 it('keeps child controls keyboard accessible without adding a node tab stop', async () => {
   const user = userEvent.setup();
   const save = vi.fn();
   render(
-    <Graph>
+    <Graph pulseSpeed={120}>
       <Node nodeId="capture" id="capture-section" variant="surface" aria-label="Capture">
         <button onClick={save}>Save note</button>
         <a href="#saved">View saved notes</a>
@@ -66,7 +66,7 @@ function advanceFrame(time: number) {
   callbacks.forEach(callback => callback(time));
 }
 
-function Delivery({ edge = 'a-b', reverse = false }: { edge?: string; reverse?: boolean }) {
+function Delivery({ edge, reverse }: { edge: string; reverse: boolean }) {
   const { pulse, clearGlows } = useGraph();
   const [status, setStatus] = useState('Ready');
   function send() {
@@ -84,11 +84,11 @@ function Delivery({ edge = 'a-b', reverse = false }: { edge?: string; reverse?: 
 
 it.each([false, true])('delivers a pulse and lights the receiving node (reverse: %s)', async reverse => {
   const user = userEvent.setup();
-  render(<Graph>
-    <Node nodeId="a" aria-label="Source">A</Node>
-    <Node nodeId="b" aria-label="Destination">B</Node>
+  render(<Graph pulseSpeed={120}>
+    <Node variant="plain" nodeId="a" aria-label="Source">A</Node>
+    <Node variant="plain" nodeId="b" aria-label="Destination">B</Node>
     <Edge edgeId="a-b" from="a" to="b" />
-    <Delivery reverse={reverse} />
+    <Delivery edge="a-b" reverse={reverse} />
   </Graph>);
   await user.click(screen.getByRole('button', { name: 'Send' }));
   expect(screen.getByRole('status')).toHaveTextContent('Sending');
@@ -107,7 +107,7 @@ it.each([false, true])('delivers a pulse and lights the receiving node (reverse:
 it('honors reduced motion and completes delivery without traveling along the route', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
   const user = userEvent.setup();
-  render(<ConnectedGraph><Delivery /></ConnectedGraph>);
+  render(<ConnectedGraph><Delivery edge="a-b" reverse={false} /></ConnectedGraph>);
   await user.click(screen.getByRole('button', { name: 'Send' }));
   await act(async () => { advanceFrame(0); advanceFrame(160); });
   expect(screen.getByRole('status')).toHaveTextContent('Delivered');
@@ -117,14 +117,14 @@ it('honors reduced motion and completes delivery without traveling along the rou
 
 it('lets the caller show a failure when a route is unavailable', async () => {
   const user = userEvent.setup();
-  render(<Graph><Delivery edge="missing" /></Graph>);
+  render(<Graph pulseSpeed={120}><Delivery reverse={false} edge="missing" /></Graph>);
   await user.click(screen.getByRole('button', { name: 'Send' }));
   expect(screen.getByRole('status')).toHaveTextContent('Route unavailable');
 });
 
 describe("pulse failure boundaries", () => {
   it("fails missing routes instead of applying an arrival update", async () => {
-    const { result } = renderHook(useGraph, { wrapper: Graph });
+    const { result } = renderHook(useGraph, { wrapper: ({ children }) => <Graph pulseSpeed={120}>{children}</Graph> });
     const arrived = vi.fn();
     const exit = await Effect.runPromiseExit(result.current.pulse("missing").pipe(Effect.tap(() => Effect.sync(() => { arrived(); }))));
     expect(arrived).not.toHaveBeenCalled();

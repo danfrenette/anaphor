@@ -28,23 +28,23 @@ export function DropdownMenuExample() {
     <div className="grid min-h-72 place-items-center rounded-card border border-border bg-background px-6 py-12">
       <div className="grid justify-items-center gap-5">
         <Menu>
-          <MenuTrigger render={<Button tone="neutral" variant="outline" />}>
+          <MenuTrigger render={<Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="neutral" variant="outline" />}>
             <ButtonLabel>File actions</ButtonLabel>
             <CaretDown aria-hidden="true" />
           </MenuTrigger>
-          <MenuPopup align="start">
+          <MenuPopup side="bottom" sideOffset={6} align="start">
             <MenuGroup>
               <MenuGroupLabel>Document</MenuGroupLabel>
-              <MenuItem onClick={() => setLastAction("Rename selected")}>
+              <MenuItem variant="default" onClick={() => setLastAction("Rename selected")}>
                 <PencilSimple aria-hidden="true" />
                 Rename
                 <MenuShortcut>R</MenuShortcut>
               </MenuItem>
-              <MenuItem onClick={() => setLastAction("Move selected")}>
+              <MenuItem variant="default" onClick={() => setLastAction("Move selected")}>
                 <FolderSimple aria-hidden="true" />
                 Move to…
               </MenuItem>
-              <MenuItem onClick={() => setLastAction("Share selected")}>
+              <MenuItem variant="default" onClick={() => setLastAction("Share selected")}>
                 <ShareNetwork aria-hidden="true" />
                 Share
               </MenuItem>

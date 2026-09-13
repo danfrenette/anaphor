@@ -7,9 +7,9 @@ test("composes a passive card with accessible headings and independent controls"
   const user = userEvent.setup();
   const onEdit = vi.fn();
   render(
-    <Card>
+    <Card variant="default">
       <CardHeader>
-        <CardTitle>Workspace</CardTitle>
+        <CardTitle as="h3" variant="heading">Workspace</CardTitle>
         <CardDescription>Your current projects.</CardDescription>
         <CardAction><button onClick={onEdit}>Edit workspace</button></CardAction>
       </CardHeader>
@@ -30,9 +30,9 @@ test("composes a passive card with accessible headings and independent controls"
 
 test("allows a page-appropriate heading and content without other sections", () => {
   render(
-    <Card>
+    <Card variant="default">
       <CardContent>
-        <CardTitle as="h2">Notes</CardTitle>
+        <CardTitle variant="heading" as="h2">Notes</CardTitle>
         <p>Everything you need for today.</p>
       </CardContent>
     </Card>,
@@ -44,7 +44,7 @@ test("allows a page-appropriate heading and content without other sections", () 
 test("copies the supplied value and announces success after clipboard confirmation", async () => {
   const user = userEvent.setup();
   const write = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue();
-  render(<Card><CardHeader><CardTitle>Tokens</CardTitle><CardAction><CardCopyButton value="--space-1: 4px;" aria-label="Copy tokens" /></CardAction></CardHeader></Card>);
+  render(<Card variant="default"><CardHeader><CardTitle as="h3" variant="heading">Tokens</CardTitle><CardAction><CardCopyButton value="--space-1: 4px;" aria-label="Copy tokens" /></CardAction></CardHeader></Card>);
   await user.tab();
   await user.keyboard("{Enter}");
   expect(write).toHaveBeenCalledWith("--space-1: 4px;");
@@ -55,7 +55,7 @@ test("copies the supplied value and announces success after clipboard confirmati
 test("reports clipboard failure and allows retry", async () => {
   const user = userEvent.setup();
   const write = vi.spyOn(navigator.clipboard, "writeText").mockRejectedValueOnce(new Error("Denied")).mockResolvedValue();
-  render(<CardCopyButton value="A note" />);
+  render(<CardCopyButton value="A note" aria-label="Copy to clipboard" />);
   await user.click(screen.getByRole("button"));
   expect(screen.getByRole("status")).toHaveTextContent("Could not copy.");
   await user.click(screen.getByRole("button"));
@@ -66,7 +66,7 @@ test("reports clipboard failure and allows retry", async () => {
 test("disabled copy controls do not write to the clipboard", async () => {
   const user = userEvent.setup();
   const write = vi.spyOn(navigator.clipboard, "writeText");
-  render(<CardCopyButton value="A note" disabled />);
+  render(<CardCopyButton value="A note" aria-label="Copy to clipboard" disabled />);
   await user.click(screen.getByRole("button"));
   expect(write).not.toHaveBeenCalled();
 });

@@ -99,7 +99,7 @@ text. Icons sit alongside it; icon-only buttons use an accessible name.
 ```tsx
 import { Button, ButtonLabel } from "@anaphor/system";
 
-<Button>
+<Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid">
   <ButtonLabel>Save {count} items</ButtonLabel>
 </Button>
 ```

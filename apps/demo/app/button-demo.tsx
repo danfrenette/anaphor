@@ -15,7 +15,7 @@ export function ButtonDemo() {
           <p>Status / Stable</p>
         </div>
         <Text as="h2" variant="title" className="mt-8">Button</Text>
-        <Text variant="description" className="mt-3">
+        <Text as="p" variant="description" className="mt-3">
           Triggers an immediate action. Use one primary action per surface.
         </Text>
       </header>
@@ -28,31 +28,31 @@ export function ButtonDemo() {
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <State label="Default">
-              <Button><ButtonLabel>Execute</ButtonLabel></Button>
+              <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid"><ButtonLabel>Execute</ButtonLabel></Button>
             </State>
             <State label="Focus">
-              <Button className="outline-2 outline-offset-2 outline-ring"><ButtonLabel>Execute</ButtonLabel></Button>
+              <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" className="outline-2 outline-offset-2 outline-ring"><ButtonLabel>Execute</ButtonLabel></Button>
             </State>
             <State label="Loading">
-              <Button loading><ButtonLabel>Execute</ButtonLabel></Button>
+              <Button iconOnly={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" loading><ButtonLabel>Execute</ButtonLabel></Button>
             </State>
             <State label="Disabled">
-              <Button disabled><ButtonLabel>Execute</ButtonLabel></Button>
+              <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" disabled><ButtonLabel>Execute</ButtonLabel></Button>
             </State>
           </div>
         </div>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
-          <Card role="group" aria-label="Loading transition example">
+          <Card variant="default" role="group" aria-label="Loading transition example">
             <CardHeader>
-              <CardTitle>Loading</CardTitle>
+              <CardTitle as="h3" variant="heading">Loading</CardTitle>
               <CardDescription>Keeps its color while the spinner enters and exits.</CardDescription>
             </CardHeader>
-            <CardContent><ButtonLoadingExample /></CardContent>
+            <CardContent><ButtonLoadingExample disabledWhileLoading={false} /></CardContent>
           </Card>
-          <Card role="group" aria-label="Disabled loading transition example">
+          <Card variant="default" role="group" aria-label="Disabled loading transition example">
             <CardHeader>
-              <CardTitle>Loading + disabled</CardTitle>
+              <CardTitle as="h3" variant="heading">Loading + disabled</CardTitle>
               <CardDescription>Adds the gray disabled treatment while loading.</CardDescription>
             </CardHeader>
             <CardContent><ButtonLoadingExample disabledWhileLoading /></CardContent>
@@ -60,33 +60,33 @@ export function ButtonDemo() {
         </div>
         <p className="mt-3 text-ui text-muted-foreground">Click either button to try a 1.5-second action. Both return to idle automatically.</p>
 
-        <Card className="mt-10">
-          <CardHeader><CardTitle variant="label">Behavior</CardTitle></CardHeader>
+        <Card variant="default" className="mt-10">
+          <CardHeader><CardTitle as="h3" variant="label">Behavior</CardTitle></CardHeader>
           <CardContent className="flex flex-wrap items-center gap-3">
-            <Button variant="outline">
+            <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="outline">
               <ArrowRight aria-hidden="true" />
               <ButtonLabel>Composed</ButtonLabel>
             </Button>
-            <Button variant="destructive">
+            <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" variant="destructive">
               <Trash aria-hidden="true" />
               <ButtonLabel>Delete item</ButtonLabel>
             </Button>
-            <Button shape="round" iconOnly aria-label="Continue">
+            <Button loading={false} nativeButton={true} type="button" size="md" tone="accent" variant="solid" shape="round" iconOnly aria-label="Continue">
               <ArrowRight aria-hidden="true" />
             </Button>
-            <Button nativeButton={false} render={<a href="#card" />} tone="neutral" variant="outline">
+            <Button iconOnly={false} loading={false} shape="square" size="md" nativeButton={false} render={<a href="#card" />} tone="neutral" variant="outline">
               <ButtonLabel>Explore Card</ButtonLabel>
             </Button>
           </CardContent>
         </Card>
 
-        <Card className="dark mt-10">
+        <Card variant="default" className="dark mt-10">
           <CardHeader>
-            <CardTitle variant="label">Theme study / Dark</CardTitle>
+            <CardTitle as="h3" variant="label">Theme study / Dark</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
             {variants.map((variant) => (
-              <Button key={variant} variant={variant}>
+              <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" key={variant} {...(variant === "destructive" ? { variant } : { variant, tone: "accent" })}>
                 <ButtonLabel>{variant.charAt(0).toUpperCase() + variant.slice(1)}</ButtonLabel>
               </Button>
             ))}
@@ -99,7 +99,7 @@ export function ButtonDemo() {
 
 function State({ children, label }: { children: ReactNode; label: string }) {
   return (
-    <Card role="group" aria-label={`${label} button example`} className="flex min-h-36 flex-col items-center justify-center gap-5 p-4">
+    <Card variant="default" role="group" aria-label={`${label} button example`} className="flex min-h-36 flex-col items-center justify-center gap-5 p-4">
       {children}
       <p className="text-label text-muted-foreground uppercase">{label}</p>
     </Card>

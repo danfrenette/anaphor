@@ -17,24 +17,12 @@ const variants = {
 type TextVariant = keyof typeof variants;
 type TextElement = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "p" | "span" | "div" | "code";
 
-const elements = {
-  display: "h1", title: "h2", heading: "h3", subheading: "h4",
-  body: "p", description: "p", ui: "span", label: "span", caption: "p", code: "code",
-} as const satisfies Record<TextVariant, TextElement>;
-
-// Each explicit element and variant default carries its native refs and events.
 type TextProps = {
-  [Element in TextElement]: ComponentProps<Element> & { as: Element; variant?: TextVariant };
-}[TextElement] | {
-  [Variant in TextVariant]: ComponentProps<(typeof elements)[Variant]> & {
-    as?: never;
-    variant: Variant;
-  };
-}[TextVariant] | (ComponentProps<"p"> & { as?: never; variant?: "body" });
+  [Element in TextElement]: ComponentProps<Element> & { as: Element; variant: TextVariant };
+}[TextElement];
 
 /** Purpose chooses typography; `as` independently chooses document semantics. */
-function Text({ variant = "body", as, className, ...props }: TextProps) {
-  const Component = as ?? elements[variant];
+function Text({ variant, as: Component, className, ...props }: TextProps) {
   return createElement(Component, {
     "data-slot": "text",
     "data-variant": variant,

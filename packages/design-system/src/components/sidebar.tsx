@@ -33,55 +33,56 @@ type SidebarContextValue = {
   prepareMotion: (animate: boolean) => void;
   rootRef: React.RefObject<HTMLDivElement | null>;
   resizable: boolean;
-  setMobileOpen: (open: boolean, animate?: boolean) => void;
-  toggleDesktop: (animate?: boolean) => void;
-  toggleMobile: (animate?: boolean) => void;
+  setMobileOpen: (open: boolean, animate: boolean) => void;
+  toggleDesktop: (animate: boolean) => void;
+  toggleMobile: (animate: boolean) => void;
 };
 
 const SidebarContext = createContext<SidebarContextValue | null>(null);
 
 type SidebarProviderProps = ComponentProps<"div"> & {
-  defaultOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  open?: boolean;
-  shortcut?: string | null;
-  resizable?: boolean;
-};
+  shortcut: string | null;
+  resizable: boolean;
+} & (
+  | { mode: "controlled"; open: boolean; onOpenChange: (open: boolean) => void; defaultOpen?: never }
+  | { mode: "uncontrolled"; defaultOpen: boolean; onOpenChange?: (open: boolean) => void; open?: never }
+);
 
 function SidebarProvider({
   children,
   className,
-  defaultOpen = true,
+  defaultOpen,
+  mode,
   onOpenChange,
   open,
-  shortcut = "b",
-  resizable = false,
+  shortcut,
+  resizable,
   style,
   ...props
 }: SidebarProviderProps) {
-  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const [internalOpen, setInternalOpen] = useState(defaultOpen ?? false);
   const [mobileOpen, setMobileOpenState] = useState(false);
   const [motionEnabled, prepareMotion] = useState(true);
-  const desktopOpen = open ?? internalOpen;
+  const desktopOpen = mode === "controlled" ? open : internalOpen;
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
   const setDesktopOpen = useCallback((next: boolean) => {
-    if (open === undefined) setInternalOpen(next);
+    if (mode === "uncontrolled") setInternalOpen(next);
     onOpenChange?.(next);
-  }, [onOpenChange, open]);
+  }, [onOpenChange, mode]);
 
-  const setMobileOpen = useCallback((nextOpen: boolean, animate = true) => {
+  const setMobileOpen = useCallback((nextOpen: boolean, animate: boolean) => {
     prepareMotion(animate);
     setMobileOpenState(nextOpen);
   }, [prepareMotion]);
 
-  const toggleDesktop = useCallback((animate = true) => {
+  const toggleDesktop = useCallback((animate: boolean) => {
     prepareMotion(animate);
     setDesktopOpen(!desktopOpen);
   }, [desktopOpen, prepareMotion, setDesktopOpen]);
 
-  const toggleMobile = useCallback((animate = true) => {
+  const toggleMobile = useCallback((animate: boolean) => {
     prepareMotion(animate);
     setMobileOpenState((current) => !current);
   }, [prepareMotion]);
@@ -100,6 +101,7 @@ function SidebarProvider({
 
   return (
     <AdaptiveSurfaceProvider
+      mobileQuery="(max-width: 47.999rem)"
       desktopOpen={desktopOpen}
       mobileOpen={mobileOpen}
       onDesktopOpenChange={setDesktopOpen}
@@ -214,8 +216,6 @@ function SidebarMenu({ className, onPointerEnter, onPointerLeave, onPointerMove,
       setSelection((current) => current?.height === next.height && current.top === next.top ? current : next);
     }
     measureSelection();
-    // Selection geometry comes from the DOM, including font/layout changes and
-    // active state owned by a descendant. It cannot be derived from props alone.
     const resize = new ResizeObserver(measureSelection);
     resize.observe(container);
     const mutations = new MutationObserver(measureSelection);
@@ -339,9 +339,9 @@ function SidebarMenuItem({ className, ...props }: ComponentProps<"li">) {
   return <li data-slot="sidebar-menu-item" className={cn("relative z-10", className)} {...props} />;
 }
 
-type SidebarMenuButtonProps = useRender.ComponentProps<"button"> & { isActive?: boolean };
+type SidebarMenuButtonProps = useRender.ComponentProps<"button"> & { isActive: boolean };
 
-function SidebarMenuButton({ className, isActive = false, render, ...props }: SidebarMenuButtonProps): ReactElement {
+function SidebarMenuButton({ className, isActive, render, ...props }: SidebarMenuButtonProps): ReactElement {
   return useRender({
     defaultTagName: "button",
     render,
@@ -362,9 +362,9 @@ function SidebarFooter({ className, ...props }: ComponentProps<"footer">) {
   return <footer data-slot="sidebar-footer" className={cn("flex min-h-14 shrink-0 items-center justify-between border-t border-border px-5 text-label text-muted-foreground", className)} {...props} />;
 }
 
-type SidebarTriggerProps = ComponentProps<"button"> & { target?: "desktop" | "mobile" };
+type SidebarTriggerProps = ComponentProps<"button"> & { target: "desktop" | "mobile" };
 
-function SidebarTrigger({ children, className, onClick, target = "desktop", ...props }: SidebarTriggerProps) {
+function SidebarTrigger({ children, className, onClick, target, ...props }: SidebarTriggerProps) {
   const { desktopOpen, mobileOpen, mobileTriggerRef, toggleDesktop, toggleMobile } = useSidebar();
   const expanded = target === "mobile" ? mobileOpen : desktopOpen;
   return (

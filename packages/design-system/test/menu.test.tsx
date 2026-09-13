@@ -8,9 +8,9 @@ test("opens, moves focus through actions, and returns focus on Escape", async ()
   render(
     <Menu>
       <MenuTrigger>File actions</MenuTrigger>
-      <MenuPopup>
-        <MenuItem>Rename</MenuItem>
-        <MenuItem>Move</MenuItem>
+      <MenuPopup align="center" side="bottom" sideOffset={6}>
+        <MenuItem variant="default">Rename</MenuItem>
+        <MenuItem variant="default">Move</MenuItem>
       </MenuPopup>
     </Menu>,
   );
@@ -32,7 +32,7 @@ test("activates an item and closes the menu", async () => {
   render(
     <Menu>
       <MenuTrigger>File actions</MenuTrigger>
-      <MenuPopup><MenuItem onClick={onRename}>Rename</MenuItem></MenuPopup>
+      <MenuPopup align="center" side="bottom" sideOffset={6}><MenuItem variant="default" onClick={onRename}>Rename</MenuItem></MenuPopup>
     </Menu>,
   );
 
@@ -49,10 +49,10 @@ test("does not activate disabled items and continues navigation", async () => {
   render(
     <Menu>
       <MenuTrigger>File actions</MenuTrigger>
-      <MenuPopup>
-        <MenuItem>Rename</MenuItem>
-        <MenuItem disabled onClick={onUnavailable}>Unavailable</MenuItem>
-        <MenuItem>Share</MenuItem>
+      <MenuPopup align="center" side="bottom" sideOffset={6}>
+        <MenuItem variant="default">Rename</MenuItem>
+        <MenuItem variant="default" disabled onClick={onUnavailable}>Unavailable</MenuItem>
+        <MenuItem variant="default">Share</MenuItem>
       </MenuPopup>
     </Menu>,
   );
