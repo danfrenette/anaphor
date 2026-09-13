@@ -1,5 +1,4 @@
 import { Text, Badge, Button, ButtonLabel, Card, CardAction, CardCopyButton, CardPreview, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
-import { CardMediaExamples } from "./card-media-examples";
 import { CardPlayground } from "./card-playground";
 
 export function CardDemo() {
@@ -69,8 +68,6 @@ export function CardDemo() {
           </Card>
         </div>
       </div>
-
-      <CardMediaExamples />
 
       <Card className="dark mt-8" aria-labelledby="card-dark-title">
         <CardHeader>

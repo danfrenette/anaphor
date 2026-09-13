@@ -1,5 +1,4 @@
 @import "@anaphor/system/styles.css";
 
 @source "./**/*.{ts,tsx}";
-
 @source "../components/**/*.{ts,tsx}";

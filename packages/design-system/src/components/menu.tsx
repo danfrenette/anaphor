@@ -3,14 +3,12 @@
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { cn } from "../lib/utils";
+import { fluidHoverFade, fluidHoverTravel } from "../lib/motion";
 import { useRef, useState } from "react";
 import type { ComponentProps, PointerEvent as ReactPointerEvent, ReactElement, ReactNode } from "react";
 
 const itemStyles =
   "relative z-10 flex min-h-9 cursor-default select-none items-center gap-2 rounded-md px-3 py-2 text-ui text-foreground outline-none data-disabled:pointer-events-none data-disabled:text-muted-foreground data-highlighted:bg-[color-mix(in_oklch,var(--anaphor-brand)_14%,var(--anaphor-foreground))] data-inset:ps-9 data-[variant=destructive]:text-danger-foreground data-[variant=destructive]:data-highlighted:bg-[color-mix(in_oklch,var(--anaphor-danger)_14%,var(--anaphor-foreground))] pointer-coarse:min-h-11 [&>svg]:pointer-events-none [&>svg]:size-4 [&>svg]:shrink-0";
-
-const fluidHoverFade = { type: "spring", duration: 0.08, bounce: 0 } as const;
-const fluidHoverTravel = { type: "spring", duration: 0.16, bounce: 0 } as const;
 
 type FluidHighlight = {
   height: number;

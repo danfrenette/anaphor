@@ -1,7 +1,0 @@
-.rocaille-artwork { position: relative; width: 100%; height: 100%; overflow: hidden; background: #080609; }
-.rocaille-artwork canvas, .rocaille-poster { position: absolute; width: 100%; height: 100%; inset: 0; }
-.rocaille-poster { object-fit: cover; }
-.rocaille-artwork canvas { opacity: 0; }
-.rocaille-artwork[data-renderer="webgl"] canvas { opacity: 1; }
-.rocaille-artwork[data-renderer="webgl"] .rocaille-poster, .rocaille-artwork[data-renderer="webgl"] .rocaille-fallback-label { visibility: hidden; }
-.rocaille-fallback-label { position: absolute; bottom: 12px; right: 16px; padding: 4px 8px; background: #080609; color: #fff; font-size: 12px; border-radius: 4px; }

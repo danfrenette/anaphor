@@ -8,36 +8,6 @@ import { CheckboxDemo } from "./checkbox-demo";
 import { InputDemo } from "./input-demo";
 import { DropdownMenuDemo } from "./dropdown-menu-demo";
 
-const index = [
-  {
-    label: "00 / Introduction",
-    links: [
-      ["Purpose", "#purpose"],
-      ["Principles", "#principles"],
-    ],
-  },
-  {
-    label: "01 / Foundations",
-    links: [
-      ["Color", "#color"],
-      ["Typography", "#typography"],
-      ["Motion", "#motion"],
-    ],
-  },
-  {
-    label: "02 / Controls",
-    links: [["Button", "#button"], ["Input", "#input"], ["Checkbox", "#checkbox"], ["Dropdown menu", "#dropdown-menu"]],
-  },
-  {
-    label: "03 / Components",
-    links: [["Card", "#card"], ["Badge", "#badge"], ["Node-edge graphs", "#node-edge-graphs"]],
-  },
-  {
-    label: "04 / Studies",
-    links: [["Visual studies", "/studies"]],
-  },
-] as const;
-
 const neutralRoles = [
   ["Font / tertiary", "--anaphor-font-tertiary"],
   ["Font / secondary", "--anaphor-font-secondary"],
@@ -62,58 +32,11 @@ const colorRoles = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-svh lg:grid lg:grid-cols-[280px_1fr]">
-      <a
-        href="#content"
-        className="fixed top-3 left-3 z-50 -translate-y-20 bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0"
-      >
-        Skip to content
-      </a>
-
-      <aside className="border-b border-border px-6 py-8 lg:sticky lg:top-0 lg:h-svh lg:border-r lg:border-b-0 lg:px-12 lg:py-12">
-        <div className="flex items-center gap-2.5 text-xs font-normal tracking-[0.04em]">
-          <span className="size-3.5 rounded-sm bg-primary" aria-hidden="true" />
-          SYSTEM / 01
-        </div>
-
-        <nav aria-label="Manual index" className="mt-12 lg:mt-20">
-          <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-1 lg:gap-9">
-            {index.map((group) => (
-              <li key={group.label}>
-                <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">
-                  {group.label}
-                </p>
-                <ul className="mt-2 grid gap-1">
-                  {group.links.map(([label, href]) => (
-                    <li key={href}>
-                      <a
-                        href={href}
-                        className="flex min-h-8 items-center text-ui text-muted-foreground hover:text-foreground"
-                      >
-                        <span className="w-[18px] shrink-0" aria-hidden="true" />
-                        {label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="mt-12 hidden lg:block">
-          <Separator />
-          <p className="pt-6 text-label text-muted-foreground">
-            LIGHT / 100%
-          </p>
-        </div>
-      </aside>
-
-      <main
-        id="content"
-        tabIndex={-1}
-        className="min-w-0 px-6 py-12 sm:px-12 lg:px-20 lg:py-14"
-      >
+    <main
+      id="content"
+      tabIndex={-1}
+      className="min-w-0 px-6 py-12 sm:px-12 lg:px-20 lg:py-14"
+    >
         <article className="mx-auto max-w-[840px]">
           <header id="purpose" className="scroll-mt-8 pb-10">
             <div className="flex items-center justify-between gap-6 text-label tracking-[0.08em] text-muted-foreground uppercase">
@@ -340,7 +263,6 @@ export default function HomePage() {
             <DropdownMenuDemo />
           </PlaygroundHost>
         </article>
-      </main>
-    </div>
+    </main>
   );
 }

@@ -10,6 +10,7 @@
       "description": "Install the complete Anaphor component system.",
       "registryDependencies": [
         "danfrenette/anaphor/style",
+        "danfrenette/anaphor/adaptive-surface",
         "danfrenette/anaphor/badge",
         "danfrenette/anaphor/button",
         "danfrenette/anaphor/card",
@@ -19,6 +20,7 @@
         "danfrenette/anaphor/field-feedback",
         "danfrenette/anaphor/input",
         "danfrenette/anaphor/menu",
+        "danfrenette/anaphor/sidebar",
         "danfrenette/anaphor/morph-surface",
         "danfrenette/anaphor/separator",
         "danfrenette/anaphor/text",
@@ -71,6 +73,17 @@
       ]
     },
     {
+      "name": "motion-utils",
+      "type": "registry:lib",
+      "files": [
+        {
+          "path": "packages/design-system/src/lib/motion.ts",
+          "type": "registry:lib",
+          "target": "@components/lib/motion.ts"
+        }
+      ]
+    },
+    {
       "name": "badge",
       "type": "registry:ui",
       "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
@@ -79,6 +92,31 @@
           "path": "packages/design-system/src/components/badge.tsx",
           "type": "registry:ui",
           "target": "@ui/badge.tsx"
+        }
+      ]
+    },
+    {
+      "name": "adaptive-surface",
+      "type": "registry:ui",
+      "dependencies": ["@base-ui/react"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/adaptive-surface.tsx",
+          "type": "registry:ui",
+          "target": "@ui/adaptive-surface.tsx"
+        }
+      ]
+    },
+    {
+      "name": "sidebar",
+      "type": "registry:ui",
+      "dependencies": ["@base-ui/react", "@phosphor-icons/react", "motion"],
+      "registryDependencies": ["danfrenette/anaphor/adaptive-surface", "danfrenette/anaphor/style", "danfrenette/anaphor/utils", "danfrenette/anaphor/motion-utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/sidebar.tsx",
+          "type": "registry:ui",
+          "target": "@ui/sidebar.tsx"
         }
       ]
     },
@@ -176,7 +214,7 @@
       "name": "menu",
       "type": "registry:ui",
       "dependencies": ["@base-ui/react", "motion"],
-      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils", "danfrenette/anaphor/motion-utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/menu.tsx",
