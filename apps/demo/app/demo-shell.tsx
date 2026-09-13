@@ -70,53 +70,11 @@ const groups: { label: string; items: NavItem[] }[] = [
 
 const sectionIds = groups.flatMap((group) => group.items.map((item) => item.id));
 
-function DemoSidebar({ activeId }: { activeId: string }) {
-  const { setMobileOpen } = useSidebar();
-  const closeMobile = () => setMobileOpen(false);
-
-  return (
-    <Sidebar aria-label="Component manual navigation">
-      <SidebarHeader>
-        <SidebarClose className="absolute end-3 top-3" />
-        <Link href="/" onNavigate={closeMobile} className="grid min-h-11 grid-cols-[var(--spacing-7)_minmax(0,1fr)_var(--spacing-4)] items-center gap-2 rounded-md px-2 text-foreground no-underline hover:bg-background">
-          <span className="grid size-7 place-items-center rounded-sm bg-foreground font-heading text-body text-background">a</span>
-          <span className="min-w-0"><strong className="block text-small leading-tight">Anaphor</strong><small className="block text-label text-muted-foreground">Component manual</small></span>
-          <CaretRight className="size-4 text-muted-foreground" aria-hidden="true" />
-        </Link>
-        <Button size="sm" variant="ghost" tone="neutral" className="mt-1 w-full justify-start text-muted-foreground">
-          <MagnifyingGlass aria-hidden="true" /><ButtonLabel>Search components</ButtonLabel><kbd className="ms-auto font-mono text-label">⌘K</kbd>
-        </Button>
-        <Button size="sm" variant="ghost" tone="neutral" className="w-full justify-start text-muted-foreground">
-          <Plus aria-hidden="true" /><ButtonLabel>New component</ButtonLabel>
-        </Button>
-      </SidebarHeader>
-
-      <SidebarContent>
-        {groups.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel><span>{group.label}</span><span className="font-mono">{String(group.items.length).padStart(2, "0")}</span></SidebarGroupLabel>
-            <SidebarMenu>
-              {group.items.map(({ id, label, href, icon: ItemIcon }) => (
-                <SidebarMenuItem key={id}>
-                  <SidebarMenuButton isActive={id === activeId} render={<Link href={href} onNavigate={closeMobile} />}>
-                    <ItemIcon aria-hidden="true" /><span>{label}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroup>
-        ))}
-      </SidebarContent>
-
-      <SidebarFooter><span className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-primary" />Registry healthy</span><span className="font-mono">v0.1</span></SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
-  );
-}
-
-export function DemoShell({ children }: { children: ReactNode }) {
+function DemoSidebar() {
   const pathname = usePathname();
   const [activeId, setActiveId] = useState("purpose");
+  const { setMobileOpen } = useSidebar();
+  const closeMobile = () => setMobileOpen(false);
 
   useEffect(() => {
     if (pathname !== "/") return;
@@ -145,9 +103,52 @@ export function DemoShell({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   return (
+    <Sidebar aria-label="Component manual navigation">
+      <SidebarHeader>
+        <SidebarClose className="absolute end-3 top-3" />
+        <Link href="/" onNavigate={closeMobile} className="grid min-h-11 grid-cols-[var(--spacing-7)_minmax(0,1fr)_var(--spacing-4)] items-center gap-2 rounded-md px-2 text-foreground no-underline hover:bg-background">
+          <span className="grid size-7 place-items-center rounded-sm bg-foreground font-heading text-body text-background">a</span>
+          <span className="min-w-0"><strong className="block text-small leading-tight">Anaphor</strong><small className="block text-label text-muted-foreground">Component manual</small></span>
+          <CaretRight className="size-4 text-muted-foreground" aria-hidden="true" />
+        </Link>
+        <Button size="sm" variant="ghost" tone="neutral" className="mt-1 w-full justify-start text-muted-foreground">
+          <MagnifyingGlass aria-hidden="true" /><ButtonLabel>Search components</ButtonLabel><kbd className="ms-auto font-mono text-label">⌘K</kbd>
+        </Button>
+        <Button size="sm" variant="ghost" tone="neutral" className="w-full justify-start text-muted-foreground">
+          <Plus aria-hidden="true" /><ButtonLabel>New component</ButtonLabel>
+        </Button>
+      </SidebarHeader>
+
+      <SidebarContent>
+        <nav aria-label="Manual index">
+          {groups.map((group) => (
+            <SidebarGroup key={group.label}>
+              <SidebarGroupLabel><span>{group.label}</span><span className="font-mono">{String(group.items.length).padStart(2, "0")}</span></SidebarGroupLabel>
+              <SidebarMenu>
+                {group.items.map(({ id, label, href, icon: ItemIcon }) => (
+                  <SidebarMenuItem key={id}>
+                    <SidebarMenuButton isActive={id === activeId} render={<Link href={href} onNavigate={closeMobile} />}>
+                      <ItemIcon aria-hidden="true" /><span>{label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroup>
+          ))}
+        </nav>
+      </SidebarContent>
+
+      <SidebarFooter><span className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-primary" />Registry healthy</span><span className="font-mono">v0.1</span></SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
+  );
+}
+
+export function DemoShell({ children }: { children: ReactNode }) {
+  return (
     <SidebarProvider>
       <a href="#content" className="fixed start-3 top-3 z-50 -translate-y-[200%] bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0">Skip to content</a>
-      <DemoSidebar activeId={activeId} />
+      <DemoSidebar />
       <SidebarInset>
         <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-[color-mix(in_oklch,var(--anaphor-background)_88%,transparent)] px-4 backdrop-blur-md">
           <SidebarTrigger target="mobile" className="md:hidden" />

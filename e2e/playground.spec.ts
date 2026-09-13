@@ -1,12 +1,14 @@
 import { expect, test } from "@playwright/test";
 import { holdAnimations, seekAnimations } from "./animation";
 
-test("playgrounds retain independent settings across panel switches and resets", async ({ page }) => {
+test("playgrounds retain independent settings across panel switches and resets", async ({ page, isMobile }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#button");
   await page.getByRole("button", { name: "Open Button controls" }).click();
-  const navigation = page.getByRole("navigation", { name: "Manual index" });
-  const visit = (name: string) => navigation.getByRole("link", { name, exact: true }).click();
+  const visit = async (name: string) => {
+    if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
+    await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name, exact: true }).click();
+  };
 
   await page.getByRole("combobox", { name: "Variant", exact: true }).selectOption("destructive");
   await visit("Card");

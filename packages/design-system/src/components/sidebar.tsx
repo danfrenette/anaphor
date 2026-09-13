@@ -12,6 +12,7 @@ import {
   useRef,
   useState,
   type ComponentProps,
+  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
   type ReactElement,
 } from "react";
@@ -27,13 +28,12 @@ import {
 
 type SidebarContextValue = {
   desktopOpen: boolean;
-  insetRef: React.RefObject<HTMLDivElement | null>;
   mobileTriggerRef: React.RefObject<HTMLButtonElement | null>;
   mobileOpen: boolean;
   motionEnabled: boolean;
   prepareMotion: (animate: boolean) => void;
   rootRef: React.RefObject<HTMLDivElement | null>;
-  setMobileOpen: (open: boolean) => void;
+  setMobileOpen: (open: boolean, animate?: boolean) => void;
   toggleDesktop: (animate?: boolean) => void;
   toggleMobile: (animate?: boolean) => void;
 };
@@ -54,16 +54,14 @@ function SidebarProvider({
   onOpenChange,
   open,
   shortcut = "b",
+  style,
   ...props
 }: SidebarProviderProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpen, setMobileOpenState] = useState(false);
   const [motionEnabled, setMotionEnabled] = useState(true);
   const desktopOpen = open ?? internalOpen;
-  const reducedMotion = useReducedMotion() ?? false;
-  const insetAnimationRef = useRef<Animation | null>(null);
-  const insetAnimationFrameRef = useRef<number | null>(null);
-  const insetRef = useRef<HTMLDivElement>(null);
+  const motionResetFrameRef = useRef<number | null>(null);
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -73,41 +71,31 @@ function SidebarProvider({
   }, [onOpenChange, open]);
 
   const prepareMotion = useCallback((animate: boolean) => {
+    if (motionResetFrameRef.current !== null) cancelAnimationFrame(motionResetFrameRef.current);
     setMotionEnabled(animate);
-    if (!animate) window.setTimeout(() => setMotionEnabled(true), 0);
+    if (!animate) {
+      motionResetFrameRef.current = requestAnimationFrame(() => {
+        motionResetFrameRef.current = requestAnimationFrame(() => {
+          motionResetFrameRef.current = null;
+          setMotionEnabled(true);
+        });
+      });
+    }
   }, []);
 
-  const toggleDesktop = useCallback((animate = true) => {
-    const element = insetRef.current;
-    const previous = element?.getBoundingClientRect().left ?? null;
-    const nextOpen = !desktopOpen;
-    if (insetAnimationFrameRef.current !== null) cancelAnimationFrame(insetAnimationFrameRef.current);
-    insetAnimationRef.current?.cancel();
+  const setMobileOpen = useCallback((nextOpen: boolean, animate = true) => {
     prepareMotion(animate);
-    setDesktopOpen(nextOpen);
+    setMobileOpenState(nextOpen);
+  }, [prepareMotion]);
 
-    if (!element || previous === null || !animate || reducedMotion) return;
-    insetAnimationFrameRef.current = requestAnimationFrame(() => {
-      insetAnimationFrameRef.current = null;
-      const current = element.getBoundingClientRect().left;
-      const distance = previous - current;
-      if (Math.abs(distance) < 0.5) return;
-      const styles = getComputedStyle(rootRef.current ?? element);
-      const easing = styles.getPropertyValue("--anaphor-ease-out").trim();
-      const duration = (nextOpen ? spring.slow.duration : spring.slow.exit.duration) * 1000;
-      insetAnimationRef.current = element.animate(
-        [
-          { transform: `translate3d(${distance}px,0,0)` },
-          { transform: "translate3d(0,0,0)" },
-        ],
-        { duration, easing },
-      );
-    });
-  }, [desktopOpen, prepareMotion, reducedMotion, setDesktopOpen]);
+  const toggleDesktop = useCallback((animate = true) => {
+    prepareMotion(animate);
+    setDesktopOpen(!desktopOpen);
+  }, [desktopOpen, prepareMotion, setDesktopOpen]);
 
   const toggleMobile = useCallback((animate = true) => {
     prepareMotion(animate);
-    setMobileOpen((current) => !current);
+    setMobileOpenState((current) => !current);
   }, [prepareMotion]);
 
   useEffect(() => {
@@ -123,8 +111,7 @@ function SidebarProvider({
   }, [shortcut, toggleDesktop]);
 
   useEffect(() => () => {
-    if (insetAnimationFrameRef.current !== null) cancelAnimationFrame(insetAnimationFrameRef.current);
-    insetAnimationRef.current?.cancel();
+    if (motionResetFrameRef.current !== null) cancelAnimationFrame(motionResetFrameRef.current);
   }, []);
 
   return (
@@ -132,9 +119,12 @@ function SidebarProvider({
       desktopOpen={desktopOpen}
       mobileOpen={mobileOpen}
       onDesktopOpenChange={setDesktopOpen}
-      onMobileOpenChange={setMobileOpen}
+      onMobileOpenChange={(nextOpen, eventDetails) => {
+        const animate = !(eventDetails?.event instanceof KeyboardEvent);
+        setMobileOpen(nextOpen, animate);
+      }}
     >
-      <SidebarContext value={{ desktopOpen, insetRef, mobileOpen, mobileTriggerRef, motionEnabled, prepareMotion, rootRef, setMobileOpen, toggleDesktop, toggleMobile }}>
+      <SidebarContext value={{ desktopOpen, mobileOpen, mobileTriggerRef, motionEnabled, prepareMotion, rootRef, setMobileOpen, toggleDesktop, toggleMobile }}>
         <div
           ref={rootRef}
           data-desktop-open={desktopOpen}
@@ -142,10 +132,16 @@ function SidebarProvider({
           data-motion={motionEnabled ? "animate" : "instant"}
           data-slot="sidebar-provider"
           className={cn(
-            "group/sidebar grid min-h-svh grid-cols-[var(--anaphor-sidebar-current-width)_minmax(0,1fr)] overflow-x-clip max-md:block",
-            !desktopOpen && "md:grid-cols-[0_minmax(0,1fr)]",
+            "group/sidebar grid min-h-svh grid-cols-[var(--anaphor-sidebar-current-width)_minmax(0,1fr)] overflow-x-clip [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)] motion-safe:transition-[grid-template-columns] motion-safe:duration-[var(--anaphor-sidebar-motion-duration)] motion-safe:ease-[var(--anaphor-ease-out)] max-md:block",
+            desktopOpen
+              ? "[--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]"
+              : "md:grid-cols-[0_minmax(0,1fr)]",
             className,
           )}
+          style={{
+            ...style,
+            ...(!motionEnabled ? { "--anaphor-sidebar-motion-duration": "0ms" } : null),
+          } as CSSProperties}
           {...props}
         >
           {children}
@@ -161,7 +157,7 @@ function useSidebar() {
   return context;
 }
 
-function Sidebar({ className, ...props }: ComponentProps<"aside">) {
+function Sidebar({ className, style, ...props }: ComponentProps<"aside">) {
   const { desktopOpen, mobileOpen, mobileTriggerRef, motionEnabled } = useSidebar();
   return (
     <AdaptiveSurfacePortal>
@@ -172,12 +168,15 @@ function Sidebar({ className, ...props }: ComponentProps<"aside">) {
           <aside
             data-slot="sidebar"
             className={cn(
-              "invisible fixed inset-y-0 start-0 z-40 flex h-svh w-[min(var(--anaphor-sidebar-mobile-width),calc(100vw-var(--spacing-12)))] -translate-x-full flex-col border-e border-border bg-muted text-muted-foreground will-change-transform [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)] motion-safe:transition-[transform,visibility] motion-safe:duration-[var(--anaphor-sidebar-motion-duration)] motion-safe:ease-[var(--anaphor-ease-out)] md:sticky md:w-[var(--anaphor-sidebar-current-width)]",
-              mobileOpen && "visible translate-x-0 [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]",
-              desktopOpen ? "md:visible md:translate-x-0 md:[--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]" : "md:invisible md:-translate-x-full",
-              !motionEnabled && "duration-0",
+              "invisible fixed inset-y-0 start-0 z-40 flex h-svh w-[min(var(--anaphor-sidebar-mobile-width),calc(100vw-var(--spacing-12)))] [transform:translate3d(-100%,0,0)] flex-col border-e border-border bg-muted text-muted-foreground will-change-transform [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)] motion-safe:transition-[transform,visibility] motion-safe:duration-[var(--anaphor-sidebar-motion-duration)] motion-safe:ease-[var(--anaphor-ease-out)] data-starting-style:[transform:translate3d(-100%,0,0)] md:sticky md:w-[var(--anaphor-sidebar-current-width)]",
+              mobileOpen && "visible [transform:translate3d(0,0,0)] [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]",
+              desktopOpen ? "md:visible md:[transform:translate3d(0,0,0)] md:[--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]" : "md:invisible md:[transform:translate3d(-100%,0,0)]",
               className,
             )}
+            style={{
+              ...style,
+              ...(!motionEnabled ? { "--anaphor-sidebar-motion-duration": "0ms" } : null),
+            } as CSSProperties}
             {...props}
           />
         }
@@ -252,7 +251,7 @@ function SidebarMenu({ className, onPointerEnter, onPointerLeave, onPointerMove,
         nearestDistance = distance;
       }
     }
-    if (!nearest || nearest.hasAttribute("data-active")) {
+    if (!nearest) {
       clearHighlight();
       return;
     }
@@ -369,7 +368,7 @@ function SidebarFooter({ className, ...props }: ComponentProps<"footer">) {
 type SidebarTriggerProps = ComponentProps<"button"> & { target?: "desktop" | "mobile" };
 
 function SidebarTrigger({ children, className, onClick, target = "desktop", ...props }: SidebarTriggerProps) {
-  const { desktopOpen, mobileOpen, mobileTriggerRef, prepareMotion, setMobileOpen, toggleDesktop } = useSidebar();
+  const { desktopOpen, mobileOpen, mobileTriggerRef, toggleDesktop, toggleMobile } = useSidebar();
   const expanded = target === "mobile" ? mobileOpen : desktopOpen;
   return (
     <button
@@ -384,8 +383,7 @@ function SidebarTrigger({ children, className, onClick, target = "desktop", ...p
         if (target === "desktop") toggleDesktop(animate);
         else {
           mobileTriggerRef.current = event.currentTarget;
-          prepareMotion(animate);
-          requestAnimationFrame(() => setMobileOpen(!mobileOpen));
+          toggleMobile(animate);
         }
         onClick?.(event);
       }}
@@ -426,7 +424,7 @@ function SidebarRail({ className, onPointerCancel, onPointerDown, onPointerMove,
     <button
       type="button"
       data-slot="sidebar-rail"
-      aria-label="Resize or collapse sidebar"
+      aria-label="Adjust or collapse sidebar"
       title="Drag to resize · click to collapse"
       className={cn("absolute inset-y-0 -end-2 z-10 hidden w-4 cursor-ew-resize touch-none border-0 bg-transparent md:block after:absolute after:inset-y-0 after:start-1/2 after:w-px after:bg-border after:transition-[background-color,transform] after:duration-150 hover:after:scale-x-200 hover:after:bg-primary", dragging && "after:scale-x-200 after:bg-primary", className)}
       onPointerDown={(event) => { start(event); onPointerDown?.(event); }}
@@ -438,12 +436,15 @@ function SidebarRail({ className, onPointerCancel, onPointerDown, onPointerMove,
   );
 }
 
-function SidebarScrim({ className, ...props }: ComponentProps<typeof AdaptiveSurfaceBackdrop>) {
-  const { mobileOpen } = useSidebar();
+function SidebarScrim({ className, style, ...props }: ComponentProps<typeof AdaptiveSurfaceBackdrop>) {
+  const { mobileOpen, motionEnabled } = useSidebar();
   return (
     <AdaptiveSurfaceBackdrop
       data-slot="sidebar-scrim"
       className={cn("pointer-events-none fixed inset-0 z-30 bg-black/35 opacity-0 transition-opacity duration-200 ease-[var(--anaphor-ease-out)] data-open:pointer-events-auto data-ending-style:opacity-0 data-starting-style:opacity-0 md:hidden", mobileOpen && "opacity-100", className)}
+      style={motionEnabled ? style : typeof style === "function"
+        ? (state) => ({ ...style(state), transitionDuration: "0ms" })
+        : { ...style, transitionDuration: "0ms" }}
       {...props}
     />
   );
@@ -464,8 +465,7 @@ function SidebarClose({ children, className, ...props }: ComponentProps<"button"
 }
 
 function SidebarInset({ className, ...props }: ComponentProps<"div">) {
-  const { insetRef } = useSidebar();
-  return <div ref={insetRef} data-slot="sidebar-inset" className={cn("min-w-0 bg-background will-change-transform", className)} {...props} />;
+  return <div data-slot="sidebar-inset" className={cn("min-w-0 bg-background", className)} {...props} />;
 }
 
 export {

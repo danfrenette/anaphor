@@ -6,6 +6,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useState,
   useSyncExternalStore,
   type ComponentProps,
   type ReactNode,
@@ -36,8 +37,10 @@ function useMediaQuery(query: string) {
 
 type AdaptiveSurfaceContextValue = {
   desktopOpen: boolean;
+  dialogHandle: ReturnType<typeof Dialog.createHandle>;
   mobile: boolean;
   mobileOpen: boolean;
+  onMobileOpenChange: (open: boolean, eventDetails?: Dialog.Root.ChangeEventDetails) => void;
   setDesktopOpen: (open: boolean) => void;
   setMobileOpen: (open: boolean) => void;
 };
@@ -49,8 +52,8 @@ type AdaptiveSurfaceProviderProps = {
   desktopOpen: boolean;
   mobileOpen: boolean;
   mobileQuery?: string;
-  onDesktopOpenChange: (open: boolean) => void;
-  onMobileOpenChange: (open: boolean) => void;
+  onDesktopOpenChange: (open: boolean, eventDetails?: Dialog.Root.ChangeEventDetails) => void;
+  onMobileOpenChange: (open: boolean, eventDetails?: Dialog.Root.ChangeEventDetails) => void;
 };
 
 function AdaptiveSurfaceProvider({
@@ -62,28 +65,20 @@ function AdaptiveSurfaceProvider({
   onMobileOpenChange,
 }: AdaptiveSurfaceProviderProps) {
   const mobile = useMediaQuery(mobileQuery);
-  const currentOpen = mobile ? mobileOpen : desktopOpen;
-
+  const [dialogHandle] = useState(() => Dialog.createHandle());
   return (
     <AdaptiveSurfaceContext
       value={{
         desktopOpen,
+        dialogHandle,
         mobile,
         mobileOpen,
-        setDesktopOpen: onDesktopOpenChange,
-        setMobileOpen: onMobileOpenChange,
+        onMobileOpenChange,
+        setDesktopOpen: (nextOpen) => onDesktopOpenChange(nextOpen),
+        setMobileOpen: (nextOpen) => onMobileOpenChange(nextOpen),
       }}
     >
-      <Dialog.Root
-        modal={mobile}
-        open={currentOpen}
-        onOpenChange={(nextOpen) => {
-          if (mobile) onMobileOpenChange(nextOpen);
-          else onDesktopOpenChange(nextOpen);
-        }}
-      >
-        {children}
-      </Dialog.Root>
+      {children}
     </AdaptiveSurfaceContext>
   );
 }
@@ -105,9 +100,18 @@ function AdaptiveSurfacePopup({ finalFocus, initialFocus, render, ...props }: Ad
 }
 
 function AdaptiveSurfacePortal({ className, ...props }: ComponentProps<typeof Dialog.Portal>) {
-  const { mobile } = useAdaptiveSurface();
+  const { dialogHandle, mobile, mobileOpen, onMobileOpenChange } = useAdaptiveSurface();
   if (!mobile) return <>{props.children}</>;
-  return <Dialog.Portal className={className ?? "contents"} {...props} />;
+  return (
+    <Dialog.Root
+      handle={dialogHandle}
+      modal
+      open={mobileOpen}
+      onOpenChange={(nextOpen, eventDetails) => onMobileOpenChange(nextOpen, eventDetails)}
+    >
+      <Dialog.Portal className={className ?? "contents"} {...props} />
+    </Dialog.Root>
+  );
 }
 
 function AdaptiveSurfaceBackdrop(props: ComponentProps<typeof Dialog.Backdrop>) {
@@ -123,7 +127,10 @@ function AdaptiveSurfaceClose(props: ComponentProps<typeof Dialog.Close>) {
 }
 
 function AdaptiveSurfaceTrigger(props: ComponentProps<typeof Dialog.Trigger>) {
-  return <Dialog.Trigger data-slot="adaptive-surface-trigger" {...props} />;
+  const { dialogHandle, mobile } = useAdaptiveSurface();
+  const desktopTrigger = useRender({ defaultTagName: "button", props: { "data-slot": "adaptive-surface-trigger", ...props } });
+  if (!mobile) return desktopTrigger;
+  return <Dialog.Trigger data-slot="adaptive-surface-trigger" handle={dialogHandle} {...props} />;
 }
 
 export {

@@ -4,12 +4,14 @@ import { seekAnimations } from "./animation";
 
 test("renders an accessible reference manual without horizontal overflow", async ({
   page,
+  isMobile,
 }) => {
   await page.goto("/");
 
   await expect(
     page.getByRole("heading", { level: 1, name: "Anaphor" }),
   ).toBeVisible();
+  if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
   await expect(page.getByRole("navigation", { name: "Manual index" })).toBeVisible();
 
   // Field labels register during hydration; audit the interactive page.

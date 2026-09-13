@@ -20,7 +20,7 @@ const spring = {
 } as const;
 
 const fluidHoverFade = spring.fast;
-const fluidHoverTravel = spring.fast;
+const fluidHoverTravel = spring.moderate;
 const sidebarSelectionTravel = spring.moderate;
 
 export { fluidHoverFade, fluidHoverTravel, sidebarSelectionTravel, spring };
