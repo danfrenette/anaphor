@@ -6,6 +6,12 @@ export default defineConfig([
   ...nextVitals,
   ...nextTypeScript,
   {
+    files: ["**/*.{ts,tsx,mts,cts}"],
+    rules: {
+      "@typescript-eslint/consistent-type-assertions": ["error", { assertionStyle: "never" }],
+    },
+  },
+  {
     settings: {
       next: {
         rootDir: "apps/demo/",

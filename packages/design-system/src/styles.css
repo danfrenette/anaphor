@@ -29,7 +29,6 @@
   --anaphor-sidebar-max-width: 22.5rem;
   --anaphor-sidebar-duration: 240ms;
   --anaphor-sidebar-exit-duration: 160ms;
-  --anaphor-sidebar-current-width: clamp(var(--anaphor-sidebar-min-width), var(--anaphor-sidebar-drag-width, var(--anaphor-sidebar-width)), var(--anaphor-sidebar-max-width));
 }
 
 .dark {

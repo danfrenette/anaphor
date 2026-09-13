@@ -387,7 +387,9 @@ test("card copy confirms a write", async ({ page }) => {
 
 test("showcase previews reflow in both themes", async ({ page }) => {
   await page.goto("/#card");
-  await page.locator(".fixed").evaluateAll(elements => elements.forEach(element => (element as HTMLElement).style.visibility = "hidden"));
+  await page.locator(".fixed").evaluateAll(elements => elements.forEach(element => {
+    if (element instanceof HTMLElement) element.style.visibility = "hidden";
+  }));
   const showcase = page.locator('#card [data-variant="showcase"]').first();
   await showcase.scrollIntoViewIfNeeded();
   for (const theme of ["light", "dark"] as const) {

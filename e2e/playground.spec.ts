@@ -117,7 +117,7 @@ test("pointer-held controls stay pinned until release outside the panel", async 
   await heading.hover();
   await page.mouse.down();
   await page.getByRole("heading", { level: 2, name: "Card", exact: true }).evaluate(element => {
-    (document.activeElement as HTMLElement)?.blur();
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
     element.scrollIntoView({ block: "start" });
   });
   await expect(heading).toBeVisible();
@@ -146,8 +146,8 @@ test("a closing reveal can reverse without hiding or remounting the controls", a
     }, 2000);
     Element.prototype.animate = function (...args) {
       const animation = animate.apply(this, args);
-      const effect = animation.effect as KeyframeEffect;
-      if (this === element && Number(effect.getKeyframes().at(-1)?.opacity) === 0) {
+      const effect = animation.effect;
+      if (this === element && effect instanceof KeyframeEffect && Number(effect.getKeyframes().at(-1)?.opacity) === 0) {
         queueMicrotask(() => {
           Element.prototype.animate = animate;
           clearTimeout(timeout);

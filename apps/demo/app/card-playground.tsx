@@ -1,11 +1,17 @@
 "use client";
 
 import { FieldGroup, Button, ButtonLabel, Card, CardPreview, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@anaphor/system";
-import { useState } from "react";
+import { useState, type ComponentProps } from "react";
 import { PlaygroundControls } from "./playground-host";
 import { Check, Select } from "./playground-fields";
 
-const cardDefaults = { description: true, action: true, footer: true, variant: "default" as "default" | "showcase" };
+type CardSettings = {
+  description: boolean;
+  action: boolean;
+  footer: boolean;
+  variant: NonNullable<ComponentProps<typeof Card>["variant"]>;
+};
+const cardDefaults: CardSettings = { description: true, action: true, footer: true, variant: "default" };
 
 export function CardPlayground() {
   const [card, setCard] = useState(cardDefaults);

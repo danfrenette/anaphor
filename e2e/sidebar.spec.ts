@@ -4,6 +4,19 @@ import { expect, test } from "@playwright/test";
 const sidebar = (page: import("@playwright/test").Page) =>
   page.locator('[data-slot="sidebar"]');
 
+test("resize is opt-in and the layout honors provider-local width changes", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Desktop width is independent of the mobile drawer");
+  await page.goto("/");
+  await expect(page.locator('[data-slot="sidebar-rail"]')).toHaveCount(0);
+  const before = await sidebar(page).boundingBox();
+  if (!before) throw new Error("Expected a visible desktop sidebar");
+  await page.locator('[data-slot="sidebar-provider"]').evaluate(element => {
+    if (element instanceof HTMLElement) element.style.setProperty("--anaphor-sidebar-drag-width", "320px");
+  });
+  await expect.poll(async () => (await sidebar(page).boundingBox())?.width).toBe(320);
+  await expect.poll(async () => (await page.locator('[data-slot="sidebar-inset"]').boundingBox())?.x).toBe(320);
+});
+
 test("desktop pointer toggles preserve position and width, then reverse in place", async ({ page, isMobile }) => {
   test.skip(isMobile, "Desktop disclosure is hidden at the mobile breakpoint");
   await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -129,7 +142,7 @@ test("mobile is modal, animates pointer entry, and restores focus", async ({ pag
   await expect(dialog).toBeVisible();
   await expect(page.getByRole("button", { name: "Close sidebar" })).toBeVisible();
   await expect.poll(() => sidebar(page).evaluate((element) => element.getAnimations()
-    .some((animation) => (animation.effect as KeyframeEffect | null)?.getKeyframes()
+    .some((animation) => animation.effect instanceof KeyframeEffect && animation.effect.getKeyframes()
       .some((frame) => String(frame.transform).includes("matrix") || String(frame.transform).includes("translate"))))).toBe(true);
   expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).toBe("hidden");
 
@@ -164,6 +177,6 @@ test("mobile keyboard and reduced motion remove positional travel", async ({ pag
   await trigger.dispatchEvent("click", { detail: 1 });
   await expect(page.getByRole("dialog")).toBeVisible();
   expect(await sidebar(page).evaluate((element) => element.getAnimations()
-    .filter((animation) => (animation.effect as KeyframeEffect | null)?.getKeyframes()
+    .filter((animation) => animation.effect instanceof KeyframeEffect && animation.effect.getKeyframes()
       .some((frame) => String(frame.transform).includes("matrix") || String(frame.transform).includes("translate"))).length)).toBe(0);
 });
