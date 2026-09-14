@@ -28,6 +28,17 @@ export async function holdAnimations(page: Page) {
   });
 }
 
+// CSS transitions do not call Element.animate(). Pause them at transitionrun
+// so mobile drawer timing checks cannot miss a completed entrance on a busy runner.
+export async function holdSurfaceTransitions(page: Page) {
+  await page.addInitScript(() => {
+    document.addEventListener("transitionrun", event => {
+      if (!(event.target instanceof Element) || !event.target.matches('[data-slot="morph-surface"]')) return;
+      for (const animation of event.target.getAnimations()) animation.pause();
+    });
+  });
+}
+
 export async function seekAnimations(locator: Locator, progress: number) {
   await locator.evaluate(() => new Promise(requestAnimationFrame));
   await expect.poll(() => locator.evaluate(element => element.getAnimations({ subtree: true })

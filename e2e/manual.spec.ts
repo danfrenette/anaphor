@@ -13,6 +13,11 @@ test("renders an accessible reference manual without horizontal overflow", async
   ).toBeVisible();
   if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
   await expect(page.getByRole("navigation", { name: "Manual index" })).toBeVisible();
+  // Audit the manual with its content exposed; sidebar.spec.ts audits the open drawer.
+  if (isMobile) {
+    await page.getByRole("button", { name: "Close sidebar", exact: true }).click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+  }
 
   // Field labels register during hydration; audit the interactive page.
   for (const checkbox of await page.getByRole("checkbox").all()) {
@@ -49,7 +54,7 @@ test("skip link moves keyboard focus to the main content", async ({ page, browse
 });
 
 test("button demo exposes bounded experiments and resets to approved defaults", async ({
-  page,
+  page, isMobile,
 }) => {
   await page.goto("/#button");
   await page.getByRole("button", { name: "Open Button controls" }).click();
@@ -76,9 +81,12 @@ test("button demo exposes bounded experiments and resets to approved defaults", 
   await expect(demo).not.toHaveAttribute("aria-busy");
 
   await page.getByRole("button", { name: "Close controls" }).click();
-  const closedPanel = page.getByRole("region", { name: "Button controls", includeHidden: true });
-  await expect(closedPanel).toHaveAttribute("aria-hidden", "true");
-  await expect(closedPanel).toHaveAttribute("inert", "");
+  const closedPanel = page.getByRole(isMobile ? "dialog" : "region", { name: "Button controls", includeHidden: true });
+  if (isMobile) await expect(closedPanel).toHaveAttribute("data-closed");
+  else {
+    await expect(closedPanel).toHaveAttribute("aria-hidden", "true");
+    await expect(closedPanel).toHaveAttribute("inert", "");
+  }
   await expect(closedPanel).toHaveCSS("opacity", "0");
   await page.getByRole("button", { name: "Open Button controls" }).click();
   await expect(page.getByLabel("Variant")).toBeVisible();
@@ -222,11 +230,13 @@ test("icon-only buttons stay square and centered while loading", async ({ page }
   }
 });
 
-test("cards compose readable surfaces in both themes", async ({ page }) => {
+test("cards compose readable surfaces in both themes", async ({ page, isMobile }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#card");
   await expect(page.getByRole("heading", { name: "Card", exact: true, level: 2 })).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Card", exact: true })).toHaveAttribute("href", "#card");
+  if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
+  await expect(page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Card", exact: true })).toHaveAttribute("href", "/#card");
+  if (isMobile) await page.getByRole("button", { name: "Close sidebar", exact: true }).click();
   const card = page.locator('[aria-labelledby="card-project-title"]');
   for (const theme of ["light", "dark"] as const) {
     await page.locator("html").evaluate((element, dark) => element.classList.toggle("dark", dark), theme === "dark");
@@ -236,39 +246,42 @@ test("cards compose readable surfaces in both themes", async ({ page }) => {
   }
 });
 
-test("controls follow components, preserve edits, and return keyboard focus", async ({ page }) => {
+test("controls preserve edits across switches and return keyboard focus", async ({ page, isMobile }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(page.getByRole("button", { name: /Open .* controls/ })).toHaveCount(0);
-  await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Button", exact: true }).click();
-  const trigger = page.getByRole("button", { name: "Open Button controls" });
-  await trigger.focus();
-  await page.keyboard.press("Enter");
-  const panel = page.getByRole("region", { name: "Button controls" });
-  await expect(panel).toBeFocused();
+  const visit = async (name: string) => {
+    if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
+    await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name, exact: true }).click();
+    const trigger = page.getByRole("button", { name: `Open ${name} controls` });
+    await trigger.focus();
+    await page.keyboard.press("Enter");
+    const panel = page.getByRole(isMobile ? "dialog" : "region", { name: `${name} controls` });
+    await expect(panel).toBeFocused();
+    return panel;
+  };
+  await visit("Button");
   await page.getByLabel("Variant").selectOption("destructive");
-  await page.locator("#card").evaluate((element) => element.scrollIntoView({ block: "start" }));
-  await expect(panel).toBeVisible();
-  await page.getByRole("heading", { level: 2, name: "Card", exact: true }).click();
-  await expect(page.getByRole("region", { name: "Card controls" })).toBeVisible();
+  await page.getByRole("button", { name: "Close controls" }).click();
+  await visit("Card");
   await page.getByRole("checkbox", { name: "Footer", exact: true }).uncheck();
   await expect(page.getByRole("button", { name: "Open workspace" })).toHaveCount(0);
-  await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Button", exact: true }).click();
+  await page.getByRole("button", { name: "Close controls" }).click();
+  await visit("Button");
   await expect(page.getByLabel("Variant")).toHaveValue("destructive");
   await page.getByLabel("Variant").focus();
   await page.keyboard.press("Escape");
+  const trigger = page.getByRole("button", { name: "Open Button controls" });
   await expect(trigger).toBeFocused();
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
-  await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Card", exact: true }).click();
-  await page.getByRole("button", { name: "Open Card controls" }).click();
+  const cardPanel = await visit("Card");
   await page.getByRole("button", { name: "Reset controls" }).click();
   await expect(page.getByRole("button", { name: "Open workspace" })).toBeVisible();
-  const cardPanel = page.getByRole("region", { name: "Card controls" });
   const bounds = await cardPanel.boundingBox();
   if (!bounds) throw new Error("The controls panel must have visible bounds");
   expect(bounds.x).toBeGreaterThanOrEqual(0);
   expect(bounds.y).toBeGreaterThanOrEqual(0);
-  const accessibility = await new AxeBuilder({ page }).include('[role="region"][aria-label="Card controls"]').withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
+  const accessibility = await new AxeBuilder({ page }).include('[data-slot="morph-surface"]').withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
   expect(accessibility.violations).toEqual([]);
 });
 
@@ -334,7 +347,7 @@ test("loading examples run independently and return to idle", async ({ page }) =
   await expect(loading).toHaveAttribute("aria-busy", "true");
 });
 
-test("outline and ghost show pressed color with reduced motion", async ({ page }) => {
+test("outline and ghost show pressed color with reduced motion", async ({ page, isMobile }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#button");
   await page.getByRole("button", { name: "Open Button controls" }).click();
@@ -346,12 +359,17 @@ test("outline and ghost show pressed color with reduced motion", async ({ page }
       await page.getByLabel("Tone").selectOption(tone);
       for (const variant of ["outline", "ghost"]) {
         await page.getByLabel("Variant").selectOption(variant);
+        if (isMobile) await page.getByRole("button", { name: "Close controls" }).click();
         await button.hover();
         const hoverColor = await button.evaluate((element) => getComputedStyle(element).backgroundColor);
         await page.mouse.down();
         const pressedColor = await button.evaluate((element) => getComputedStyle(element).backgroundColor);
         await page.mouse.up();
         expect(pressedColor).not.toEqual(hoverColor);
+        if (isMobile) {
+          await page.locator("#button").evaluate(element => element.scrollIntoView({ block: "start" }));
+          await page.getByRole("button", { name: "Open Button controls" }).click();
+        }
       }
     }
   }

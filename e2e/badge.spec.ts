@@ -7,8 +7,9 @@ test("badges remain readable in both themes and controls reset", async ({ page }
   const result = await new AxeBuilder({ page }).include("#badge").withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
   expect(result.violations).toEqual([]);
   const screenshotStyle = await page.addStyleTag({
-    content: ".fixed, .fixed * { visibility: hidden !important; }",
+    content: ".fixed, .fixed *, header.sticky { visibility: hidden !important; } #badge { scroll-margin: 0 !important; }",
   });
+  await page.locator("#badge").evaluate(element => element.scrollIntoView({ block: "start", behavior: "instant" }));
   await expect(page.locator("#badge")).toHaveScreenshot("badge.png");
   await screenshotStyle.evaluate(element => element.parentNode?.removeChild(element));
   await page.getByRole("button", { name: "Open Badge controls" }).click();

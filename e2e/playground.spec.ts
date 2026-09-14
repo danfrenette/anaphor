@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { holdAnimations, readAnimationTimings, seekAnimations } from "./animation";
+import { holdAnimations, holdSurfaceTransitions, readAnimationTimings, seekAnimations } from "./animation";
 
 test("playgrounds retain independent settings across panel switches and resets", async ({ page, isMobile }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -56,6 +56,7 @@ test("panel stays within the viewport when resized open or closed", async ({ pag
   await page.locator("#button").evaluate(element => element.scrollIntoView());
   await expect(trigger).toHaveCSS("width", "44px");
   await expect(trigger).toHaveCSS("height", "44px");
+  await expect(panel).toBeHidden();
   await trigger.click();
   await expect(panel).toHaveCSS("width", "272px");
 });
@@ -128,19 +129,20 @@ test("keyboard opening matches pointer timing and reduced motion fades without a
 
 test("mobile keyboard activation uses the staged drawer timing", async ({ page, isMobile }) => {
   test.skip(!isMobile, "The desktop surface has separate clip-path coverage.");
+  await holdSurfaceTransitions(page);
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#button");
   const trigger = page.getByRole("button", { name: "Open Button controls" });
   await trigger.focus();
   await page.keyboard.press("Enter");
   const drawer = page.getByRole("dialog", { name: "Button controls", includeHidden: true });
-  await expect(readAnimationTimings(drawer)).resolves.toEqual(expect.arrayContaining([
+  await expect.poll(() => readAnimationTimings(drawer)).toEqual(expect.arrayContaining([
     { property: "opacity", duration: 300, delay: 0 },
     { property: "transform", duration: 300, delay: 0 },
   ]));
   await seekAnimations(drawer, 1);
   await page.keyboard.press("Escape");
-  await expect(readAnimationTimings(drawer)).resolves.toEqual(expect.arrayContaining([
+  await expect.poll(() => readAnimationTimings(drawer)).toEqual(expect.arrayContaining([
     { property: "opacity", duration: 200, delay: 0 },
     { property: "transform", duration: 200, delay: 80 },
   ]));
