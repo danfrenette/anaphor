@@ -1,4 +1,4 @@
-import { Prose, Text, Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
+import { Section, Prose, Text, Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
 import { PlaygroundHost } from "./playground-host";
 import { ButtonDemo } from "./button-demo";
 import { BadgeDemo } from "./badge-demo";
@@ -37,7 +37,7 @@ export default function HomePage() {
       className="min-w-0 px-[var(--anaphor-page-gutter)] py-12 lg:py-14"
     >
         <article className="mx-auto max-w-[840px]">
-          <header id="purpose" className="scroll-mt-8 pb-10">
+          <Section as="header" id="purpose" className="pb-10">
             <div className="flex items-center justify-between gap-6 text-label tracking-[0.08em] text-muted-foreground uppercase">
               <p>00.01 / Contract</p>
               <p>Status / Draft</p>
@@ -49,11 +49,11 @@ export default function HomePage() {
               An executable manual for the decisions that make personal software
               coherent.
             </Text>
-          </header>
+          </Section>
 
           <Separator orientation="horizontal" />
 
-          <section id="principles" className="scroll-mt-8 py-12">
+          <Section id="principles" className="py-12">
             <p className="text-label tracking-[0.08em] uppercase">
               Principles
             </p>
@@ -73,9 +73,9 @@ export default function HomePage() {
                 <p className="text-body">Borrow principles, not identity.</p>
               </li>
             </ol>
-          </section>
+          </Section>
 
-          <section id="color" className="scroll-mt-8 py-12">
+          <Section id="color" className="py-12">
             <div className="flex items-end justify-between gap-6">
               <div>
                 <p className="text-label tracking-[0.08em] uppercase">
@@ -193,11 +193,11 @@ export default function HomePage() {
                 </Card>
               ))}
             </div>
-          </section>
+          </Section>
 
           <Separator orientation="horizontal" />
 
-          <section id="typography" className="scroll-mt-8 py-12">
+          <Section id="typography" className="py-12">
             <p className="text-label tracking-[0.08em] uppercase">
               01.02 / Typography
             </p>
@@ -240,9 +240,9 @@ export default function HomePage() {
                 </Card>
               ))}
             </div>
-          </section>
+          </Section>
 
-          <section id="motion" className="scroll-mt-8 border-t border-border py-12">
+          <Section id="motion" className="border-t border-border py-12">
             <p className="text-label tracking-[0.08em] uppercase">
               01.03 / Motion
             </p>
@@ -250,7 +250,7 @@ export default function HomePage() {
               Motion explains feedback, causality, continuity, or spatial
               relationships. If it explains none of these, remove it.
             </Text>
-          </section>
+          </Section>
 
           <PlaygroundHost>
             <ButtonDemo />

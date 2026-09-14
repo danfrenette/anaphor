@@ -1,9 +1,9 @@
-import { Text, Card, CardContent, CardHeader, CardTitle, Field, FieldLabel, Input } from "@anaphor/system";
+import { Section, Text, Card, CardContent, CardHeader, CardTitle, Field, FieldLabel, Input } from "@anaphor/system";
 import { InputPlayground, InputSearchExample, InputValidationExample } from "./input-playground";
 
 export function InputDemo() {
   return (
-    <section id="input" className="scroll-mt-8 border-t border-border py-12">
+    <Section id="input" className="border-t border-border py-12">
       <header>
         <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">02.02 / Control</p>
         <Text as="h2" variant="title" className="mt-8">Input</Text>
@@ -33,6 +33,6 @@ export function InputDemo() {
           </Card>
         ))}
       </div>
-    </section>
+    </Section>
   );
 }

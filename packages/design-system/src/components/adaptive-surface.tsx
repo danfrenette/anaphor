@@ -38,6 +38,7 @@ function useMediaQuery(query: string) {
 type AdaptiveSurfaceContextValue = {
   desktopOpen: boolean;
   mobile: boolean;
+  mobileModal: boolean;
   mobileOpen: boolean;
   onMobileOpenChange: (open: boolean, eventDetails?: Dialog.Root.ChangeEventDetails) => void;
   setDesktopOpen: (open: boolean) => void;
@@ -73,6 +74,7 @@ function AdaptiveSurfaceProvider({
       value={{
         desktopOpen,
         mobile,
+        mobileModal,
         mobileOpen,
         onMobileOpenChange,
         setDesktopOpen: (nextOpen) => onDesktopOpenChange(nextOpen),
@@ -103,10 +105,10 @@ type AdaptiveSurfacePopupProps = useRender.ComponentProps<"div"> &
   Pick<ComponentProps<typeof Dialog.Popup>, "finalFocus" | "initialFocus">;
 
 function AdaptiveSurfacePopup({ finalFocus, initialFocus, render, ...props }: AdaptiveSurfacePopupProps) {
-  const { mobile } = useAdaptiveSurface();
+  const { mobile, mobileModal, mobileOpen } = useAdaptiveSurface();
   const desktopPopup = useRender({ defaultTagName: "div", render, props });
   if (!mobile) return desktopPopup;
-  return <Dialog.Popup data-slot="adaptive-surface-popup" finalFocus={finalFocus} initialFocus={initialFocus} render={render} {...props} />;
+  return <Dialog.Popup data-shortcut-modal={mobileModal && mobileOpen ? "" : undefined} data-slot="adaptive-surface-popup" finalFocus={finalFocus} initialFocus={initialFocus} render={render} {...props} />;
 }
 
 function AdaptiveSurfacePortal({ className, ...props }: ComponentProps<typeof Dialog.Portal>) {

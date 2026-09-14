@@ -104,7 +104,7 @@ test("supports the conventional command shortcut", () => {
   render(<Example />);
 
   const provider = document.querySelector('[data-slot="sidebar-provider"]');
-  fireEvent.keyDown(window, { key: "b", metaKey: true });
+  fireEvent.keyDown(document.body, { key: "b", metaKey: true });
   expect(provider).toHaveAttribute("data-desktop-open", "false");
 });
 

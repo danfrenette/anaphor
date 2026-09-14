@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  ContentSections,
+  useContentSections,
   Button,
   ButtonLabel,
   Sidebar,
@@ -39,7 +41,7 @@ import {
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 type NavItem = { id: string; label: string; href: Route; icon: Icon };
 
@@ -68,39 +70,10 @@ const groups: { label: string; items: NavItem[] }[] = [
   },
 ];
 
-const sectionIds = groups.flatMap((group) => group.items.map((item) => item.id));
-
 function DemoSidebar() {
-  const pathname = usePathname();
-  const [activeId, setActiveId] = useState("purpose");
+  const { activeId } = useContentSections();
   const { setMobileOpen } = useSidebar();
   const closeMobile = () => setMobileOpen(false, true);
-
-  useEffect(() => {
-    if (pathname !== "/") return;
-    let frame = 0;
-    const update = () => {
-      const line = window.innerHeight * 0.3;
-      let current = "purpose";
-      for (const id of sectionIds) {
-        const section = document.getElementById(id);
-        if (section && section.getBoundingClientRect().top <= line) current = id;
-      }
-      setActiveId(current);
-    };
-    const schedule = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(update);
-    };
-    schedule();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("hashchange", schedule);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("hashchange", schedule);
-    };
-  }, [pathname]);
 
   return (
     <Sidebar aria-label="Component manual navigation">
@@ -144,20 +117,26 @@ function DemoSidebar() {
   );
 }
 
+// The h-14 header is 56 px, with 32 px of space before the destination.
+const manualScrollOffset = 56 + 32;
+
 export function DemoShell({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   return (
-    <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false}>
-      <a href="#content" className="fixed start-3 top-3 z-[var(--anaphor-z-a11y)] -translate-y-[200%] bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0">Skip to content</a>
-      <DemoSidebar />
-      <SidebarInset>
-        <header className="sticky top-0 z-[var(--anaphor-z-navigation)] flex h-14 items-center gap-3 border-b border-border bg-[color-mix(in_oklch,var(--anaphor-background)_88%,transparent)] px-4 backdrop-blur-md">
-          <SidebarTrigger target="mobile" className="md:hidden" />
-          <SidebarTrigger target="desktop" className="hidden md:grid" />
-          <span className="h-4 w-px bg-border" />
-          <p className="flex items-center gap-2 text-small"><span className="text-muted-foreground">Library</span><b className="font-normal text-border">/</b><strong className="font-medium">Components</strong></p>
-        </header>
-        {children}
-      </SidebarInset>
-    </SidebarProvider>
+    <ContentSections defaultScope enabled={pathname === "/"} scrollOffset={manualScrollOffset} className="contents">
+      <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false}>
+        <a href="#content" className="fixed start-3 top-3 z-[var(--anaphor-z-a11y)] -translate-y-[200%] bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0">Skip to content</a>
+        <DemoSidebar />
+        <SidebarInset>
+          <header className="sticky top-0 z-[var(--anaphor-z-navigation)] flex h-14 items-center gap-3 border-b border-border bg-[color-mix(in_oklch,var(--anaphor-background)_88%,transparent)] px-4 backdrop-blur-md">
+            <SidebarTrigger target="mobile" className="md:hidden" />
+            <SidebarTrigger target="desktop" className="hidden md:grid" />
+            <span className="h-4 w-px bg-border" />
+            <p className="flex items-center gap-2 text-small"><span className="text-muted-foreground">Library</span><b className="font-normal text-border">/</b><strong className="font-medium">Components</strong></p>
+          </header>
+          {children}
+        </SidebarInset>
+      </SidebarProvider>
+    </ContentSections>
   );
 }

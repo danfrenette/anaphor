@@ -98,6 +98,12 @@ async function checkBrowser(browser, directory, item) {
       await page.keyboard.press("Escape");
       await page.getByRole("button", { name: "Open Registry controls" }).click();
       await expect(page.getByRole("region", { name: "Registry controls" })).toBeVisible();
+      await page.getByRole("region", { name: "Introduction", exact: true }).focus();
+      await page.keyboard.press("j");
+      await expect(page.getByRole("region", { name: "Controls", exact: true })).toBeFocused();
+      await page.keyboard.press("g");
+      await page.keyboard.press("g");
+      await expect(page.getByRole("region", { name: "Introduction", exact: true })).toBeFocused();
     }
     assert.deepEqual(errors, [], "Installed consumer must load without browser errors");
   } finally {

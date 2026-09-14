@@ -20,6 +20,7 @@
   "dependencies": {
     "@base-ui/react": "latest",
     "@phosphor-icons/react": "^2.1.10",
+    "@tanstack/react-hotkeys": "^0.10.0",
     "cn": "^0.2.5",
     "motion": "^13.2.0"
   },

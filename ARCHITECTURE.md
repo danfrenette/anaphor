@@ -125,3 +125,26 @@ its natural dimensions. Reveal and opacity share an ease-out: 250ms opening,
 Closing reverses the reveal without delayed dismissal. Keyboard activation and Escape settle
 instantly; reduced motion keeps only the fade. No width/height animation or
 ResizeObserver is needed. Content remains mounted while the surface is closed.
+
+## Keyboard navigation
+
+`useShortcut` shares a single document listener while registrations exist and uses
+TanStack Hotkeys' standalone sequence matcher for both chords and sequences.
+The design system owns eligibility and focus precedence because those rules must
+apply before a partial sequence consumes an event. This also allows per-sequence
+reset on focus changes and excludes browser repeat events from double presses.
+No application component installs its own shortcut listener. Widget-owned Escape
+and arrow behavior remains local to those components.
+
+`ContentSections` owns registered section elements and viewport selection; `Section`
+provides stable anchors and a programmatic focus destination. The manual's sidebar
+reads the same active state through `useContentSections`, while PlaygroundHost retains
+its independent interaction pinning. Static manual examples remain server-composed
+children. Keyboard scrolling uses the existing ease-in-out token and a 100 ms
+section duration, an intentional exception to the general instant-shortcut rule.
+
+`useAnimatedScroll` encapsulates Motion animation controls, scroll observation,
+input interruption, and live reduced-motion changes. Each request owns its
+callbacks so interrupted work cannot overwrite a later destination. `ContentSections`
+keeps focus and ordering policy and observes the actual section elements for
+layout changes. The hook ships with the sections registry item.

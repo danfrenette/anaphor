@@ -1,9 +1,9 @@
-import { Text, Badge, Button, ButtonLabel, Card, CardAction, CardCopyButton, CardPreview, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
+import { Section, Text, Badge, Button, ButtonLabel, Card, CardAction, CardCopyButton, CardPreview, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
 import { CardPlayground } from "./card-playground";
 
 export function CardDemo() {
   return (
-    <section id="card" className="scroll-mt-8 border-t border-border py-12">
+    <Section id="card" className="border-t border-border py-12">
       <header>
         <div className="flex items-center justify-between gap-6 text-label tracking-[0.08em] text-muted-foreground uppercase">
           <p>03.01 / Component</p>
@@ -79,6 +79,6 @@ export function CardDemo() {
           <p className="mt-4">Content sets the height. Optional sections keep simple cards simple.</p>
         </CardContent>
       </Card>
-    </section>
+    </Section>
   );
 }

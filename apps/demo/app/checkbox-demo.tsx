@@ -1,9 +1,9 @@
-import { Text, Card, CardContent, CardHeader, CardTitle, Checkbox, Field, FieldContent, FieldDescription, FieldLabel } from "@anaphor/system";
+import { Section, Text, Card, CardContent, CardHeader, CardTitle, Checkbox, Field, FieldContent, FieldDescription, FieldLabel } from "@anaphor/system";
 import { CheckboxPlayground, CheckboxRequiredExample, CheckboxSelectionExample } from "./checkbox-playground";
 
 export function CheckboxDemo() {
   return (
-    <section id="checkbox" className="scroll-mt-8 border-t border-border py-12">
+    <Section id="checkbox" className="border-t border-border py-12">
       <header>
         <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">02.03 / Control</p>
         <Text as="h2" variant="title" className="mt-8">Checkbox</Text>
@@ -51,6 +51,6 @@ export function CheckboxDemo() {
         ))}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }

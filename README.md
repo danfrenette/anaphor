@@ -258,3 +258,56 @@ needs a semantic name. Both wrappers accept native div props and refs.
 The composition vocabulary borrows from shadcn/ui Field; behavior remains a thin
 Base UI wrapper in the style of Coss. FieldFeedback and the consuming form's
 validation timing are unchanged.
+
+### Section navigation and shortcuts
+
+The main manual uses `ContentSections` and `Section` for document navigation. `j`/`k`
+move between visible sections in DOM order, `gg` selects the first, and `Shift+G`
+selects the last. Navigation stops at the ends. Each move focuses the section so
+Tab continues into its content, scrolls below the configured header offset in
+100 ms, and updates `useContentSections().activeId`. Reduced motion jumps immediately.
+Wheel, touch, or pointer interaction interrupts the scroll; repeated navigation
+retargets from its current position. Ordinary scrolling also updates active state.
+
+```tsx
+import { ContentSections, Section, useContentSections, useShortcut } from "@anaphor/system";
+
+<ContentSections defaultScope>
+  <Section id="introduction"><h1>Introduction</h1></Section>
+  <Section id="details"><h2>Details</h2></Section>
+</ContentSections>
+```
+
+`useContentSections` exposes `activeId`, `goTo(id)`, `next()`, `previous()`, `first()`,
+and `last()`. Place a consumer-owned contents navigation inside `ContentSections` to
+share that state. `Section` renders a native section (or `as="header"`), requires
+a unique stable ID, and supports normal HTML attributes. Hidden/inert sections
+are skipped. Navigation currently scrolls the document viewport. Set `scrollOffset` in pixels
+when content needs to clear a sticky header; it defaults to zero.
+
+Use `enabled={false}` to disable shortcuts. Override `bindings.next`, `previous`,
+`first`, or `last` with TanStack hotkey strings or sequence arrays; set a binding
+to `null` to disable just that action. A focused group owns its shortcuts. Only
+one group per page should opt into `defaultScope`, which handles focus outside
+all groups. Nested groups own their own sections and shortcuts.
+
+`useShortcut("Mod+B", callback, options)` registers an application shortcut;
+`useShortcut(["G", "G"], callback)` registers a sequence. It uses TanStack Hotkeys'
+matcher with a 1,000 ms default timeout. Focus changes, window blur, composition,
+and mismatching keys cancel partial sequences. Held keys never complete a
+sequence; single shortcuts repeat only with `repeat: true`.
+
+Options include `enabled`, `scope` (an element ref), `defaultScope`, `timeout`,
+`preventDefault`, and an event-time `when` predicate. Focused inner scopes take
+precedence over outer/global shortcuts; equal scopes resolve in registration
+order. Already-handled events are respected. Editing fields and composite widgets
+are excluded unless `allowInInputs` or `allowInWidgets` is explicitly enabled.
+Use `data-shortcuts="off"` on a custom widget to opt out. Modal dialogs suppress
+background shortcuts; a scope inside the dialog can handle its own keys. Custom
+modal implementations without `aria-modal` can mark their open surface with
+`data-shortcut-modal`. AdaptiveSurface does this automatically.
+
+Stable IDs support incoming hash links and normal contents links. Passive scrolling
+and keyboard navigation do not rewrite the URL or add history entries. Shortcut
+hints, help interfaces, and remapping controls belong to the consumer. Local widget
+Escape and arrow behavior remains owned by its accessible component.

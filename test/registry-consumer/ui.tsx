@@ -10,6 +10,7 @@ import { FieldFeedback } from "./components/ui/field-feedback";
 import { Input } from "./components/ui/input";
 import { MorphSurface } from "./components/ui/morph-surface";
 import { Menu, MenuItem, MenuPopup, MenuTrigger } from "./components/ui/menu";
+import { ContentSections, Section } from "./components/ui/sections";
 import { Separator } from "./components/ui/separator";
 import { Text } from "./components/ui/text";
 import { Prose } from "./components/ui/prose";
@@ -19,8 +20,12 @@ function Consumer() {
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
   return <main className="p-6 font-sans">
+    <ContentSections defaultScope>
+    <Section id="installed-intro" aria-label="Introduction">
     <Text as="h1" variant="title">Registry consumer</Text>
     <Prose as="div"><p>Installed prose with <strong>emphasis</strong>.</p></Prose>
+    </Section>
+    <Section id="installed-controls" aria-label="Controls">
     <Card variant="default">
       <CardHeader><CardTitle as="h3" variant="heading">Installed UI</CardTitle></CardHeader>
       <CardContent>
@@ -37,6 +42,8 @@ function Consumer() {
         <p className="font-mono">Installed source</p>
       </CardContent>
     </Card>
+    </Section>
+    </ContentSections>
     <div className="fixed bottom-4 right-4">
       <MorphSurface open={open} onOpenChange={setOpen} title="Registry controls" icon={<span>+</span>}>
         <p>Installed surface</p>

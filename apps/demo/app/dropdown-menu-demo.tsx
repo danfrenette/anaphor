@@ -1,9 +1,9 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
+import { Section, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
 import { DropdownMenuExample } from "./dropdown-menu-example";
 
 export function DropdownMenuDemo() {
   return (
-    <section id="dropdown-menu" className="scroll-mt-8 border-t border-border py-12">
+    <Section id="dropdown-menu" className="border-t border-border py-12">
       <header>
         <div className="flex items-center justify-between gap-6 text-label tracking-[0.08em] text-muted-foreground uppercase">
           <p>02.04 / Control</p>
@@ -26,6 +26,6 @@ export function DropdownMenuDemo() {
           <DropdownMenuExample />
         </CardContent>
       </Card>
-    </section>
+    </Section>
   );
 }

@@ -1,4 +1,4 @@
-import { Text, Button, ButtonLabel, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
+import { Section, Text, Button, ButtonLabel, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
 import { ArrowRight, Trash } from "@phosphor-icons/react/dist/ssr";
 import type { ReactNode } from "react";
 import { ButtonPlayground } from "./button-playground";
@@ -8,7 +8,7 @@ const variants = ["solid", "destructive", "outline", "ghost"] as const;
 
 export function ButtonDemo() {
   return (
-    <section id="button" className="scroll-mt-8 border-t border-border py-12">
+    <Section id="button" className="border-t border-border py-12">
       <header>
         <div className="flex items-center justify-between gap-6 text-label tracking-[0.08em] text-muted-foreground uppercase">
           <p>02.01 / Control</p>
@@ -93,7 +93,7 @@ export function ButtonDemo() {
           </CardContent>
         </Card>
       </ButtonPlayground>
-    </section>
+    </Section>
   );
 }
 

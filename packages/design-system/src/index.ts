@@ -14,3 +14,8 @@ export { Sidebar, SidebarClose, SidebarContent, SidebarFooter, SidebarGroup, Sid
 
 export { Text, type TextProps, type TextVariant } from "./components/text";
 export { Prose, type ProseProps } from "./components/prose";
+
+export { ContentSections, Section, useContentSections } from "./components/sections";
+export type { ContentSectionsProps, SectionProps, SectionBindings } from "./components/sections";
+export { useShortcut } from "./lib/shortcut";
+export type { ShortcutBinding, ShortcutOptions } from "./lib/shortcut";

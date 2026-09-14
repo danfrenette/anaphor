@@ -24,7 +24,8 @@
         "danfrenette/anaphor/morph-surface",
         "danfrenette/anaphor/separator",
         "danfrenette/anaphor/text",
-        "danfrenette/anaphor/prose"
+        "danfrenette/anaphor/prose",
+        "danfrenette/anaphor/sections"
       ]
     },
     {
@@ -111,7 +112,7 @@
       "name": "sidebar",
       "type": "registry:ui",
       "dependencies": ["@base-ui/react", "@phosphor-icons/react", "motion"],
-      "registryDependencies": ["danfrenette/anaphor/adaptive-surface", "danfrenette/anaphor/style", "danfrenette/anaphor/utils", "danfrenette/anaphor/motion-utils"],
+      "registryDependencies": ["danfrenette/anaphor/adaptive-surface", "danfrenette/anaphor/style", "danfrenette/anaphor/utils", "danfrenette/anaphor/motion-utils", "danfrenette/anaphor/shortcut"],
       "files": [
         {
           "path": "packages/design-system/src/components/sidebar.tsx",
@@ -270,6 +271,42 @@
           "path": "packages/design-system/src/components/prose.tsx",
           "type": "registry:ui",
           "target": "@ui/prose.tsx"
+        }
+      ]
+    },
+    {
+      "name": "shortcut",
+      "type": "registry:hook",
+      "dependencies": [
+        "@tanstack/react-hotkeys"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/lib/shortcut.ts",
+          "type": "registry:lib",
+          "target": "@components/lib/shortcut.ts"
+        }
+      ]
+    },
+    {
+      "name": "sections",
+      "type": "registry:ui",
+      "dependencies": ["motion"],
+      "registryDependencies": [
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/utils",
+        "danfrenette/anaphor/shortcut"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/sections.tsx",
+          "type": "registry:ui",
+          "target": "@ui/sections.tsx"
+        },
+        {
+          "path": "packages/design-system/src/lib/use-animated-scroll.ts",
+          "type": "registry:hook",
+          "target": "@components/lib/use-animated-scroll.ts"
         }
       ]
     }

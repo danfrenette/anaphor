@@ -1,5 +1,6 @@
 "use client";
 
+import { normalizeHotkey } from "@tanstack/react-hotkeys";
 import { useRender } from "@base-ui/react/use-render";
 import { SidebarSimple, X } from "@phosphor-icons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
@@ -16,6 +17,7 @@ import {
   type ReactElement,
 } from "react";
 import { cn } from "../lib/utils";
+import { useShortcut } from "../lib/shortcut";
 import { fluidHoverFade, sidebarHoverTravel, sidebarSelectionTravel, spring } from "../lib/motion";
 import {
   AdaptiveSurfaceBackdrop,
@@ -87,17 +89,8 @@ function SidebarProvider({
     setMobileOpenState((current) => !current);
   }, [prepareMotion]);
 
-  useEffect(() => {
-    if (!shortcut) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === shortcut.toLowerCase()) {
-        event.preventDefault();
-        toggleDesktop(false);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [shortcut, toggleDesktop]);
+  useShortcut(shortcut ? normalizeHotkey(`Meta+${shortcut}`) : null, () => toggleDesktop(false));
+  useShortcut(shortcut ? normalizeHotkey(`Control+${shortcut}`) : null, () => toggleDesktop(false));
 
   return (
     <AdaptiveSurfaceProvider

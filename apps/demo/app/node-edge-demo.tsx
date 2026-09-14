@@ -1,6 +1,6 @@
 "use client";
 
-import { Text } from "@anaphor/system";
+import { Section, Text } from "@anaphor/system";
 
 import { useState } from "react";
 import * as Effect from "effect/Effect";
@@ -211,7 +211,7 @@ function OutputCard({ title, description, detail, revision, icon: Icon }: {
 
 export function NodeEdgeDemo() {
   return (
-    <section id="node-edge-graphs" className="scroll-mt-8 border-t border-border py-12">
+    <Section id="node-edge-graphs" className="border-t border-border py-12">
       <header>
         <div className="flex items-center justify-between gap-6 text-label uppercase tracking-[.08em] text-muted-foreground">
           <p>03.03 / Component</p><p>Status / Study</p>
@@ -221,7 +221,7 @@ export function NodeEdgeDemo() {
       </header>
       <div className="mt-8"><NotebookExample /></div>
       <p className="mt-4 text-small text-muted-foreground">An authored illustration with simulated data. Pulse illumination inspired by <a className="underline underline-offset-4" href="https://x.com/kitlangton/status/2096703869136867563" target="_blank" rel="noreferrer">Kit Langton’s diagrams</a>.</p>
-    </section>
+    </Section>
   );
 }
 

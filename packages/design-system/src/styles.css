@@ -22,6 +22,7 @@
   --anaphor-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --anaphor-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --anaphor-motion-delay-short: 80ms;
+  --anaphor-section-duration: 100ms;
   --anaphor-motion-duration-standard: 200ms;
   --anaphor-motion-duration-deliberate: 300ms;
   --anaphor-menu-duration: 180ms;
