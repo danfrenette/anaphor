@@ -117,18 +117,15 @@ function DemoSidebar() {
   );
 }
 
-// The h-14 header is 56 px, with 32 px of space before the destination.
-const manualScrollOffset = 56 + 32;
-
 export function DemoShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   return (
-    <ContentSections defaultScope enabled={pathname === "/"} scrollOffset={manualScrollOffset} className="contents">
+    <ContentSections defaultScope enabled={pathname === "/"} className="contents [--manual-header-height:calc(var(--spacing)*14)] [--anaphor-section-offset:calc(var(--manual-header-height)+var(--spacing)*8)]">
       <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false}>
         <a href="#content" className="fixed start-3 top-3 z-[var(--anaphor-z-a11y)] -translate-y-[200%] bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0">Skip to content</a>
         <DemoSidebar />
         <SidebarInset>
-          <header className="sticky top-0 z-[var(--anaphor-z-navigation)] flex h-14 items-center gap-3 border-b border-border bg-[color-mix(in_oklch,var(--anaphor-background)_88%,transparent)] px-4 backdrop-blur-md">
+          <header className="sticky top-0 z-[var(--anaphor-z-navigation)] flex h-[var(--manual-header-height)] items-center gap-3 border-b border-border bg-[color-mix(in_oklch,var(--anaphor-background)_88%,transparent)] px-4 backdrop-blur-md">
             <SidebarTrigger target="mobile" className="md:hidden" />
             <SidebarTrigger target="desktop" className="hidden md:grid" />
             <span className="h-4 w-px bg-border" />

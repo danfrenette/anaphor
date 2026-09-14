@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ComponentProps, type CSSProperties } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ComponentProps } from "react";
 import { useShortcut, type ShortcutBinding } from "../lib/shortcut";
 import { useAnimatedScroll } from "../lib/use-animated-scroll";
 import { cn } from "../lib/utils";
@@ -16,8 +16,6 @@ export type ContentSectionsProps = Omit<ComponentProps<"div">, "ref"> & {
   enabled?: boolean;
   defaultScope?: boolean;
   bindings?: Partial<SectionBindings>;
-  /** Space above each destination, in pixels (for a sticky header). */
-  scrollOffset?: number;
   onActiveChange?: (id: string | null) => void;
 };
 
@@ -38,7 +36,7 @@ export function useContentSections(): Omit<ContentSectionsValue, "register"> {
   return context;
 }
 
-export function ContentSections({ children, enabled = true, defaultScope = false, bindings, scrollOffset = 0, onActiveChange, style, ...props }: ContentSectionsProps) {
+export function ContentSections({ children, enabled = true, defaultScope = false, bindings, onActiveChange, className, ...props }: ContentSectionsProps) {
   const root = useRef<HTMLDivElement>(null);
   const elements = useRef(new Map<string, HTMLElement>());
   const active = useRef<string | null>(null);
@@ -59,11 +57,11 @@ export function ContentSections({ children, enabled = true, defaultScope = false
     const entries = ordered();
     let current: string | null = entries[0]?.[0] ?? null;
     for (const [id, element] of entries) {
-      if (element.getBoundingClientRect().top <= scrollOffset + 1) current = id;
+      if (element.getBoundingClientRect().top <= (parseFloat(getComputedStyle(element).scrollMarginTop) || 0) + 1) current = id;
     }
     if (window.scrollY > 0 && window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1) current = entries.at(-1)?.[0] ?? null;
     select(current);
-  }, [ordered, scrollOffset, select]);
+  }, [ordered, select]);
   const { scrollTo, stop, isScrolling } = useAnimatedScroll(updateVisible);
   const register = useCallback((id: string, element: HTMLElement) => {
     if (elements.current.has(id)) throw new Error(`Duplicate Section id: ${id}`);
@@ -82,11 +80,11 @@ export function ContentSections({ children, enabled = true, defaultScope = false
     const curve = css.getPropertyValue("--anaphor-ease-in-out").match(/[\d.]+/g)?.map(Number);
     const [x1, y1, x2, y2] = curve ?? [];
     scrollTo(element, {
-      offset: scrollOffset,
+      offset: parseFloat(getComputedStyle(element).scrollMarginTop) || 0,
       duration: Number.isFinite(duration) && x1 !== undefined && y1 !== undefined && x2 !== undefined && y2 !== undefined ? duration : 0,
       ease: [x1 ?? 0, y1 ?? 0, x2 ?? 1, y2 ?? 1],
     });
-  }, [ordered, scrollOffset, select, stop, scrollTo]);
+  }, [ordered, select, stop, scrollTo]);
   const move = useCallback((direction: number) => {
     const entries = ordered();
     const index = Math.max(0, entries.findIndex(([id]) => id === active.current));
@@ -129,9 +127,8 @@ export function ContentSections({ children, enabled = true, defaultScope = false
     return () => { resize.disconnect(); mutations.disconnect(); };
   }, [isScrolling, ordered, stop, updateVisible]);
 
-  const sectionStyle: CSSProperties & { "--anaphor-section-offset": string } = { "--anaphor-section-offset": `${scrollOffset}px`, ...style };
   return <ContentSectionsContext value={{ activeId, goTo, next, previous, first, last, register }}>
-    <div {...props} ref={root} data-slot="sections" style={sectionStyle}>{children}</div>
+    <div {...props} ref={root} data-slot="sections" className={cn("[--anaphor-section-offset:0px]", className)}>{children}</div>
   </ContentSectionsContext>;
 }
 

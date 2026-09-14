@@ -71,3 +71,17 @@ test("uses 100 ms motion and reduced motion settles immediately", async ({ page 
   expect(Math.abs(top - 88)).toBeLessThan(1);
   await expect(section(page, "color")).toBeFocused();
 });
+
+test("header CSS variables drive both layout and navigation spacing", async ({ page }) => {
+  await page.goto("/");
+  await page.locator('[data-slot="sections"]').evaluate(element => element.style.setProperty("--manual-header-height", "96px"));
+  await expect(page.locator('header.sticky')).toHaveCSS("height", "96px");
+  await expect(section(page, "principles")).toHaveCSS("scroll-margin-top", "128px");
+  await page.keyboard.press("j");
+  await expect.poll(async () => Math.abs(((await section(page, "principles").boundingBox())?.y ?? 0) - 128)).toBeLessThan(1);
+  await expect(section(page, "principles")).toHaveAttribute("data-active", "");
+  await page.locator('[data-slot="sections"]').evaluate(element => element.style.setProperty("--manual-header-height", "128px"));
+  await page.keyboard.press("j");
+  await expect(section(page, "color")).toHaveCSS("scroll-margin-top", "160px");
+  await expect.poll(async () => Math.abs(((await section(page, "color").boundingBox())?.y ?? 0) - 160)).toBeLessThan(1);
+});
