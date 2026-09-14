@@ -54,7 +54,7 @@ export function PlaygroundHost({ children }: { children: ReactNode }) {
     <ControlsContext value={{ register, activeId: active?.sectionId, target }}>
       {children}
       {active && (
-        <div className="fixed right-4 bottom-4 z-30">
+        <div className="contents md:fixed md:right-4 md:bottom-4 md:z-[var(--anaphor-z-floating)] md:block">
           <MorphSurface onInteractionChange={setInteracting} open={open} onOpenChange={setOpen} icon={<SlidersHorizontal />} title={`${active.title} controls`}>
             <div ref={setTarget} />
           </MorphSurface>

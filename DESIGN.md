@@ -99,7 +99,12 @@ provide grouping before containers do.
 - Tactile controls: 10px radius.
 - Pills and indicators: fully rounded only when shape communicates behavior.
 - Elevation: structural surfaces stay flat. Cards and temporary floating tools
-  use restrained layered shadows appropriate to their scale.
+  use the shared `shadow-card` token. Clipped morph geometry uses its
+  `filter-shadow-card` equivalent so the same elevation scale remains visible.
+
+Global stacking uses semantic z-index tokens rather than numeric utilities:
+raised content, floating tools, navigation, backdrops, overlays, then accessibility
+escapes. Component-internal stacking contexts may use small numeric indices.
 
 ## Density
 
@@ -148,16 +153,29 @@ coordinates, or state labels appears only when it explains behavior.
 
 ## Morphing control surface
 
-The control tile is 44px square with the Card's 12px corners. It expands from
-its fixed bottom-right corner to a maximum width of 360px, with 16px screen
-margins and scrolling content on short screens. It opens only through explicit
-activation. Escape and Close return focus to the tile; it is nonmodal.
+The control tile is 44px square with the Card's 12px corners. On desktop it
+expands from its fixed bottom-right corner to a maximum width of 360px, with
+16px screen margins and scrolling content on short screens. Below 768px, the
+adaptive surface becomes a wide bottom drawer aligned to the page gutters: 24px
+by default and 48px from 640px. The bottom edge uses the same gutter and aligns
+with the closed trigger; the resulting floating card keeps all four rounded
+corners. It is capped at 45dvh and 320px; its content scrolls independently and
+respects the bottom safe area. It opens
+only through explicit activation. Escape and Close return focus to the tile;
+an outside press dismisses it through the same motion path. It remains nonmodal.
+Both forms sit on the floating-tools layer below persistent navigation.
+
+The responsive `--anaphor-page-gutter` token positions both page content and the
+mobile morph surface, including its trigger. Card and clipped-surface shadows are
+derived from one shared set of elevation primitives.
 
 Motion is adapted from the supplied Devouring Details Morph Surface prototype:
-width/height and content opacity use spring stiffness 550, damping 45, mass 0.7;
-closing geometry waits 80ms; the shared dot uses stiffness 350 and damping 35.
+opening uses the deliberate 300ms duration and closing uses the standard 200ms
+fade. Geometry collapse waits 80ms so the fade remains legible, while the shared
+dot uses its own reference-derived spring. Pointer and keyboard activation follow
+the same motion path; reduced motion keeps the fade and removes spatial movement.
 The original pill, feedback form, and auto-loop are replaced with our square,
-component controls, and explicit open state. Reduced motion removes transitions.
+component controls, and explicit open state.
 
 ## Input feedback
 

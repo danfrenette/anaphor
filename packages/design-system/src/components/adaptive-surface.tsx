@@ -6,16 +6,17 @@ import {
   createContext,
   useCallback,
   useContext,
-  useState,
   useSyncExternalStore,
+  type CSSProperties,
   type ComponentProps,
+  type ReactElement,
   type ReactNode,
 } from "react";
 
 const mediaQueries = new Map<string, MediaQueryList>();
 
 function getMediaQuery(query: string) {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return null;
   const existing = mediaQueries.get(query);
   if (existing) return existing;
   const mediaQuery = window.matchMedia(query);
@@ -36,7 +37,6 @@ function useMediaQuery(query: string) {
 
 type AdaptiveSurfaceContextValue = {
   desktopOpen: boolean;
-  dialogHandle: ReturnType<typeof Dialog.createHandle>;
   mobile: boolean;
   mobileOpen: boolean;
   onMobileOpenChange: (open: boolean, eventDetails?: Dialog.Root.ChangeEventDetails) => void;
@@ -49,6 +49,8 @@ const AdaptiveSurfaceContext = createContext<AdaptiveSurfaceContextValue | null>
 type AdaptiveSurfaceProviderProps = {
   children: ReactNode;
   desktopOpen: boolean;
+  mobileDisablePointerDismissal?: boolean;
+  mobileModal?: boolean;
   mobileOpen: boolean;
   mobileQuery: string;
   onDesktopOpenChange: (open: boolean) => void;
@@ -58,18 +60,18 @@ type AdaptiveSurfaceProviderProps = {
 function AdaptiveSurfaceProvider({
   children,
   desktopOpen,
+  mobileDisablePointerDismissal = false,
+  mobileModal = true,
   mobileOpen,
   mobileQuery,
   onDesktopOpenChange,
   onMobileOpenChange,
 }: AdaptiveSurfaceProviderProps) {
   const mobile = useMediaQuery(mobileQuery);
-  const [dialogHandle] = useState(() => Dialog.createHandle());
   return (
     <AdaptiveSurfaceContext
       value={{
         desktopOpen,
-        dialogHandle,
         mobile,
         mobileOpen,
         onMobileOpenChange,
@@ -77,7 +79,16 @@ function AdaptiveSurfaceProvider({
         setMobileOpen: (nextOpen) => onMobileOpenChange(nextOpen),
       }}
     >
-      {children}
+      <Dialog.Root
+        disablePointerDismissal={mobileDisablePointerDismissal}
+        modal={mobileModal}
+        open={mobile && mobileOpen}
+        onOpenChange={(nextOpen, eventDetails) => {
+          if (mobile) onMobileOpenChange(nextOpen, eventDetails);
+        }}
+      >
+        {children}
+      </Dialog.Root>
     </AdaptiveSurfaceContext>
   );
 }
@@ -99,18 +110,8 @@ function AdaptiveSurfacePopup({ finalFocus, initialFocus, render, ...props }: Ad
 }
 
 function AdaptiveSurfacePortal({ className, ...props }: ComponentProps<typeof Dialog.Portal>) {
-  const { dialogHandle, mobile, mobileOpen, onMobileOpenChange } = useAdaptiveSurface();
-  if (!mobile) return <>{props.children}</>;
-  return (
-    <Dialog.Root
-      handle={dialogHandle}
-      modal
-      open={mobileOpen}
-      onOpenChange={(nextOpen, eventDetails) => onMobileOpenChange(nextOpen, eventDetails)}
-    >
-      <Dialog.Portal className={className ?? "contents"} {...props} />
-    </Dialog.Root>
-  );
+  const { mobile } = useAdaptiveSurface();
+  return mobile ? <Dialog.Portal className={className ?? "contents"} {...props} /> : props.children;
 }
 
 function AdaptiveSurfaceBackdrop(props: ComponentProps<typeof Dialog.Backdrop>) {
@@ -125,11 +126,21 @@ function AdaptiveSurfaceClose(props: ComponentProps<typeof Dialog.Close>) {
   return <Dialog.Close data-slot="adaptive-surface-close" {...props} />;
 }
 
-function AdaptiveSurfaceTrigger(props: ComponentProps<typeof Dialog.Trigger>) {
-  const { dialogHandle, mobile } = useAdaptiveSurface();
-  const desktopTrigger = useRender({ defaultTagName: "button", props: { "data-slot": "adaptive-surface-trigger", ...props } });
+type AdaptiveSurfaceTriggerProps = Omit<ComponentProps<typeof Dialog.Trigger>, "className" | "render" | "style"> & {
+  className?: string;
+  render?: ReactElement;
+  style?: CSSProperties;
+};
+
+function AdaptiveSurfaceTrigger({ render, ...props }: AdaptiveSurfaceTriggerProps) {
+  const { mobile } = useAdaptiveSurface();
+  const desktopTrigger = useRender({
+    defaultTagName: "button",
+    render,
+    props: { "data-slot": "adaptive-surface-trigger", ...props },
+  });
   if (!mobile) return desktopTrigger;
-  return <Dialog.Trigger data-slot="adaptive-surface-trigger" handle={dialogHandle} {...props} />;
+  return <Dialog.Trigger data-slot="adaptive-surface-trigger" render={render} {...props} />;
 }
 
 export {
@@ -141,4 +152,5 @@ export {
   AdaptiveSurfaceTrigger,
   useAdaptiveSurface,
   type AdaptiveSurfaceProviderProps,
+  type AdaptiveSurfaceTriggerProps,
 };

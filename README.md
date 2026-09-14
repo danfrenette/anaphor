@@ -142,10 +142,12 @@ before it closes the surface. Optional `onInteractionChange` reports whether foc
 is in the open content or a pointer is held on the surface, allowing a consumer to
 pin its own selection. Closed content stays mounted but becomes inert immediately.
 
-Pointer activation reveals from the bottom right over 250ms and closes over
-150ms, with unscaled text. Reveal and opacity share a strong ease-out.
-Keyboard activation and Escape are instant; reduced motion uses only an opacity
-fade of 200ms. Interrupted reveals reverse from their current state.
+Pointer and keyboard activation reveal from the bottom right over 300ms. The
+surface fades out over 200ms, with geometry collapse delayed by 80ms so it does
+not mask the fade; the shared dot follows its own spring. Text remains unscaled,
+reduced motion keeps only the 200ms opacity fade, and interrupted reveals reverse
+from their current state. Escape, the close button, and an outside press all use
+that same dismissal path.
 
 Its animation is adapted from the user-supplied **Devouring Details Morph Surface**
 prototype ([reference](https://devouringdetails.com/resources/component-library)).

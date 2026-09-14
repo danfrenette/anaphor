@@ -1,4 +1,4 @@
-import { Button, SidebarProvider, type ButtonProps, type SidebarProviderProps } from "@anaphor/system";
+import { AdaptiveSurfaceTrigger, Button, SidebarProvider, type ButtonProps, type SidebarProviderProps } from "@anaphor/system";
 
 const button = {
   iconOnly: false,
@@ -45,3 +45,7 @@ const sidebar = {
 <SidebarProvider {...sidebar} open={false} />;
 // @ts-expect-error Configuration cannot be omitted in favor of hidden defaults.
 <SidebarProvider />;
+
+<AdaptiveSurfaceTrigger render={<button type="button" />} />;
+// @ts-expect-error Stateful render callbacks cannot be honored by both adaptive modes.
+<AdaptiveSurfaceTrigger render={(props, state) => <button {...props} data-open={state.open} />} />;

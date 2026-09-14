@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { holdAnimations, seekAnimations } from "./animation";
+import { holdAnimations, readAnimationTimings, seekAnimations } from "./animation";
 
 test("playgrounds retain independent settings across panel switches and resets", async ({ page, isMobile }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -8,6 +8,7 @@ test("playgrounds retain independent settings across panel switches and resets",
   const visit = async (name: string) => {
     if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
     await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name, exact: true }).click();
+    await page.getByRole("button", { name: `Open ${name} controls` }).click();
   };
 
   await page.getByRole("combobox", { name: "Variant", exact: true }).selectOption("destructive");
@@ -36,13 +37,19 @@ test("panel stays within the viewport when resized open or closed", async ({ pag
   await page.goto("/#button");
   const trigger = page.getByRole("button", { name: "Open Button controls", includeHidden: true });
   await trigger.click();
-  const panel = page.getByRole("region", { name: "Button controls" });
-  for (const { width, expected } of [{ width: 320, expected: 288 }, { width: 768, expected: 360 }, { width: 375, expected: 343 }]) {
+  const panel = page.locator('[data-slot="morph-surface"]');
+  for (const { width, expected, inset } of [
+    { width: 320, expected: 272, inset: 24 },
+    { width: 375, expected: 327, inset: 24 },
+    { width: 640, expected: 544, inset: 48 },
+    { width: 768, expected: 360, inset: 16 },
+  ]) {
     await page.setViewportSize({ width, height: 800 });
+    await page.locator("#button").evaluate(element => element.scrollIntoView({ block: "start" }));
     await expect(panel).toHaveCSS("width", `${expected}px`);
     const bounds = await panel.evaluate((element) => ({ x: element.getBoundingClientRect().x, width: element.getBoundingClientRect().width }));
-    expect(bounds.x).toBeGreaterThanOrEqual(16);
-    expect(bounds.x + bounds.width).toBeCloseTo(width - 16, 0);
+    expect(bounds.x).toBeGreaterThanOrEqual(inset);
+    expect(bounds.x + bounds.width).toBeCloseTo(width - inset, 0);
   }
   await page.getByRole("button", { name: "Close controls" }).click();
   await page.setViewportSize({ width: 320, height: 800 });
@@ -50,10 +57,11 @@ test("panel stays within the viewport when resized open or closed", async ({ pag
   await expect(trigger).toHaveCSS("width", "44px");
   await expect(trigger).toHaveCSS("height", "44px");
   await trigger.click();
-  await expect(panel).toHaveCSS("width", "288px");
+  await expect(panel).toHaveCSS("width", "272px");
 });
 
-test("panel reveals from its trigger without resizing its text layout", async ({ page }) => {
+test("panel reveals from its trigger without resizing its text layout", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The narrow-screen surface uses a drawer transition.");
   await holdAnimations(page);
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#button");
@@ -61,14 +69,14 @@ test("panel reveals from its trigger without resizing its text layout", async ({
   const panel = page.getByRole("region", { name: "Button controls", includeHidden: true });
   const expanded = await page.evaluate(() => Math.min(360, innerWidth - 32));
   for (const { action, opacity, duration } of [
-    { action: trigger, opacity: "1", duration: 250 },
-    { action: page.getByRole("button", { name: "Close controls" }), opacity: "0", duration: 150 },
+    { action: trigger, opacity: "1", duration: 300 },
+    { action: page.getByRole("button", { name: "Close controls" }), opacity: "0", duration: 200 },
   ]) {
     await action.dispatchEvent("click", { detail: 1 });
     const frames = [];
     for (const progress of [0.1, 0.3, 0.6]) {
       const durations = await seekAnimations(panel, progress);
-      expect(durations.every(value => value === duration)).toBe(true);
+      expect(durations.filter(value => value === duration).length).toBeGreaterThanOrEqual(2);
       frames.push(await panel.evaluate(element => ({
         width: element.getBoundingClientRect().width,
         clip: getComputedStyle(element).clipPath,
@@ -83,18 +91,27 @@ test("panel reveals from its trigger without resizing its text layout", async ({
   }
 });
 
-test("keyboard opening is instant and reduced motion fades without a moving reveal", async ({ page }) => {
+test("keyboard opening matches pointer timing and reduced motion fades without a moving reveal", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The narrow-screen surface uses a drawer transition.");
   await holdAnimations(page);
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#button");
   const trigger = page.getByRole("button", { name: "Open Button controls" });
   await trigger.focus();
   await page.keyboard.press("Enter");
-  const panel = page.getByRole("region", { name: "Button controls" });
+  const panel = page.getByRole("region", { name: "Button controls", includeHidden: true });
   await expect(panel).toBeFocused();
-  await expect(panel).toHaveCSS("clip-path", "inset(0px round 12px)");
-  await expect(panel).toHaveCSS("opacity", "1");
+  const openingDurations = await seekAnimations(panel, 0.5);
+  expect(openingDurations.filter(value => value === 300).length).toBeGreaterThanOrEqual(2);
+  const opening = await panel.evaluate(element => ({ clip: getComputedStyle(element).clipPath, opacity: Number(getComputedStyle(element).opacity) }));
+  expect(opening.clip).not.toBe("inset(0px round 12px)");
+  expect(opening.opacity).toBeGreaterThan(0);
+  expect(opening.opacity).toBeLessThan(1);
+  await seekAnimations(panel, 1);
   await page.keyboard.press("Escape");
+  const closingDurations = await seekAnimations(panel, 0.5);
+  expect(closingDurations.filter(value => value === 200).length).toBeGreaterThanOrEqual(2);
+  await seekAnimations(panel, 1);
   await expect(trigger).toBeFocused();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
@@ -107,6 +124,48 @@ test("keyboard opening is instant and reduced motion fades without a moving reve
   expect(fading).toBeLessThan(1);
   await seekAnimations(panel, 1);
   await expect(panel).toHaveCSS("opacity", "1");
+});
+
+test("mobile keyboard activation uses the staged drawer timing", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "The desktop surface has separate clip-path coverage.");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/#button");
+  const trigger = page.getByRole("button", { name: "Open Button controls" });
+  await trigger.focus();
+  await page.keyboard.press("Enter");
+  const drawer = page.getByRole("dialog", { name: "Button controls", includeHidden: true });
+  await expect(readAnimationTimings(drawer)).resolves.toEqual(expect.arrayContaining([
+    { property: "opacity", duration: 300, delay: 0 },
+    { property: "transform", duration: 300, delay: 0 },
+  ]));
+  await seekAnimations(drawer, 1);
+  await page.keyboard.press("Escape");
+  await expect(readAnimationTimings(drawer)).resolves.toEqual(expect.arrayContaining([
+    { property: "opacity", duration: 200, delay: 0 },
+    { property: "transform", duration: 200, delay: 80 },
+  ]));
+});
+
+test("an outside press uses the staged closing animation", async ({ page, isMobile }) => {
+  await holdAnimations(page);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/#button");
+  const trigger = page.getByRole("button", { name: "Open Button controls" });
+  await trigger.click();
+  const surface = page.locator('[data-slot="morph-surface"]');
+  await seekAnimations(surface, 1);
+
+  await page.getByRole("banner").click({ position: { x: 8, y: 8 } });
+  const timings = await readAnimationTimings(surface);
+
+  expect(timings).toEqual(expect.arrayContaining([
+    { property: "opacity", duration: 200, delay: 0 },
+    { property: isMobile ? "transform" : "clip-path", duration: 200, delay: 80 },
+  ]));
+  await seekAnimations(surface, 1);
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  if (isMobile) await expect(surface).toHaveAttribute("data-closed");
+  else await expect(surface).toHaveAttribute("inert", "");
 });
 
 test("pointer-held controls stay pinned until release outside the panel", async ({ page, isMobile }) => {
@@ -126,7 +185,8 @@ test("pointer-held controls stay pinned until release outside the panel", async 
   await expect(page.getByRole("region", { name: "Card controls" })).toBeVisible();
 });
 
-test("a closing reveal can reverse without hiding or remounting the controls", async ({ page }) => {
+test("a closing reveal can reverse without hiding or remounting the controls", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The narrow-screen surface uses a drawer transition.");
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#button");
   await page.getByRole("button", { name: "Open Button controls" }).click();
@@ -161,10 +221,47 @@ test("a closing reveal can reverse without hiding or remounting the controls", a
     };
     close.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
   }));
-  expect(interrupted.duration).toBe(150);
+  expect(interrupted.duration).toBe(200);
   expect(interrupted.time).toBeLessThan(interrupted.duration);
   await expect(panel).toHaveCSS("opacity", "1");
   await expect(panel).toHaveCSS("clip-path", "inset(0px round 12px)");
   await expect(page.getByRole("combobox", { name: "Variant", exact: true })).toHaveValue("destructive");
   await expect(panel).toBeFocused();
+});
+
+test("mobile controls use a short inset drawer below navigation", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "This assertion covers the narrow-screen adaptation.");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/#button");
+  await page.getByRole("button", { name: "Open Button controls" }).click();
+
+  const drawer = page.getByRole("dialog", { name: "Button controls" });
+  await expect(drawer).toHaveCSS("width", "272px");
+  const trigger = page.getByRole("button", { name: "Open Button controls", includeHidden: true });
+  const card = page.locator('[data-slot="card"][data-variant="default"]').first();
+  const header = page.getByRole("banner");
+  const [drawerBounds, triggerBounds, cardShadow, drawerShadow, triggerShadow, drawerZ, headerZ] = await Promise.all([
+    drawer.evaluate(element => element.getBoundingClientRect().toJSON()),
+    trigger.evaluate(element => element.getBoundingClientRect().toJSON()),
+    card.evaluate(element => getComputedStyle(element).boxShadow),
+    drawer.evaluate(element => getComputedStyle(element).boxShadow),
+    trigger.evaluate(element => getComputedStyle(element).boxShadow),
+    drawer.evaluate(element => Number(getComputedStyle(element).zIndex)),
+    header.evaluate(element => Number(getComputedStyle(element).zIndex)),
+  ]);
+  const layout = {
+    drawer: drawerBounds,
+    trigger: triggerBounds,
+    shadows: { card: cardShadow, drawer: drawerShadow, trigger: triggerShadow },
+    drawerZ,
+    headerZ,
+  };
+  expect(layout.drawer.x).toBe(24);
+  expect(layout.drawer.width).toBe(272);
+  expect(layout.drawer.height).toBeLessThanOrEqual(360);
+  expect(layout.drawer.y + layout.drawer.height).toBeCloseTo(776, 0);
+  expect(layout.drawer.y + layout.drawer.height).toBeCloseTo(layout.trigger.y + layout.trigger.height, 0);
+  expect(layout.shadows.drawer).toBe(layout.shadows.card);
+  expect(layout.shadows.trigger).toBe(layout.shadows.card);
+  expect(layout.drawerZ).toBeLessThan(layout.headerZ);
 });

@@ -154,7 +154,7 @@ function Sidebar({ className, style, ...props }: ComponentProps<"aside">) {
             data-slot="sidebar"
             data-motion={motionEnabled ? "animate" : "instant"}
             className={cn(
-              "invisible fixed inset-y-0 start-0 z-40 flex h-svh w-[min(var(--anaphor-sidebar-mobile-width),calc(100vw-var(--spacing-12)))] [transform:translate3d(-100%,0,0)] flex-col border-e border-border bg-muted text-muted-foreground will-change-transform [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)] motion-safe:transition-[transform,visibility] motion-safe:duration-[var(--anaphor-sidebar-motion-duration)] motion-safe:ease-[var(--anaphor-ease-out)] data-starting-style:[transform:translate3d(-100%,0,0)] md:sticky md:w-[var(--anaphor-sidebar-current-width)]",
+              "invisible fixed inset-y-0 start-0 z-[var(--anaphor-z-overlay)] flex h-svh w-[min(var(--anaphor-sidebar-mobile-width),calc(100vw-var(--spacing-12)))] [transform:translate3d(-100%,0,0)] flex-col border-e border-border bg-muted text-muted-foreground will-change-transform [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)] motion-safe:transition-[transform,visibility] motion-safe:duration-[var(--anaphor-sidebar-motion-duration)] motion-safe:ease-[var(--anaphor-ease-out)] data-starting-style:[transform:translate3d(-100%,0,0)] md:sticky md:w-[var(--anaphor-sidebar-current-width)]",
               mobileOpen && "visible [transform:translate3d(0,0,0)] [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]",
               desktopOpen ? "md:visible md:[transform:translate3d(0,0,0)] md:[--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]" : "md:invisible md:[transform:translate3d(-100%,0,0)]",
               className,
@@ -461,7 +461,7 @@ function SidebarScrim({ className, ...props }: ComponentProps<typeof AdaptiveSur
     <AdaptiveSurfaceBackdrop
       data-slot="sidebar-scrim"
       data-motion={motionEnabled ? "animate" : "instant"}
-      className={cn("pointer-events-none fixed inset-0 z-30 bg-black/35 opacity-0 transition-opacity duration-200 ease-[var(--anaphor-ease-out)] data-[motion=instant]:duration-0 data-open:pointer-events-auto data-ending-style:opacity-0 data-starting-style:opacity-0 md:hidden", mobileOpen && "opacity-100", className)}
+      className={cn("pointer-events-none fixed inset-0 z-[var(--anaphor-z-backdrop)] bg-black/35 opacity-0 transition-opacity duration-200 ease-[var(--anaphor-ease-out)] data-[motion=instant]:duration-0 data-open:pointer-events-auto data-ending-style:opacity-0 data-starting-style:opacity-0 md:hidden", mobileOpen && "opacity-100", className)}
       {...props}
     />
   );

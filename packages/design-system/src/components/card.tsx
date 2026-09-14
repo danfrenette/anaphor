@@ -4,7 +4,7 @@ import type { ComponentProps } from "react";
 
 type CardProps = ComponentProps<"div"> & { variant: "default" | "showcase" };
 
-const cardShadow = "shadow-[0_0_0_1px_color-mix(in_oklch,var(--anaphor-input-border)_55%,var(--anaphor-background)),0_1px_2px_-1px_oklch(0_0_0/0.06),0_2px_4px_oklch(0_0_0/0.04)]";
+const cardShadow = "shadow-card";
 
 function Card({ className, variant, ...props }: CardProps) {
   return <div data-slot="card" data-variant={variant} className={cn(

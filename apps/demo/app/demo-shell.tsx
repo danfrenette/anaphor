@@ -147,10 +147,10 @@ function DemoSidebar() {
 export function DemoShell({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false}>
-      <a href="#content" className="fixed start-3 top-3 z-50 -translate-y-[200%] bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0">Skip to content</a>
+      <a href="#content" className="fixed start-3 top-3 z-[var(--anaphor-z-a11y)] -translate-y-[200%] bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0">Skip to content</a>
       <DemoSidebar />
       <SidebarInset>
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-[color-mix(in_oklch,var(--anaphor-background)_88%,transparent)] px-4 backdrop-blur-md">
+        <header className="sticky top-0 z-[var(--anaphor-z-navigation)] flex h-14 items-center gap-3 border-b border-border bg-[color-mix(in_oklch,var(--anaphor-background)_88%,transparent)] px-4 backdrop-blur-md">
           <SidebarTrigger target="mobile" className="md:hidden" />
           <SidebarTrigger target="desktop" className="hidden md:grid" />
           <span className="h-4 w-px bg-border" />

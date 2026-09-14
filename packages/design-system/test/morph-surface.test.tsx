@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MorphSurface } from "@anaphor/system";
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 
 function Consumer({ portal = false, claimEscape = false }: { portal?: boolean; claimEscape?: boolean }) {
   const [open, setOpen] = useState(false);
@@ -38,16 +38,19 @@ for (const portal of [false, true]) {
     expect(screen.getByRole("region", { name: "Example" })).toHaveFocus();
   });
 
-  test(`${adapter} focus pins only while inside the content`, async () => {
+  test(`${adapter} focus pins while inside and an outside press closes`, async () => {
     const user = userEvent.setup();
     render(<Consumer portal={portal} />);
-    await user.click(screen.getByRole("button", { name: "Open Example" }));
+    const trigger = screen.getByRole("button", { name: "Open Example" });
+    await user.click(trigger);
     await user.click(screen.getByRole("textbox", { name: "Setting" }));
     expect(screen.getByText("Pinned")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Outside" }));
+    const outside = screen.getByRole("button", { name: "Outside" });
+    await user.click(outside);
     expect(screen.getByText("Free")).toBeInTheDocument();
-    await user.keyboard("{Escape}");
-    expect(screen.getByRole("region", { name: "Example" })).toBeInTheDocument();
+    expect(outside).toHaveFocus();
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("region", { hidden: true })).toHaveAttribute("inert");
   });
 
   test(`${adapter} controls can handle Escape themselves`, async () => {
@@ -69,4 +72,35 @@ test("a held pointer pins until release outside the surface", async () => {
   expect(screen.getByText("Pinned")).toBeInTheDocument();
   await user.pointer({ target: screen.getByRole("button", { name: "Outside" }), keys: "[/MouseLeft]" });
   expect(screen.getByText("Free")).toBeInTheDocument();
+});
+
+test("uses a nonmodal dialog drawer on narrow screens", async () => {
+  vi.stubGlobal("matchMedia", (query: string) => ({
+    matches: query === "(max-width: 47.999rem)",
+    media: query,
+    onchange: null,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  }));
+  const user = userEvent.setup();
+  render(<Consumer />);
+
+  const trigger = screen.getByRole("button", { name: "Open Example" });
+  expect(trigger).toHaveClass("shadow-card", "md:shadow-none");
+  await user.click(trigger);
+  const drawer = screen.getByRole("dialog", { name: "Example" });
+  expect(drawer).toHaveAttribute("data-slot", "morph-surface");
+  expect(drawer).toHaveClass("inset-x-[var(--anaphor-page-gutter)]", "bottom-[var(--anaphor-page-gutter)]", "rounded-card", "shadow-card", "w-auto");
+  expect(screen.getByRole("heading", { name: "Example" })).toHaveAttribute("data-variant", "heading");
+  expect(screen.getByRole("button", { name: "Outside" })).not.toHaveAttribute("inert");
+  await user.click(screen.getByRole("button", { name: "Close controls" }));
+  expect(trigger).toHaveFocus();
+  await user.click(trigger);
+  const outside = screen.getByRole("button", { name: "Outside" });
+  await user.click(outside);
+  expect(trigger).toHaveFocus();
+  expect(trigger).toHaveAttribute("aria-expanded", "false");
 });

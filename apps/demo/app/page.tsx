@@ -34,7 +34,7 @@ export default function HomePage() {
     <main
       id="content"
       tabIndex={-1}
-      className="min-w-0 px-6 py-12 sm:px-12 lg:px-20 lg:py-14"
+      className="min-w-0 px-[var(--anaphor-page-gutter)] py-12 lg:py-14"
     >
         <article className="mx-auto max-w-[840px]">
           <header id="purpose" className="scroll-mt-8 pb-10">
