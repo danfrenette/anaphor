@@ -28,14 +28,21 @@ export async function holdAnimations(page: Page) {
   });
 }
 
-// CSS transitions do not call Element.animate(). Pause them at transitionrun
-// so mobile drawer timing checks cannot miss a completed entrance on a busy runner.
+// CSS transitions bypass Element.animate(). Capture style changes before a slow
+// runner can miss transitionrun, and keep subsequent timeline updates paused.
 export async function holdSurfaceTransitions(page: Page) {
   await page.addInitScript(() => {
-    document.addEventListener("transitionrun", event => {
-      if (!(event.target instanceof Element) || !event.target.matches('[data-slot="morph-surface"]')) return;
-      for (const animation of event.target.getAnimations()) animation.pause();
-    });
+    const pause = (target: EventTarget | null) => {
+      if (!(target instanceof Element) || !target.matches('[data-slot="morph-surface"]')) return;
+      for (const animation of target.getAnimations()) {
+        animation.playbackRate = 0;
+        animation.pause();
+      }
+    };
+    document.addEventListener("transitionrun", event => pause(event.target));
+    new MutationObserver(records => {
+      for (const record of records) pause(record.target);
+    }).observe(document, { subtree: true, attributes: true, attributeFilter: ["data-starting-style", "data-ending-style", "hidden"] });
   });
 }
 

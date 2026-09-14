@@ -136,9 +136,12 @@ test("mobile keyboard activation uses the staged drawer timing", async ({ page, 
   await page.goto("/#button");
   const trigger = page.getByRole("button", { name: "Open Button controls" });
   await expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
-  await trigger.focus();
-  await page.keyboard.press("Enter");
   const drawer = page.getByRole("dialog", { name: "Button controls", includeHidden: true });
+  await expect(drawer).toHaveAttribute("data-closed");
+  await trigger.focus();
+  await expect(trigger).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(drawer).toHaveAttribute("data-open");
   await expect.poll(() => readAnimationTimings(drawer)).toEqual(expect.arrayContaining([
     { property: "opacity", duration: 300, delay: 0 },
     { property: "transform", duration: 300, delay: 0 },

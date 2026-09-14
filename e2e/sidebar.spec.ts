@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { holdAnimations, seekAnimations } from "./animation";
 
 const sidebar = (page: import("@playwright/test").Page) =>
   page.locator('[data-slot="sidebar"]');
@@ -81,6 +82,7 @@ test("desktop keyboard toggles are instant", async ({ page, isMobile }) => {
 
 test("fine-pointer hover stays continuous through the selected row", async ({ page, isMobile }) => {
   test.skip(isMobile, "Fluid hover is only active for fine pointers");
+  await holdAnimations(page);
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
 
@@ -90,9 +92,7 @@ test("fine-pointer hover stays continuous through the selected row", async ({ pa
 
   await page.getByRole("link", { name: "Principles", exact: true }).hover();
   await expect(hover).toBeVisible();
-  const durations = await hover.evaluate((element) => element.getAnimations()
-    .map((animation) => Number(animation.effect?.getTiming().duration))
-    .filter((duration) => duration > 0));
+  const durations = await seekAnimations(hover, 1);
   expect(Math.max(...durations)).toBeGreaterThanOrEqual(150);
   const firstPosition = await hover.boundingBox();
 
@@ -108,9 +108,11 @@ test("fine-pointer hover stays continuous through the selected row", async ({ pa
 
   await page.getByRole("link", { name: "Introduction", exact: true }).hover();
   await expect(hover).toBeVisible();
+  await seekAnimations(hover, 1);
   await expect.poll(async () => (await hover.boundingBox())?.y).toBeCloseTo((await selection.boundingBox())?.y ?? 0, 0);
 
   await page.getByRole("link", { name: "Color", exact: true }).hover();
+  await seekAnimations(hover, 1);
   await expect.poll(async () => (await hover.boundingBox())?.y).not.toBe(firstPosition?.y);
 });
 
