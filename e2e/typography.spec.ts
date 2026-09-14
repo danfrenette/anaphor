@@ -77,7 +77,7 @@ test("semantic overrides retain purpose styling and prose respects exclusions", 
       heading.className = element.className;
       heading.dataset.testTypography = "semantic-override";
       heading.textContent = "Semantic heading with regular typography";
-      element.after(heading);
+      document.body.append(heading);
     });
     const heading = page.locator('[data-test-typography="semantic-override"]');
     await expect(heading).toHaveCSS("font-weight", "400");

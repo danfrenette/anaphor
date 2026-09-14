@@ -56,7 +56,9 @@ test("panel stays within the viewport when resized open or closed", async ({ pag
   await page.locator("#button").evaluate(element => element.scrollIntoView());
   await expect(trigger).toHaveCSS("width", "44px");
   await expect(trigger).toHaveCSS("height", "44px");
-  await expect(panel).toBeHidden();
+  await expect(panel).toHaveAttribute("data-closed");
+  await expect(panel).toHaveCSS("pointer-events", "none");
+  await expect.poll(() => panel.evaluate(element => element.hasAttribute("hidden") || getComputedStyle(element).opacity === "0")).toBe(true);
   await trigger.click();
   await expect(panel).toHaveCSS("width", "272px");
 });
@@ -133,6 +135,7 @@ test("mobile keyboard activation uses the staged drawer timing", async ({ page, 
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#button");
   const trigger = page.getByRole("button", { name: "Open Button controls" });
+  await expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
   await trigger.focus();
   await page.keyboard.press("Enter");
   const drawer = page.getByRole("dialog", { name: "Button controls", includeHidden: true });
@@ -150,9 +153,11 @@ test("mobile keyboard activation uses the staged drawer timing", async ({ page, 
 
 test("an outside press uses the staged closing animation", async ({ page, isMobile }) => {
   await holdAnimations(page);
+  if (isMobile) await holdSurfaceTransitions(page);
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#button");
   const trigger = page.getByRole("button", { name: "Open Button controls" });
+  if (isMobile) await expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
   await trigger.click();
   const surface = page.locator('[data-slot="morph-surface"]');
   await seekAnimations(surface, 1);

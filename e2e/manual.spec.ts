@@ -82,12 +82,15 @@ test("button demo exposes bounded experiments and resets to approved defaults", 
 
   await page.getByRole("button", { name: "Close controls" }).click();
   const closedPanel = page.getByRole(isMobile ? "dialog" : "region", { name: "Button controls", includeHidden: true });
-  if (isMobile) await expect(closedPanel).toHaveAttribute("data-closed");
-  else {
+  if (isMobile) {
+    await expect(closedPanel).toHaveAttribute("data-closed");
+    await expect(closedPanel).toHaveCSS("pointer-events", "none");
+    await expect.poll(() => closedPanel.evaluate(element => element.hasAttribute("hidden") || getComputedStyle(element).opacity === "0")).toBe(true);
+  } else {
     await expect(closedPanel).toHaveAttribute("aria-hidden", "true");
     await expect(closedPanel).toHaveAttribute("inert", "");
+    await expect(closedPanel).toHaveCSS("opacity", "0");
   }
-  await expect(closedPanel).toHaveCSS("opacity", "0");
   await page.getByRole("button", { name: "Open Button controls" }).click();
   await expect(page.getByLabel("Variant")).toBeVisible();
 });
