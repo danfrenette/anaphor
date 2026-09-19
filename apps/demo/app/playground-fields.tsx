@@ -6,7 +6,7 @@ export function Select<const Value extends string>({ label, value, options, onCh
   return (
     <label className="grid gap-1.5 text-ui">
       <span>{label}</span>
-      <select className="min-h-10 rounded-md border border-border bg-background px-3" value={value} onChange={(event) => {
+      <select className="min-h-11 rounded-control border border-border bg-background px-3 text-base" value={value} onChange={(event) => {
         const selected = options.find((option) => option === event.target.value);
         if (selected !== undefined) onChange(selected);
       }}>

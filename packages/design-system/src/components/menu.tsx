@@ -165,7 +165,7 @@ function MenuPopup({
           data-slot="menu-popup"
           className={(state) =>
             cn(
-              "min-w-52 origin-[var(--transform-origin)] rounded-control border border-[color-mix(in_oklch,var(--anaphor-input-border)_72%,var(--anaphor-background))] bg-muted p-1.5 text-foreground shadow-[0_0_0_1px_color-mix(in_oklch,var(--anaphor-input-border)_35%,transparent),0_8px_24px_-12px_oklch(0_0_0/0.32),0_18px_48px_-24px_oklch(0_0_0/0.22)] outline-none",
+              "min-w-52 origin-[var(--transform-origin)] rounded-control border border-[color-mix(in_oklch,var(--anaphor-input-border)_72%,var(--anaphor-background))] bg-muted p-1.5 text-foreground shadow-[var(--anaphor-shadow-menu)] outline-none",
               typeof className === "function" ? className(state) : className,
             )
           }

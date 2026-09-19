@@ -36,9 +36,6 @@
   --anaphor-shadow-card-outline-color: color-mix(in oklch, var(--anaphor-input-border) 55%, var(--anaphor-background));
   --anaphor-shadow-card-low-color: oklch(0 0 0 / 0.06);
   --anaphor-shadow-card-high-color: oklch(0 0 0 / 0.04);
-  --anaphor-shadow-card: 0 0 0 var(--anaphor-shadow-card-outline-size) var(--anaphor-shadow-card-outline-color), 0 var(--anaphor-shadow-card-low-offset) var(--anaphor-shadow-card-low-blur) var(--anaphor-shadow-card-low-spread) var(--anaphor-shadow-card-low-color), 0 var(--anaphor-shadow-card-high-offset) var(--anaphor-shadow-card-high-blur) var(--anaphor-shadow-card-high-color);
-  /* The clipped morph uses the same elevation primitives through filter syntax. */
-  --anaphor-filter-shadow-card: drop-shadow(0 0 calc(var(--anaphor-shadow-card-outline-size) / 2) var(--anaphor-shadow-card-outline-color)) drop-shadow(0 var(--anaphor-shadow-card-low-offset) calc(var(--anaphor-shadow-card-low-blur) / 2) var(--anaphor-shadow-card-low-color)) drop-shadow(0 var(--anaphor-shadow-card-high-offset) calc(var(--anaphor-shadow-card-high-blur) / 2) var(--anaphor-shadow-card-high-color));
   --anaphor-sidebar-width: 17.5rem;
   --anaphor-sidebar-mobile-width: 18rem;
   --anaphor-sidebar-min-width: 14rem;
@@ -67,6 +64,9 @@
 }
 
 .dark {
+  --anaphor-shadow-card-outline-color: oklch(1 0 0 / 0.12);
+  --anaphor-shadow-card-low-color: oklch(0 0 0 / 0.18);
+  --anaphor-shadow-card-high-color: oklch(0 0 0 / 0.24);
   --anaphor-danger-text: oklch(0.7 0.1691 10.14);
   color-scheme: dark;
   --anaphor-font-tertiary: oklch(0.7 0.016 78);
@@ -75,6 +75,13 @@
   --anaphor-input-border: oklch(0.36 0.013 60);
   --anaphor-foreground: oklch(0.28 0.012 55);
   --anaphor-background: oklch(0.2 0.01 50);
+}
+
+:root, .dark {
+  /* Resolve elevation in each theme, not only at the document root. */
+  --anaphor-shadow-menu: 0 0 0 1px var(--anaphor-shadow-card-outline-color), 0 4px 8px -2px oklch(0 0 0 / 0.08), 0 12px 24px -8px oklch(0 0 0 / 0.12);
+  --anaphor-shadow-card: 0 0 0 var(--anaphor-shadow-card-outline-size) var(--anaphor-shadow-card-outline-color), 0 var(--anaphor-shadow-card-low-offset) var(--anaphor-shadow-card-low-blur) var(--anaphor-shadow-card-low-spread) var(--anaphor-shadow-card-low-color), 0 var(--anaphor-shadow-card-high-offset) var(--anaphor-shadow-card-high-blur) var(--anaphor-shadow-card-high-color);
+  --anaphor-filter-shadow-card: drop-shadow(0 0 calc(var(--anaphor-shadow-card-outline-size) / 2) var(--anaphor-shadow-card-outline-color)) drop-shadow(0 var(--anaphor-shadow-card-low-offset) calc(var(--anaphor-shadow-card-low-blur) / 2) var(--anaphor-shadow-card-low-color)) drop-shadow(0 var(--anaphor-shadow-card-high-offset) calc(var(--anaphor-shadow-card-high-blur) / 2) var(--anaphor-shadow-card-high-color));
 }
 
 /* Numeric spacing utilities use the shared 4px rhythm (gap-6 = 24px).
@@ -188,11 +195,6 @@
   line-height: var(--leading-reading);
   @apply text-reading;
   overflow-wrap: break-word;
-}
-
-@keyframes anaphor-checkbox-enter {
-  from { scale: 0; }
-  to { scale: 1; }
 }
 
 @layer components {

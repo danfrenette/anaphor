@@ -87,7 +87,7 @@ function Button({
       <span
         aria-hidden="true"
         className={cn(
-          "pointer-events-none inline-flex shrink-0 items-center justify-center w-[var(--button-icon-size)] opacity-0 motion-safe:transition-[margin,opacity] motion-safe:duration-200 motion-safe:ease-out",
+          "pointer-events-none inline-flex shrink-0 items-center justify-center w-[var(--button-icon-size)] opacity-0 motion-safe:transition-opacity motion-safe:duration-200 motion-safe:ease-[var(--anaphor-ease-out)]",
           iconOnly
             ? "absolute"
             : "-ms-[var(--button-icon-size)] me-0",

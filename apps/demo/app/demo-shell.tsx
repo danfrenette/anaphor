@@ -68,9 +68,18 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "dropdown-menu", label: "Dropdown menu", href: "/#dropdown-menu", icon: ListDashes },
     ],
   },
+  {
+    label: "Studies",
+    items: [
+      { id: "studies", label: "Overview", href: "/studies", icon: Palette },
+      { id: "signal", label: "Signal", href: "/studies/signal", icon: ShareNetwork },
+      { id: "field-notes", label: "Field Notes", href: "/studies/field-notes", icon: TextAa },
+    ],
+  },
 ];
 
 function DemoSidebar() {
+  const pathname = usePathname();
   const { activeId } = useContentSections();
   const { setMobileOpen } = useSidebar();
   const closeMobile = () => setMobileOpen(false, true);
@@ -100,7 +109,7 @@ function DemoSidebar() {
               <SidebarMenu>
                 {group.items.map(({ id, label, href, icon: ItemIcon }) => (
                   <SidebarMenuItem key={id}>
-                    <SidebarMenuButton isActive={id === activeId} render={<Link href={href} onNavigate={closeMobile} />}>
+                    <SidebarMenuButton isActive={pathname === "/" ? id === activeId : pathname === href} render={<Link href={href} onNavigate={closeMobile} />}>
                       <ItemIcon aria-hidden="true" /><span>{label}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -129,7 +138,7 @@ export function DemoShell({ children }: { children: ReactNode }) {
             <SidebarTrigger target="mobile" className="md:hidden" />
             <SidebarTrigger target="desktop" className="hidden md:grid" />
             <span className="h-4 w-px bg-border" />
-            <p className="flex items-center gap-2 text-small"><span className="text-muted-foreground">Library</span><b className="font-normal text-border">/</b><strong className="font-medium">Components</strong></p>
+            <p className="flex items-center gap-2 text-small"><span className="text-muted-foreground">{pathname.startsWith("/studies") ? "Studies" : "Library"}</span><b className="font-normal text-border">/</b><strong className="font-medium">{pathname === "/studies/signal" ? "Signal" : pathname === "/studies/field-notes" ? "Field Notes" : pathname === "/studies" ? "Overview" : "Components"}</strong></p>
           </header>
           {children}
         </SidebarInset>

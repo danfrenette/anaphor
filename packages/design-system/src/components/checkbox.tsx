@@ -17,7 +17,7 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
       <CheckboxPrimitive.Indicator
         keepMounted
         data-slot="checkbox-indicator"
-        className="absolute -inset-0.5 flex items-center justify-center rounded-[6px] bg-primary text-[var(--anaphor-checkbox-mark)] data-disabled:bg-[var(--anaphor-input-disabled)] data-disabled:text-muted-foreground data-invalid:inset-ring-2 data-invalid:inset-ring-danger-foreground data-unchecked:opacity-0 motion-safe:transition-opacity motion-safe:duration-150 motion-safe:data-checked:animate-[anaphor-checkbox-enter_150ms_cubic-bezier(0.4,0,0.2,1)] motion-safe:data-indeterminate:animate-[anaphor-checkbox-enter_150ms_cubic-bezier(0.4,0,0.2,1)] forced-colors:bg-[Highlight] forced-colors:text-[HighlightText]"
+        className="absolute -inset-0.5 flex items-center justify-center rounded-[6px] bg-primary text-[var(--anaphor-checkbox-mark)] data-disabled:bg-[var(--anaphor-input-disabled)] data-disabled:text-muted-foreground data-invalid:inset-ring-2 data-invalid:inset-ring-danger-foreground data-unchecked:opacity-0 forced-colors:bg-[Highlight] forced-colors:text-[HighlightText]"
         render={(indicatorProps, state) => (
           <span {...indicatorProps}>
             {state.indeterminate ? <MinusIcon size={16} weight="bold" aria-hidden="true" /> : <CheckIcon size={16} weight="bold" aria-hidden="true" />}

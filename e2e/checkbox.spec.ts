@@ -47,38 +47,34 @@ test("checkbox controls reset and both themes are accessible", async ({ page }) 
   expect(await checkbox.locator("..").evaluate((element) => element.getBoundingClientRect().height)).toBeGreaterThanOrEqual(32);
 });
 
-test("selection animates at a fixed size and reduced motion settles immediately", async ({ page }) => {
+test("selection is immediate and fixed-size for pointer, keyboard, and reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#checkbox");
   const checkbox = page.getByRole("checkbox", { name: "Keep me updated" });
   await checkbox.scrollIntoViewIfNeeded();
-  // Pause before selection so a busy browser cannot skip the 150ms animation.
-  const pausedMotion = await page.addStyleTag({ content: '[data-slot="checkbox-indicator"] { animation-play-state: paused !important; }' });
   await checkbox.check();
   const indicator = checkbox.locator('[data-slot="checkbox-indicator"]');
-  await expect(indicator).toHaveCSS("animation-name", "anaphor-checkbox-enter");
-  await expect(indicator).toHaveCSS("animation-duration", "0.15s");
-  const frames = await indicator.evaluate((element) => {
-    const animation = element.getAnimations().find((entry) => entry instanceof CSSAnimation && entry.animationName === "anaphor-checkbox-enter");
-    if (!animation) throw new Error("Missing checkbox selection animation");
-    return [0, 75, 149].map((time) => {
-      animation.currentTime = time;
-      return {
-        scale: parseFloat(getComputedStyle(element).scale),
-        width: element.parentElement!.getBoundingClientRect().width,
-      };
-    });
-  });
-  expect(frames.some(({ scale }) => scale > 0 && scale < 1)).toBe(true);
-  expect(frames.every(({ width }) => width === 20)).toBe(true);
-  await pausedMotion.evaluate((element) => element.parentNode?.removeChild(element));
-  await checkbox.uncheck();
-  await expect(checkbox.locator('[data-slot="checkbox-indicator"]')).toHaveCSS("opacity", "0");
+  await expect(indicator).toHaveCSS("animation-name", "none");
+  await expect(indicator).toHaveCSS("transition-duration", "0s");
+  await expect(indicator).toHaveCSS("opacity", "1");
+  expect(await checkbox.evaluate(element => element.getBoundingClientRect().width)).toBe(20);
+  await checkbox.focus();
+  await checkbox.press("Space");
+  await expect(indicator).toHaveCSS("opacity", "0");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await checkbox.check();
   await expect(indicator).toHaveCSS("transition-duration", "0s");
   await expect(indicator).toHaveCSS("animation-name", "none");
   await expect(indicator).toHaveCSS("opacity", "1");
+});
+
+test("the gap between checkbox and label is clickable", async ({ page }) => {
+  await page.goto("/#checkbox");
+  const checkbox = page.getByRole("checkbox", { name: "Keep me updated" });
+  await checkbox.scrollIntoViewIfNeeded();
+  const box = (await checkbox.boundingBox())!;
+  await page.mouse.click(box.x + box.width + 6, box.y + box.height / 2);
+  await expect(checkbox).toBeChecked();
 });
 
 test("checkbox marks and boundaries meet non-text contrast in both themes", async ({ page }) => {

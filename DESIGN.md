@@ -33,7 +33,7 @@ Disabled controls use `input-disabled` with `font-tertiary` for intentionally
 subdued contrast. Loading independently blocks activation, preserves focus and
 action color, and reveals a spinner while retaining the label. Combining loading
 and disabled shows the spinner with the neutral disabled treatment. Spinner entry
-and exit animate over 200ms; text buttons animate the space for the spinner,
+and exit fade over 200ms; text buttons allocate space for the spinner immediately,
 while icon-only buttons crossfade without resizing. Reduced motion skips both
 the transition and spinner rotation.
 
@@ -186,8 +186,8 @@ invalid fields use danger feedback. Read-only values remain selectable.
 Validation is calm and corrective: show errors on blur or submit, clear them
 on the first edit, and wait for the next blur or submit before showing another.
 The field stays stationary. Helper and error messages share reserved space,
-wrap naturally, and transition with a 160ms fade and 2px movement; the Phosphor
-status icon enters with a restrained scale change. Reduced motion skips travel.
+wrap naturally, and switch immediately without translation or scaling. The status
+icon changes in place. Repeated editing never queues a feedback animation.
 Ordinary valid values return to neutral rather than showing a success badge.
 
 This combines coss's small Base UI wrapper structure with Devouring Details'
@@ -255,3 +255,26 @@ CardTitle's label variant owns categorical labels: Inter medium, label sizing,
 uppercase tracking, and muted color. Consumers select the variant rather than
 assembling typography utility overrides. Semantic element selection preserves
 Text's purpose-defined weight and wrapping.
+
+## Studies
+
+Studies are complete application contexts, not additional themes or registry
+components. `/studies/signal` uses the existing palette, typography, controls,
+and radii for a dense compute dashboard. `/studies/field-notes` uses those same
+foundations for a quiet, narrow-column article. Study-specific charts and layouts
+remain in the demo until more than one consumer establishes a shared contract.
+
+Signal's data is explicitly fictional. Its bounded shader is decorative, never
+an encoding of telemetry, and stops when paused, offscreen, the document is hidden,
+or reduced motion is requested. A static field remains when WebGL is unavailable.
+The article's interactive figure is immediate and works with a keyboard.
+
+Everyday control feedback is immediate: checkbox marks do not animate.
+Desktop sidebar geometry changes immediately;
+the mobile panel retains its transform transition. Scrollable content has no
+edge mask. Horizontal field labels include the gap next to their control in
+their hit area. Menu elevation uses `--anaphor-shadow-menu`; dark surfaces use
+a subtle light keyline and stronger neutral shadows.
+
+The documented MorphSurface and section-navigation timing exceptions remain
+unchanged. These are deliberate examples, not defaults for application controls.
