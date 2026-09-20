@@ -11,6 +11,7 @@ export { Checkbox, CheckboxPrimitive } from "./components/checkbox";
 export { Badge, type BadgeProps } from "./components/badge";
 export { Kbd, KbdGroup } from "./components/kbd";
 export { Menu, MenuGroup, MenuGroupLabel, MenuItem, MenuPopup, MenuPortal, MenuSeparator, MenuShortcut, MenuTrigger, type MenuGroupLabelProps, type MenuItemProps, type MenuPopupProps } from "./components/menu";
+export { Tabs, TabsList, TabsPanel, TabsPrimitive, TabsTab, type TabsListProps, type TabsPanelProps, type TabsProps, type TabsTabProps } from "./components/tabs";
 export { Sidebar, SidebarClose, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail, SidebarTrigger, useSidebar, type SidebarMenuButtonProps, type SidebarProviderProps, type SidebarTriggerProps } from "./components/sidebar";
 
 export { Text, type TextProps, type TextVariant } from "./components/text";

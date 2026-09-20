@@ -5,7 +5,7 @@ export function CommandPaletteDemo() {
   return (
     <Section id="command-palette" className="border-t border-border py-12">
       <header>
-        <Text as="p" variant="label" className="text-muted-foreground">02.06 / Control</Text>
+        <Text as="p" variant="label" className="text-muted-foreground">02.07 / Control</Text>
         <Text as="h2" variant="title" className="mt-8">Command palette</Text>
         <Text as="p" variant="description" className="mt-3">Find an action, run it, and get back to work.</Text>
       </header>

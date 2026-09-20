@@ -9,6 +9,7 @@ import { InputDemo } from "./input-demo";
 import { CommandPaletteDemo } from "./command-palette-demo";
 import { DropdownMenuDemo } from "./dropdown-menu-demo";
 import { KbdDemo } from "./kbd-demo";
+import { TabsDemo } from "./tabs-demo";
 
 const neutralRoles = [
   ["Font / tertiary", "--anaphor-font-tertiary"],
@@ -263,6 +264,7 @@ export default function HomePage() {
             <CheckboxDemo />
             <DropdownMenuDemo />
             <KbdDemo />
+            <TabsDemo />
             <CommandPaletteDemo />
           </PlaygroundHost>
         </article>

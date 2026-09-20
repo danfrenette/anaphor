@@ -271,6 +271,20 @@
   background: transparent;
 }
 
+[data-slot="tabs-indicator"] {
+  clip-path: inset(
+    var(--active-tab-top)
+    var(--active-tab-right)
+    var(--active-tab-bottom)
+    var(--active-tab-left)
+    round calc(var(--radius-control) - var(--spacing))
+  );
+}
+
+[data-tabs-input="pointer"] [data-slot="tabs-indicator"] {
+  transition: clip-path var(--anaphor-motion-duration-standard) var(--anaphor-ease-in-out);
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-slot="menu-popup"] {
     transition: opacity 200ms var(--anaphor-ease-out);
@@ -290,5 +304,9 @@
 
   [data-stable-anchor]:active:not([data-disabled]) [data-slot="button-content"] {
     transform: none;
+  }
+
+  [data-tabs-input] [data-slot="tabs-indicator"] {
+    transition: none;
   }
 }
