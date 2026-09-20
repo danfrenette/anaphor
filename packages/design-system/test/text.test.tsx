@@ -21,3 +21,12 @@ test("card labels preserve the requested document heading level", () => {
   render(<CardTitle as="h2" variant="label">States</CardTitle>);
   expect(screen.getByRole("heading", { name: "States", level: 2 })).toBeVisible();
 });
+
+test("section titles own uppercase presentation without changing content or semantics", () => {
+  const ref = createRef<HTMLHeadingElement>();
+  render(<Text as="h2" variant="section" ref={ref}>Keep the details intact</Text>);
+  const heading = screen.getByRole("heading", { level: 2, name: "Keep the details intact" });
+  expect(heading).toHaveTextContent("Keep the details intact");
+  expect(heading).toHaveClass("uppercase", "font-heading", "tracking-normal");
+  expect(ref.current).toBe(heading);
+});
