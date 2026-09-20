@@ -16,9 +16,11 @@
         "danfrenette/anaphor/card",
         "danfrenette/anaphor/card-copy-button",
         "danfrenette/anaphor/checkbox",
+        "danfrenette/anaphor/command-palette",
         "danfrenette/anaphor/field",
         "danfrenette/anaphor/field-feedback",
         "danfrenette/anaphor/input",
+        "danfrenette/anaphor/kbd",
         "danfrenette/anaphor/menu",
         "danfrenette/anaphor/sidebar",
         "danfrenette/anaphor/morph-surface",
@@ -275,6 +277,18 @@
       ]
     },
     {
+      "name": "kbd",
+      "type": "registry:ui",
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/kbd.tsx",
+          "type": "registry:ui",
+          "target": "@ui/kbd.tsx"
+        }
+      ]
+    },
+    {
       "name": "shortcut",
       "type": "registry:hook",
       "dependencies": [
@@ -307,6 +321,28 @@
           "path": "packages/design-system/src/lib/use-animated-scroll.ts",
           "type": "registry:hook",
           "target": "@components/lib/use-animated-scroll.ts"
+        }
+      ]
+    },
+    {
+      "name": "command-palette",
+      "type": "registry:ui",
+      "dependencies": [
+        "@base-ui/react",
+        "@phosphor-icons/react",
+        "motion"
+      ],
+      "registryDependencies": [
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/button",
+        "danfrenette/anaphor/text",
+        "danfrenette/anaphor/motion-utils"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/command-palette.tsx",
+          "type": "registry:ui",
+          "target": "@ui/command-palette.tsx"
         }
       ]
     }

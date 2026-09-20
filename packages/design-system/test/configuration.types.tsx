@@ -1,4 +1,4 @@
-import { AdaptiveSurfaceTrigger, Button, SidebarProvider, type ButtonProps, type SidebarProviderProps } from "@anaphor/system";
+import { AdaptiveSurfaceTrigger, Button, CommandPalette, SidebarProvider, type ButtonProps, type SidebarProviderProps } from "@anaphor/system";
 
 const button = {
   iconOnly: false,
@@ -49,3 +49,18 @@ const sidebar = {
 <AdaptiveSurfaceTrigger render={<button type="button" />} />;
 // @ts-expect-error Stateful render callbacks cannot be honored by both adaptive modes.
 <AdaptiveSurfaceTrigger render={(props, state) => <button {...props} data-open={state.open} />} />;
+
+const commands = [
+  { id: "about", label: "About", group: "Pages", href: "/about" as const, shortcut: ["G", "A"] as const },
+];
+<CommandPalette
+  open={false}
+  onOpenChange={() => {}}
+  title="Commands"
+  items={commands}
+  onSelect={item => {
+    const href: "/about" = item.href;
+    void href;
+  }}
+  renderTrailing={item => <span>{item.shortcut.join(" ")}</span>}
+/>;

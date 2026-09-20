@@ -9,6 +9,7 @@ test-results
 .env*
 !.env.example
 .playwright-cli
+.pnpm-store/
 
 # Downloaded reference material. Keep local and out of distributable source.
 /examples/

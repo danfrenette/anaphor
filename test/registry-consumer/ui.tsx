@@ -4,10 +4,12 @@ import { Badge } from "./components/ui/badge";
 import { Button, ButtonLabel } from "./components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
 import { CardCopyButton } from "./components/ui/card-copy-button";
+import { CommandPalette } from "./components/ui/command-palette";
 import { Checkbox } from "./components/ui/checkbox";
 import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel } from "./components/ui/field";
 import { FieldFeedback } from "./components/ui/field-feedback";
 import { Input } from "./components/ui/input";
+import { Kbd, KbdGroup } from "./components/ui/kbd";
 import { MorphSurface } from "./components/ui/morph-surface";
 import { Menu, MenuItem, MenuPopup, MenuTrigger } from "./components/ui/menu";
 import { ContentSections, Section } from "./components/ui/sections";
@@ -17,6 +19,7 @@ import { Prose } from "./components/ui/prose";
 import "./styles.css";
 
 function Consumer() {
+  const [commandOpen, setCommandOpen] = useState(false);
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
   return <main className="p-6 font-sans">
@@ -39,6 +42,9 @@ function Consumer() {
           <MenuTrigger render={<Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="neutral" variant="outline" />}><ButtonLabel>Registry menu</ButtonLabel></MenuTrigger>
           <MenuPopup align="center" side="bottom" sideOffset={6}><MenuItem variant="default">Installed action</MenuItem></MenuPopup>
         </Menu>
+        <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="neutral" variant="outline" onClick={() => setCommandOpen(true)}><ButtonLabel>Registry search</ButtonLabel></Button>
+        <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} title="Registry commands" items={[{ id: "count", label: "Increment count", group: "Actions" }]} onSelect={() => setCount(count + 1)}
+          renderTrailing={() => <KbdGroup aria-label="G then I"><Kbd>G</Kbd><Kbd>I</Kbd></KbdGroup>} />
         <p className="font-mono">Installed source</p>
       </CardContent>
     </Card>

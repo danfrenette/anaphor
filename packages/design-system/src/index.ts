@@ -9,6 +9,7 @@ export { FieldFeedback, type FieldFeedbackProps } from "./components/field-feedb
 export { Field, FieldContent, FieldGroup, FieldLabel, FieldDescription, FieldError, type FieldProps } from "./components/field";
 export { Checkbox, CheckboxPrimitive } from "./components/checkbox";
 export { Badge, type BadgeProps } from "./components/badge";
+export { Kbd, KbdGroup } from "./components/kbd";
 export { Menu, MenuGroup, MenuGroupLabel, MenuItem, MenuPopup, MenuPortal, MenuSeparator, MenuShortcut, MenuTrigger, type MenuGroupLabelProps, type MenuItemProps, type MenuPopupProps } from "./components/menu";
 export { Sidebar, SidebarClose, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail, SidebarTrigger, useSidebar, type SidebarMenuButtonProps, type SidebarProviderProps, type SidebarTriggerProps } from "./components/sidebar";
 
@@ -19,3 +20,5 @@ export { ContentSections, Section, useContentSections } from "./components/secti
 export type { ContentSectionsProps, SectionProps, SectionBindings } from "./components/sections";
 export { useShortcut } from "./lib/shortcut";
 export type { ShortcutBinding, ShortcutOptions } from "./lib/shortcut";
+
+export { CommandPalette, type CommandPaletteItem, type CommandPaletteProps } from "./components/command-palette";

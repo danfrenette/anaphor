@@ -6,7 +6,9 @@ import { NodeEdgeDemo } from "./node-edge-demo";
 import { CardDemo } from "./card-demo";
 import { CheckboxDemo } from "./checkbox-demo";
 import { InputDemo } from "./input-demo";
+import { CommandPaletteDemo } from "./command-palette-demo";
 import { DropdownMenuDemo } from "./dropdown-menu-demo";
+import { KbdDemo } from "./kbd-demo";
 
 const neutralRoles = [
   ["Font / tertiary", "--anaphor-font-tertiary"],
@@ -260,6 +262,8 @@ export default function HomePage() {
             <InputDemo />
             <CheckboxDemo />
             <DropdownMenuDemo />
+            <KbdDemo />
+            <CommandPaletteDemo />
           </PlaygroundHost>
         </article>
     </main>

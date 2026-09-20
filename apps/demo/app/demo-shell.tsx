@@ -1,6 +1,11 @@
 "use client";
 
 import {
+  CommandPalette,
+  Kbd,
+  KbdGroup,
+  Text,
+  useShortcut,
   ContentSections,
   useContentSections,
   Button,
@@ -22,14 +27,13 @@ import {
   useSidebar,
 } from "@anaphor/system";
 import {
-  CaretRight,
   CheckSquare,
   CursorClick,
   House,
+  Keyboard,
   ListDashes,
   MagnifyingGlass,
   Palette,
-  Plus,
   Rectangle,
   ShareNetwork,
   SlidersHorizontal,
@@ -40,8 +44,8 @@ import {
 } from "@phosphor-icons/react";
 import type { Route } from "next";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, type ReactNode } from "react";
 
 type NavItem = { id: string; label: string; href: Route; icon: Icon };
 
@@ -66,6 +70,8 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "input", label: "Input", href: "/#input", icon: Textbox },
       { id: "checkbox", label: "Checkbox", href: "/#checkbox", icon: CheckSquare },
       { id: "dropdown-menu", label: "Dropdown menu", href: "/#dropdown-menu", icon: ListDashes },
+      { id: "kbd", label: "Kbd", href: "/#kbd", icon: Keyboard },
+      { id: "command-palette", label: "Command palette", href: "/#command-palette", icon: MagnifyingGlass },
     ],
   },
   {
@@ -78,7 +84,7 @@ const groups: { label: string; items: NavItem[] }[] = [
   },
 ];
 
-function DemoSidebar() {
+function DemoSidebar({ onSearch }: { onSearch: () => void }) {
   const pathname = usePathname();
   const { activeId } = useContentSections();
   const { setMobileOpen } = useSidebar();
@@ -86,18 +92,20 @@ function DemoSidebar() {
 
   return (
     <Sidebar aria-label="Component manual navigation">
-      <SidebarHeader>
-        <SidebarClose className="absolute end-3 top-3" />
-        <Link href="/" onNavigate={closeMobile} className="grid min-h-11 grid-cols-[var(--spacing-7)_minmax(0,1fr)_var(--spacing-4)] items-center gap-2 rounded-md px-2 text-foreground no-underline hover:bg-background">
-          <span className="grid size-7 place-items-center rounded-sm bg-foreground font-heading text-body text-background">a</span>
-          <span className="min-w-0"><strong className="block text-small leading-tight">Anaphor</strong><small className="block text-label text-muted-foreground">Component manual</small></span>
-          <CaretRight className="size-4 text-muted-foreground" aria-hidden="true" />
-        </Link>
-        <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="sm" variant="ghost" tone="neutral" className="mt-1 w-full justify-start text-muted-foreground">
-          <MagnifyingGlass aria-hidden="true" /><ButtonLabel>Search components</ButtonLabel><kbd className="ms-auto font-mono text-label">⌘K</kbd>
-        </Button>
-        <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="sm" variant="ghost" tone="neutral" className="w-full justify-start text-muted-foreground">
-          <Plus aria-hidden="true" /><ButtonLabel>New component</ButtonLabel>
+      <SidebarHeader className="gap-3">
+        <div className="flex min-h-11 items-center gap-2">
+          <Link href="/" onNavigate={closeMobile} aria-label="Anaphor home" className="flex min-w-0 flex-1 items-center gap-3 rounded-md px-2 text-foreground no-underline">
+            <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-sm bg-foreground font-heading text-heading text-background">a</span>
+            <span className="min-w-0">
+              <Text as="span" variant="subheading" className="block">Anaphor</Text>
+              <Text as="span" variant="caption" className="block">Reference manual</Text>
+            </span>
+          </Link>
+          <SidebarClose className="shrink-0" />
+        </div>
+        <Button onClick={onSearch} aria-haspopup="dialog" iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" variant="outline" tone="neutral" className="w-full justify-start [&>[data-slot=button-content]]:w-full">
+          <MagnifyingGlass aria-hidden="true" /><ButtonLabel>Search manual</ButtonLabel>
+          <KbdGroup aria-label="Command or Control K" className="ms-auto"><Kbd>Mod</Kbd><Kbd>K</Kbd></KbdGroup>
         </Button>
       </SidebarHeader>
 
@@ -126,13 +134,26 @@ function DemoSidebar() {
   );
 }
 
+function ManualNavigation() {
+  const [open, setOpen] = useState(false);
+  const { setMobileOpen } = useSidebar();
+  const router = useRouter();
+  useShortcut("Mod+K", () => setOpen(true), { allowInInputs: true });
+  return <>
+    <DemoSidebar onSearch={() => setOpen(true)} />
+    <CommandPalette open={open} onOpenChange={setOpen} title="Search the manual" placeholder="Find a component or foundation…"
+      items={groups.flatMap(group => group.items.map(item => ({ ...item, group: group.label, icon: <item.icon aria-hidden="true" /> })))}
+      onSelect={item => { setMobileOpen(false, true); router.push(item.href); }} />
+  </>;
+}
+
 export function DemoShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   return (
     <ContentSections defaultScope enabled={pathname === "/"} className="contents [--manual-header-height:calc(var(--spacing)*14)] [--anaphor-section-offset:calc(var(--manual-header-height)+var(--spacing)*8)]">
       <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false}>
         <a href="#content" className="fixed start-3 top-3 z-[var(--anaphor-z-a11y)] -translate-y-[200%] bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0">Skip to content</a>
-        <DemoSidebar />
+        <ManualNavigation />
         <SidebarInset>
           <header className="sticky top-0 z-[var(--anaphor-z-navigation)] flex h-[var(--manual-header-height)] items-center gap-3 border-b border-border bg-[color-mix(in_oklch,var(--anaphor-background)_88%,transparent)] px-4 backdrop-blur-md">
             <SidebarTrigger target="mobile" className="md:hidden" />

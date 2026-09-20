@@ -256,6 +256,30 @@ uppercase tracking, and muted color. Consumers select the variant rather than
 assembling typography utility overrides. Semantic element selection preserves
 Text's purpose-defined weight and wrapping.
 
+## Command palette
+
+The manual header groups its mark, name, and quiet subtitle into one identity
+row, with a separate full-width search trigger. Command palettes follow a stable
+top anchor with an independently scrolling result list. Text roles own the
+heading, group labels, item labels, and hints; search text remains 16px. Shared
+pointer highlights are instant by default. `animateHighlight` opts into travel
+within groups; keyboard updates are always immediate, and
+reduced motion removes travel. The controlled package component delegates
+focus, keyboard navigation, and modal dismissal to Base UI. The reference and
+API rationale live in docs/components/command-palette.md.
+
+Command rows may render compact consumer-owned content at their inline end.
+The rail is presentational, remains stable while selection changes, and never
+owns shortcut registration. Long labels truncate before the rail. The palette
+keeps its footer-level Enter instruction but does not hardcode a per-row
+affordance.
+
+Kbd keycaps use Magda Clean Mono at its available regular weight, compact 20px
+geometry on the 4px rhythm, and a quiet background with a fine inset keyline and
+restrained bottom edge. `KbdGroup` composes keys without interpreting whether
+they form a chord or sequence. Platform formatting and shortcut behavior remain
+consumer concerns.
+
 ## Studies
 
 Studies are complete application contexts, not additional themes or registry
@@ -269,8 +293,8 @@ an encoding of telemetry, and stops when paused, offscreen, the document is hidd
 or reduced motion is requested. A static field remains when WebGL is unavailable.
 The article's interactive figure is immediate and works with a keyboard.
 
-Everyday control feedback is immediate: checkbox marks do not animate.
-Desktop sidebar geometry changes immediately;
+Everyday control feedback is immediate: checkbox marks and command palette
+opening/closing do not animate. Desktop sidebar geometry changes immediately;
 the mobile panel retains its transform transition. Scrollable content has no
 edge mask. Horizontal field labels include the gap next to their control in
 their hit area. Menu elevation uses `--anaphor-shadow-menu`; dark surfaces use
