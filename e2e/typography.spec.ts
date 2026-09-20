@@ -9,7 +9,8 @@ test("headings load Bell Gothic and article text keeps a single 90% alpha", asyn
   expect(await page.evaluate(() => [...document.fonts].some(font => font.family.replaceAll('"', '') === "Bell Gothic Black" && font.status === "loaded"))).toBe(true);
 
   for (const theme of ["light", "dark"]) {
-    const prose = page.locator(`[data-slot="prose"][aria-label="${theme} article example"]`);
+    await page.locator("html").evaluate((element, dark) => element.classList.toggle("dark", dark), theme === "dark");
+    const prose = page.locator('[data-slot="prose"][aria-label="Article example"]');
     const result = await prose.evaluate(element => {
       const root = getComputedStyle(element);
       return {

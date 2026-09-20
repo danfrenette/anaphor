@@ -10,9 +10,8 @@ export function BadgeDemo() {
       <Text as="p" variant="body" className="mt-3">A small label for a category, count, or status. Badges describe; buttons act.</Text>
     </header>
     <div className="mt-8"><BadgePlayground /></div>
-    <div className="mt-6 grid gap-6 md:grid-cols-2">
-    {[false, true].map(dark => <Card variant="default" key={String(dark)} className={dark ? "dark" : undefined}>
-      <CardHeader><CardTitle as="h3" variant="label">{dark ? "Dark" : "Light"} / Sizes and surfaces</CardTitle></CardHeader>
+    <Card variant="default" className="mt-6">
+      <CardHeader><CardTitle as="h3" variant="label">Sizes and surfaces</CardTitle></CardHeader>
       <CardContent className="grid gap-5">
         {(["sm", "md", "lg"] as const).map(size => <div key={size} className="flex flex-wrap items-center gap-3 rounded-md bg-background p-3">
           <Badge shape="square" size={size} variant="solid">Published</Badge>
@@ -20,7 +19,6 @@ export function BadgeDemo() {
           <Badge size={size} variant="outline" shape="round"><Tag aria-hidden="true" />Study 01</Badge>
         </div>)}
       </CardContent>
-    </Card>)}
-    </div>
+    </Card>
   </Section>;
 }

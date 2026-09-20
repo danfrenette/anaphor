@@ -25,7 +25,6 @@ function TrafficChart({ hours }: { hours: number }) {
 }
 
 export default function Signal() {
-  const [dark, setDark] = useState(true);
   const [paused, setPaused] = useState(false);
   const [hours, setHours] = useState(24);
   const [status, setStatus] = useState("All workloads");
@@ -38,8 +37,8 @@ export default function Signal() {
     const link = document.createElement("a"); link.href = url; link.download = "signal-workloads.csv"; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  return <main id="content" tabIndex={-1} className={`signal-study ${dark ? "dark" : ""}`}>
-    <header className="signal-header"><div className="signal-wordmark"><span className="signal-mark" aria-hidden="true">⌁</span> Signal <span className="study-eyebrow">Compute observatory</span></div><Button {...buttonProps} onClick={() => setDark(!dark)}><ButtonLabel>{dark ? "Light mode" : "Dark mode"}</ButtonLabel></Button></header>
+  return <main id="content" tabIndex={-1} className="signal-study">
+    <header className="signal-header"><div className="signal-wordmark"><span className="signal-mark" aria-hidden="true">⌁</span> Signal <span className="study-eyebrow">Compute observatory</span></div></header>
     <div className="signal-title-row"><div><p className="study-eyebrow">Workspace / Personal</p><h1>Overview</h1><p className="study-muted">Your workloads, at a glance.</p></div><div className="signal-title-actions"><span className="sample-label">Sample data · Sep 16</span><Button {...buttonProps} onClick={exportRows}><ButtonLabel>Export CSV ↓</ButtonLabel></Button></div></div>
     <section className="signal-summary" aria-label="Workspace metrics">
       <div className="signal-metric"><span className="study-eyebrow">Requests / min</span><strong>24,816</strong><span className="study-muted">↑ 12.8% from previous hour</span><div className="mini-bars" aria-hidden="true">{series.slice(-24).map((n,i) => <i key={i} style={{ height: `${n}%` }} />)}</div></div>

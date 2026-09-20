@@ -36,10 +36,9 @@ export function CheckboxDemo() {
           <p>State matrix</p>
           <p className="text-muted-foreground">05 states</p>
         </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-        {(["light", "dark"] as const).map((theme) => (
-          <Card variant="default" key={theme} className={theme === "dark" ? "@container dark" : "@container"} role="group" aria-label={`${theme} checkbox states`}>
-            <CardHeader className="p-4 pb-1"><CardTitle as="h3" variant="label">{theme} / States</CardTitle></CardHeader>
+        <div className="mt-4">
+          <Card variant="default" className="@container" role="group" aria-label="Checkbox states">
+            <CardHeader className="p-4 pb-1"><CardTitle as="h3" variant="label">States</CardTitle></CardHeader>
             <CardContent className="grid gap-x-4 p-5 @min-[18rem]:grid-cols-2">
               <Field orientation="horizontal"><Checkbox /><FieldLabel>Unchecked</FieldLabel></Field>
               <Field orientation="horizontal"><Checkbox defaultChecked /><FieldLabel>Checked</FieldLabel></Field>
@@ -48,7 +47,6 @@ export function CheckboxDemo() {
               <Field orientation="horizontal" disabled><Checkbox defaultChecked /><FieldLabel>Unavailable</FieldLabel></Field>
             </CardContent>
           </Card>
-        ))}
         </div>
       </div>
     </Section>

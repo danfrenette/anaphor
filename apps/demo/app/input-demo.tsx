@@ -21,17 +21,15 @@ export function InputDemo() {
         <CardHeader><CardTitle as="h3" variant="heading">Input with an action</CardTitle></CardHeader>
         <CardContent><InputSearchExample /></CardContent>
       </Card>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        {(["light", "dark"] as const).map((theme) => (
-          <Card variant="default" key={theme} className={theme === "dark" ? "dark" : undefined}>
-            <CardHeader><CardTitle as="h3" variant="label">{theme} / States</CardTitle></CardHeader>
-            <CardContent className="grid gap-5">
-              <Field orientation="vertical"><FieldLabel>Project name</FieldLabel><Input size="md" placeholder="Untitled project" /></Field>
-              <Field orientation="vertical"><FieldLabel>Workspace ID</FieldLabel><Input size="md" readOnly defaultValue="workspace-001" /></Field>
-              <Field orientation="vertical" disabled><FieldLabel>Unavailable</FieldLabel><Input size="md" placeholder="Not available" /></Field>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="mt-6">
+        <Card variant="default">
+          <CardHeader><CardTitle as="h3" variant="label">States</CardTitle></CardHeader>
+          <CardContent className="grid gap-5">
+            <Field orientation="vertical"><FieldLabel>Project name</FieldLabel><Input size="md" placeholder="Untitled project" /></Field>
+            <Field orientation="vertical"><FieldLabel>Workspace ID</FieldLabel><Input size="md" readOnly defaultValue="workspace-001" /></Field>
+            <Field orientation="vertical" disabled><FieldLabel>Unavailable</FieldLabel><Input size="md" placeholder="Not available" /></Field>
+          </CardContent>
+        </Card>
       </div>
     </Section>
   );

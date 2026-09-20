@@ -227,7 +227,7 @@ export function NodeEdgeDemo() {
 
 export function NotebookExample() {
   return (
-      <div className="dark overflow-hidden rounded-card border border-border bg-background text-foreground">
+      <div className="overflow-hidden rounded-card border border-border bg-background text-foreground">
         <div className="flex flex-wrap justify-between gap-3 border-b border-border px-6 py-5 text-small">
           <span>A connected notebook</span><span>Choose a capture source to follow its path</span>
         </div>

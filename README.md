@@ -314,3 +314,47 @@ Stable IDs support incoming hash links and normal contents links. Passive scroll
 and keyboard navigation do not rewrite the URL or add history entries. Shortcut
 hints, help interfaces, and remapping controls belong to the consumer. Local widget
 Escape and arrow behavior remains owned by its accessible component.
+
+## Themes and the persistent surface
+
+Install theming on its own, or use the full `ui` install:
+
+```sh
+pnpm dlx shadcn@latest add danfrenette/anaphor/theme
+```
+
+```tsx
+import { ThemeProvider, ThemeToggle } from "@/components/ui/theme";
+
+<ThemeProvider>
+  <ThemeToggle />
+  {children}
+</ThemeProvider>
+```
+
+For server-rendered apps, add `suppressHydrationWarning` to the root `<html>`.
+The provider follows the system initially, stores explicit choices under
+`anaphor-theme`, and synchronizes them across tabs. It accepts next-themes
+provider options (including `nonce` for CSP). `useTheme()` exposes the theme
+state, `setTheme("system")`, and `toggleTheme(element)` for custom controls.
+ThemeToggle reveals the new theme from the button using a 350ms circular clip path
+with ease-in-out timing;
+unsupported browsers, keyboard activation, and reduced-motion users get an immediate
+change. Color transitions are disabled during theme changes.
+
+`MorphSurface` is a nonmodal, persistent surface on both desktop and mobile.
+Pass `bar={({ panelId }) => ...}` to compose its resting actions; associate
+expansion buttons with that panel ID using `aria-controls` and `aria-expanded`.
+Control `open`, set `viewKey` when content changes, and use `wide` for code.
+The surface measures content and animates its height, keeps its bar available,
+and respects reduced motion. Set `animate={false}` for keyboard interactions and
+`focusOnOpen={false}` when tabs should retain focus. Escape and its close action restore trigger focus;
+an outside press closes without stealing focus. It does not trap focus or
+block page scrolling.
+
+The manual pairs a direct Theme action with Controls and Code tabs. The tabs share
+the system indicator and hover treatment; keyboard focus and selection are immediate.
+Controls follow the section
+in view, stay pinned while a control has focus or a pointer is held, and become
+unavailable outside configurable sections. Code shows minimal installation and
+usage examples, with horizontally scrollable text and separate copy buttons.

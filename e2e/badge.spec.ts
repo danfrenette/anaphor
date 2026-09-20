@@ -12,7 +12,7 @@ test("badges remain readable in both themes and controls reset", async ({ page }
   await page.locator("#badge").evaluate(element => element.scrollIntoView({ block: "start", behavior: "instant" }));
   await expect(page.locator("#badge")).toHaveScreenshot("badge.png");
   await screenshotStyle.evaluate(element => element.parentNode?.removeChild(element));
-  await page.getByRole("button", { name: "Open Badge controls" }).click();
+  await page.getByRole("tab", { name: "Open Badge controls" }).click();
   await page.getByRole("combobox", { name: "Variant", exact: true }).selectOption("outline");
   await page.getByRole("checkbox", { name: "Icon", exact: true }).check();
   await page.getByRole("button", { name: "Reset controls" }).click();

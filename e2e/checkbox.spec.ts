@@ -30,7 +30,7 @@ test("mixed selection becomes checked and follows individual choices", async ({ 
 test("checkbox controls reset and both themes are accessible", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#checkbox");
-  await page.getByRole("button", { name: "Open Checkbox controls" }).click();
+  await page.getByRole("tab", { name: "Open Checkbox controls" }).click();
   const checkbox = page.getByRole("checkbox", { name: "Keep me updated" });
   const panel = page.getByRole("checkbox", { name: "Indeterminate", exact: true });
   await panel.check();
@@ -78,9 +78,11 @@ test("the gap between checkbox and label is clickable", async ({ page }) => {
 });
 
 test("checkbox marks and boundaries meet non-text contrast in both themes", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#checkbox");
   for (const theme of ["light", "dark"]) {
-    const states = page.getByRole("group", { name: `${theme} checkbox states` });
+    await page.locator("html").evaluate((element, dark) => element.classList.toggle("dark", dark), theme === "dark");
+    const states = page.getByRole("group", { name: "Checkbox states" });
     const ratios = await states.evaluate((element) => {
       const canvas = document.createElement("canvas");
       canvas.width = canvas.height = 1;

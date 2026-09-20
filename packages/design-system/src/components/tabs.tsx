@@ -56,6 +56,7 @@ function Tabs({
   className,
   onKeyDownCapture,
   onPointerDownCapture,
+  onPointerMoveCapture,
   orientation = "horizontal",
   ...props
 }: TabsProps): ReactElement {
@@ -83,6 +84,10 @@ function Tabs({
       )}
       onKeyDownCapture={handleKeyDownCapture}
       onPointerDownCapture={handlePointerDownCapture}
+      onPointerMoveCapture={event => {
+        if (event.pointerType === "mouse") setInput("pointer");
+        onPointerMoveCapture?.(event);
+      }}
       {...props}
     />
   );
@@ -147,7 +152,8 @@ function TabsTab({ className, ...props }: TabsTabProps): ReactElement {
       data-slot="tabs-tab"
       className={(state) => cn(
         tabStyles,
-        "z-0 hover:not-data-disabled:text-foreground",
+        "z-0 hover:not-data-disabled:text-foreground hover:not-data-disabled:bg-background/50",
+        "transition-[color,background-color] duration-150 ease-out group-data-[tabs-input=keyboard]/tabs:transition-none motion-reduce:transition-none",
         "focus-visible:z-[2] focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-ring",
         typeof className === "function" ? className(state) : className,
       )}

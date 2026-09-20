@@ -68,17 +68,6 @@ export function CardDemo() {
           </Card>
         </div>
       </div>
-
-      <Card variant="default" className="dark mt-8" aria-labelledby="card-dark-title">
-        <CardHeader>
-          <CardTitle as="h3" variant="label">Theme study / Dark</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CardTitle as="h3" variant="heading" id="card-dark-title">A quieter surface</CardTitle>
-          <CardDescription className="mt-2">The same shape, using the dark theme’s neutral colors.</CardDescription>
-          <p className="mt-4">Content sets the height. Optional sections keep simple cards simple.</p>
-        </CardContent>
-      </Card>
     </Section>
   );
 }

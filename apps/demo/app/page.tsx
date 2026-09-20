@@ -1,5 +1,4 @@
 import { Section, Prose, Text, Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
-import { PlaygroundHost } from "./playground-host";
 import { ButtonDemo } from "./button-demo";
 import { BadgeDemo } from "./badge-demo";
 import { NodeEdgeDemo } from "./node-edge-demo";
@@ -112,18 +111,7 @@ export default function HomePage() {
                 {neutralRoles.map(([label, token]) => (
                   <li key={token}>
                     <Card variant="default">
-                      <div className="grid grid-cols-2">
-                        <div
-                          className="h-14 rounded-tl-card"
-                          style={{ backgroundColor: `var(${token})` }}
-                          title="Light"
-                        />
-                        <div
-                          className="dark h-14 rounded-tr-card"
-                          style={{ backgroundColor: `var(${token})` }}
-                          title="Dark"
-                        />
-                      </div>
+                      <div className="h-14 rounded-t-card" style={{ backgroundColor: `var(${token})` }} />
                       <CardContent>
                         <p className="text-small font-medium">{label}</p>
                         <p className="mt-1 break-words font-mono text-label text-muted-foreground">
@@ -163,38 +151,33 @@ export default function HomePage() {
               </ol>
             </div>
 
-            <div className="mt-8 grid items-start gap-6 sm:grid-cols-2">
-              {["light", "dark"].map((theme) => (
-                <Card variant="default"
-                  key={theme}
-                  className={theme === "dark" ? "dark" : undefined}
-                >
-                  <CardHeader>
-                    <CardTitle as="h3" variant="label">
-                      {theme} roles
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="divide-y divide-border">
-                      {colorRoles.map(([label, token]) => (
-                        <li key={token} className="grid min-h-10 grid-cols-[20px_1fr] items-center gap-3 py-2">
-                          <span
-                            className="size-5 border border-border"
-                            style={{ backgroundColor: `var(${token})` }}
-                            aria-hidden="true"
-                          />
-                          <div className="min-w-0 sm:flex sm:items-baseline sm:justify-between sm:gap-3">
-                            <p className="text-small font-medium">{label}</p>
-                            <p className="break-words font-mono text-label text-muted-foreground">
-                              {token}
-                            </p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="mt-8">
+              <Card variant="default">
+                <CardHeader>
+                  <CardTitle as="h3" variant="label">
+                    Color roles
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="divide-y divide-border">
+                    {colorRoles.map(([label, token]) => (
+                      <li key={token} className="grid min-h-10 grid-cols-[20px_1fr] items-center gap-3 py-2">
+                        <span
+                          className="size-5 border border-border"
+                          style={{ backgroundColor: `var(${token})` }}
+                          aria-hidden="true"
+                        />
+                        <div className="min-w-0 sm:flex sm:items-baseline sm:justify-between sm:gap-3">
+                          <p className="text-small font-medium">{label}</p>
+                          <p className="break-words font-mono text-label text-muted-foreground">
+                            {token}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
             </div>
           </Section>
 
@@ -220,28 +203,26 @@ export default function HomePage() {
               <Text as="p" variant="display" className="mt-4 max-w-[18ch]">A place for deliberate work.</Text>
               <Text as="p" variant="caption" className="mt-4">Headings balance their lines. Body copy keeps a steady reading measure.</Text>
             </div>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2">
-              {["light", "dark"].map((theme) => (
-                <Card variant="default" key={theme} className={theme === "dark" ? "dark" : undefined}>
-                  <CardHeader>
-                    <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">{theme} / Reading</p>
-                    <CardTitle as="h3" variant="heading" className="mt-3">Room to think</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Prose as="div" aria-label={`${theme} article example`}>
-                      <p>Good interfaces leave room for the work. A clear heading establishes the subject; a steady rhythm carries the details. <strong>Emphasis has a purpose.</strong> The rest can feel <em>quiet and considered.</em></p>
-                      <h3>A steady reading rhythm</h3>
-                      <p>Article text shares one reading color, including <a href="#typography">links</a>, lists, and <code>inline code</code>.</p>
-                      <ul><li>Give each idea room.</li><li>Keep nested <strong>emphasis</strong> at the same text opacity.</li></ul>
-                      <blockquote><p>Clear typography lets the writing lead.</p></blockquote>
-                    </Prose>
-                    <div className="mt-6 flex items-baseline justify-between gap-3 border-t border-border pt-4 text-ui">
-                      <Text as="span" variant="ui">Reading progress</Text>
-                      <span className="font-mono tabular-nums">08 / 24</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="mt-8">
+              <Card variant="default">
+                <CardHeader>
+                  <p className="text-label tracking-[0.08em] text-muted-foreground uppercase">Reading</p>
+                  <CardTitle as="h3" variant="heading" className="mt-3">Room to think</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Prose as="div" aria-label="Article example">
+                    <p>Good interfaces leave room for the work. A clear heading establishes the subject; a steady rhythm carries the details. <strong>Emphasis has a purpose.</strong> The rest can feel <em>quiet and considered.</em></p>
+                    <h3>A steady reading rhythm</h3>
+                    <p>Article text shares one reading color, including <a href="#typography">links</a>, lists, and <code>inline code</code>.</p>
+                    <ul><li>Give each idea room.</li><li>Keep nested <strong>emphasis</strong> at the same text opacity.</li></ul>
+                    <blockquote><p>Clear typography lets the writing lead.</p></blockquote>
+                  </Prose>
+                  <div className="mt-6 flex items-baseline justify-between gap-3 border-t border-border pt-4 text-ui">
+                    <Text as="span" variant="ui">Reading progress</Text>
+                    <span className="font-mono tabular-nums">08 / 24</span>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </Section>
 
@@ -255,18 +236,16 @@ export default function HomePage() {
             </Text>
           </Section>
 
-          <PlaygroundHost>
-            <ButtonDemo />
-            <CardDemo />
-            <BadgeDemo />
-            <NodeEdgeDemo />
-            <InputDemo />
-            <CheckboxDemo />
-            <DropdownMenuDemo />
-            <KbdDemo />
-            <TabsDemo />
-            <CommandPaletteDemo />
-          </PlaygroundHost>
+          <ButtonDemo />
+          <CardDemo />
+          <BadgeDemo />
+          <NodeEdgeDemo />
+          <InputDemo />
+          <CheckboxDemo />
+          <DropdownMenuDemo />
+          <KbdDemo />
+          <TabsDemo />
+          <CommandPaletteDemo />
         </article>
     </main>
   );

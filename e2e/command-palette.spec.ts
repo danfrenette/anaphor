@@ -82,7 +82,7 @@ test("palette controls opt into motion and reset to instant highlights", async (
     };
   });
   await page.goto("/#command-palette");
-  await page.getByRole("button", { name: "Open Command palette controls", exact: true }).click();
+  await page.getByRole("tab", { name: "Open Command palette controls", exact: true }).click();
   const animate = page.getByRole("checkbox", { name: "Animate highlight", exact: true });
   const icons = page.getByRole("checkbox", { name: "Show icons", exact: true });
   const shortcuts = page.getByRole("checkbox", { name: "Show shortcuts", exact: true });
@@ -92,6 +92,7 @@ test("palette controls opt into motion and reset to instant highlights", async (
   await animate.check();
   await icons.uncheck();
   const trigger = page.getByRole("button", { name: "Open example palette" });
+  await page.getByRole("button", { name: "Close controls" }).click();
   await trigger.click();
   const dialog = page.getByRole("dialog", { name: "Document commands" });
   await expect(dialog.getByRole("option", { name: /^Rename document/ }).locator('[data-slot="kbd-group"]')).toHaveText("GR");
@@ -114,8 +115,8 @@ test("palette controls opt into motion and reset to instant highlights", async (
   await dialog.getByRole("option", { name: /^Add to favorites/ }).click();
   await expect(page.getByRole("status").filter({ hasText: "Selected: Add to favorites" })).toBeVisible();
   // The nonmodal controls dismiss when the example is opened.
-  const controls = page.getByRole("button", { name: "Open Command palette controls", exact: true });
-  if (await controls.isVisible()) await controls.click();
+  const controls = page.getByRole("tab", { name: "Open Command palette controls", exact: true });
+  if (await controls.getAttribute("aria-expanded") === "false") await controls.click();
   await page.getByRole("button", { name: "Reset controls", exact: true }).click();
   await expect(animate).not.toBeChecked();
   await expect(icons).toBeChecked();

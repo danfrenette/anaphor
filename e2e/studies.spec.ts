@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 test("Signal filters, expands, changes time range, and exports the visible data", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
   await page.goto("/studies/signal");
   await expect(page.getByRole("heading", { name: "Overview", exact: true })).toBeVisible();
   await page.getByLabel("Traffic period").selectOption("6");
@@ -21,7 +22,7 @@ test("Signal filters, expands, changes time range, and exports the visible data"
   await expect(page.getByRole("button", { name: "Play", exact: true })).toHaveAttribute("aria-pressed", "true");
   expect((await new AxeBuilder({ page }).include("#content").analyze()).violations).toEqual([]);
   await page.screenshot({ path: `test-results/signal-${test.info().project.name}-dark.png`, fullPage: true });
-  await page.getByRole("button", { name: "Light mode" }).click();
+  await page.getByRole("button", { name: "Switch to light theme" }).click();
   await page.locator("#content").evaluate(element => Promise.all(element.getAnimations({ subtree: true }).map(animation => animation.finished)));
   expect((await new AxeBuilder({ page }).include("#content").analyze()).violations).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

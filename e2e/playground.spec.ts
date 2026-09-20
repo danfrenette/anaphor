@@ -1,277 +1,280 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { holdAnimations, holdSurfaceTransitions, readAnimationTimings, seekAnimations } from "./animation";
 
-test("playgrounds retain independent settings across panel switches and resets", async ({ page, isMobile }) => {
+declare global {
+  interface Window { anaphorThemeReveal?: Animation }
+}
+
+test("the bar persists, controls follow sections, and settings survive view changes", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/#button");
-  await page.getByRole("button", { name: "Open Button controls" }).click();
-  const visit = async (name: string) => {
-    if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
-    await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name, exact: true }).click();
-    await page.getByRole("button", { name: `Open ${name} controls` }).click();
-  };
-
+  await page.goto("/");
+  const tools = page.getByRole("group", { name: "Manual tools" });
+  await expect(tools).toBeVisible();
+  await expect(tools.getByRole("tab", { name: "Component controls unavailable" })).toBeDisabled();
+  await page.locator("#button").evaluate(element => element.scrollIntoView());
+  await tools.getByRole("tab", { name: "Open Button controls" }).click();
   await page.getByRole("combobox", { name: "Variant", exact: true }).selectOption("destructive");
-  await visit("Card");
-  await page.getByRole("checkbox", { name: "Footer", exact: true }).uncheck();
-  await visit("Input");
-  await page.getByRole("combobox", { name: "Type", exact: true }).selectOption("search");
-  await expect(page.getByRole("searchbox", { name: "Try an input" })).toBeVisible();
-
-  await visit("Button");
+  await tools.getByRole("tab", { name: "Code", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Button code" })).toBeVisible();
+  await tools.getByRole("tab", { name: "Open Button controls" }).click();
   await expect(page.getByRole("combobox", { name: "Variant", exact: true })).toHaveValue("destructive");
-  await page.getByRole("button", { name: "Reset controls" }).click();
-  await expect(page.getByRole("combobox", { name: "Variant", exact: true })).toHaveValue("solid");
-  await visit("Card");
-  await expect(page.getByRole("checkbox", { name: "Footer", exact: true })).not.toBeChecked();
-  await expect(page.getByRole("button", { name: "Open workspace" })).toHaveCount(0);
-  await visit("Input");
-  await expect(page.getByRole("combobox", { name: "Type", exact: true })).toHaveValue("search");
-  await page.getByRole("button", { name: "Close controls" }).click();
-  await page.getByRole("button", { name: "Open Input controls" }).click();
-  await expect(page.getByRole("combobox", { name: "Type", exact: true })).toHaveValue("search");
-});
-
-test("panel stays within the viewport when resized open or closed", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/#button");
-  const trigger = page.getByRole("button", { name: "Open Button controls", includeHidden: true });
-  await trigger.click();
-  const panel = page.locator('[data-slot="morph-surface"]');
-  for (const { width, expected, inset } of [
-    { width: 320, expected: 272, inset: 24 },
-    { width: 375, expected: 327, inset: 24 },
-    { width: 640, expected: 544, inset: 48 },
-    { width: 768, expected: 360, inset: 16 },
-  ]) {
-    await page.setViewportSize({ width, height: 800 });
-    await page.locator("#button").evaluate(element => element.scrollIntoView({ block: "start" }));
-    await expect(panel).toHaveCSS("width", `${expected}px`);
-    const bounds = await panel.evaluate((element) => ({ x: element.getBoundingClientRect().x, width: element.getBoundingClientRect().width }));
-    expect(bounds.x).toBeGreaterThanOrEqual(inset);
-    expect(bounds.x + bounds.width).toBeCloseTo(width - inset, 0);
-  }
-  await page.getByRole("button", { name: "Close controls" }).click();
-  await page.setViewportSize({ width: 320, height: 800 });
-  await page.locator("#button").evaluate(element => element.scrollIntoView());
-  await expect(trigger).toHaveCSS("width", "44px");
-  await expect(trigger).toHaveCSS("height", "44px");
-  await expect(panel).toHaveAttribute("data-closed");
-  await expect(panel).toHaveCSS("pointer-events", "none");
-  await expect.poll(() => panel.evaluate(element => element.hasAttribute("hidden") || getComputedStyle(element).opacity === "0")).toBe(true);
-  await trigger.click();
-  await expect(panel).toHaveCSS("width", "272px");
-});
-
-test("panel reveals from its trigger without resizing its text layout", async ({ page, isMobile }) => {
-  test.skip(isMobile, "The narrow-screen surface uses a drawer transition.");
-  await holdAnimations(page);
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/#button");
-  const trigger = page.getByRole("button", { name: "Open Button controls", includeHidden: true });
-  const panel = page.getByRole("region", { name: "Button controls", includeHidden: true });
-  const expanded = await page.evaluate(() => Math.min(360, innerWidth - 32));
-  for (const { action, opacity, duration } of [
-    { action: trigger, opacity: "1", duration: 300 },
-    { action: page.getByRole("button", { name: "Close controls" }), opacity: "0", duration: 200 },
-  ]) {
-    await action.dispatchEvent("click", { detail: 1 });
-    const frames = [];
-    for (const progress of [0.1, 0.3, 0.6]) {
-      const durations = await seekAnimations(panel, progress);
-      expect(durations.filter(value => value === duration).length).toBeGreaterThanOrEqual(2);
-      frames.push(await panel.evaluate(element => ({
-        width: element.getBoundingClientRect().width,
-        clip: getComputedStyle(element).clipPath,
-        opacity: Number(getComputedStyle(element).opacity),
-      })));
-    }
-    expect(frames.every(frame => Math.abs(frame.width - expanded) < 1)).toBe(true);
-    expect(new Set(frames.map(frame => frame.clip)).size).toBeGreaterThan(2);
-    expect(frames.every(frame => frame.opacity > 0 && frame.opacity < 1)).toBe(true);
-    await seekAnimations(panel, 1);
-    await expect(panel).toHaveCSS("opacity", opacity);
-  }
-});
-
-test("keyboard opening matches pointer timing and reduced motion fades without a moving reveal", async ({ page, isMobile }) => {
-  test.skip(isMobile, "The narrow-screen surface uses a drawer transition.");
-  await holdAnimations(page);
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/#button");
-  const trigger = page.getByRole("button", { name: "Open Button controls" });
-  await trigger.focus();
-  await page.keyboard.press("Enter");
-  const panel = page.getByRole("region", { name: "Button controls", includeHidden: true });
-  await expect(panel).toBeFocused();
-  const openingDurations = await seekAnimations(panel, 0.5);
-  expect(openingDurations.filter(value => value === 300).length).toBeGreaterThanOrEqual(2);
-  const opening = await panel.evaluate(element => ({ clip: getComputedStyle(element).clipPath, opacity: Number(getComputedStyle(element).opacity) }));
-  expect(opening.clip).not.toBe("inset(0px round 12px)");
-  expect(opening.opacity).toBeGreaterThan(0);
-  expect(opening.opacity).toBeLessThan(1);
-  await seekAnimations(panel, 1);
-  await page.keyboard.press("Escape");
-  const closingDurations = await seekAnimations(panel, 0.5);
-  expect(closingDurations.filter(value => value === 200).length).toBeGreaterThanOrEqual(2);
-  await seekAnimations(panel, 1);
-  await expect(trigger).toBeFocused();
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.reload();
-  await page.locator("#button").evaluate(element => element.scrollIntoView());
-  await trigger.dispatchEvent("click", { detail: 1 });
-  await seekAnimations(panel, 0.5);
-  await expect(panel).toHaveCSS("clip-path", "inset(0px round 12px)");
-  const fading = await panel.evaluate(element => Number(getComputedStyle(element).opacity));
-  expect(fading).toBeGreaterThan(0);
-  expect(fading).toBeLessThan(1);
-  await seekAnimations(panel, 1);
-  await expect(panel).toHaveCSS("opacity", "1");
-});
-
-test("mobile keyboard activation uses the staged drawer timing", async ({ page, isMobile }) => {
-  test.skip(!isMobile, "The desktop surface has separate clip-path coverage.");
-  await holdSurfaceTransitions(page);
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/#button");
-  const trigger = page.getByRole("button", { name: "Open Button controls" });
-  await expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
-  const drawer = page.getByRole("dialog", { name: "Button controls", includeHidden: true });
-  await expect(drawer).toHaveAttribute("data-closed");
-  await trigger.focus();
-  await expect(trigger).toBeFocused();
-  await page.keyboard.press("Enter");
-  await expect(drawer).toHaveAttribute("data-open");
-  await expect.poll(() => readAnimationTimings(drawer)).toEqual(expect.arrayContaining([
-    { property: "opacity", duration: 300, delay: 0 },
-    { property: "transform", duration: 300, delay: 0 },
-  ]));
-  await seekAnimations(drawer, 1);
-  await page.keyboard.press("Escape");
-  await expect.poll(() => readAnimationTimings(drawer)).toEqual(expect.arrayContaining([
-    { property: "opacity", duration: 200, delay: 0 },
-    { property: "transform", duration: 200, delay: 80 },
-  ]));
-});
-
-test("an outside press uses the staged closing animation", async ({ page, isMobile }) => {
-  await holdAnimations(page);
-  if (isMobile) await holdSurfaceTransitions(page);
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/#button");
-  const trigger = page.getByRole("button", { name: "Open Button controls" });
-  if (isMobile) await expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
-  await trigger.click();
-  const surface = page.locator('[data-slot="morph-surface"]');
-  await seekAnimations(surface, 1);
-
-  await page.getByRole("banner").click({ position: { x: 8, y: 8 } });
-  const timings = await readAnimationTimings(surface);
-
-  expect(timings).toEqual(expect.arrayContaining([
-    { property: "opacity", duration: 200, delay: 0 },
-    { property: isMobile ? "transform" : "clip-path", duration: 200, delay: 80 },
-  ]));
-  await seekAnimations(surface, 1);
-  await expect(trigger).toHaveAttribute("aria-expanded", "false");
-  if (isMobile) await expect(surface).toHaveAttribute("data-closed");
-  else await expect(surface).toHaveAttribute("inert", "");
-});
-
-test("pointer-held controls stay pinned until release outside the panel", async ({ page, isMobile }) => {
-  test.skip(isMobile, "Mouse hold is covered on desktop; mobile retains the focus checks.");
-  await page.goto("/#button");
-  await page.getByRole("button", { name: "Open Button controls" }).click();
-  const heading = page.getByRole("heading", { name: "Button controls" });
-  await heading.hover();
-  await page.mouse.down();
-  await page.getByRole("heading", { level: 2, name: "Card", exact: true }).evaluate(element => {
-    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-    element.scrollIntoView({ block: "start" });
-  });
-  await expect(heading).toBeVisible();
-  await page.mouse.move(10, 10);
-  await page.mouse.up();
+  await page.getByRole("region", { name: "Button controls" }).focus();
+  await page.locator("#card").evaluate(element => element.scrollIntoView());
   await expect(page.getByRole("region", { name: "Card controls" })).toBeVisible();
+  await page.locator("#purpose").evaluate(element => element.scrollIntoView());
+  await expect(tools).toBeVisible();
+  await expect(tools.getByRole("tab", { name: "Component controls unavailable" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Close controls" })).toHaveCount(0);
 });
 
-test("a closing reveal can reverse without hiding or remounting the controls", async ({ page, isMobile }) => {
-  test.skip(isMobile, "The narrow-screen surface uses a drawer transition.");
+test("code fits narrow screens, scrolls long lines, and has accessible copy actions", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/#button");
+  await page.getByRole("tab", { name: "Code", exact: true }).click();
+  for (const width of [320, 375, 768]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.locator("#button").evaluate(element => element.scrollIntoView());
+    await expect(page.getByRole("heading", { name: "Button code" })).toBeVisible();
+    const surface = page.locator('[data-slot="morph-surface"]');
+    await expect(surface).toHaveCSS("width", `${Math.min(560, width - 32)}px`);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await expect(page.getByRole("button", { name: "Copy Install" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Copy Usage" })).toBeVisible();
+  }
+  await page.setViewportSize({ width: 320, height: 800 });
+  const install = page.getByLabel("Install", { exact: true });
+  expect(await install.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true);
+  expect((await new AxeBuilder({ page }).include('[data-slot="morph-surface"]').analyze()).violations).toEqual([]);
+  await page.screenshot({ path: `test-results/morph-code-${test.info().project.name}.png` });
+});
+
+test("Escape restores bar focus and outside presses leave focus with their target", async ({ page }) => {
+  await page.goto("/#button");
+  const trigger = page.getByRole("tab", { name: "Open Button controls" });
+  await trigger.focus();
+  await trigger.press("Enter");
+  await expect(trigger).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(trigger).toBeFocused();
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await trigger.click();
+  await page.getByRole("banner").click({ position: { x: 8, y: 8 } });
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByRole("group", { name: "Manual tools" })).toBeVisible();
+});
+
+test("theme follows the system, persists across routes and reloads, and respects reduced motion", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveClass(/dark/);
+  await page.getByRole("button", { name: "Switch to light theme" }).click();
+  await expect(page.locator("html")).not.toHaveClass(/dark/);
+  await expect(page.locator("html")).not.toHaveAttribute("data-theme-transition");
+  await page.goto("/studies/signal");
+  await expect(page.locator("html")).not.toHaveClass(/dark/);
+  await expect(page.getByRole("group", { name: "Manual tools" })).toBeVisible();
+  await page.getByRole("button", { name: "Switch to dark theme" }).click();
+  await page.reload();
+  await expect(page.locator("html")).toHaveClass(/dark/);
+});
+
+test("radial reveal starts at the toggle and releases after completion", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light", reducedMotion: "no-preference" });
+  await page.goto("/");
+  test.skip(!await page.evaluate(() => Boolean(document.startViewTransition)), "Browser has no View Transition API");
+  await page.evaluate(() => {
+    const animate = Element.prototype.animate;
+    Element.prototype.animate = function (frames, options) {
+      if (typeof options === "object" && options?.pseudoElement === "::view-transition-new(root)") {
+        document.documentElement.dataset.revealFrames = JSON.stringify(frames);
+      }
+      return animate.call(this, frames, options);
+    };
+  });
+  const toggle = page.getByRole("button", { name: "Switch to dark theme" });
+  const rect = await toggle.boundingBox();
+  await toggle.click();
+  await expect(page.locator("html")).toHaveClass(/dark/);
+  await expect(page.locator("html")).toHaveAttribute("data-reveal-frames", /circle\(0px/);
+  const frames = await page.locator("html").getAttribute("data-reveal-frames");
+  const x = rect!.x + rect!.width / 2;
+  const y = rect!.y + rect!.height / 2;
+  expect(frames).toContain(`at ${x}px ${y}px`);
+  await expect(page.locator("html")).not.toHaveAttribute("data-theme-transition");
+  await page.getByRole("button", { name: "Switch to light theme" }).click();
+  await expect(page.locator("html")).not.toHaveClass(/dark/);
+});
+
+test("one shell grows from the icon bar and keeps its bottom edge anchored", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#button");
-  await page.getByRole("button", { name: "Open Button controls" }).click();
-  const panel = page.getByRole("region", { name: "Button controls", includeHidden: true });
-  await expect(panel).toHaveCSS("opacity", "1");
-  await page.getByRole("combobox", { name: "Variant", exact: true }).selectOption("destructive");
-  // Reverse as soon as the browser creates the closing animation. This proves
-  // interruption without requiring the runner to render an intermediate frame.
-  const interrupted = await panel.evaluate(element => new Promise<{ time: number; duration: number }>((resolve, reject) => {
-    const trigger = document.querySelector<HTMLButtonElement>(`button[aria-controls="${CSS.escape(element.id)}"]`);
-    const close = element.querySelector<HTMLButtonElement>('button[aria-label="Close controls"]');
-    if (!trigger || !close) { reject(new Error("Expected surface controls")); return; }
+  await expect(page.getByRole("tab", { name: "Open Button controls" })).toBeEnabled();
+  const surface = page.locator('[data-slot="morph-surface"]');
+  const samples = await surface.evaluate(element => new Promise<{ height: number; bottom: number }[]>(resolve => {
+    const frames: { height: number; bottom: number }[] = [];
+    const sample = () => { const box = element.getBoundingClientRect(); frames.push({ height: box.height, bottom: box.bottom }); };
+    sample();
+    element.setAttribute("data-continuity-check", "original");
+    element.querySelector<HTMLButtonElement>('button[aria-controls]')!.click();
+    const start = performance.now();
+    const tick = () => {
+      sample();
+      if (performance.now() - start < 600) requestAnimationFrame(tick);
+      else resolve(frames);
+    };
+    requestAnimationFrame(tick);
+  }));
+  const first = samples[0]!;
+  const last = samples.at(-1)!;
+  expect(last.height).toBeGreaterThan(first.height + 40);
+  expect(samples.some(frame => frame.height > first.height + 2 && frame.height < last.height - 2)).toBe(true);
+  expect(samples.every(frame => Math.abs(frame.bottom - first.bottom) < 1)).toBe(true);
+  await page.getByRole("tab", { name: "Code", exact: true }).click();
+  await expect(surface).toHaveAttribute("data-continuity-check", "original");
+  await page.getByRole("button", { name: "Close controls" }).click();
+  await expect(surface).toHaveCSS("width", "160px");
+});
+
+test("theme switching works without View Transitions", async ({ page }) => {
+  await page.addInitScript(() => { Object.defineProperty(document, "startViewTransition", { value: undefined, configurable: true }); });
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Switch to dark theme" }).click();
+  await expect(page.locator("html")).toHaveClass(/dark/);
+  await page.getByRole("button", { name: "Switch to light theme" }).click();
+  await expect(page.locator("html")).not.toHaveClass(/dark/);
+});
+
+test("surface tabs use roving keyboard focus and connect to their panels", async ({ page }) => {
+  await page.goto("/#button");
+  const tabs = page.getByRole("tablist", { name: "Component tools" });
+  const controls = tabs.getByRole("tab", { name: "Open Button controls" });
+  const code = tabs.getByRole("tab", { name: "Code", exact: true });
+  await controls.focus();
+  await controls.press("ArrowRight");
+  await expect(code).toBeFocused();
+  await expect(code).toHaveAttribute("aria-selected", "false");
+  await code.press("Enter");
+  await expect(code).toBeFocused();
+  await expect(code).toHaveAttribute("aria-selected", "true");
+  const panel = page.getByRole("tabpanel", { name: "Code", exact: true });
+  await expect(panel).toBeVisible();
+  await expect(code).toHaveAttribute("aria-controls", (await panel.getAttribute("id"))!);
+  await expect(page.locator('[data-slot="morph-surface"]')).toHaveCSS("transition-property", "none");
+  await expect(tabs.locator('[data-slot="tabs-indicator"]')).toHaveCSS("transition-duration", "0s");
+  await code.press("Tab");
+  await expect.poll(() => page.getByRole("region", { name: "Button code" }).evaluate(element => element.contains(document.activeElement))).toBe(true);
+  await page.keyboard.press("Escape");
+  await expect(code).toBeFocused();
+  await expect(code).toHaveAttribute("aria-selected", "false");
+});
+
+test("theme reveal spreads its travel across 350ms instead of rushing the first frame", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light", reducedMotion: "no-preference" });
+  await page.goto("/");
+  test.skip(!await page.evaluate(() => Boolean(document.startViewTransition)), "Browser has no View Transition API");
+  await page.evaluate(() => {
     const animate = Element.prototype.animate;
-    const timeout = setTimeout(() => {
-      Element.prototype.animate = animate;
-      reject(new Error("No closing animation was created"));
-    }, 2000);
-    Element.prototype.animate = function (...args) {
-      const animation = animate.apply(this, args);
-      const effect = animation.effect;
-      if (this === element && effect instanceof KeyframeEffect && Number(effect.getKeyframes().at(-1)?.opacity) === 0) {
-        queueMicrotask(() => {
-          Element.prototype.animate = animate;
-          clearTimeout(timeout);
-          const time = Number(animation.currentTime ?? 0);
-          const duration = Number(effect.getTiming().duration);
-          trigger.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
-          resolve({ time, duration });
-        });
+    Element.prototype.animate = function (frames, options) {
+      const animation = animate.call(this, frames, options);
+      if (typeof options === "object" && options?.pseudoElement === "::view-transition-new(root)") {
+        animation.pause();
+        window.anaphorThemeReveal = animation;
       }
       return animation;
     };
-    close.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
-  }));
-  expect(interrupted.duration).toBe(200);
-  expect(interrupted.time).toBeLessThan(interrupted.duration);
-  await expect(panel).toHaveCSS("opacity", "1");
-  await expect(panel).toHaveCSS("clip-path", "inset(0px round 12px)");
-  await expect(page.getByRole("combobox", { name: "Variant", exact: true })).toHaveValue("destructive");
-  await expect(panel).toBeFocused();
+  });
+  await page.getByRole("button", { name: "Switch to dark theme" }).click();
+  await page.waitForFunction(() => Boolean(window.anaphorThemeReveal));
+  const result = await page.evaluate(async () => {
+    const animation = window.anaphorThemeReveal!;
+    const effect = animation.effect;
+    if (!(effect instanceof KeyframeEffect)) throw new Error("Expected a keyframe effect");
+    const timing = effect.getTiming();
+    const end = String(effect.getKeyframes().at(-1)!.clipPath);
+    const radius = Number(end.match(/circle\(([\d.]+)px/)![1]);
+    const samples = [];
+    for (const time of [1000 / 60, 175, 349]) {
+      animation.currentTime = time;
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      const clip = getComputedStyle(document.documentElement, "::view-transition-new(root)").clipPath;
+      samples.push(Number(clip.match(/circle\(([\d.]+)px/)![1]) / radius);
+    }
+    animation.finish();
+    return { duration: timing.duration, samples };
+  });
+  expect(result.duration).toBe(350);
+  expect(result.samples[0]).toBeLessThan(0.02);
+  expect(result.samples[1]).toBeCloseTo(0.5, 2);
+  expect(result.samples[2]).toBeCloseTo(1, 2);
+  await expect(page.locator("html")).not.toHaveAttribute("data-theme-transition");
 });
 
-test("mobile controls use a short inset drawer below navigation", async ({ page, isMobile }) => {
-  test.skip(!isMobile, "This assertion covers the narrow-screen adaptation.");
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/#button");
-  await page.getByRole("button", { name: "Open Button controls" }).click();
+test("keyboard theme activation is immediate", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light", reducedMotion: "no-preference" });
+  await page.goto("/");
+  const theme = page.getByRole("button", { name: "Switch to dark theme" });
+  await theme.focus();
+  await theme.press("Enter");
+  await expect(page.locator("html")).toHaveClass(/dark/);
+  await expect(page.locator("html")).not.toHaveAttribute("data-theme-transition");
+});
 
-  const drawer = page.getByRole("dialog", { name: "Button controls" });
-  await expect(drawer).toHaveCSS("width", "272px");
-  const trigger = page.getByRole("button", { name: "Open Button controls", includeHidden: true });
-  const card = page.locator('[data-slot="card"][data-variant="default"]').first();
-  const header = page.getByRole("banner");
-  const [drawerBounds, triggerBounds, cardShadow, drawerShadow, triggerShadow, drawerZ, headerZ] = await Promise.all([
-    drawer.evaluate(element => element.getBoundingClientRect().toJSON()),
-    trigger.evaluate(element => element.getBoundingClientRect().toJSON()),
-    card.evaluate(element => getComputedStyle(element).boxShadow),
-    drawer.evaluate(element => getComputedStyle(element).boxShadow),
-    trigger.evaluate(element => getComputedStyle(element).boxShadow),
-    drawer.evaluate(element => Number(getComputedStyle(element).zIndex)),
-    header.evaluate(element => Number(getComputedStyle(element).zIndex)),
-  ]);
-  const layout = {
-    drawer: drawerBounds,
-    trigger: triggerBounds,
-    shadows: { card: cardShadow, drawer: drawerShadow, trigger: triggerShadow },
-    drawerZ,
-    headerZ,
-  };
-  expect(layout.drawer.x).toBe(24);
-  expect(layout.drawer.width).toBe(272);
-  expect(layout.drawer.height).toBeLessThanOrEqual(360);
-  expect(layout.drawer.y + layout.drawer.height).toBeCloseTo(776, 0);
-  expect(layout.drawer.y + layout.drawer.height).toBeCloseTo(layout.trigger.y + layout.trigger.height, 0);
-  expect(layout.shadows.drawer).toBe(layout.shadows.card);
-  expect(layout.shadows.trigger).toBe(layout.shadows.card);
-  expect(layout.drawerZ).toBeLessThan(layout.headerZ);
+test("theme snapshots stay clipped through the animation handoffs in both directions", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light", reducedMotion: "no-preference" });
+  await page.goto("/");
+  test.skip(!await page.evaluate(() => Boolean(document.startViewTransition)), "Browser has no View Transition API");
+  await page.evaluate(() => {
+    const animate = Element.prototype.animate;
+    Element.prototype.animate = function (frames, options) {
+      const reveal = typeof options === "object" && options?.pseudoElement === "::view-transition-new(root)";
+      if (reveal) {
+        document.documentElement.dataset.initialRevealClip = getComputedStyle(this, "::view-transition-new(root)").clipPath;
+      }
+      const animation = animate.call(this, frames, options);
+      if (reveal) {
+        animation.pause();
+        window.anaphorThemeReveal = animation;
+      }
+      return animation;
+    };
+  });
+  for (const theme of ["dark", "light"]) {
+    await page.getByRole("button", { name: `Switch to ${theme} theme` }).click();
+    await page.waitForFunction(() => Boolean(window.anaphorThemeReveal));
+    await expect(page.locator("html")).toHaveAttribute("data-initial-reveal-clip", "circle(0px)");
+    const finalFrame = await page.evaluate(() => {
+      const animation = window.anaphorThemeReveal!;
+      const effect = animation.effect;
+      if (!(effect instanceof KeyframeEffect)) throw new Error("Expected a keyframe effect");
+      animation.finish();
+      const clip = getComputedStyle(document.documentElement, "::view-transition-new(root)").clipPath;
+      delete window.anaphorThemeReveal;
+      return { clip, expected: effect.getKeyframes().at(-1)!.clipPath };
+    });
+    const radius = Number(finalFrame.clip.match(/circle\(([\d.]+)px/)![1]);
+    const expectedRadius = Number(String(finalFrame.expected).match(/circle\(([\d.]+)px/)![1]);
+    expect(radius).toBeCloseTo(expectedRadius, 2);
+    await expect(page.locator("html")).not.toHaveAttribute("data-theme-transition");
+    await expect(page.locator("html")).toHaveClass(new RegExp(theme));
+  }
+});
+
+test("icon tabs fade on hover and move the shared selection highlight", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Hover feedback only applies to a fine pointer.");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/#button");
+  const tabs = page.getByRole("tablist", { name: "Component tools" });
+  const controls = tabs.getByRole("tab", { name: "Open Button controls" });
+  const code = tabs.getByRole("tab", { name: "Code", exact: true });
+  await controls.hover();
+  await expect(controls).toHaveCSS("transition-duration", "0.15s");
+  await expect(controls).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await controls.click();
+  await code.click();
+  await expect(tabs.locator('[data-slot="tabs-indicator"]')).toHaveCSS("transition-property", "clip-path");
+  await expect(code).toHaveAttribute("aria-selected", "true");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(controls).toHaveCSS("transition-property", "none");
+  await expect(tabs.locator('[data-slot="tabs-indicator"]')).toHaveCSS("transition-duration", "0s");
 });

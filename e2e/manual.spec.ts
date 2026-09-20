@@ -54,10 +54,10 @@ test("skip link moves keyboard focus to the main content", async ({ page, browse
 });
 
 test("button demo exposes bounded experiments and resets to approved defaults", async ({
-  page, isMobile,
+  page,
 }) => {
   await page.goto("/#button");
-  await page.getByRole("button", { name: "Open Button controls" }).click();
+  await page.getByRole("tab", { name: "Open Button controls" }).click();
 
   await expect(
     page.getByRole("heading", { level: 2, name: "Button", exact: true }),
@@ -81,17 +81,10 @@ test("button demo exposes bounded experiments and resets to approved defaults", 
   await expect(demo).not.toHaveAttribute("aria-busy");
 
   await page.getByRole("button", { name: "Close controls" }).click();
-  const closedPanel = page.getByRole(isMobile ? "dialog" : "region", { name: "Button controls", includeHidden: true });
-  if (isMobile) {
-    await expect(closedPanel).toHaveAttribute("data-closed");
-    await expect(closedPanel).toHaveCSS("pointer-events", "none");
-    await expect.poll(() => closedPanel.evaluate(element => element.hasAttribute("hidden") || getComputedStyle(element).opacity === "0")).toBe(true);
-  } else {
-    await expect(closedPanel).toHaveAttribute("aria-hidden", "true");
-    await expect(closedPanel).toHaveAttribute("inert", "");
-    await expect(closedPanel).toHaveCSS("opacity", "0");
-  }
-  await page.getByRole("button", { name: "Open Button controls" }).click();
+  const closedPanel = page.getByRole("region", { name: "Button controls", includeHidden: true });
+  await expect(closedPanel.locator("..").locator("..")).toHaveAttribute("inert", "");
+  await expect(closedPanel.locator("..").locator("..")).toHaveCSS("height", "0px");
+  await page.getByRole("tab", { name: "Open Button controls" }).click();
   await expect(page.getByLabel("Variant")).toBeVisible();
 });
 
@@ -118,7 +111,7 @@ test("button color roles meet AA outside the documented solid accent exception",
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#button");
-  await page.getByRole("button", { name: "Open Button controls" }).click();
+  await page.getByRole("tab", { name: "Open Button controls" }).click();
   const field = page.getByRole("group", { name: "Primary button example" });
 
   for (const theme of ["light", "dark"] as const) {
@@ -145,7 +138,7 @@ test("button color roles meet AA outside the documented solid accent exception",
 test("loading preserves action colors while explicit disabled stays neutral", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#button");
-  await page.getByRole("button", { name: "Open Button controls" }).click();
+  await page.getByRole("tab", { name: "Open Button controls" }).click();
   const demo = page.getByTestId("primary-button");
   const field = page.getByRole("group", { name: "Primary button example" });
   const colors = () =>
@@ -210,7 +203,7 @@ test("default and destructive buttons retain their approved visual appearance", 
 test("icon-only buttons stay square and centered while loading", async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#button");
-  await page.getByRole("button", { name: "Open Button controls" }).click();
+  await page.getByRole("tab", { name: "Open Button controls" }).click();
   await page.getByRole("checkbox", { name: "Icon only", exact: true }).check();
   const button = page.getByTestId("primary-button");
   const desktopSizes = { xs: 28, sm: 32, md: 40, lg: 48 };
@@ -252,15 +245,15 @@ test("cards compose readable surfaces in both themes", async ({ page, isMobile }
 test("controls preserve edits across switches and return keyboard focus", async ({ page, isMobile }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.getByRole("button", { name: /Open .* controls/ })).toHaveCount(0);
+  await expect(page.getByRole("tab", { name: /Open .* controls/ })).toHaveCount(0);
   const visit = async (name: string) => {
     if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
     await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name, exact: true }).click();
-    const trigger = page.getByRole("button", { name: `Open ${name} controls` });
+    const trigger = page.getByRole("tab", { name: `Open ${name} controls` });
     await trigger.focus();
     await page.keyboard.press("Enter");
-    const panel = page.getByRole(isMobile ? "dialog" : "region", { name: `${name} controls` });
-    await expect(panel).toBeFocused();
+    const panel = page.getByRole("region", { name: `${name} controls` });
+    await expect(trigger).toBeFocused();
     return panel;
   };
   await visit("Button");
@@ -274,7 +267,7 @@ test("controls preserve edits across switches and return keyboard focus", async 
   await expect(page.getByLabel("Variant")).toHaveValue("destructive");
   await page.getByLabel("Variant").focus();
   await page.keyboard.press("Escape");
-  const trigger = page.getByRole("button", { name: "Open Button controls" });
+  const trigger = page.getByRole("tab", { name: "Open Button controls" });
   await expect(trigger).toBeFocused();
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
   const cardPanel = await visit("Card");
@@ -292,7 +285,7 @@ test("controls preserve edits across switches and return keyboard focus", async 
 test("loading smoothly adds and removes spinner space without clipping", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#button");
-  await page.getByRole("button", { name: "Open Button controls" }).click();
+  await page.getByRole("tab", { name: "Open Button controls" }).click();
   const button = page.getByTestId("primary-button");
   const loading = page.getByRole("checkbox", { name: "Loading", exact: true });
   const restingWidth = await button.evaluate((element) => element.getBoundingClientRect().width);
@@ -350,10 +343,10 @@ test("loading examples run independently and return to idle", async ({ page }) =
   await expect(loading).toHaveAttribute("aria-busy", "true");
 });
 
-test("outline and ghost show pressed color with reduced motion", async ({ page, isMobile }) => {
+test("outline and ghost show pressed color with reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#button");
-  await page.getByRole("button", { name: "Open Button controls" }).click();
+  await page.getByRole("tab", { name: "Open Button controls" }).click();
   const button = page.getByTestId("primary-button");
   const field = page.getByRole("group", { name: "Primary button example" });
   for (const dark of [false, true]) {
@@ -362,17 +355,15 @@ test("outline and ghost show pressed color with reduced motion", async ({ page, 
       await page.getByLabel("Tone").selectOption(tone);
       for (const variant of ["outline", "ghost"]) {
         await page.getByLabel("Variant").selectOption(variant);
-        if (isMobile) await page.getByRole("button", { name: "Close controls" }).click();
+        await page.getByRole("button", { name: "Close controls" }).click();
         await button.hover();
         const hoverColor = await button.evaluate((element) => getComputedStyle(element).backgroundColor);
         await page.mouse.down();
         const pressedColor = await button.evaluate((element) => getComputedStyle(element).backgroundColor);
         await page.mouse.up();
         expect(pressedColor).not.toEqual(hoverColor);
-        if (isMobile) {
-          await page.locator("#button").evaluate(element => element.scrollIntoView({ block: "start" }));
-          await page.getByRole("button", { name: "Open Button controls" }).click();
-        }
+        await page.locator("#button").evaluate(element => element.scrollIntoView({ block: "start" }));
+        await page.getByRole("tab", { name: "Open Button controls" }).click();
       }
     }
   }

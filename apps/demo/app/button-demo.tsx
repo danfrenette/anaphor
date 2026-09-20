@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import { ButtonPlayground } from "./button-playground";
 import { ButtonLoadingExample } from "./button-loading-example";
 
-const variants = ["solid", "destructive", "outline", "ghost"] as const;
 
 export function ButtonDemo() {
   return (
@@ -77,19 +76,6 @@ export function ButtonDemo() {
             <Button iconOnly={false} loading={false} shape="square" size="md" nativeButton={false} render={<a href="#card" />} tone="neutral" variant="outline">
               <ButtonLabel>Explore Card</ButtonLabel>
             </Button>
-          </CardContent>
-        </Card>
-
-        <Card variant="default" className="dark mt-10">
-          <CardHeader>
-            <CardTitle as="h3" variant="label">Theme study / Dark</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-3">
-            {variants.map((variant) => (
-              <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" key={variant} {...(variant === "destructive" ? { variant } : { variant, tone: "accent" })}>
-                <ButtonLabel>{variant.charAt(0).toUpperCase() + variant.slice(1)}</ButtonLabel>
-              </Button>
-            ))}
           </CardContent>
         </Card>
       </ButtonPlayground>

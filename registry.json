@@ -24,6 +24,8 @@
         "danfrenette/anaphor/menu",
         "danfrenette/anaphor/sidebar",
         "danfrenette/anaphor/morph-surface",
+        "danfrenette/anaphor/theme",
+        "danfrenette/anaphor/tabs",
         "danfrenette/anaphor/separator",
         "danfrenette/anaphor/text",
         "danfrenette/anaphor/prose",
@@ -230,7 +232,7 @@
       "name": "morph-surface",
       "type": "registry:ui",
       "dependencies": ["motion"],
-      "registryDependencies": ["danfrenette/anaphor/style"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils", "danfrenette/anaphor/text"],
       "files": [
         {
           "path": "packages/design-system/src/components/morph-surface.tsx",
@@ -343,6 +345,46 @@
           "path": "packages/design-system/src/components/command-palette.tsx",
           "type": "registry:ui",
           "target": "@ui/command-palette.tsx"
+        }
+      ]
+    },
+    {
+      "name": "theme",
+      "type": "registry:ui",
+      "title": "Theme",
+      "description": "System-aware, persistent themes with a radial reveal.",
+      "dependencies": [
+        "next-themes",
+        "@phosphor-icons/react"
+      ],
+      "registryDependencies": [
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/utils"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/theme.tsx",
+          "type": "registry:ui",
+          "target": "@ui/theme.tsx"
+        }
+      ],
+      "docs": "Wrap your application in ThemeProvider and render ThemeToggle anywhere inside it. For SSR, add suppressHydrationWarning to the html element."
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui",
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "registryDependencies": [
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/utils"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/tabs.tsx",
+          "type": "registry:ui",
+          "target": "@ui/tabs.tsx"
         }
       ]
     }

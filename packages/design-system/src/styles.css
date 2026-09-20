@@ -310,3 +310,16 @@
     transition: none;
   }
 }
+
+/* Only theme changes replace the default view-transition crossfade. */
+html[data-theme-transition]::view-transition-old(root),
+html[data-theme-transition]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html[data-theme-transition]::view-transition-old(root) { z-index: 1; }
+html[data-theme-transition]::view-transition-new(root) {
+  z-index: 2;
+  /* Hide the incoming snapshot before the reveal animation takes ownership. */
+  clip-path: circle(0px);
+}
