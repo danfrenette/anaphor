@@ -8,6 +8,23 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Button, ButtonLabel } from "./button";
 import { Text } from "./text";
 import { fluidHoverTravel } from "../lib/motion";
+import { cn } from "../lib/utils";
+
+const highlightStyles = cn(
+  // Layout
+  "pointer-events-none absolute inset-x-2 top-0 rounded-md",
+  // Surface
+  "bg-[color-mix(in_oklch,var(--anaphor-brand)_14%,var(--anaphor-foreground))]",
+);
+
+const itemStyles = cn(
+  // Layout
+  "relative flex min-h-10 cursor-default items-center gap-3 rounded-md px-3 py-2 outline-none",
+  // State and coarse-pointer target
+  "data-disabled:text-muted-foreground pointer-coarse:min-h-11",
+  // Icon treatment
+  "[&>svg]:size-4 [&>svg]:shrink-0",
+);
 
 export type CommandPaletteItem = {
   id: string;
@@ -73,25 +90,41 @@ function PaletteContent<Item extends CommandPaletteItem>({ items, onSelect, titl
 
   return (
     <Dialog.Popup ref={popupRef} initialFocus={() => window.matchMedia("(pointer: coarse)").matches ? popupRef.current : inputRef.current} data-slot="command-palette"
-      className="command-palette fixed inset-x-4 top-[min(18vh,8rem)] z-[var(--anaphor-z-overlay)] mx-auto flex max-h-[min(36rem,75dvh)] max-w-xl flex-col overflow-hidden rounded-card bg-muted text-foreground shadow-card outline-none"
+      className={cn(
+        // Position and layout
+        "command-palette fixed inset-x-4 top-[min(18vh,8rem)] z-[var(--anaphor-z-overlay)] mx-auto",
+        "flex max-h-[min(36rem,75dvh)] max-w-xl flex-col overflow-hidden rounded-card",
+        // Surface and accessibility
+        "bg-muted text-foreground shadow-card outline-none",
+      )}
       onKeyDownCapture={() => setActiveFromFinePointer(false)}>
       <Dialog.Title render={<Text as="h2" variant="subheading" />} className="px-4 pt-4">{title}</Dialog.Title>
       <Dialog.Description className="sr-only">Type to filter commands. Use the arrow keys to navigate and Enter to open.</Dialog.Description>
       <Autocomplete.Root items={filtered} filter={null} inline open autoHighlight="always" keepHighlight
         value={query} onValueChange={setQuery} itemToStringValue={(item: Item) => item.label}
         onItemHighlighted={(item, details) => { setActive(item); setActiveFromFinePointer(details.reason === "pointer" && typeof window.matchMedia === "function" && window.matchMedia("(hover: hover) and (pointer: fine)").matches); }}>
-        <div className="relative m-3 flex min-h-11 shrink-0 items-center gap-2 rounded-control border border-border bg-background pe-2 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring">
+        <div className={cn(
+          // Layout and surface
+          "relative m-3 flex min-h-11 shrink-0 items-center gap-2 rounded-control border border-border bg-background pe-2",
+          // Accessibility
+          "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring",
+        )}>
           <MagnifyingGlass className="pointer-events-none absolute start-3 size-4 text-muted-foreground" aria-hidden="true" />
-          <Autocomplete.Input ref={inputRef} aria-label={title} placeholder={placeholder} autoComplete="off" spellCheck={false} className="min-w-0 flex-1 bg-transparent py-3 ps-9 font-sans text-body text-foreground outline-none placeholder:text-muted-foreground" />
+          <Autocomplete.Input ref={inputRef} aria-label={title} placeholder={placeholder} autoComplete="off" spellCheck={false} className={cn(
+            // Layout
+            "min-w-0 flex-1 bg-transparent py-3 ps-9 outline-none",
+            // Typography
+            "font-sans text-body text-foreground placeholder:text-muted-foreground",
+          )} />
           <Dialog.Close render={<Button iconOnly loading={false} nativeButton type="button" shape="square" size="xs" variant="ghost" tone="neutral" aria-label="Close command palette" />}><X aria-hidden="true" /></Dialog.Close>
         </div>
         <Autocomplete.Empty render={<Text as="p" variant="caption" />} className="px-4 py-10 text-center empty:hidden" >No commands found. Try another search.</Autocomplete.Empty>
         <Autocomplete.List ref={listRef} className="relative min-h-0 overflow-y-auto overscroll-contain px-2 pb-2" aria-label="Commands">
           {highlight && (animateHighlight && activeFromFinePointer && !reducedMotion ? (
-            <motion.div key={active?.group} aria-hidden="true" data-slot="command-fluid-highlight" className="pointer-events-none absolute inset-x-2 top-0 rounded-md bg-[color-mix(in_oklch,var(--anaphor-brand)_14%,var(--anaphor-foreground))]"
+            <motion.div key={active?.group} aria-hidden="true" data-slot="command-fluid-highlight" className={highlightStyles}
               initial={false} animate={{ transform: `translateY(${highlight.top}px)` }} style={{ height: highlight.height }} transition={fluidHoverTravel} />
           ) : (
-            <div aria-hidden="true" data-slot="command-fluid-highlight" className="pointer-events-none absolute inset-x-2 top-0 rounded-md bg-[color-mix(in_oklch,var(--anaphor-brand)_14%,var(--anaphor-foreground))]"
+            <div aria-hidden="true" data-slot="command-fluid-highlight" className={highlightStyles}
               style={{ height: highlight.height, transform: `translateY(${highlight.top}px)` }} />
           ))}
           {groups.map(group => (
@@ -101,7 +134,7 @@ function PaletteContent<Item extends CommandPaletteItem>({ items, onSelect, titl
                 const trailing = renderTrailing?.(item);
                 return (
                   <Autocomplete.Item key={item.id} value={item} disabled={item.disabled} data-command-id={item.id}
-                    className="relative flex min-h-10 cursor-default items-center gap-3 rounded-md px-3 py-2 outline-none data-disabled:text-muted-foreground pointer-coarse:min-h-11 [&>svg]:size-4 [&>svg]:shrink-0"
+                    className={itemStyles}
                     onClick={() => { onOpenChange(false); onSelect(item); }}>
                     {item.icon}<Text as="span" variant="ui" className="min-w-0 flex-1 truncate">{item.label}</Text>
                     {trailing != null && <span data-slot="command-palette-trailing" className="pointer-events-none ms-auto flex shrink-0 items-center">{trailing}</span>}

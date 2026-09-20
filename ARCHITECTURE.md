@@ -66,6 +66,13 @@ this repository. shadcn is a source generator, not a runtime design-system
 dependency. Generated source may diverge deliberately once tests protect its
 observable contract.
 
+Keep short, single-purpose Tailwind class lists inline. For longer lists, use the
+shared `cn` helper and split arguments by cohesive concerns such as layout,
+orientation or responsive behavior, state, variant, accessibility, motion, and
+icon treatment. Label non-obvious groups with short concern comments. Keep
+reusable component-local style constants when they improve scanning; extract
+shared styling only after another component needs it.
+
 Use native HTML when it already supplies the required semantics and behavior.
 Do not wrap a native element solely to create an abstraction.
 

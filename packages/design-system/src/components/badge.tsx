@@ -21,8 +21,17 @@ type BadgeProps = ComponentProps<"span"> & {
 
 function Badge({ className, size, variant, shape, ...props }: BadgeProps) {
   return <span data-slot="badge" data-size={size} data-variant={variant} data-shape={shape} className={cn(
-    "inline-flex max-w-full items-center justify-center gap-1 rounded-md border border-transparent align-middle font-medium [overflow-wrap:anywhere] [&>svg]:shrink-0",
-    sizes[size], variants[variant], shape === "round" && "rounded-full", className,
+    // Layout
+    "inline-flex max-w-full items-center justify-center gap-1 rounded-md border border-transparent align-middle",
+    // Typography
+    "font-medium [overflow-wrap:anywhere]",
+    // Size, variant, and shape
+    sizes[size],
+    variants[variant],
+    shape === "round" && "rounded-full",
+    // Icon treatment
+    "[&>svg]:shrink-0",
+    className,
   )} {...props} />;
 }
 

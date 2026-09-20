@@ -27,7 +27,16 @@ function FieldGroup({ className, ...props }: ComponentProps<"div">) {
 }
 
 function FieldLabel({ className, ...props }: ComponentProps<typeof FieldPrimitive.Label>) {
-  return <FieldPrimitive.Label data-slot="field-label" className={(state) => cn("text-ui group-data-[orientation=horizontal]/field:flex group-data-[orientation=horizontal]/field:min-h-11 group-data-[orientation=horizontal]/field:items-center group-data-[orientation=horizontal]/field:flex-1 group-data-[orientation=horizontal]/field:-ms-3 group-data-[orientation=horizontal]/field:ps-3", typeof className === "function" ? className(state) : className)} {...props} />;
+  return <FieldPrimitive.Label data-slot="field-label" className={(state) => cn(
+    // Typography
+    "text-ui",
+    // Horizontal orientation
+    "group-data-[orientation=horizontal]/field:flex group-data-[orientation=horizontal]/field:flex-1",
+    "group-data-[orientation=horizontal]/field:min-h-11 group-data-[orientation=horizontal]/field:items-center",
+    // Interactive label target
+    "group-data-[orientation=horizontal]/field:-ms-3 group-data-[orientation=horizontal]/field:ps-3",
+    typeof className === "function" ? className(state) : className,
+  )} {...props} />;
 }
 
 function FieldDescription({ className, ...props }: ComponentProps<typeof FieldPrimitive.Description>) {

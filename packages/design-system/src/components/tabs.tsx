@@ -5,16 +5,47 @@ import { Children, Fragment, isValidElement, useState } from "react";
 import { cn } from "../lib/utils";
 import type { ReactElement, ReactNode } from "react";
 
-const tabStyles =
-  "relative inline-flex min-h-[var(--tabs-item-size)] flex-1 items-center justify-center gap-1.5 rounded-[calc(var(--radius-control)-var(--spacing))] border border-transparent px-[var(--tabs-item-padding)] text-[length:var(--tabs-font-size)] leading-none font-medium whitespace-nowrap text-muted-foreground outline-none select-none touch-manipulation data-disabled:pointer-events-none data-disabled:opacity-45 group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start group-data-[variant=line]/tabs-list:rounded-none group-data-[variant=line]/tabs-list:px-2 [&>svg]:size-[var(--tabs-icon-size)] [&>svg]:shrink-0";
+const tabStyles = cn(
+  // Layout
+  "relative inline-flex min-h-[var(--tabs-item-size)] flex-1 items-center justify-center gap-1.5 rounded-[calc(var(--radius-control)-var(--spacing))] border border-transparent px-[var(--tabs-item-padding)]",
+  // Typography
+  "text-[length:var(--tabs-font-size)] leading-none font-medium whitespace-nowrap text-muted-foreground",
+  // Orientation
+  "group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start",
+  // Variant
+  "group-data-[variant=line]/tabs-list:rounded-none group-data-[variant=line]/tabs-list:px-2",
+  // State
+  "data-disabled:pointer-events-none data-disabled:opacity-45",
+  // Accessibility and interaction
+  "outline-none select-none touch-manipulation",
+  // Icon treatment
+  "[&>svg]:size-[var(--tabs-icon-size)] [&>svg]:shrink-0",
+);
 
-const activeTabStyles =
-  "bg-background text-foreground shadow-[var(--anaphor-shadow-card)] group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:shadow-none after:absolute after:bg-foreground group-data-[orientation=horizontal]/tabs:after:inset-x-2 group-data-[orientation=horizontal]/tabs:after:-bottom-1 group-data-[orientation=horizontal]/tabs:after:h-0.5 group-data-[orientation=vertical]/tabs:after:inset-y-2 group-data-[orientation=vertical]/tabs:after:-end-1 group-data-[orientation=vertical]/tabs:after:w-0.5 group-data-[variant=default]/tabs-list:after:hidden";
+const activeTabStyles = cn(
+  // Default variant
+  "bg-background text-foreground shadow-[var(--anaphor-shadow-card)]",
+  // Line variant
+  "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:shadow-none",
+  "after:absolute after:bg-foreground group-data-[variant=default]/tabs-list:after:hidden",
+  // Horizontal and vertical indicator placement
+  "group-data-[orientation=horizontal]/tabs:after:inset-x-2 group-data-[orientation=horizontal]/tabs:after:-bottom-1 group-data-[orientation=horizontal]/tabs:after:h-0.5",
+  "group-data-[orientation=vertical]/tabs:after:inset-y-2 group-data-[orientation=vertical]/tabs:after:-end-1 group-data-[orientation=vertical]/tabs:after:w-0.5",
+);
 
 const sizeStyles = {
-  sm: "[--tabs-item-size:1.75rem] [--tabs-item-padding:0.5rem] [--tabs-font-size:var(--text-small)] [--tabs-icon-size:0.875rem]",
-  md: "[--tabs-item-size:2rem] [--tabs-item-padding:0.625rem] [--tabs-font-size:var(--text-ui)] [--tabs-icon-size:1rem]",
-  lg: "[--tabs-item-size:2.5rem] [--tabs-item-padding:0.875rem] [--tabs-font-size:var(--text-body)] [--tabs-icon-size:1rem]",
+  sm: cn(
+    "[--tabs-item-size:1.75rem] [--tabs-item-padding:0.5rem]",
+    "[--tabs-font-size:var(--text-small)] [--tabs-icon-size:0.875rem]",
+  ),
+  md: cn(
+    "[--tabs-item-size:2rem] [--tabs-item-padding:0.625rem]",
+    "[--tabs-font-size:var(--text-ui)] [--tabs-icon-size:1rem]",
+  ),
+  lg: cn(
+    "[--tabs-item-size:2.5rem] [--tabs-item-padding:0.875rem]",
+    "[--tabs-font-size:var(--text-body)] [--tabs-icon-size:1rem]",
+  ),
 } as const;
 
 type TabsProps = TabsPrimitive.Root.Props;
@@ -46,7 +77,8 @@ function Tabs({
       data-tabs-input={input}
       orientation={orientation}
       className={(state) => cn(
-        "group/tabs flex gap-2 data-[orientation=horizontal]:flex-col",
+        "group/tabs flex gap-2",
+        "data-[orientation=horizontal]:flex-col",
         typeof className === "function" ? className(state) : className,
       )}
       onKeyDownCapture={handleKeyDownCapture}
@@ -76,8 +108,14 @@ function TabsList({
       data-size={size}
       data-variant={variant}
       className={(state) => cn(
-        "group/tabs-list relative isolate inline-flex w-fit items-center rounded-control p-1 group-data-[orientation=vertical]/tabs:flex-col",
-        variant === "default" ? "bg-muted" : "rounded-none border-border bg-transparent group-data-[orientation=horizontal]/tabs:border-b group-data-[orientation=vertical]/tabs:border-s",
+        "group/tabs-list relative isolate inline-flex w-fit items-center rounded-control p-1",
+        "group-data-[orientation=vertical]/tabs:flex-col",
+        variant === "default"
+          ? "bg-muted"
+          : cn(
+              "rounded-none border-border bg-transparent",
+              "group-data-[orientation=horizontal]/tabs:border-b group-data-[orientation=vertical]/tabs:border-s",
+            ),
         sizeStyles[size],
         typeof className === "function" ? className(state) : className,
       )}
@@ -89,7 +127,10 @@ function TabsList({
           aria-hidden="true"
           data-slot="tabs-indicator"
           renderBeforeHydration
-          className="pointer-events-none absolute inset-0 z-[1] flex items-center p-1 group-data-[orientation=vertical]/tabs:flex-col"
+          className={cn(
+            "pointer-events-none absolute inset-0 z-[1] flex items-center p-1",
+            "group-data-[orientation=vertical]/tabs:flex-col",
+          )}
         >
           {visualTabs}
         </TabsPrimitive.Indicator>
@@ -106,7 +147,8 @@ function TabsTab({ className, ...props }: TabsTabProps): ReactElement {
       data-slot="tabs-tab"
       className={(state) => cn(
         tabStyles,
-        "z-0 hover:not-data-disabled:text-foreground focus-visible:z-[2] focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-ring",
+        "z-0 hover:not-data-disabled:text-foreground",
+        "focus-visible:z-[2] focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-ring",
         typeof className === "function" ? className(state) : className,
       )}
       {...props}
@@ -120,7 +162,10 @@ function TabsPanel({ className, ...props }: TabsPanelProps): ReactElement {
   return (
     <TabsPrimitive.Panel
       data-slot="tabs-panel"
-      className={(state) => cn("flex-1 outline-none", typeof className === "function" ? className(state) : className)}
+      className={(state) => cn(
+        "flex-1 outline-none",
+        typeof className === "function" ? className(state) : className,
+      )}
       {...props}
     />
   );
@@ -144,7 +189,11 @@ function collectVisualTabs(children: ReactNode): ReactElement[] {
         key={child.key ?? tabs.length}
         data-disabled={props.disabled || undefined}
         data-slot="tabs-active-copy"
-        className={cn(tabStyles, activeTabStyles, typeof props.className === "string" ? props.className : undefined)}
+        className={cn(
+          tabStyles,
+          activeTabStyles,
+          typeof props.className === "string" ? props.className : undefined,
+        )}
       >
         {props.children}
       </span>,

@@ -25,7 +25,14 @@ function CardPreview({ className, children, ...props }: ComponentProps<"div">) {
     >
       <div
         data-slot="card-preview-surface"
-        className="relative grid min-w-0 overflow-hidden rounded-card border border-[color-mix(in_oklch,var(--anaphor-input-border)_65%,var(--anaphor-background))] bg-background [aspect-ratio:var(--card-preview-ratio,4/5)]"
+        className={cn(
+          // Layout and surface
+          "relative grid min-w-0 overflow-hidden rounded-card border bg-background",
+          // Border treatment
+          "border-[color-mix(in_oklch,var(--anaphor-input-border)_65%,var(--anaphor-background))]",
+          // Sizing
+          "[aspect-ratio:var(--card-preview-ratio,4/5)]",
+        )}
       >
         {children}
       </div>

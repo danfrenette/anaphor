@@ -7,8 +7,22 @@ import { fluidHoverFade, fluidHoverTravel } from "../lib/motion";
 import { useRef, useState } from "react";
 import type { ComponentProps, PointerEvent as ReactPointerEvent, ReactElement, ReactNode } from "react";
 
-const itemStyles =
-  "relative z-10 flex min-h-9 cursor-default select-none items-center gap-2 rounded-md px-3 py-2 text-ui text-foreground outline-none data-disabled:pointer-events-none data-disabled:text-muted-foreground data-highlighted:bg-[color-mix(in_oklch,var(--anaphor-brand)_14%,var(--anaphor-foreground))] data-inset:ps-9 data-[variant=destructive]:text-danger-foreground data-[variant=destructive]:data-highlighted:bg-[color-mix(in_oklch,var(--anaphor-danger)_14%,var(--anaphor-foreground))] pointer-coarse:min-h-11 [&>svg]:pointer-events-none [&>svg]:size-4 [&>svg]:shrink-0";
+const itemStyles = cn(
+  // Layout
+  "relative z-10 flex min-h-9 cursor-default select-none items-center gap-2 rounded-md px-3 py-2",
+  // Typography and accessibility
+  "text-ui text-foreground outline-none",
+  // Disabled and highlighted states
+  "data-disabled:pointer-events-none data-disabled:text-muted-foreground",
+  "data-highlighted:bg-[color-mix(in_oklch,var(--anaphor-brand)_14%,var(--anaphor-foreground))]",
+  // Inset and destructive variants
+  "data-inset:ps-9 data-[variant=destructive]:text-danger-foreground",
+  "data-[variant=destructive]:data-highlighted:bg-[color-mix(in_oklch,var(--anaphor-danger)_14%,var(--anaphor-foreground))]",
+  // Coarse-pointer target
+  "pointer-coarse:min-h-11",
+  // Icon treatment
+  "[&>svg]:pointer-events-none [&>svg]:size-4 [&>svg]:shrink-0",
+);
 
 type FluidHighlight = {
   height: number;
@@ -109,7 +123,9 @@ function MenuItems({ children }: { children: ReactNode }): ReactElement {
             aria-hidden="true"
             data-slot="menu-fluid-highlight"
             className={cn(
+              // Layout
               "pointer-events-none absolute inset-x-0 top-0 z-0 rounded-md",
+              // Variant
               highlight.variant === "destructive"
                 ? "bg-[color-mix(in_oklch,var(--anaphor-danger)_14%,var(--anaphor-foreground))]"
                 : "bg-[color-mix(in_oklch,var(--anaphor-brand)_14%,var(--anaphor-foreground))]",
@@ -165,7 +181,10 @@ function MenuPopup({
           data-slot="menu-popup"
           className={(state) =>
             cn(
-              "min-w-52 origin-[var(--transform-origin)] rounded-control border border-[color-mix(in_oklch,var(--anaphor-input-border)_72%,var(--anaphor-background))] bg-muted p-1.5 text-foreground shadow-[var(--anaphor-shadow-menu)] outline-none",
+              // Layout and surface
+              "min-w-52 origin-[var(--transform-origin)] rounded-control border bg-muted p-1.5 text-foreground outline-none",
+              // Border and elevation
+              "border-[color-mix(in_oklch,var(--anaphor-input-border)_72%,var(--anaphor-background))] shadow-[var(--anaphor-shadow-menu)]",
               typeof className === "function" ? className(state) : className,
             )
           }

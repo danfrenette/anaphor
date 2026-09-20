@@ -112,12 +112,18 @@ function SidebarProvider({
           data-slot="sidebar-provider"
           data-resizable={resizable}
           className={cn(
-            "group/sidebar grid min-h-svh grid-cols-[var(--anaphor-sidebar-current-width)_minmax(0,1fr)] overflow-x-clip [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)] max-md:block",
+            // Layout
+            "group/sidebar grid min-h-svh grid-cols-[var(--anaphor-sidebar-current-width)_minmax(0,1fr)] overflow-x-clip",
+            // Motion and responsive layout
+            "[--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)] max-md:block",
+            // Open state
             desktopOpen
               ? "[--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]"
               : "md:grid-cols-[0_minmax(0,1fr)]",
             className,
-            "[--anaphor-sidebar-current-width:clamp(var(--anaphor-sidebar-min-width),var(--anaphor-sidebar-drag-width,var(--anaphor-sidebar-width)),var(--anaphor-sidebar-max-width))] data-[motion=instant]:[--anaphor-sidebar-motion-duration:0ms] data-resizing:transition-none",
+            // Sizing and interaction state
+            "[--anaphor-sidebar-current-width:clamp(var(--anaphor-sidebar-min-width),var(--anaphor-sidebar-drag-width,var(--anaphor-sidebar-width)),var(--anaphor-sidebar-max-width))]",
+            "data-[motion=instant]:[--anaphor-sidebar-motion-duration:0ms] data-resizing:transition-none",
           )}
           style={style}
           {...props}
@@ -147,10 +153,20 @@ function Sidebar({ className, style, ...props }: ComponentProps<"aside">) {
             data-slot="sidebar"
             data-motion={motionEnabled ? "animate" : "instant"}
             className={cn(
-              "invisible fixed inset-y-0 start-0 z-[var(--anaphor-z-overlay)] flex h-svh w-[min(var(--anaphor-sidebar-mobile-width),calc(100vw-var(--spacing-12)))] [transform:translate3d(-100%,0,0)] flex-col border-e border-border bg-muted text-muted-foreground will-change-transform [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)] motion-safe:transition-[transform,visibility] motion-safe:duration-[var(--anaphor-sidebar-motion-duration)] motion-safe:ease-[var(--anaphor-ease-out)] data-starting-style:[transform:translate3d(-100%,0,0)] md:sticky md:w-[var(--anaphor-sidebar-current-width)]",
+              // Position and layout
+              "invisible fixed inset-y-0 start-0 z-[var(--anaphor-z-overlay)] flex h-svh w-[min(var(--anaphor-sidebar-mobile-width),calc(100vw-var(--spacing-12)))] flex-col",
+              // Surface
+              "border-e border-border bg-muted text-muted-foreground",
+              // Transform and motion
+              "[transform:translate3d(-100%,0,0)] will-change-transform [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)]",
+              "motion-safe:transition-[transform,visibility] motion-safe:duration-[var(--anaphor-sidebar-motion-duration)] motion-safe:ease-[var(--anaphor-ease-out)]",
+              // Entry and responsive states
+              "data-starting-style:[transform:translate3d(-100%,0,0)] md:sticky md:w-[var(--anaphor-sidebar-current-width)]",
+              // Open states
               mobileOpen && "visible [transform:translate3d(0,0,0)] [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]",
               desktopOpen ? "md:visible md:[transform:translate3d(0,0,0)] md:[--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]" : "md:invisible md:[transform:translate3d(-100%,0,0)]",
               className,
+              // Instant motion override
               "data-[motion=instant]:[--anaphor-sidebar-motion-duration:0ms] md:data-[motion=instant]:[--anaphor-sidebar-motion-duration:0ms]",
             )}
             style={style}
@@ -346,7 +362,16 @@ function SidebarMenuButton({ className, isActive, render, ...props }: SidebarMen
       ...props,
       "aria-current": isActive ? "page" : undefined,
       className: cn(
-        "relative isolate flex min-h-9 w-full items-center gap-2 rounded-md px-2 text-start text-ui text-muted-foreground no-underline outline-none transition-[color,font-variation-settings] duration-[var(--anaphor-menu-duration)] ease-linear data-active:font-semibold data-active:text-foreground pointer-coarse:min-h-11 [&>svg]:size-4 [&>svg]:shrink-0",
+        // Layout
+        "relative isolate flex min-h-9 w-full items-center gap-2 rounded-md px-2 text-start",
+        // Typography and accessibility
+        "text-ui text-muted-foreground no-underline outline-none",
+        // Motion
+        "transition-[color,font-variation-settings] duration-[var(--anaphor-menu-duration)] ease-linear",
+        // Active state and coarse-pointer target
+        "data-active:font-semibold data-active:text-foreground pointer-coarse:min-h-11",
+        // Icon treatment
+        "[&>svg]:size-4 [&>svg]:shrink-0",
         className,
       ),
       "data-slot": "sidebar-menu-button",
@@ -355,7 +380,13 @@ function SidebarMenuButton({ className, isActive, render, ...props }: SidebarMen
 }
 
 function SidebarFooter({ className, ...props }: ComponentProps<"footer">) {
-  return <footer data-slot="sidebar-footer" className={cn("flex min-h-14 shrink-0 items-center justify-between border-t border-border px-5 text-label text-muted-foreground", className)} {...props} />;
+  return <footer data-slot="sidebar-footer" className={cn(
+    // Layout
+    "flex min-h-14 shrink-0 items-center justify-between border-t border-border px-5",
+    // Typography
+    "text-label text-muted-foreground",
+    className,
+  )} {...props} />;
 }
 
 type SidebarTriggerProps = ComponentProps<"button"> & { target: "desktop" | "mobile" };
@@ -370,7 +401,16 @@ function SidebarTrigger({ children, className, onClick, target, ...props }: Side
       aria-expanded={expanded}
       aria-haspopup={target === "mobile" ? "dialog" : undefined}
       aria-label={expanded ? "Collapse sidebar" : "Open sidebar"}
-      className={cn("grid size-9 place-items-center rounded-md border-0 bg-transparent text-muted-foreground motion-safe:transition-[color,background-color,transform] duration-150 ease-[var(--anaphor-ease-out)] hover:bg-muted hover:text-foreground motion-safe:active:scale-[0.97] [&>svg]:size-4", className)}
+      className={cn(
+        // Layout and surface
+        "grid size-9 place-items-center rounded-md border-0 bg-transparent text-muted-foreground",
+        // Motion and interaction states
+        "motion-safe:transition-[color,background-color,transform] duration-150 ease-[var(--anaphor-ease-out)]",
+        "hover:bg-muted hover:text-foreground motion-safe:active:scale-[0.97]",
+        // Icon treatment
+        "[&>svg]:size-4",
+        className,
+      )}
       onClick={(event) => {
         onClick?.(event);
         if (event.defaultPrevented) return;
@@ -427,7 +467,19 @@ function SidebarRail({ className, onClick, onKeyDown, onPointerCancel, onPointer
       data-slot="sidebar-rail"
       aria-label="Adjust or collapse sidebar"
       title="Drag to resize · click to collapse"
-      className={cn("absolute inset-y-0 -end-2 z-10 hidden w-4 cursor-ew-resize touch-none border-0 bg-transparent md:block focus-visible:outline-2 focus-visible:outline-ring after:absolute after:inset-y-0 after:start-1/2 after:w-px after:bg-border motion-safe:after:transition-[background-color,transform] after:duration-150 motion-safe:pointer-fine:hover:after:scale-x-200 pointer-fine:hover:after:bg-primary", dragging && "after:bg-primary", className)}
+      className={cn(
+        // Position and pointer interaction
+        "absolute inset-y-0 -end-2 z-10 hidden w-4 cursor-ew-resize touch-none border-0 bg-transparent md:block",
+        // Accessibility
+        "focus-visible:outline-2 focus-visible:outline-ring",
+        // Resize indicator
+        "after:absolute after:inset-y-0 after:start-1/2 after:w-px after:bg-border",
+        // Motion and pointer states
+        "motion-safe:after:transition-[background-color,transform] after:duration-150",
+        "motion-safe:pointer-fine:hover:after:scale-x-200 pointer-fine:hover:after:bg-primary",
+        dragging && "after:bg-primary",
+        className,
+      )}
       onClick={(event) => {
         onClick?.(event);
         if (!event.defaultPrevented && event.detail === 0) toggleDesktop(false);
@@ -457,7 +509,16 @@ function SidebarScrim({ className, ...props }: ComponentProps<typeof AdaptiveSur
     <AdaptiveSurfaceBackdrop
       data-slot="sidebar-scrim"
       data-motion={motionEnabled ? "animate" : "instant"}
-      className={cn("pointer-events-none fixed inset-0 z-[var(--anaphor-z-backdrop)] bg-black/35 opacity-0 transition-opacity duration-200 ease-[var(--anaphor-ease-out)] data-[motion=instant]:duration-0 data-open:pointer-events-auto data-ending-style:opacity-0 data-starting-style:opacity-0 md:hidden", mobileOpen && "opacity-100", className)}
+      className={cn(
+        // Position and surface
+        "pointer-events-none fixed inset-0 z-[var(--anaphor-z-backdrop)] bg-black/35 opacity-0 md:hidden",
+        // Motion
+        "transition-opacity duration-200 ease-[var(--anaphor-ease-out)] data-[motion=instant]:duration-0",
+        // Open and transition states
+        "data-open:pointer-events-auto data-ending-style:opacity-0 data-starting-style:opacity-0",
+        mobileOpen && "opacity-100",
+        className,
+      )}
       {...props}
     />
   );
@@ -469,7 +530,16 @@ function SidebarClose({ children, className, ...props }: ComponentProps<"button"
       render={<button type="button" />}
       data-slot="sidebar-close"
       aria-label="Close sidebar"
-      className={cn("grid size-9 place-items-center rounded-md border-0 bg-transparent text-muted-foreground motion-safe:transition-colors duration-150 ease-[var(--anaphor-ease-out)] hover:bg-muted hover:text-foreground motion-safe:active:scale-[0.97] md:hidden [&>svg]:size-4", className)}
+      className={cn(
+        // Layout and surface
+        "grid size-9 place-items-center rounded-md border-0 bg-transparent text-muted-foreground md:hidden",
+        // Motion and interaction states
+        "motion-safe:transition-colors duration-150 ease-[var(--anaphor-ease-out)]",
+        "hover:bg-muted hover:text-foreground motion-safe:active:scale-[0.97]",
+        // Icon treatment
+        "[&>svg]:size-4",
+        className,
+      )}
       {...props}
     >
       {children ?? <X aria-hidden="true" />}

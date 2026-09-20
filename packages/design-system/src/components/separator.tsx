@@ -14,7 +14,11 @@ function Separator({
       orientation={orientation}
       className={(state) =>
         cn(
-          "shrink-0 bg-border data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px data-[orientation=vertical]:self-stretch",
+          // Base
+          "shrink-0 bg-border",
+          // Orientation
+          "data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full",
+          "data-[orientation=vertical]:w-px data-[orientation=vertical]:self-stretch",
           typeof className === "function" ? className(state) : className,
         )
       }

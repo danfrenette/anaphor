@@ -20,7 +20,19 @@ function Input({ className, size, ...props }: InputProps) {
       data-slot="input"
       size={typeof size === "number" ? size : undefined}
       className={(state) => cn(
-        "w-full min-w-0 rounded-control border border-border bg-background font-sans text-base text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-2 focus:outline-offset-2 focus:outline-ring aria-invalid:border-danger aria-invalid:focus:outline-danger disabled:cursor-not-allowed disabled:bg-[var(--anaphor-input-disabled)] disabled:text-muted-foreground motion-safe:transition-[border-color,background-color,outline-color] motion-safe:duration-150 forced-colors:border-[ButtonText] forced-colors:disabled:text-[GrayText]",
+        // Layout and surface
+        "w-full min-w-0 rounded-control border border-border bg-background",
+        // Typography
+        "font-sans text-base text-foreground placeholder:text-muted-foreground",
+        // Focus and validation states
+        "focus:border-ring focus:outline-2 focus:outline-offset-2 focus:outline-ring",
+        "aria-invalid:border-danger aria-invalid:focus:outline-danger",
+        // Disabled state
+        "disabled:cursor-not-allowed disabled:bg-[var(--anaphor-input-disabled)] disabled:text-muted-foreground",
+        // Motion and forced colors
+        "motion-safe:transition-[border-color,background-color,outline-color] motion-safe:duration-150",
+        "forced-colors:border-[ButtonText] forced-colors:disabled:text-[GrayText]",
+        // Size
         sizeStyles[typeof size === "number" ? "md" : size],
         typeof className === "function" ? className(state) : className,
       )}
