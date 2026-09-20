@@ -10,6 +10,7 @@ const articleRef = createRef<HTMLElement>();
 <Text variant="body" as="span" ref={spanRef} onClick={event => { const span: HTMLSpanElement = event.currentTarget; void span; }} />;
 <Text as="span" variant="ui" ref={spanRef} />;
 <Text as="h1" variant="display" ref={headingRef} />;
+<Text as="h2" variant="section" ref={headingRef} />;
 <Text as="p" variant="body" ref={paragraphRef} />;
 <Prose as="article" ref={articleRef} />;
 

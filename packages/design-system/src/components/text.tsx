@@ -5,6 +5,7 @@ const variants = {
   display: "font-heading text-display font-black text-balance",
   title: "font-heading text-title font-black text-balance",
   heading: "font-heading text-heading font-black text-balance",
+  section: "font-heading text-heading font-black tracking-normal uppercase text-balance",
   subheading: "font-heading text-body font-black text-balance",
   body: "max-w-reading font-sans text-body font-normal text-reading text-wrap",
   description: "max-w-reading font-sans text-body font-normal text-reading text-pretty",
