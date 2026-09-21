@@ -4,3 +4,5 @@ packages:
 
 onlyBuiltDependencies:
   - unrs-resolver
+patchedDependencies:
+  dialkit@2.0.2: patches/dialkit@2.0.2.patch

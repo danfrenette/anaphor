@@ -46,25 +46,30 @@ function MorphSurface({ open, onOpenChange, onInteractionChange, title, icon, ba
   useEffect(() => {
     const element = root.current;
     if (!element) return;
+    // Portaled popups remain owned by their triggers inside this surface.
+    const containsPopup = (target: Node) =>
+      [...element.querySelectorAll("[aria-controls]")].some(trigger =>
+        trigger.getAttribute("aria-controls")?.split(/\s+/).some(id => document.getElementById(id)?.contains(target)));
+    const contains = (target: Node) => element.contains(target) || containsPopup(target);
     const pointers = new Set<number>();
     let interacting = false;
     let disposed = false;
     const update = () => {
       if (disposed) return;
       const focused = document.activeElement;
-      const next = pointers.size > 0 || Boolean(open && focused !== content.current && content.current?.contains(focused));
+      const next = pointers.size > 0 || Boolean(open && focused && focused !== content.current && (content.current?.contains(focused) || (!element.contains(focused) && containsPopup(focused))));
       if (next !== interacting) { interacting = next; reportInteraction(next); }
     };
     const focus = () => queueMicrotask(update);
     const press = (event: PointerEvent) => {
       if (!(event.target instanceof Node)) return;
-      if (element.contains(event.target)) { pointers.add(event.pointerId); update(); }
+      if (contains(event.target)) { pointers.add(event.pointerId); update(); }
       else if (open) changeOpen(false);
     };
     const release = (event: PointerEvent) => { pointers.delete(event.pointerId); update(); };
     const blur = () => { pointers.clear(); update(); };
     const escape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" || event.defaultPrevented || !open || !(event.target instanceof Node) || !element.contains(event.target)) return;
+      if (event.key !== "Escape" || event.defaultPrevented || !open || !(event.target instanceof Node) || !contains(event.target)) return;
       event.preventDefault();
       changeOpen(false);
       returnFocus.current?.focus();

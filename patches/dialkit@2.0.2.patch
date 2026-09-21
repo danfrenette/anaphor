@@ -1,0 +1,238 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index e25afc264bc7852c006a978665875592ff36f1e1..0c45cd5badfbf4967c757583c3dbb5c7a63aa058 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -1939,6 +1939,20 @@ var CLICK_THRESHOLD = 3;
+ var DEAD_ZONE = 32;
+ var MAX_CURSOR_RANGE = 200;
+ var MAX_STRETCH = 8;
++// Anaphor: optional step detents; standard Slider behavior stays unchanged.
++function magneticStep(raw, previous, min, max, step, releaseThreshold) {
++  if (!(step > 0) || max <= min) return raw;
++  const threshold = Math.max(0.5, Math.min(0.9, releaseThreshold));
++  const last = Math.ceil((max - min) / step);
++  const stop = (index) => Math.min(max, min + index * step);
++  let index = Math.max(0, Math.min(last, Math.round((previous - min) / step)));
++  const start = index;
++  while (index < last && raw > stop(index) + (stop(index + 1) - stop(index)) * threshold) index++;
++  if (index === start) {
++    while (index > 0 && raw < stop(index) - (stop(index) - stop(index - 1)) * threshold) index--;
++  }
++  return Number(stop(index).toPrecision(14));
++}
+ function Slider({
+   label,
+   value,
+@@ -1948,9 +1962,12 @@ function Slider({
+   step = 0.01,
+   unit,
+   shortcut,
+-  shortcutActive
++  shortcutActive,
++  snap = "standard",
++  releaseThreshold = 0.6
+ }) {
+   const wrapperRef = (0, import_react6.useRef)(null);
++  const magneticValue = (0, import_react6.useRef)(value);
+   const trackRef = (0, import_react6.useRef)(null);
+   const inputRef = (0, import_react6.useRef)(null);
+   const editingEnded = (0, import_react6.useRef)(false);
+@@ -2024,6 +2041,7 @@ function Slider({
+       e.preventDefault();
+       e.target.setPointerCapture(e.pointerId);
+       pointerDownPos.current = { x: e.clientX, y: e.clientY };
++      magneticValue.current = value;
+       isClickRef.current = true;
+       setIsInteracting(true);
+       if (wrapperRef.current) {
+@@ -2032,7 +2050,7 @@ function Slider({
+         scaleRef.current = wrapperRectRef.current.width / nativeWidth;
+       }
+     },
+-    [showInput]
++    [showInput, value]
+   );
+   const handlePointerMove = (0, import_react6.useCallback)(
+     (e) => {
+@@ -2055,7 +2073,11 @@ function Slider({
+             rubberStretchPx.jump(0);
+           }
+         }
+-        const newValue = positionToValue(e.clientX);
++        const rawValue = positionToValue(e.clientX);
++        const newValue = snap === "magnetic"
++          ? magneticStep(rawValue, magneticValue.current, min, max, step, releaseThreshold)
++          : rawValue;
++        magneticValue.current = newValue;
+         const newPct = percentFromValue(newValue);
+         if (animRef.current) {
+           animRef.current.stop();
+@@ -2073,6 +2095,8 @@ function Slider({
+       fillPercent,
+       rubberStretchPx,
+       computeRubberStretch,
++      snap,
++      releaseThreshold,
+       min,
+       max,
+       step
+@@ -2084,7 +2108,7 @@ function Slider({
+       if (isClickRef.current) {
+         const rawValue = positionToValue(e.clientX);
+         const discreteSteps2 = (max - min) / step;
+-        const snappedValue = discreteSteps2 <= 10 ? Math.max(min, Math.min(max, min + Math.round((rawValue - min) / step) * step)) : snapToDecile(rawValue, min, max);
++        const snappedValue = snap === "magnetic" ? roundValue(rawValue, step, min, max) : discreteSteps2 <= 10 ? Math.max(min, Math.min(max, min + Math.round((rawValue - min) / step) * step)) : snapToDecile(rawValue, min, max);
+         const newPct = percentFromValue(snappedValue);
+         if (animRef.current) {
+           animRef.current.stop();
+@@ -2119,6 +2143,7 @@ function Slider({
+       min,
+       max,
+       step,
++      snap,
+       fillPercent,
+       rubberStretchPx
+     ]
+@@ -2214,7 +2239,7 @@ function Slider({
+   const valueDodge = percentage < leftThreshold || percentage > rightThreshold;
+   const handleOpacity = !isActive ? 0 : valueDodge ? 0.1 : isDragging ? 0.9 : 0.5;
+   const discreteSteps = (max - min) / step;
+-  const hashMarks = discreteSteps <= 10 ? Array.from({ length: discreteSteps - 1 }, (_, i) => {
++  const hashMarks = snap === "magnetic" || discreteSteps <= 10 ? Array.from({ length: snap === "magnetic" ? Math.ceil(discreteSteps) - 1 : discreteSteps - 1 }, (_, i) => {
+     const pct = (i + 1) * step / (max - min) * 100;
+     return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+       "div",
+diff --git a/dist/index.d.cts b/dist/index.d.cts
+index fb7008968578564bd70c12df1baa0cd268f2c1bf..8862a5acc0af38fc35df9a4b599c23626c43b5bb 100644
+--- a/dist/index.d.cts
++++ b/dist/index.d.cts
+@@ -492,6 +492,10 @@ interface ControlRendererProps {
+ declare function ControlRenderer({ panelId, controls, values, transitionDuration }: ControlRendererProps): react_jsx_runtime.JSX.Element;
+ 
+ interface SliderProps {
++    /** Anaphor extension. Defaults to the upstream interaction. */
++    snap?: "standard" | "magnetic";
++    /** Fraction toward the next step needed to release a magnetic detent. Default: 0.6. */
++    releaseThreshold?: number;
+     label: string;
+     value: number;
+     onChange: (value: number) => void;
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index fb7008968578564bd70c12df1baa0cd268f2c1bf..8862a5acc0af38fc35df9a4b599c23626c43b5bb 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -492,6 +492,10 @@ interface ControlRendererProps {
+ declare function ControlRenderer({ panelId, controls, values, transitionDuration }: ControlRendererProps): react_jsx_runtime.JSX.Element;
+ 
+ interface SliderProps {
++    /** Anaphor extension. Defaults to the upstream interaction. */
++    snap?: "standard" | "magnetic";
++    /** Fraction toward the next step needed to release a magnetic detent. Default: 0.6. */
++    releaseThreshold?: number;
+     label: string;
+     value: number;
+     onChange: (value: number) => void;
+diff --git a/dist/index.js b/dist/index.js
+index 7ee83a8bc326ae9f894f30f0dca59c405f18b617..c8d4849b02d3903e2255aebc521d01e7cc05bb1e 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -1890,6 +1890,20 @@ var CLICK_THRESHOLD = 3;
+ var DEAD_ZONE = 32;
+ var MAX_CURSOR_RANGE = 200;
+ var MAX_STRETCH = 8;
++// Anaphor: optional step detents; standard Slider behavior stays unchanged.
++function magneticStep(raw, previous, min, max, step, releaseThreshold) {
++  if (!(step > 0) || max <= min) return raw;
++  const threshold = Math.max(0.5, Math.min(0.9, releaseThreshold));
++  const last = Math.ceil((max - min) / step);
++  const stop = (index) => Math.min(max, min + index * step);
++  let index = Math.max(0, Math.min(last, Math.round((previous - min) / step)));
++  const start = index;
++  while (index < last && raw > stop(index) + (stop(index + 1) - stop(index)) * threshold) index++;
++  if (index === start) {
++    while (index > 0 && raw < stop(index) - (stop(index) - stop(index - 1)) * threshold) index--;
++  }
++  return Number(stop(index).toPrecision(14));
++}
+ function Slider({
+   label,
+   value,
+@@ -1899,9 +1913,12 @@ function Slider({
+   step = 0.01,
+   unit,
+   shortcut,
+-  shortcutActive
++  shortcutActive,
++  snap = "standard",
++  releaseThreshold = 0.6
+ }) {
+   const wrapperRef = useRef5(null);
++  const magneticValue = useRef5(value);
+   const trackRef = useRef5(null);
+   const inputRef = useRef5(null);
+   const editingEnded = useRef5(false);
+@@ -1975,6 +1992,7 @@ function Slider({
+       e.preventDefault();
+       e.target.setPointerCapture(e.pointerId);
+       pointerDownPos.current = { x: e.clientX, y: e.clientY };
++      magneticValue.current = value;
+       isClickRef.current = true;
+       setIsInteracting(true);
+       if (wrapperRef.current) {
+@@ -1983,7 +2001,7 @@ function Slider({
+         scaleRef.current = wrapperRectRef.current.width / nativeWidth;
+       }
+     },
+-    [showInput]
++    [showInput, value]
+   );
+   const handlePointerMove = useCallback4(
+     (e) => {
+@@ -2006,7 +2024,11 @@ function Slider({
+             rubberStretchPx.jump(0);
+           }
+         }
+-        const newValue = positionToValue(e.clientX);
++        const rawValue = positionToValue(e.clientX);
++        const newValue = snap === "magnetic"
++          ? magneticStep(rawValue, magneticValue.current, min, max, step, releaseThreshold)
++          : rawValue;
++        magneticValue.current = newValue;
+         const newPct = percentFromValue(newValue);
+         if (animRef.current) {
+           animRef.current.stop();
+@@ -2024,6 +2046,8 @@ function Slider({
+       fillPercent,
+       rubberStretchPx,
+       computeRubberStretch,
++      snap,
++      releaseThreshold,
+       min,
+       max,
+       step
+@@ -2035,7 +2059,7 @@ function Slider({
+       if (isClickRef.current) {
+         const rawValue = positionToValue(e.clientX);
+         const discreteSteps2 = (max - min) / step;
+-        const snappedValue = discreteSteps2 <= 10 ? Math.max(min, Math.min(max, min + Math.round((rawValue - min) / step) * step)) : snapToDecile(rawValue, min, max);
++        const snappedValue = snap === "magnetic" ? roundValue(rawValue, step, min, max) : discreteSteps2 <= 10 ? Math.max(min, Math.min(max, min + Math.round((rawValue - min) / step) * step)) : snapToDecile(rawValue, min, max);
+         const newPct = percentFromValue(snappedValue);
+         if (animRef.current) {
+           animRef.current.stop();
+@@ -2070,6 +2094,7 @@ function Slider({
+       min,
+       max,
+       step,
++      snap,
+       fillPercent,
+       rubberStretchPx
+     ]
+@@ -2165,7 +2190,7 @@ function Slider({
+   const valueDodge = percentage < leftThreshold || percentage > rightThreshold;
+   const handleOpacity = !isActive ? 0 : valueDodge ? 0.1 : isDragging ? 0.9 : 0.5;
+   const discreteSteps = (max - min) / step;
+-  const hashMarks = discreteSteps <= 10 ? Array.from({ length: discreteSteps - 1 }, (_, i) => {
++  const hashMarks = snap === "magnetic" || discreteSteps <= 10 ? Array.from({ length: snap === "magnetic" ? Math.ceil(discreteSteps) - 1 : discreteSteps - 1 }, (_, i) => {
+     const pct = (i + 1) * step / (max - min) * 100;
+     return /* @__PURE__ */ jsx3(
+       "div",

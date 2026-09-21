@@ -68,6 +68,7 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "badge", label: "Badge", href: "/#badge", icon: Tag },
       { id: "node-edge-graphs", label: "Node-edge graphs", href: "/#node-edge-graphs", icon: ShareNetwork },
       { id: "input", label: "Input", href: "/#input", icon: Textbox },
+      { id: "slider", label: "Slider", href: "/#slider", icon: SlidersHorizontal },
       { id: "checkbox", label: "Checkbox", href: "/#checkbox", icon: CheckSquare },
       { id: "dropdown-menu", label: "Dropdown menu", href: "/#dropdown-menu", icon: ListDashes },
       { id: "kbd", label: "Kbd", href: "/#kbd", icon: Keyboard },

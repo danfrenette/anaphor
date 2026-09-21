@@ -65,8 +65,8 @@ const examples: Record<string, { title: string; item: string; code: string }> = 
 
 <Menu>
   <MenuTrigger>Actions</MenuTrigger>
-  <MenuPopup>
-    <MenuItem onClick={() => alert("Copied")}>
+  <MenuPopup side="bottom" sideOffset={8} align="start">
+    <MenuItem variant="default" onClick={() => alert("Copied")}>
       Copy link
     </MenuItem>
   </MenuPopup>
@@ -100,7 +100,7 @@ const setup = `import {
 </ThemeProvider>`;
 
 export function codeTitle(sectionId?: string) {
-  return sectionId && examples[sectionId] ? `${examples[sectionId].title} code` : "Install Anaphor";
+  return sectionId === "slider" ? "Slider code" : sectionId && examples[sectionId] ? `${examples[sectionId].title} code` : "Install Anaphor";
 }
 
 function CodeBlock({ title, code }: { title: string; code: string }) {
@@ -113,6 +113,19 @@ function CodeBlock({ title, code }: { title: string; code: string }) {
 }
 
 export function ComponentCode({ sectionId }: { sectionId?: string }) {
+  if (sectionId === "slider") return <div className="grid gap-3">
+    <p className="text-small text-muted-foreground">This demo uses DialKit’s original slider with a local, opt-in snapping patch. The snapping props require this project’s patch; they are not part of upstream DialKit.</p>
+    <CodeBlock title="Usage" code={`import { Slider } from "dialkit";
+import "dialkit/styles.css";
+
+<div className="dialkit-root" data-theme="light">
+<Slider
+  label="Amount" value={value} onChange={setValue}
+  min={0} max={100} step={10}
+  snap="magnetic" releaseThreshold={0.6}
+/>
+</div>`} />
+  </div>;
   const example = sectionId ? examples[sectionId] : undefined;
   return <div className="grid min-w-0 gap-3">
     <p className="text-small text-muted-foreground">{example ? "A minimal example. Scroll longer lines horizontally or copy the full snippet." : "Start with a shadcn-initialized Tailwind v4 app. This private registry requires GitHub authentication."}</p>

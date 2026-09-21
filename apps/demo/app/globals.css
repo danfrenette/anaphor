@@ -2,3 +2,12 @@
 
 @source "./**/*.{ts,tsx}";
 @source "../components/**/*.{ts,tsx}";
+
+/* DialKit lives in the demo; exported Anaphor components stay independent. */
+.anaphor-dials {
+  --dial-row-height: 44px;
+  --dial-text-label: var(--anaphor-font-secondary);
+  --dial-text-secondary: var(--anaphor-font-secondary);
+  --dial-focus-ring: var(--anaphor-brand);
+  width: 100%;
+}

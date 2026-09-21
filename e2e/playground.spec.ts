@@ -1,3 +1,4 @@
+import { selectControl } from "./playground-select";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
@@ -13,11 +14,11 @@ test("the bar persists, controls follow sections, and settings survive view chan
   await expect(tools.getByRole("tab", { name: "Component controls unavailable" })).toBeDisabled();
   await page.locator("#button").evaluate(element => element.scrollIntoView());
   await tools.getByRole("tab", { name: "Open Button controls" }).click();
-  await page.getByRole("combobox", { name: "Variant", exact: true }).selectOption("destructive");
+  await selectControl(page, "Variant", "destructive");
   await tools.getByRole("tab", { name: "Code", exact: true }).click();
   await expect(page.getByRole("region", { name: "Button code" })).toBeVisible();
   await tools.getByRole("tab", { name: "Open Button controls" }).click();
-  await expect(page.getByRole("combobox", { name: "Variant", exact: true })).toHaveValue("destructive");
+  await expect(page.getByRole("button", { name: "Variant", exact: true })).toHaveText("destructive");
   await page.getByRole("region", { name: "Button controls" }).focus();
   await page.locator("#card").evaluate(element => element.scrollIntoView());
   await expect(page.getByRole("region", { name: "Card controls" })).toBeVisible();
@@ -277,4 +278,28 @@ test("icon tabs fade on hover and move the shared selection highlight", async ({
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(controls).toHaveCSS("transition-property", "none");
   await expect(tabs.locator('[data-slot="tabs-indicator"]')).toHaveCSS("transition-duration", "0s");
+});
+
+test("Anaphor control menus select by keyboard and Escape closes one layer at a time", async ({ page }) => {
+  await page.goto("/#button");
+  await page.getByRole("tab", { name: "Open Button controls" }).click();
+  const variant = page.getByRole("button", { name: "Variant", exact: true });
+  await variant.focus();
+  await variant.press("ArrowDown");
+  await expect(page.getByRole("menuitemradio", { name: "solid", exact: true })).toHaveAttribute("aria-checked", "true");
+  expect((await new AxeBuilder({ page }).include('[data-slot="menu-popup"]').analyze()).violations).toEqual([]);
+  await page.screenshot({ path: `test-results/control-dropdown-${test.info().project.name}.png` });
+  await page.keyboard.press("d");
+  await page.keyboard.press("Enter");
+  await expect(variant).toHaveText("destructive");
+  await expect(variant).toBeFocused();
+  await expect(page.getByRole("region", { name: "Button controls" })).toBeVisible();
+  await variant.press("ArrowDown");
+  await expect(page.getByRole("menu", { name: "Variant", exact: true })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu", { name: "Variant", exact: true })).toHaveCount(0);
+  await expect(variant).toBeFocused();
+  await expect(page.getByRole("region", { name: "Button controls" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("tab", { name: "Open Button controls" })).toHaveAttribute("aria-expanded", "false");
 });

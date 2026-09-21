@@ -8,6 +8,7 @@ import { InputDemo } from "./input-demo";
 import { CommandPaletteDemo } from "./command-palette-demo";
 import { DropdownMenuDemo } from "./dropdown-menu-demo";
 import { KbdDemo } from "./kbd-demo";
+import { SliderDemo } from "./slider-demo";
 import { TabsDemo } from "./tabs-demo";
 
 const neutralRoles = [
@@ -241,6 +242,7 @@ export default function HomePage() {
           <BadgeDemo />
           <NodeEdgeDemo />
           <InputDemo />
+          <SliderDemo />
           <CheckboxDemo />
           <DropdownMenuDemo />
           <KbdDemo />

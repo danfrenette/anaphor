@@ -1,3 +1,4 @@
+import { selectControl } from "./playground-select";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
@@ -37,7 +38,7 @@ test("input controls preserve native states and reset", async ({ page }, testInf
   await page.goto("/#input");
   await page.getByRole("tab", { name: "Open Input controls" }).click();
   const input = page.getByLabel("Try an input", { exact: true });
-  await page.getByRole("combobox", { name: "Size", exact: true }).selectOption("sm");
+  await selectControl(page, "Size", "sm");
   expect(await input.evaluate((element) => element.getBoundingClientRect().height)).toBe(testInfo.project.name === "mobile-webkit" ? 44 : 32);
   await page.getByRole("region", { name: "Input controls" }).getByRole("checkbox", { name: "Read only", exact: true }).check();
   await expect(input).not.toBeEditable();

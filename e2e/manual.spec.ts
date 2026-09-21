@@ -1,3 +1,4 @@
+import { selectControl } from "./playground-select";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { seekAnimations } from "./animation";
@@ -65,16 +66,16 @@ test("button demo exposes bounded experiments and resets to approved defaults", 
   const demo = page.getByTestId("primary-button");
   const variant = page.getByLabel("Variant");
   const size = page.getByLabel("Size");
-  await expect(variant).toHaveValue("solid");
-  await expect(size).toHaveValue("md");
-  await variant.selectOption("destructive");
-  await size.selectOption("lg");
+  await expect(variant).toHaveText("solid");
+  await expect(size).toHaveText("md");
+  await selectControl(page, "Variant", "destructive");
+  await selectControl(page, "Size", "lg");
   await expect(demo).toHaveAccessibleName("Delete item");
   await page.getByRole("checkbox", { name: "Loading", exact: true }).check();
   await expect(demo).toHaveAttribute("aria-busy", "true");
   await page.getByRole("button", { name: "Reset controls" }).click();
-  await expect(variant).toHaveValue("solid");
-  await expect(size).toHaveValue("md");
+  await expect(variant).toHaveText("solid");
+  await expect(size).toHaveText("md");
   await expect(page.getByRole("checkbox", { name: "Loading", exact: true })).not.toBeChecked();
   await expect(demo).toHaveAccessibleName("Execute");
   await expect(demo).toBeEnabled();
@@ -118,10 +119,10 @@ test("button color roles meet AA outside the documented solid accent exception",
     await field.evaluate((element, dark) => element.classList.toggle("dark", dark), theme === "dark");
 
     for (const tone of ["accent", "neutral"] as const) {
-      await page.getByLabel("Tone").selectOption(tone);
+      await selectControl(page, "Tone", tone);
 
       for (const variant of ["solid", "destructive", "outline", "ghost"] as const) {
-        await page.getByLabel("Variant").selectOption(variant);
+        await selectControl(page, "Variant", variant);
         // Only this documented contrast exception is permitted; improvement is welcome.
         if (tone === "accent" && variant === "solid") continue;
         const contrast = await new AxeBuilder({ page })
@@ -175,7 +176,7 @@ test("loading preserves action colors while explicit disabled stays neutral", as
 
     await page.getByRole("checkbox", { name: "Disabled", exact: true }).uncheck();
     for (const variant of ["solid", "destructive", "outline", "ghost"]) {
-      await page.getByLabel("Variant").selectOption(variant);
+      await selectControl(page, "Variant", variant);
       const actionColors = await colors();
       await page.getByRole("checkbox", { name: "Loading", exact: true }).check();
       expect(await colors()).toEqual(actionColors);
@@ -208,7 +209,7 @@ test("icon-only buttons stay square and centered while loading", async ({ page }
   const button = page.getByTestId("primary-button");
   const desktopSizes = { xs: 28, sm: 32, md: 40, lg: 48 };
   for (const size of ["xs", "sm", "md", "lg"] as const) {
-    await page.getByLabel("Size").selectOption(size);
+    await selectControl(page, "Size", size);
     const expected = testInfo.project.name === "mobile-webkit"
       ? Math.max(44, desktopSizes[size]) : desktopSizes[size];
     for (const loading of [false, true]) {
@@ -257,14 +258,14 @@ test("controls preserve edits across switches and return keyboard focus", async 
     return panel;
   };
   await visit("Button");
-  await page.getByLabel("Variant").selectOption("destructive");
+  await selectControl(page, "Variant", "destructive");
   await page.getByRole("button", { name: "Close controls" }).click();
   await visit("Card");
   await page.getByRole("checkbox", { name: "Footer", exact: true }).uncheck();
   await expect(page.getByRole("button", { name: "Open workspace" })).toHaveCount(0);
   await page.getByRole("button", { name: "Close controls" }).click();
   await visit("Button");
-  await expect(page.getByLabel("Variant")).toHaveValue("destructive");
+  await expect(page.getByLabel("Variant")).toHaveText("destructive");
   await page.getByLabel("Variant").focus();
   await page.keyboard.press("Escape");
   const trigger = page.getByRole("tab", { name: "Open Button controls" });
@@ -352,9 +353,9 @@ test("outline and ghost show pressed color with reduced motion", async ({ page }
   for (const dark of [false, true]) {
     await field.evaluate((element, value) => element.classList.toggle("dark", value), dark);
     for (const tone of ["accent", "neutral"]) {
-      await page.getByLabel("Tone").selectOption(tone);
+      await selectControl(page, "Tone", tone);
       for (const variant of ["outline", "ghost"]) {
-        await page.getByLabel("Variant").selectOption(variant);
+        await selectControl(page, "Variant", variant);
         await page.getByRole("button", { name: "Close controls" }).click();
         await button.hover();
         const hoverColor = await button.evaluate((element) => getComputedStyle(element).backgroundColor);

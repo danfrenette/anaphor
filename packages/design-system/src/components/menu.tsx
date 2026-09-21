@@ -218,6 +218,18 @@ function MenuItem({ className, inset, variant, ...props }: MenuItemProps): React
   );
 }
 
+function MenuRadioGroup(props: MenuPrimitive.RadioGroup.Props): ReactElement {
+  return <MenuPrimitive.RadioGroup {...props} />;
+}
+
+function MenuRadioItem({ className, children, ...props }: MenuPrimitive.RadioItem.Props): ReactElement {
+  return <MenuPrimitive.RadioItem data-slot="menu-item" data-variant="default" closeOnClick
+    className={(state) => cn(itemStyles, typeof className === "function" ? className(state) : className)} {...props}>
+    {children}
+    <MenuPrimitive.RadioItemIndicator className="ms-auto" aria-hidden="true">✓</MenuPrimitive.RadioItemIndicator>
+  </MenuPrimitive.RadioItem>;
+}
+
 type MenuGroupLabelProps = MenuPrimitive.GroupLabel.Props & { inset?: boolean };
 
 function MenuGroupLabel({ className, inset, ...props }: MenuGroupLabelProps): ReactElement {
@@ -259,6 +271,8 @@ function MenuShortcut({ className, ...props }: ComponentProps<"kbd">): ReactElem
 export {
   Menu,
   MenuGroup,
+  MenuRadioGroup,
+  MenuRadioItem,
   MenuGroupLabel,
   MenuItem,
   MenuPopup,
