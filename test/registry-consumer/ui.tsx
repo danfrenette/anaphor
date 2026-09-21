@@ -14,6 +14,7 @@ import { MorphSurface } from "./components/ui/morph-surface";
 import { Menu, MenuItem, MenuPopup, MenuTrigger } from "./components/ui/menu";
 import { ContentSections, Section } from "./components/ui/sections";
 import { Separator } from "./components/ui/separator";
+import { Slider } from "./components/ui/slider";
 import { Text } from "./components/ui/text";
 import { Prose } from "./components/ui/prose";
 import "./styles.css";
@@ -22,6 +23,7 @@ function Consumer() {
   const [commandOpen, setCommandOpen] = useState(false);
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
+  const [amount, setAmount] = useState(50);
   return <main className="p-6 font-sans">
     <ContentSections defaultScope>
     <Section id="installed-intro" aria-label="Introduction">
@@ -37,6 +39,7 @@ function Consumer() {
         <Field orientation="vertical"><FieldLabel>Email</FieldLabel><Input size="md" type="email" /><FieldFeedback hint="Your email address" error="Enter an email" invalid={false} /></Field>
         <FieldGroup><Field orientation="horizontal"><Checkbox /><FieldContent><FieldLabel>Accept updates</FieldLabel><FieldDescription>Occasional product news.</FieldDescription></FieldContent></Field></FieldGroup>
         <Separator orientation="horizontal" />
+        <Slider label="Amount" value={amount} onChange={setAmount} min={0} max={100} step={10} snap="magnetic" releaseThreshold={0.6} />
         <CardCopyButton value="Registry consumer" aria-label="Copy to clipboard" />
         <Menu>
           <MenuTrigger render={<Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="neutral" variant="outline" />}><ButtonLabel>Registry menu</ButtonLabel></MenuTrigger>

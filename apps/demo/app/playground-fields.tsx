@@ -2,9 +2,8 @@
 
 import { useId } from "react";
 import { CaretDown } from "@phosphor-icons/react";
-import { Slider } from "dialkit";
 import { MotionConfig } from "motion/react";
-import { Button, ButtonLabel, Checkbox, Field, FieldLabel, Menu, MenuTrigger, MenuPopup, MenuRadioGroup, MenuRadioItem, useTheme } from "@anaphor/system";
+import { Button, ButtonLabel, Checkbox, Field, FieldLabel, Menu, MenuTrigger, MenuPopup, MenuRadioGroup, MenuRadioItem, Slider } from "@anaphor/system";
 
 export function Select<const Value extends string>({ label, value, options, onChange }: { label: string; value: NoInfer<Value>; options: readonly Value[]; onChange: (value: NoInfer<Value>) => void }) {
   const valueId = useId();
@@ -28,9 +27,8 @@ export function Select<const Value extends string>({ label, value, options, onCh
 }
 
 export function Range({ label, value, min, max, step, unit, onChange, snap = "standard", releaseThreshold = 0.6 }: { snap?: "standard" | "magnetic"; releaseThreshold?: number; label: string; value: number; min: number; max: number; step: number; unit: string; onChange: (value: number) => void }) {
-  const { resolvedTheme } = useTheme();
   return <MotionConfig reducedMotion="user">
-    <div className="dialkit-root anaphor-dials col-span-2" data-theme={resolvedTheme === "dark" ? "dark" : "light"}>
+    <div className="col-span-2">
       <Slider label={label} value={value} min={min} max={max} step={step} unit={unit} onChange={onChange} snap={snap} releaseThreshold={releaseThreshold} />
     </div>
   </MotionConfig>;

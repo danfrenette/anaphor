@@ -1,0 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap');
+
+/* Adapted from DialKit 2.0.2 (MIT); see licenses/dialkit.txt. */
+.anaphor-slider {
+  --dial-row-height: 44px;
+  --dial-radius: 8px;
+  --dial-surface: rgba(0, 0, 0, 0.04);
+  --dial-surface-active: rgba(0, 0, 0, 0.1);
+  --dial-border-hover: rgba(0, 0, 0, 0.15);
+  --dial-text-label: rgba(0, 0, 0, 0.6);
+  --dial-text-focus: #000;
+  --dial-text-primary: rgba(0, 0, 0, 0.9);
+  --dial-focus-ring: var(--anaphor-brand);
+  font-family: system-ui, -apple-system, 'SF Pro Display', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width: 100%;
+}
+.dark .anaphor-slider {
+  --dial-surface: rgba(255, 255, 255, 0.05);
+  --dial-surface-active: rgba(255, 255, 255, 0.11);
+  --dial-border-hover: rgba(255, 255, 255, 0.15);
+  --dial-text-label: var(--anaphor-font-secondary);
+  --dial-text-focus: #fff;
+  --dial-text-primary: rgba(255, 255, 255, 0.95);
+}
+.dialkit-slider-wrapper {
+  position: relative;
+  height: var(--dial-row-height);
+}
+
+.dialkit-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  user-select: none;
+  overflow: hidden;
+  background: var(--dial-surface);
+  border-radius: var(--dial-radius);
+  touch-action: none;
+}
+
+.dialkit-slider-hashmarks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.dialkit-slider-hashmark {
+  position: absolute;
+  top: 50%;
+  width: 1px;
+  height: 8px;
+  border-radius: 999px;
+  transform: translateX(-50%) translateY(-50%);
+  background: rgba(255, 255, 255, 0);
+  transition: background 200ms;
+}
+
+.dialkit-slider-active .dialkit-slider-hashmark {
+  background: var(--dial-border-hover);
+}
+
+.dialkit-slider-active .dialkit-slider-value {
+  color: var(--dial-text-focus);
+}
+
+.dialkit-slider-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--dial-surface-active);
+  transition: background 0.15s;
+  pointer-events: none;
+}
+
+.dialkit-slider-active .dialkit-slider-fill {
+  background: var(--dial-border-hover);
+}
+
+.dialkit-slider-handle {
+  position: absolute;
+  top: 50%;
+  width: 3px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--dial-text-primary);
+  pointer-events: none;
+}
+
+.dialkit-slider-label {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(calc(-50% - 0.5px));
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dial-text-label);
+  pointer-events: none;
+  transition: color 0.15s;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dialkit-slider-value {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(calc(-50% + 0.5px));
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Geist Mono', monospace;
+  color: var(--dial-text-label);
+  pointer-events: auto;
+  transition: color 0.15s, border-color 0.15s;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+}
+
+.dialkit-slider-value-editable {
+  border-bottom-color: var(--dial-text-label);
+}
+
+.dialkit-slider-input {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4ch;
+  min-width: 3ch;
+  max-width: 6ch;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Geist Mono', monospace;
+  color: var(--dial-text-label);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--dial-text-label);
+  padding: 0 0 1px 0;
+  outline: none;
+  text-align: right;
+}
+
+.dialkit-slider-input:focus {
+  color: var(--dial-text-focus);
+}
+
+.dialkit-slider:focus { outline: none; }
+.dialkit-slider:focus-visible { outline: 2px solid var(--dial-focus-ring); outline-offset: -2px; }
+.dialkit-slider:focus-visible .dialkit-slider-value,
+.dialkit-slider:focus-within .dialkit-slider-value { color: var(--dial-text-focus); }
+.dialkit-slider:focus-visible .dialkit-slider-fill { background: var(--dial-border-hover); }
+.dialkit-slider-input:focus-visible { box-shadow: inset 0 -1px var(--dial-focus-ring); }
+@media (forced-colors: active) { .anaphor-slider { --dial-focus-ring: Highlight; } }

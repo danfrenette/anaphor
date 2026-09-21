@@ -114,17 +114,15 @@ function CodeBlock({ title, code }: { title: string; code: string }) {
 
 export function ComponentCode({ sectionId }: { sectionId?: string }) {
   if (sectionId === "slider") return <div className="grid gap-3">
-    <p className="text-small text-muted-foreground">This demo uses DialKit’s original slider with a local, opt-in snapping patch. The snapping props require this project’s patch; they are not part of upstream DialKit.</p>
-    <CodeBlock title="Usage" code={`import { Slider } from "dialkit";
-import "dialkit/styles.css";
+    <p className="text-small text-muted-foreground">Anaphor’s slider is adapted from DialKit, with optional magnetic snapping. Its source and styles are installed into your project.</p>
+    <CodeBlock title="Install" code="pnpm dlx shadcn@latest add danfrenette/anaphor/slider" />
+    <CodeBlock title="Usage" code={`import { Slider } from "@/components/ui/slider";
 
-<div className="dialkit-root" data-theme="light">
 <Slider
   label="Amount" value={value} onChange={setValue}
   min={0} max={100} step={10}
   snap="magnetic" releaseThreshold={0.6}
-/>
-</div>`} />
+/>`} />
   </div>;
   const example = sectionId ? examples[sectionId] : undefined;
   return <div className="grid min-w-0 gap-3">

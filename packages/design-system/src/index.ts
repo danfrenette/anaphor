@@ -25,3 +25,5 @@ export type { ShortcutBinding, ShortcutOptions } from "./lib/shortcut";
 export { CommandPalette, type CommandPaletteItem, type CommandPaletteProps } from "./components/command-palette";
 
 export { ThemeProvider, ThemeToggle, useTheme } from "./components/theme";
+
+export { Slider, type SliderProps } from "#components/slider";

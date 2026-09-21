@@ -26,6 +26,7 @@
         "danfrenette/anaphor/morph-surface",
         "danfrenette/anaphor/theme",
         "danfrenette/anaphor/tabs",
+        "danfrenette/anaphor/slider",
         "danfrenette/anaphor/separator",
         "danfrenette/anaphor/text",
         "danfrenette/anaphor/prose",
@@ -42,6 +43,16 @@
         "@import \"@/components/anaphor.css\"": {}
       },
       "files": [
+        {
+          "path": "packages/design-system/src/licenses/dialkit.txt",
+          "type": "registry:file",
+          "target": "@components/licenses/dialkit.txt"
+        },
+        {
+          "path": "packages/design-system/src/slider.css",
+          "type": "registry:file",
+          "target": "@components/slider.css"
+        },
         {
           "path": "packages/design-system/src/styles.css",
           "type": "registry:file",
@@ -385,6 +396,30 @@
           "path": "packages/design-system/src/components/tabs.tsx",
           "type": "registry:ui",
           "target": "@ui/tabs.tsx"
+        }
+      ]
+    },
+    {
+      "name": "slider",
+      "type": "registry:ui",
+      "title": "Slider",
+      "description": "DialKit-derived slider with optional magnetic detents.",
+      "dependencies": [
+        "motion"
+      ],
+      "registryDependencies": [
+        "danfrenette/anaphor/style"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/slider.tsx",
+          "type": "registry:ui",
+          "target": "@ui/slider.tsx"
+        },
+        {
+          "path": "packages/design-system/src/lib/slider-utils.ts",
+          "type": "registry:lib",
+          "target": "@components/lib/slider-utils.ts"
         }
       ]
     }

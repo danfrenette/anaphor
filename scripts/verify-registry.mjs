@@ -93,6 +93,11 @@ async function checkBrowser(browser, directory, item) {
       await page.getByRole("textbox", { name: "Email" }).fill("reader@example.com");
       await page.getByRole("checkbox", { name: "Accept updates" }).check();
       await expect(page.getByRole("checkbox", { name: "Accept updates" })).toBeChecked();
+      const slider = page.getByRole("slider", { name: "Amount" });
+      await slider.focus();
+      await slider.press("ArrowRight");
+      await expect(slider).toHaveAttribute("aria-valuenow", "60");
+      await expect(slider).toHaveCSS("height", "44px");
       await page.getByRole("button", { name: "Registry menu" }).click();
       await expect(page.getByRole("menuitem", { name: "Installed action" })).toBeVisible();
       await page.keyboard.press("Escape");
