@@ -3,7 +3,7 @@
 // Adapted from DialKit 2.0.2 (MIT). See ../licenses/dialkit.txt.
 import { handleSliderKey, decimalsForStep, roundValue, snapToDecile, magneticStep } from "#lib/slider-utils";
 import { useRef, useState, useCallback, useEffect } from 'react';
-import { motion, useMotionValue, useTransform, animate } from 'motion/react';
+import { motion, useMotionValue, useTransform, useReducedMotion, animate } from 'motion/react';
 
 export interface SliderProps {
   label: string;
@@ -33,6 +33,7 @@ export function Slider({
   snap = "standard",
   releaseThreshold = 0.6,
 }: SliderProps) {
+  const reduceMotion = useReducedMotion();
   const magneticValue = useRef(value);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -155,7 +156,7 @@ export function Slider({
       if (!isClickRef.current) {
         // Drag mode — instant update
         const rect = wrapperRectRef.current;
-        if (rect) {
+        if (rect && !reduceMotion) {
           if (e.clientX < rect.left) {
             rubberStretchPx.jump(computeRubberStretch(e.clientX, -1));
           } else if (e.clientX > rect.right) {
@@ -187,6 +188,7 @@ export function Slider({
       fillPercent,
       rubberStretchPx,
       computeRubberStretch,
+      reduceMotion,
       snap,
       releaseThreshold,
       min,
@@ -213,18 +215,25 @@ export function Slider({
         if (animRef.current) {
           animRef.current.stop();
         }
-        animRef.current = animate(fillPercent, newPct, {
-          type: 'spring',
-          stiffness: 300,
-          damping: 25,
-          mass: 0.8,
-          onComplete: () => { animRef.current = null; },
-        });
+        animRef.current = null;
+        if (reduceMotion) {
+          fillPercent.jump(newPct);
+        } else {
+          animRef.current = animate(fillPercent, newPct, {
+            type: 'spring',
+            stiffness: 300,
+            damping: 25,
+            mass: 0.8,
+            onComplete: () => { animRef.current = null; },
+          });
+        }
         onChange(roundValue(snappedValue, step, min, max));
       }
 
       // Spring rubber band back
-      if (rubberStretchPx.get() !== 0) {
+      if (reduceMotion) {
+        rubberStretchPx.jump(0);
+      } else if (rubberStretchPx.get() !== 0) {
         animate(rubberStretchPx, 0, {
           type: 'spring',
           visualDuration: 0.35,
@@ -245,6 +254,7 @@ export function Slider({
       max,
       step,
       snap,
+      reduceMotion,
       fillPercent,
       rubberStretchPx,
     ]
@@ -430,8 +440,8 @@ export function Slider({
           }}
           animate={{
             opacity: handleOpacity,
-            scaleX: isActive ? 1 : 0.25,
-            scaleY: isActive && valueDodge ? 0.75 : 1,
+            scaleX: reduceMotion || isActive ? 1 : 0.25,
+            scaleY: !reduceMotion && isActive && valueDodge ? 0.75 : 1,
           }}
           transition={{
             scaleX: { type: 'spring', visualDuration: 0.25, bounce: 0.15 },

@@ -10,7 +10,9 @@ are `min=0`, `max=1`, and `step=0.01`; `unit` is optional display content.
 `snap="standard"` preserves DialKit dragging and click snapping.
 `snap="magnetic"` holds each step until the pointer crosses `releaseThreshold`
 toward its neighbor (default 0.6, clamped to 0.5–0.9). Tick marks follow the step
-size in magnetic mode. Arrow keys, Home/End, Page Up/Down, Shift+arrows, and Enter
+size in magnetic mode. Reduced-motion preferences disable spatial spring feedback
+inside the component, including when used without a MotionConfig wrapper.
+Arrow keys, Home/End, Page Up/Down, Shift+arrows, and Enter
 for numeric editing remain available in both modes.
 
 ## Upstream provenance and updates
@@ -23,7 +25,7 @@ The original TypeScript was recovered from that release's `dist/index.js.map`
 distributed with the registry item.
 
 Local differences: magnetic detents and step marks; Anaphor light/dark theme
-integration and 44px control height; unused global shortcut/panel integration
+integration, self-hosted font tokens, and 44px control height; unused global shortcut/panel integration
 omitted; pointer capture uses the current control; measurements use ResizeObserver
 instead of reading refs during render; editable hover resets in the pointer-leave
 handler. DialKit's slider rendering and motion are otherwise retained.

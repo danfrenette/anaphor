@@ -67,6 +67,7 @@ async function checkBrowser(browser, directory, item) {
   page.on("requestfailed", request => errors.push(request.url()));
   page.on("response", response => { if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`); });
   try {
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(url);
     await expect(page.getByRole("main")).toHaveCSS("padding-top", "24px");
     await expect(page.locator("body")).toHaveCSS("margin", "0px");
@@ -98,6 +99,18 @@ async function checkBrowser(browser, directory, item) {
       await slider.press("ArrowRight");
       await expect(slider).toHaveAttribute("aria-valuenow", "60");
       await expect(slider).toHaveCSS("height", "44px");
+      await slider.scrollIntoViewIfNeeded();
+      const rect = await slider.boundingBox();
+      assert.ok(rect);
+      await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(rect.x - 100, rect.y + rect.height / 2);
+      await expect(slider).toHaveAttribute("aria-valuenow", "0");
+      const dragged = await slider.boundingBox();
+      assert.ok(dragged);
+      assert.equal(dragged.width, rect.width, "Reduced motion must not stretch the owned slider");
+      assert.equal(dragged.x, rect.x, "Reduced motion must not move the owned slider");
+      await page.mouse.up();
       await page.getByRole("button", { name: "Registry menu" }).click();
       await expect(page.getByRole("menuitem", { name: "Installed action" })).toBeVisible();
       await page.keyboard.press("Escape");

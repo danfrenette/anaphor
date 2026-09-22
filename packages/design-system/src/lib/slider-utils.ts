@@ -61,7 +61,7 @@ export function magneticStep(raw: number, previous: number, min: number, max: nu
   const threshold = Math.max(0.5, Math.min(0.9, releaseThreshold));
   const last = Math.ceil((max - min) / step);
   const stop = (index: number) => Math.min(max, min + index * step);
-  let index = Math.max(0, Math.min(last, Math.round((previous - min) / step)));
+  let index = Math.max(0, Math.min(last, previous === max ? last : Math.round((previous - min) / step)));
   const start = index;
   while (index < last && raw > stop(index) + (stop(index + 1) - stop(index)) * threshold) index++;
   if (index === start) {
