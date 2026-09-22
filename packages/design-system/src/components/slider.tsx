@@ -53,6 +53,7 @@ export function Slider({
   // Click-vs-drag detection refs
   const pointerDownPos = useRef<{ x: number; y: number } | null>(null);
   const isClickRef = useRef(true);
+  const animateNextValue = useRef(false);
   const animRef = useRef<ReturnType<typeof animate> | null>(null);
   const wrapperRectRef = useRef<DOMRect | null>(null);
   const scaleRef = useRef(1);
@@ -78,12 +79,24 @@ export function Slider({
     (stretch) => (stretch < 0 ? stretch : 0)
   );
 
-  // Sync from props when not interacting (skip if spring animation is active)
   useEffect(() => {
-    if (!isInteracting && !animRef.current) {
+    if (isInteracting) return;
+    const shouldAnimate = animateNextValue.current || animRef.current !== null;
+    animateNextValue.current = false;
+    animRef.current?.stop();
+    animRef.current = null;
+    if (shouldAnimate && !reduceMotion) {
+      animRef.current = animate(fillPercent, percentage, {
+        type: 'spring',
+        stiffness: 300,
+        damping: 25,
+        mass: 0.8,
+        onComplete: () => { animRef.current = null; },
+      });
+    } else {
       fillPercent.jump(percentage);
     }
-  }, [percentage, isInteracting, fillPercent]);
+  }, [percentage, isInteracting, fillPercent, reduceMotion]);
 
   const positionToValue = useCallback(
     (clientX: number) => {
@@ -124,6 +137,7 @@ export function Slider({
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (showInput || e.button !== 0) return;
       e.preventDefault();
+      e.currentTarget.focus({ preventScroll: true });
       e.currentTarget.setPointerCapture(e.pointerId);
       pointerDownPos.current = { x: e.clientX, y: e.clientY };
       magneticValue.current = value;
@@ -210,23 +224,7 @@ export function Slider({
           ? Math.max(min, Math.min(max, min + Math.round((rawValue - min) / step) * step))
           : snapToDecile(rawValue, min, max);
 
-        const newPct = percentFromValue(snappedValue);
-
-        if (animRef.current) {
-          animRef.current.stop();
-        }
-        animRef.current = null;
-        if (reduceMotion) {
-          fillPercent.jump(newPct);
-        } else {
-          animRef.current = animate(fillPercent, newPct, {
-            type: 'spring',
-            stiffness: 300,
-            damping: 25,
-            mass: 0.8,
-            onComplete: () => { animRef.current = null; },
-          });
-        }
+        animateNextValue.current = true;
         onChange(roundValue(snappedValue, step, min, max));
       }
 
@@ -248,14 +246,12 @@ export function Slider({
     [
       isInteracting,
       positionToValue,
-      percentFromValue,
       onChange,
       min,
       max,
       step,
       snap,
       reduceMotion,
-      fillPercent,
       rubberStretchPx,
     ]
   );
