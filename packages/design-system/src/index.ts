@@ -7,7 +7,7 @@ export { AdaptiveSurfaceBackdrop, AdaptiveSurfaceClose, AdaptiveSurfacePopup, Ad
 export { Input, type InputProps } from "./components/input";
 export { FieldFeedback, type FieldFeedbackProps } from "./components/field-feedback";
 export { Field, FieldContent, FieldGroup, FieldLabel, FieldDescription, FieldError, type FieldProps } from "./components/field";
-export { Checkbox, CheckboxPrimitive } from "./components/checkbox";
+export { Checkbox, CheckboxGroup, CheckboxPrimitive } from "./components/checkbox";
 export { Badge, type BadgeProps } from "./components/badge";
 export { Kbd, KbdGroup } from "./components/kbd";
 export { Menu, MenuRadioGroup, MenuRadioItem, MenuGroup, MenuGroupLabel, MenuItem, MenuPopup, MenuPortal, MenuSeparator, MenuShortcut, MenuTrigger, type MenuGroupLabelProps, type MenuItemProps, type MenuPopupProps } from "./components/menu";

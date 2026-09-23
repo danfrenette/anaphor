@@ -2,7 +2,93 @@
 
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox";
 import { CheckIcon, MinusIcon } from "@phosphor-icons/react";
+import { useRef, type ComponentProps, type PointerEvent as ReactPointerEvent } from "react";
 import { cn } from "../lib/utils";
+
+type PaintSession = {
+  pointerId: number;
+  origin: HTMLElement;
+  checked: boolean;
+  x: number;
+  y: number;
+  painted: Set<HTMLElement>;
+  dragging: boolean;
+  released: boolean;
+};
+
+function CheckboxGroup({ onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onClickCapture, ...props }: ComponentProps<"div">) {
+  const groupRef = useRef<HTMLDivElement>(null);
+  const sessionRef = useRef<PaintSession | null>(null);
+
+  function checkboxAt(target: EventTarget | null) {
+    const group = groupRef.current;
+    if (!(target instanceof Element) || !group) return null;
+    const field = target.closest('[data-slot="field"]');
+    const checkbox = field?.querySelector<HTMLElement>('[data-slot="checkbox"]');
+    return checkbox && group.contains(checkbox) && !checkbox.hasAttribute("data-disabled") && !checkbox.hasAttribute("data-readonly") ? checkbox : null;
+  }
+
+  function paint(checkbox: HTMLElement, session: PaintSession) {
+    if (session.painted.has(checkbox)) return;
+    session.painted.add(checkbox);
+    if ((checkbox.getAttribute("aria-checked") === "true") !== session.checked) checkbox.click();
+  }
+
+  function end() {
+    const session = sessionRef.current;
+    if (!session) return;
+    window.removeEventListener("pointerup", end);
+    window.removeEventListener("pointercancel", end);
+    session.released = true;
+    if (session.dragging) window.setTimeout(() => {
+      if (sessionRef.current === session) sessionRef.current = null;
+    }, 0);
+    else sessionRef.current = null;
+  }
+
+  function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    onPointerDown?.(event);
+    // Touch keeps its native scrolling and assistive-technology gestures.
+    if (event.defaultPrevented || (event.pointerType !== "mouse" && event.pointerType !== "pen") || event.button !== 0) return;
+    const origin = checkboxAt(event.target);
+    if (!origin) return;
+    sessionRef.current = {
+      pointerId: event.pointerId, origin, checked: origin.getAttribute("aria-checked") !== "true",
+      x: event.clientX, y: event.clientY, painted: new Set(), dragging: false, released: false,
+    };
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+  }
+
+  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    onPointerMove?.(event);
+    const session = sessionRef.current;
+    if (!session || session.pointerId !== event.pointerId || !(event.buttons & 1)) return;
+    if (!session.dragging) {
+      if (Math.hypot(event.clientX - session.x, event.clientY - session.y) < 5) return;
+      session.dragging = true;
+      session.origin.focus();
+      paint(session.origin, session);
+    }
+    const checkbox = checkboxAt(document.elementFromPoint(event.clientX, event.clientY));
+    if (checkbox) paint(checkbox, session);
+    event.preventDefault();
+  }
+
+  return <div {...props} data-slot="checkbox-group" ref={groupRef}
+    onPointerDown={handlePointerDown}
+    onPointerMove={handlePointerMove}
+    onPointerUp={(event) => { onPointerUp?.(event); end(); }}
+    onPointerCancel={(event) => { onPointerCancel?.(event); end(); }}
+    onClickCapture={(event) => {
+      onClickCapture?.(event);
+      if (sessionRef.current?.dragging && sessionRef.current.released && event.detail > 0) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }}
+  />;
+}
 
 function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
   return (
@@ -44,4 +130,4 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
   );
 }
 
-export { Checkbox, CheckboxPrimitive };
+export { Checkbox, CheckboxGroup, CheckboxPrimitive };

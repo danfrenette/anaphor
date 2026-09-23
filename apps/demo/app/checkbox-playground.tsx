@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, Checkbox, Field, FieldContent, FieldGroup, FieldDescription, FieldLabel } from "@anaphor/system";
+import { Card, CardContent, CardHeader, CardTitle, Checkbox, CheckboxGroup, Field, FieldContent, FieldGroup, FieldDescription, FieldLabel } from "@anaphor/system";
 import { useState } from "react";
 import { Check } from "./playground-fields";
 import { PlaygroundControls } from "./playground-host";
@@ -52,14 +52,16 @@ export function CheckboxSelectionExample() {
         <Checkbox checked={allSelected} indeterminate={selected.length > 0 && !allSelected} onCheckedChange={(checked) => setSelected(checked ? channels : [])} />
         <FieldLabel>Select all</FieldLabel>
       </Field>
-      <FieldGroup className="mt-2 pl-8">
-        {channels.map((channel) => (
-          <Field orientation="horizontal" key={channel}>
-            <Checkbox name="preferences" value={channel} checked={selected.includes(channel)} onCheckedChange={(checked) => setSelected((current) => checked ? [...current, channel] : current.filter((value) => value !== channel))} />
-            <FieldLabel>{channel}</FieldLabel>
-          </Field>
-        ))}
-      </FieldGroup>
+      <CheckboxGroup className="mt-2 pl-8">
+        <FieldGroup>
+          {channels.map((channel) => (
+            <Field orientation="horizontal" key={channel}>
+              <Checkbox name="preferences" value={channel} checked={selected.includes(channel)} onCheckedChange={(checked) => setSelected((current) => checked ? [...current, channel] : current.filter((value) => value !== channel))} />
+              <FieldLabel>{channel}</FieldLabel>
+            </Field>
+          ))}
+        </FieldGroup>
+      </CheckboxGroup>
     </fieldset>
   );
 }

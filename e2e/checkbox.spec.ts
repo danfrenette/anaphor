@@ -27,6 +27,47 @@ test("mixed selection becomes checked and follows individual choices", async ({ 
   await expect(page.getByRole("checkbox", { name: "Product updates" })).not.toBeChecked();
 });
 
+test("related choices can be painted in either direction and still work by keyboard", async ({ page }) => {
+  await page.goto("/#checkbox");
+  const product = page.getByRole("checkbox", { name: "Product updates" });
+  const design = page.getByRole("checkbox", { name: "Design notes" });
+  const community = page.getByRole("checkbox", { name: "Community events" });
+  const drag = async (from: typeof product, to: typeof product) => {
+    await community.scrollIntoViewIfNeeded();
+    const start = (await from.boundingBox())!;
+    const end = (await to.boundingBox())!;
+    await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, { steps: 12 });
+    await page.mouse.up();
+  };
+
+  await product.uncheck();
+  await drag(product, community);
+  await expect(product).toBeChecked();
+  await expect(design).toBeChecked();
+  await expect(community).toBeChecked();
+  await drag(community, product);
+  await expect(product).not.toBeChecked();
+  await expect(design).not.toBeChecked();
+  await expect(community).not.toBeChecked();
+  await design.focus();
+  await design.press("Space");
+  await expect(design).toBeChecked();
+});
+
+test("touch taps select individual choices without taking over scrolling", async ({ page, isMobile }) => {
+  test.skip(!isMobile);
+  await page.goto("/#checkbox");
+  const design = page.getByRole("checkbox", { name: "Design notes" });
+  await design.scrollIntoViewIfNeeded();
+  const box = (await design.boundingBox())!;
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(design).toBeChecked();
+  await expect(page.getByRole("checkbox", { name: "Community events" })).not.toBeChecked();
+  await expect(page.locator('[data-slot="checkbox-group"]')).not.toHaveCSS("touch-action", "none");
+});
+
 test("checkbox controls reset and both themes are accessible", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#checkbox");
