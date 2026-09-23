@@ -98,7 +98,7 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
         // Layout
         "relative inline-flex size-5 shrink-0 items-center justify-center rounded-[6px] border-2 border-muted-foreground align-middle",
         // Accessibility
-        "outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring",
+        "touch-manipulation before:absolute before:-inset-3.5 before:bg-transparent before:content-[''] outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring",
         // Validation and disabled states
         "data-invalid:border-danger-foreground data-invalid:focus-visible:outline-danger-foreground",
         "data-disabled:cursor-not-allowed data-disabled:border-border data-disabled:bg-[var(--anaphor-input-disabled)]",

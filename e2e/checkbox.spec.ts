@@ -118,6 +118,30 @@ test("the gap between checkbox and label is clickable", async ({ page }) => {
   await expect(checkbox).toBeChecked();
 });
 
+test("checkbox has a 44px hit area without changing its visual size", async ({ page }) => {
+  await page.goto("/#checkbox");
+  const checkbox = page.getByRole("checkbox", { name: "Keep me updated" });
+  await checkbox.scrollIntoViewIfNeeded();
+  await page.evaluate(() => document.fonts.ready);
+  const hit = await checkbox.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    const points: [number, number][] = [
+      [box.x - 10, box.y + 10],
+      [box.x + 10, box.y - 10],
+      [box.x + 10, box.y + 30],
+    ];
+    return {
+      width: box.width,
+      height: box.height,
+      edges: points.map(([x, y]) => document.elementFromPoint(x, y)?.getAttribute("data-slot")),
+    };
+  });
+  expect(hit).toEqual({ width: 20, height: 20, edges: ["checkbox", "checkbox", "checkbox"] });
+  const box = (await checkbox.boundingBox())!;
+  await page.mouse.click(box.x - 10, box.y + 10);
+  await expect(checkbox).toBeChecked();
+});
+
 test("checkbox marks and boundaries meet non-text contrast in both themes", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#checkbox");
