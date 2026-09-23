@@ -240,7 +240,9 @@ composition, refs, and state-aware classes. Its default vertical layout is
 unchanged. Use `orientation="horizontal"` for checkbox rows; the label has a
 44px minimum target. `FieldContent` groups a label and description beside the
 control without manual indentation. `FieldGroup` stacks related fields with
-16px gaps; it is a layout div, so keep a native fieldset/legend when the group
+16px gaps and makes checkbox rows paintable by mouse or pen drag. Touch keeps
+native scrolling, and each checkbox still works independently by click, tap,
+or Space. It is a layout div, so keep a native fieldset/legend when the group
 needs a semantic name. Both wrappers accept native div props and refs.
 
 ```tsx

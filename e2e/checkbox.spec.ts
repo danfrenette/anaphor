@@ -65,7 +65,7 @@ test("touch taps select individual choices without taking over scrolling", async
   await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
   await expect(design).toBeChecked();
   await expect(page.getByRole("checkbox", { name: "Community events" })).not.toBeChecked();
-  await expect(page.locator('[data-slot="checkbox-group"]')).not.toHaveCSS("touch-action", "none");
+  await expect(design.locator('xpath=ancestor::*[@data-slot="field-group"]')).not.toHaveCSS("touch-action", "none");
 });
 
 test("checkbox controls reset and both themes are accessible", async ({ page }) => {

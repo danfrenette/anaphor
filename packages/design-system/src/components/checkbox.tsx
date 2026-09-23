@@ -2,7 +2,7 @@
 
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox";
 import { CheckIcon, MinusIcon } from "@phosphor-icons/react";
-import { useRef, type ComponentProps, type PointerEvent as ReactPointerEvent } from "react";
+import { useImperativeHandle, useRef, type ComponentProps, type PointerEvent as ReactPointerEvent } from "react";
 import { cn } from "../lib/utils";
 
 type PaintSession = {
@@ -16,9 +16,10 @@ type PaintSession = {
   released: boolean;
 };
 
-function CheckboxGroup({ onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onClickCapture, ...props }: ComponentProps<"div">) {
+function CheckboxGroup({ ref, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onClickCapture, ...props }: ComponentProps<"div">) {
   const groupRef = useRef<HTMLDivElement>(null);
   const sessionRef = useRef<PaintSession | null>(null);
+  useImperativeHandle(ref, () => groupRef.current!);
 
   function checkboxAt(target: EventTarget | null) {
     const group = groupRef.current;
@@ -75,7 +76,7 @@ function CheckboxGroup({ onPointerDown, onPointerMove, onPointerUp, onPointerCan
     event.preventDefault();
   }
 
-  return <div {...props} data-slot="checkbox-group" ref={groupRef}
+  return <div data-slot="checkbox-group" {...props} ref={groupRef}
     onPointerDown={handlePointerDown}
     onPointerMove={handlePointerMove}
     onPointerUp={(event) => { onPointerUp?.(event); end(); }}

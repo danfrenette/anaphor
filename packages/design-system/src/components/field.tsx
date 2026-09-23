@@ -3,6 +3,7 @@
 import { Field as FieldPrimitive } from "@base-ui/react/field";
 import type { ComponentProps } from "react";
 import { cn } from "../lib/utils";
+import { CheckboxGroup } from "./checkbox";
 
 type FieldProps = ComponentProps<typeof FieldPrimitive.Root> & {
   orientation: "vertical" | "horizontal";
@@ -23,7 +24,7 @@ function FieldContent({ className, ...props }: ComponentProps<"div">) {
 }
 
 function FieldGroup({ className, ...props }: ComponentProps<"div">) {
-  return <div {...props} data-slot="field-group" className={cn("grid min-w-0 gap-4", className)} />;
+  return <CheckboxGroup {...props} data-slot="field-group" className={cn("grid min-w-0 gap-4", className)} />;
 }
 
 function FieldLabel({ className, ...props }: ComponentProps<typeof FieldPrimitive.Label>) {
