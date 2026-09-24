@@ -12,6 +12,7 @@ import { Input } from "./components/ui/input";
 import { Kbd, KbdGroup } from "./components/ui/kbd";
 import { MorphSurface } from "./components/ui/morph-surface";
 import { Menu, MenuItem, MenuPopup, MenuTrigger } from "./components/ui/menu";
+import { Popover, PopoverBody, PopoverClose, PopoverPopup, PopoverTitle, PopoverTrigger } from "./components/ui/popover";
 import { ContentSections, Section } from "./components/ui/sections";
 import { Separator } from "./components/ui/separator";
 import { Slider } from "./components/ui/slider";
@@ -46,6 +47,15 @@ function Consumer() {
           <MenuTrigger render={<Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="neutral" variant="outline" />}><ButtonLabel>Registry menu</ButtonLabel></MenuTrigger>
           <MenuPopup align="center" side="bottom" sideOffset={6}><MenuItem variant="default">Installed action</MenuItem></MenuPopup>
         </Menu>
+        <Popover>
+          <PopoverTrigger>Registry popover</PopoverTrigger>
+          <PopoverPopup side="bottom" align="start" sideOffset={8}>
+            <PopoverBody>
+              <PopoverTitle>Installed preferences</PopoverTitle>
+              <PopoverClose>Done</PopoverClose>
+            </PopoverBody>
+          </PopoverPopup>
+        </Popover>
         <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="neutral" variant="outline" onClick={() => setCommandOpen(true)}><ButtonLabel>Registry search</ButtonLabel></Button>
         <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} title="Registry commands" items={[{ id: "count", label: "Increment count", group: "Actions" }]} onSelect={() => setCount(count + 1)}
           renderTrailing={() => <KbdGroup aria-label="G then I"><Kbd>G</Kbd><Kbd>I</Kbd></KbdGroup>} />

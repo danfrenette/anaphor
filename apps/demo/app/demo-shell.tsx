@@ -72,6 +72,7 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "slider", label: "Slider", href: "/#slider", icon: SlidersHorizontal },
       { id: "checkbox", label: "Checkbox", href: "/#checkbox", icon: CheckSquare },
       { id: "dropdown-menu", label: "Dropdown menu", href: "/#dropdown-menu", icon: ListDashes },
+      { id: "popover", label: "Popover", href: "/#popover", icon: Rectangle },
       { id: "kbd", label: "Kbd", href: "/#kbd", icon: Keyboard },
       { id: "command-palette", label: "Command palette", href: "/#command-palette", icon: MagnifyingGlass },
     ],

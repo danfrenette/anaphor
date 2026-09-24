@@ -22,6 +22,7 @@
         "danfrenette/anaphor/input",
         "danfrenette/anaphor/kbd",
         "danfrenette/anaphor/menu",
+        "danfrenette/anaphor/popover",
         "danfrenette/anaphor/sidebar",
         "danfrenette/anaphor/morph-surface",
         "danfrenette/anaphor/theme",
@@ -223,6 +224,19 @@
           "path": "packages/design-system/src/components/input.tsx",
           "type": "registry:ui",
           "target": "@ui/input.tsx"
+        }
+      ]
+    },
+    {
+      "name": "popover",
+      "type": "registry:ui",
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/popover.tsx",
+          "type": "registry:ui",
+          "target": "@ui/popover.tsx"
         }
       ]
     },

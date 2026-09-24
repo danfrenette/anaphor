@@ -23,6 +23,7 @@ export { useShortcut } from "./lib/shortcut";
 export type { ShortcutBinding, ShortcutOptions } from "./lib/shortcut";
 
 export { CommandPalette, type CommandPaletteItem, type CommandPaletteProps } from "./components/command-palette";
+export { Popover, PopoverBody, PopoverClose, PopoverDescription, PopoverPopup, PopoverTitle, PopoverTrigger, type PopoverPopupProps } from "./components/popover";
 
 export { ThemeProvider, ThemeToggle, useTheme } from "./components/theme";
 

@@ -1,4 +1,12 @@
 import { AdaptiveSurfaceTrigger, Button, CommandPalette, SidebarProvider, type ButtonProps, type SidebarProviderProps } from "@anaphor/system";
+import { Popover, PopoverPopup } from "@anaphor/system";
+
+<Popover defaultOpen={false}><PopoverPopup side="bottom" align="start" sideOffset={8} positionerProps={{ collisionPadding: 16, collisionAvoidance: { side: "flip", align: "shift" } }} /></Popover>;
+<Popover open={false} onOpenChange={() => {}} />;
+// @ts-expect-error Popup placement is explicitly configured.
+<PopoverPopup />;
+// @ts-expect-error Positioner passthrough cannot override required placement.
+<PopoverPopup side="bottom" align="start" sideOffset={8} positionerProps={{ side: "top" }} />;
 
 const button = {
   iconOnly: false,
