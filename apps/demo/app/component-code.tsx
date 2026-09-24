@@ -59,6 +59,25 @@ const examples: Record<string, { title: string; item: string; code: string }> = 
   <TabsPanel value="library">Saved work</TabsPanel>
   <TabsPanel value="recent">Recent work</TabsPanel>
 </Tabs>` },
+  popover: { title: "Popover", item: "popover", code: `import {
+  Popover, PopoverTrigger, PopoverPopup,
+  PopoverBody, PopoverTitle,
+  PopoverDescription, PopoverClose,
+} from "@/components/ui/popover";
+
+<Popover>
+  <PopoverTrigger>Preferences</PopoverTrigger>
+  <PopoverPopup side="bottom" align="start" sideOffset={8}>
+    <PopoverBody>
+      <PopoverTitle>Preferences</PopoverTitle>
+      <PopoverDescription>
+        Changes apply immediately.
+      </PopoverDescription>
+      {/* Add fields and controls here. */}
+      <PopoverClose>Done</PopoverClose>
+    </PopoverBody>
+  </PopoverPopup>
+</Popover>` },
   "dropdown-menu": { title: "Menu", item: "menu", code: `import {
   Menu, MenuTrigger, MenuPopup, MenuItem,
 } from "@/components/ui/menu";
