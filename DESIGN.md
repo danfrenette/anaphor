@@ -234,6 +234,21 @@ items, and keyboard highlighting stays immediate. Reduced motion removes travel.
 The mechanical composition follows coss Menu; visual and motion decisions remain
 local to Anaphor.
 
+## Popovers
+
+Popover composes Base UI's focus, dismissal, and positioning behavior into an
+anchored settings surface. It uses the shared control radius, neutral popup
+surface, and menu shadow. A separate padded body scrolls within the available
+height. Popovers have no caret.
+
+Opening fades and scales from 0.95 at the trigger origin over 180ms with
+the shared ease-out curve; closing takes 125ms. Pointer, touch, and keyboard
+activation share these transitions, including Escape dismissal. Typing, tabbing,
+and selection remain immediate; Base UI returns focus after exit. Reduced motion
+disables fades and scaling.
+Stable trigger geometry preserves the anchor during button press feedback.
+The component contract and examples live in docs/components/popover.md.
+
 ## Card copy feedback
 
 `CardCopyButton` composes inside `CardAction` and copies its explicit `value`.

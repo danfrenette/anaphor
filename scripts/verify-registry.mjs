@@ -114,6 +114,11 @@ async function checkBrowser(browser, directory, item) {
       await page.getByRole("button", { name: "Registry menu" }).click();
       await expect(page.getByRole("menuitem", { name: "Installed action" })).toBeVisible();
       await page.keyboard.press("Escape");
+      await page.getByRole("button", { name: "Registry popover" }).click();
+      await expect(page.getByRole("dialog", { name: "Installed preferences" })).toBeVisible();
+      await page.getByRole("button", { name: "Done", exact: true }).click();
+      await expect(page.getByRole("dialog", { name: "Installed preferences" })).toBeHidden();
+      await expect(page.getByRole("button", { name: "Registry popover" })).toBeFocused();
       await page.getByRole("button", { name: "Open Registry controls" }).click();
       await expect(page.getByRole("region", { name: "Registry controls" })).toBeVisible();
       await page.getByRole("region", { name: "Introduction", exact: true }).focus();
