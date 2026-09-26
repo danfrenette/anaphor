@@ -16,7 +16,8 @@ for (const theme of ["light", "dark"] as const) {
       await expect(specimen.getByTestId("contrast-result").last()).toContainText("Exception");
       await expect(specimen).not.toContainText("Measuring…");
       const ratio = async (label: string) => Number.parseFloat(await specimen.getByRole("listitem").filter({ hasText: label }).getByTestId("contrast-result").innerText());
-      expect(await ratio("Reading / page")).toBeCloseTo(localTheme === "light" ? 13.27 : 10.98, 1);
+      // Browser color conversion and 8-bit canvas rounding differ across platforms.
+      expect(Math.abs(await ratio("Reading / page") - (localTheme === "light" ? 13.27 : 10.98))).toBeLessThan(0.12);
       const result = await new AxeBuilder({ page }).include(`[data-testid="foundation-${localTheme}"]`).analyze();
       expect(result.violations).toEqual([]);
     }
@@ -60,6 +61,7 @@ for (const theme of ["light", "dark"] as const) {
     await expect(specimen).toBeVisible();
     await specimen.getByText("Theme elevation", { exact: true }).click();
     await page.evaluate(() => document.fonts.ready);
+    expect(await page.locator("html").evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
     await page.addStyleTag({ content: "header, [data-slot='morph-surface'], a[href='#content'] { visibility: hidden !important; }" });
     await expect(specimen.locator("details").last()).toHaveScreenshot(`elevation-${theme}.png`);
     for (const [name, file] of [["Type and reading", "type"], ["Space, geometry, elevation", "geometry"], ["Motion", "motion"], ["A bounded experiment", "experiment"]]) {
