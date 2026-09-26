@@ -28,3 +28,4 @@ export { Popover, PopoverBody, PopoverClose, PopoverDescription, PopoverPopup, P
 export { ThemeProvider, ThemeToggle, useTheme } from "./components/theme";
 
 export { Slider, type SliderProps } from "#components/slider";
+export { Tooltip, TooltipGroup, TooltipProvider, TooltipTrigger, TooltipPopup, type TooltipPopupProps } from "./components/tooltip";

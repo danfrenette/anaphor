@@ -3,6 +3,22 @@
 import { CardCopyButton } from "@anaphor/system";
 
 const examples: Record<string, { title: string; item: string; code: string }> = {
+  tooltip: { title: "Tooltip", item: "tooltip", code: `import { TooltipGroup, Tooltip, TooltipTrigger, TooltipPopup } from "@/components/ui/tooltip";
+
+<TooltipGroup delay={400} closeDelay={80} timeout={400}>
+  <Tooltip>
+    <TooltipTrigger>Settings</TooltipTrigger>
+    <TooltipPopup side="top" align="center" sideOffset={8}>
+      Configure visible columns
+    </TooltipPopup>
+  </Tooltip>
+  <Tooltip>
+    <TooltipTrigger>Filters</TooltipTrigger>
+    <TooltipPopup side="top" align="center" sideOffset={8}>
+      Narrow the results
+    </TooltipPopup>
+  </Tooltip>
+</TooltipGroup>` },
   button: { title: "Button", item: "button", code: `import { Button, ButtonLabel } from "@/components/ui/button";
 
 <Button
@@ -119,7 +135,7 @@ const setup = `import {
 </ThemeProvider>`;
 
 export function codeTitle(sectionId?: string) {
-  return sectionId === "slider" ? "Slider code" : sectionId && examples[sectionId] ? `${examples[sectionId].title} code` : "Install Anaphor";
+  return sectionId === "data-table" ? "Data table exploration" : sectionId === "slider" ? "Slider code" : sectionId && examples[sectionId] ? `${examples[sectionId].title} code` : "Install Anaphor";
 }
 
 function CodeBlock({ title, code }: { title: string; code: string }) {
@@ -132,6 +148,7 @@ function CodeBlock({ title, code }: { title: string; code: string }) {
 }
 
 export function ComponentCode({ sectionId }: { sectionId?: string }) {
+  if (sectionId === "data-table") return <p className="text-ui text-muted-foreground">This table is a visual exploration. A reusable component and installation example will follow once the design is settled.</p>;
   if (sectionId === "slider") return <div className="grid gap-3">
     <p className="text-small text-muted-foreground">Anaphor’s slider is adapted from DialKit, with optional magnetic snapping. Its source and styles are installed into your project.</p>
     <CodeBlock title="Install" code="pnpm dlx shadcn@latest add danfrenette/anaphor/slider" />
