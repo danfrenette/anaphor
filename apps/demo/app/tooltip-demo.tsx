@@ -48,7 +48,7 @@ export function TooltipDemo() {
               {formats.map(({ id, label, Icon }) => <Tooltip key={id}><TooltipTrigger aria-label={label} render={<Button nativeButton type="button" variant="ghost" tone="neutral" size="md" shape="square" iconOnly loading={false} className={`size-11 rounded-[calc(var(--radius-control)-4px)] ${active.includes(id) ? "bg-muted" : ""}`} aria-pressed={active.includes(id)} onClick={() => setActive(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id])} />}><Icon aria-hidden="true" /></TooltipTrigger><TooltipPopup {...placement}>{label}</TooltipPopup></Tooltip>)}
             </div>
           </TooltipGroup>
-          <p className={`text-body text-center ${active.includes("bold") ? "font-bold" : ""} ${active.includes("italic") ? "italic" : ""} ${active.includes("underline") ? "underline underline-offset-4" : ""}`}>A place for deliberate work.</p>
+          <Text as="p" variant="body" className={`text-center ${active.includes("bold") ? "font-bold" : ""} ${active.includes("italic") ? "italic" : ""} ${active.includes("underline") ? "underline underline-offset-4" : ""}`}>A place for deliberate work.</Text>
           <Text as="p" variant="caption" className="max-w-80 text-center">Pause on one icon, then move to its neighbor. The next hint appears instantly.</Text>
         </CardContent></Card>
       </TabsPanel>

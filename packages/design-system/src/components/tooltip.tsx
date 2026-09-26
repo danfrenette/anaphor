@@ -23,7 +23,8 @@ function TooltipTrigger<Payload>(props: TooltipPrimitive.Trigger.Props<Payload>)
     aria-describedby={[props["aria-describedby"], tooltip?.open ? tooltip.id : undefined].filter(Boolean).join(" ") || undefined} />;
 }
 
-type TooltipPopupProps = TooltipPrimitive.Popup.Props & {
+type TooltipPopupProps = Omit<TooltipPrimitive.Popup.Props, "id"> & {
+  id?: never;
   side: NonNullable<TooltipPrimitive.Positioner.Props["side"]>;
   align: NonNullable<TooltipPrimitive.Positioner.Props["align"]>;
   sideOffset: NonNullable<TooltipPrimitive.Positioner.Props["sideOffset"]>;
@@ -36,10 +37,10 @@ function TooltipPopup({ side, align, sideOffset, portalProps, positionerProps, c
   return <TooltipPrimitive.Portal {...portalProps}>
     <TooltipPrimitive.Positioner {...positionerProps} side={side} align={align} sideOffset={sideOffset}
       className={state => cn("z-[var(--anaphor-z-overlay)]", typeof positionerProps?.className === "function" ? positionerProps.className(state) : positionerProps?.className)}>
-      <TooltipPrimitive.Popup id={tooltip?.id} role="tooltip" data-slot="tooltip-popup" className={state => cn(
+      <TooltipPrimitive.Popup role="tooltip" data-slot="tooltip-popup" className={state => cn(
         "max-w-[min(20rem,var(--available-width))] origin-[var(--transform-origin)] rounded-control border border-border bg-muted px-3 py-2 text-small text-pretty text-foreground shadow-[var(--anaphor-shadow-menu)] [overflow-wrap:anywhere]",
         typeof className === "function" ? className(state) : className,
-      )} {...props} />
+      )} {...props} id={tooltip?.id} />
     </TooltipPrimitive.Positioner>
   </TooltipPrimitive.Portal>;
 }
