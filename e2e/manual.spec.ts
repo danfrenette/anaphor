@@ -68,7 +68,7 @@ test("button demo exposes bounded experiments and resets to approved defaults", 
   const size = page.getByLabel("Size");
   await expect(variant).toHaveText("solid");
   await expect(size).toHaveText("md");
-  await selectControl(page, "Variant", "destructive");
+  await selectControl(page, "Tone", "danger");
   await selectControl(page, "Size", "lg");
   await expect(demo).toHaveAccessibleName("Delete item");
   await page.getByRole("checkbox", { name: "Loading", exact: true }).check();
@@ -118,10 +118,10 @@ test("button color roles meet AA outside the documented solid accent exception",
   for (const theme of ["light", "dark"] as const) {
     await field.evaluate((element, dark) => element.classList.toggle("dark", dark), theme === "dark");
 
-    for (const tone of ["accent", "neutral"] as const) {
+    for (const tone of ["accent", "neutral", "danger"] as const) {
       await selectControl(page, "Tone", tone);
 
-      for (const variant of ["solid", "destructive", "outline", "ghost"] as const) {
+      for (const variant of ["solid", "outline", "ghost", "soft"] as const) {
         await selectControl(page, "Variant", variant);
         // Only this documented contrast exception is permitted; improvement is welcome.
         if (tone === "accent" && variant === "solid") continue;
@@ -175,7 +175,7 @@ test("loading preserves action colors while explicit disabled stays neutral", as
     expect(disabledColors).toEqual(expected);
 
     await page.getByRole("checkbox", { name: "Disabled", exact: true }).uncheck();
-    for (const variant of ["solid", "destructive", "outline", "ghost"]) {
+    for (const variant of ["solid", "outline", "ghost", "soft"]) {
       await selectControl(page, "Variant", variant);
       const actionColors = await colors();
       await page.getByRole("checkbox", { name: "Loading", exact: true }).check();
@@ -258,15 +258,15 @@ test("controls preserve edits across switches and return keyboard focus", async 
     return panel;
   };
   await visit("Button");
-  await selectControl(page, "Variant", "destructive");
+  await selectControl(page, "Tone", "danger");
   await page.getByRole("button", { name: "Close controls" }).click();
   await visit("Card");
   await page.getByRole("checkbox", { name: "Footer", exact: true }).uncheck();
   await expect(page.getByRole("button", { name: "Open workspace" })).toHaveCount(0);
   await page.getByRole("button", { name: "Close controls" }).click();
   await visit("Button");
-  await expect(page.getByLabel("Variant")).toHaveText("destructive");
-  await page.getByLabel("Variant").focus();
+  await expect(page.getByLabel("Tone")).toHaveText("danger");
+  await page.getByLabel("Tone").focus();
   await page.keyboard.press("Escape");
   const trigger = page.getByRole("tab", { name: "Open Button controls" });
   await expect(trigger).toBeFocused();

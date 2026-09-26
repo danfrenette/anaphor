@@ -16,12 +16,11 @@ MenuPopup positioning; and the element and variant for typography.
 | --- | --- | --- | --- |
 | SidebarProvider | `mode="controlled"` | `open`, `onOpenChange`, `shortcut`, `resizable` | `defaultOpen` |
 | SidebarProvider | `mode="uncontrolled"` | `defaultOpen`, `shortcut`, `resizable` | `open` |
-| Button | `variant="destructive"` or `variant="destructive-soft"` | shared button options | `tone` |
-| Button | other variants | shared button options, `tone` | — |
+| Button | `variant="solid"`, `"outline"`, `"ghost"`, or `"soft"` | shared button options, `tone="accent"`, `"neutral"`, or `"danger"` | — |
 | Button | `nativeButton={true}` | `type` | — |
 | Button | `nativeButton={false}` | `render` | `type` |
 
-These are discriminated unions. `?: never` forbids a property in a branch; it
+The rendering mode is a discriminated union. `?: never` forbids a property in a branch; it
 does not provide an optional configuration value. Runtime fallback casts and
 non-null assertions are not needed to consume these types.
 
@@ -31,11 +30,10 @@ mutually exclusive states would remove supported behavior.
 
 Genuinely optional content, callbacks, positioning anchors, and native/third-party
 passthrough attributes remain optional. This pass does not redefine upstream
-React or Base UI APIs. The button playground retains a tone preference while
-editing other variants, but hides the tone control and omits the prop when
-rendering a destructive button. `HoldButton` uses the shared soft destructive
-variant and accepts a duration and completion callback; it owns the hold input
-behavior while consumers own the completed action.
+React or Base UI APIs. The button playground configures variant and tone
+independently. `HoldButton` uses the shared soft variant and accepts a tone,
+duration, and completion callback; it owns the hold input behavior while
+consumers own the completed action.
 
 `configuration.types.tsx` checks valid combinations and compile-time rejection
 of invalid ones. `text.types.tsx` checks native element refs and events.

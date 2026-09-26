@@ -46,57 +46,49 @@ const baseStyles = cn(
   "forced-colors:border-[ButtonText] forced-colors:data-muted:border-[GrayText] forced-colors:data-muted:bg-[ButtonFace] forced-colors:data-muted:text-[GrayText]",
 );
 
-const variantStyles = {
-  "accent-solid": cn(
-    // Base, hover, and active states
-    "bg-[var(--anaphor-brand)] text-primary-foreground",
-    "hover:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-brand)_94%,var(--anaphor-font-secondary))]",
-    "active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-brand)_88%,var(--anaphor-font-secondary))]",
+const toneStyles = {
+  accent: cn(
+    "[--button-tone:var(--anaphor-brand)] [--button-ink:color-mix(in_oklch,var(--anaphor-brand)_65%,var(--anaphor-font-secondary))]",
+    "[--button-solid-ink:light-dark(var(--anaphor-background),var(--anaphor-font-secondary))] [--button-hover-target:var(--anaphor-font-secondary)]",
+    "[--button-solid-hover:94%] [--button-solid-active:88%]",
+    "[--button-outline-border:var(--button-ink)] [--button-subtle-hover:color-mix(in_oklch,var(--button-tone)_26%,var(--anaphor-background))] [--button-subtle-active:color-mix(in_oklch,var(--button-tone)_38%,var(--anaphor-background))]",
   ),
-  "accent-outline": cn(
-    // Base, hover, and active states
-    "border-current text-[color-mix(in_oklch,var(--anaphor-brand)_65%,var(--anaphor-font-secondary))]",
-    "hover:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-brand)_26%,var(--anaphor-background))]",
-    "active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-brand)_38%,var(--anaphor-background))]",
+  neutral: cn(
+    "[--button-tone:var(--anaphor-font-secondary)] [--button-ink:var(--anaphor-font-secondary)]",
+    "[--button-solid-ink:var(--anaphor-background)] [--button-hover-target:var(--anaphor-font-tertiary)]",
+    "[--button-solid-hover:90%] [--button-solid-active:80%]",
+    "[--button-outline-border:var(--anaphor-input-border)] [--button-subtle-hover:var(--anaphor-input-disabled)] [--button-subtle-active:color-mix(in_oklch,var(--anaphor-input-disabled)_85%,var(--anaphor-font-secondary))]",
   ),
-  "accent-ghost": cn(
-    // Base, hover, and active states
-    "text-[color-mix(in_oklch,var(--anaphor-brand)_65%,var(--anaphor-font-secondary))]",
-    "hover:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-brand)_26%,var(--anaphor-background))]",
-    "active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-brand)_38%,var(--anaphor-background))]",
-  ),
-  "neutral-solid": cn(
-    // Base, hover, and active states
-    "bg-[var(--anaphor-font-secondary)] text-[var(--anaphor-background)]",
-    "hover:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-font-secondary)_90%,var(--anaphor-font-tertiary))]",
-    "active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-font-secondary)_80%,var(--anaphor-font-tertiary))]",
-  ),
-  "neutral-outline": cn(
-    // Base, hover, and active states
-    "border-[var(--anaphor-input-border)] text-[var(--anaphor-font-secondary)]",
-    "hover:not-data-disabled:bg-[var(--anaphor-input-disabled)]",
-    "active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-input-disabled)_85%,var(--anaphor-font-secondary))]",
-  ),
-  "neutral-ghost": cn(
-    // Base, hover, and active states
-    "text-[var(--anaphor-font-secondary)]",
-    "hover:not-data-disabled:bg-[var(--anaphor-input-disabled)]",
-    "active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-input-disabled)_85%,var(--anaphor-font-secondary))]",
+  danger: cn(
+    "[--button-tone:var(--anaphor-danger)] [--button-ink:var(--anaphor-danger-text)]",
+    "[--button-solid-ink:light-dark(var(--anaphor-background),var(--anaphor-font-secondary))] [--button-hover-target:black]",
+    "[--button-solid-hover:88%] [--button-solid-active:88%]",
+    "[--button-outline-border:var(--button-ink)] [--button-subtle-hover:color-mix(in_oklch,var(--button-tone)_26%,var(--anaphor-background))] [--button-subtle-active:color-mix(in_oklch,var(--button-tone)_38%,var(--anaphor-background))]",
   ),
 } as const;
 
-const destructiveStyles = cn(
-  // Base, hover, and active states
-  "bg-danger text-background dark:text-foreground",
-  "hover:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-danger)_88%,black)]",
-  "active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-danger)_88%,black)]",
-);
-
-const destructiveSoftStyles = cn(
-  "bg-[color-mix(in_oklch,var(--anaphor-danger)_16%,var(--anaphor-background))] text-danger-foreground",
-  "hover:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-danger)_23%,var(--anaphor-background))]",
-  "active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-danger)_29%,var(--anaphor-background))]",
-);
+const variantStyles = {
+  solid: cn(
+    "bg-[var(--button-tone)] text-[var(--button-solid-ink)]",
+    "hover:not-data-disabled:bg-[color-mix(in_oklch,var(--button-tone)_var(--button-solid-hover),var(--button-hover-target))]",
+    "active:not-data-disabled:bg-[color-mix(in_oklch,var(--button-tone)_var(--button-solid-active),var(--button-hover-target))]",
+  ),
+  outline: cn(
+    "border-[var(--button-outline-border)] text-[var(--button-ink)]",
+    "hover:not-data-disabled:bg-[var(--button-subtle-hover)]",
+    "active:not-data-disabled:bg-[var(--button-subtle-active)]",
+  ),
+  ghost: cn(
+    "text-[var(--button-ink)]",
+    "hover:not-data-disabled:bg-[var(--button-subtle-hover)]",
+    "active:not-data-disabled:bg-[var(--button-subtle-active)]",
+  ),
+  soft: cn(
+    "bg-[color-mix(in_oklch,var(--button-tone)_16%,var(--anaphor-background))] text-[var(--button-ink)]",
+    "hover:not-data-disabled:bg-[color-mix(in_oklch,var(--button-tone)_23%,var(--anaphor-background))]",
+    "active:not-data-disabled:bg-[color-mix(in_oklch,var(--button-tone)_29%,var(--anaphor-background))]",
+  ),
+} as const;
 
 type ButtonProps = Omit<ButtonPrimitive.Props, "nativeButton" | "type"> & {
   iconOnly: boolean;
@@ -104,10 +96,9 @@ type ButtonProps = Omit<ButtonPrimitive.Props, "nativeButton" | "type"> & {
   shape: "square" | "round";
   size: keyof typeof sizeStyles;
   children?: ReactNode;
+  variant: keyof typeof variantStyles;
+  tone: keyof typeof toneStyles;
 } & (
-  | { variant: "destructive" | "destructive-soft"; tone?: never }
-  | { variant: "solid" | "outline" | "ghost"; tone: "accent" | "neutral" }
-) & (
   | { nativeButton: true; type: "button" | "submit" | "reset" }
   | { nativeButton: false; render: NonNullable<ButtonPrimitive.Props["render"]>; type?: never }
 );
@@ -135,7 +126,8 @@ function Button({
           sizeStyles[size],
           iconOnly && "size-[var(--button-size)] min-w-0 shrink-0 px-0",
           shape === "round" && "rounded-full",
-          variant === "destructive" ? destructiveStyles : variant === "destructive-soft" ? destructiveSoftStyles : tone && variantStyles[`${tone}-${variant}`],
+          toneStyles[tone],
+          variantStyles[variant],
           typeof className === "function" ? className(state) : className,
         )
       }

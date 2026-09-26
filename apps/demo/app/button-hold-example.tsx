@@ -22,6 +22,7 @@ export function ButtonHoldExample() {
         duration={2000}
         shape="square"
         size="md"
+        tone="danger"
         onHoldComplete={() => setDeleted(true)}
         aria-describedby="hold-delete-help"
       >

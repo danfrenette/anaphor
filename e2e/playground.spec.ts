@@ -14,11 +14,13 @@ test("the bar persists, controls follow sections, and settings survive view chan
   await expect(tools.getByRole("tab", { name: "Component controls unavailable" })).toBeDisabled();
   await page.locator("#button").evaluate(element => element.scrollIntoView());
   await tools.getByRole("tab", { name: "Open Button controls" }).click();
-  await selectControl(page, "Variant", "destructive");
+  await selectControl(page, "Variant", "soft");
+  await selectControl(page, "Tone", "danger");
   await tools.getByRole("tab", { name: "Code", exact: true }).click();
   await expect(page.getByRole("region", { name: "Button code" })).toBeVisible();
   await tools.getByRole("tab", { name: "Open Button controls" }).click();
-  await expect(page.getByRole("button", { name: "Variant", exact: true })).toHaveText("destructive");
+  await expect(page.getByRole("button", { name: "Variant", exact: true })).toHaveText("soft");
+  await expect(page.getByRole("button", { name: "Tone", exact: true })).toHaveText("danger");
   await page.getByRole("region", { name: "Button controls" }).focus();
   await page.locator("#card").evaluate(element => element.scrollIntoView());
   await expect(page.getByRole("region", { name: "Card controls" })).toBeVisible();
@@ -289,9 +291,9 @@ test("Anaphor control menus select by keyboard and Escape closes one layer at a 
   await expect(page.getByRole("menuitemradio", { name: "solid", exact: true })).toHaveAttribute("aria-checked", "true");
   expect((await new AxeBuilder({ page }).include('[data-slot="menu-popup"]').analyze()).violations).toEqual([]);
   await page.screenshot({ path: `test-results/control-dropdown-${test.info().project.name}.png` });
-  await page.keyboard.press("d");
+  await page.keyboard.press("g");
   await page.keyboard.press("Enter");
-  await expect(variant).toHaveText("destructive");
+  await expect(variant).toHaveText("ghost");
   await expect(variant).toBeFocused();
   await expect(page.getByRole("region", { name: "Button controls" })).toBeVisible();
   await variant.press("ArrowDown");
