@@ -20,7 +20,9 @@ for (const theme of ["light", "dark"]) {
     await expect(sample.locator("li ul")).toHaveCSS("list-style-type", "circle");
     await expect(sample.locator("h2")).toHaveCSS("text-transform", "uppercase");
     await expect(sample.locator("h2")).toHaveText("A useful record of the work");
-    await expect(sample.locator("h3")).toHaveCSS("text-transform", "none");
+    await expect(sample.locator("h3")).toHaveCSS("text-transform", "uppercase");
+    await expect(sample.locator("h3")).toHaveText("Keep the details intact");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveCSS("text-transform", "uppercase");
     const headingSizes = await page.locator("#content h1, [aria-label='Reading sample'] h2, [aria-label='Reading sample'] h3").evaluateAll(elements => elements.map(element => parseFloat(getComputedStyle(element).fontSize)));
     expect(headingSizes).toEqual([36, 24, 20]);
     await expect(sample.locator("a")).toHaveCSS("text-decoration-line", "underline");
@@ -80,4 +82,21 @@ test("pretty wrapping only affects sample paragraphs and resets", async ({ page 
   await page.getByRole("button", { name: "Reset typography" }).click();
   await expect(sample.locator("p").first()).toHaveCSS("text-wrap-style", "auto");
   await expect(page.getByRole("status")).toHaveText("Approved defaults");
+});
+
+test("the heading font utility owns uppercase even outside heading elements", async ({ page }) => {
+  await page.goto("/typography");
+  await page.getByText("Reading experiments", { exact: true }).click();
+  await expect(page.getByRole("button", { name: "Reset typography" })).toBeVisible();
+  await page.evaluate(() => {
+    const sample = document.createElement("span");
+    sample.className = "font-heading";
+    sample.dataset.testid = "heading-font-sample";
+    sample.textContent = "Natural source text";
+    document.body.append(sample);
+  });
+  const sample = page.getByTestId("heading-font-sample");
+  await expect(sample).toHaveCSS("font-family", /Bell Gothic Black/);
+  await expect(sample).toHaveCSS("text-transform", "uppercase");
+  await expect(sample).toHaveText("Natural source text");
 });

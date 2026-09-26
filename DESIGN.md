@@ -45,7 +45,8 @@ the transition and spinner rotation.
 Use self-hosted Inter 4.1 Variable for prose and controls. The package
 owns normal and true italic WOFF2 files, both covering weights 100–900. Automatic
 optical sizing moves from text to display drawings as size increases. Use system
-sans as the loading fallback. Magda Clean Mono is self-hosted for
+sans as the loading fallback. Bell Gothic renders uppercase through CSS; keep
+source text in natural case. Magda Clean Mono is self-hosted for
 literal database values, types, expressions, metrics, tokens, and code, using its supplied regular (400) face. Do not
 synthesize bold or italic mono labels. All bundled web fonts must use WOFF2;
 do not add WOFF, TTF, or OTF assets. Use Inter for navigation, section labels, and actions. Use Bell Gothic Black
