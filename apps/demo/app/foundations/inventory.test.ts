@@ -11,6 +11,9 @@ test("formatting does not change shipped theme inventories", () => {
   expect(expected.themes.light["--anaphor-background"]).toBe("oklch(0.985 0.008 85)");
   expect(expected.themes.dark["--anaphor-background"]).toBe("oklch(0.2 0.01 50)");
   expect(expected.tokens["--color-foreground"]).toBe("var(--anaphor-font-secondary)");
+  expect(expected.tokens["--container-workspace"]).toBe("96rem");
+  expect(expected.tokens["--container-editorial"]).toBe("70rem");
+  expect(expected.tokens["--spacing-page-inset"]).toBe("min(var(--anaphor-page-gutter), 3rem)");
 });
 
 test("missing theme blocks and backing variables fail clearly", () => {

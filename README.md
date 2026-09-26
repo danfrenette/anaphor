@@ -228,6 +228,12 @@ manual and copied by the registry. Use semantic color utilities (`bg-background`
 uses the configured 4px base: `gap-2` is 8px and `p-6` is 24px. Keep Tailwind's
 numbering instead of introducing another spacing scale.
 
+Layout defaults are exported from the same stylesheet: `max-w-workspace`
+(96rem), `max-w-editorial` (70rem), `max-w-reading` (65ch), and `px-page-inset`
+(the responsive page gutter capped at 3rem). See `/foundations#layout-reference`
+and [layout recipes](docs/layout-recipes.md) for cross-project imports, overrides,
+and the distinction between shared variables and composition-specific spacing.
+
 Prefer utilities directly in demo markup. For remaining relational/responsive
 CSS, `@reference "@anaphor/system/styles.css"` makes the same tokens available to
 `@apply` without emitting a second copy of the library styles. Dynamic artwork

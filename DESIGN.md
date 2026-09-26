@@ -91,12 +91,13 @@ Spacing varies by purpose: compact inside controls, moderate within a demo,
 and generous between instructional sections. Rules and shared alignment lanes
 provide grouping before containers do.
 
-Application and editorial starting points are demonstrated in the studies and
-documented in [layout recipes](docs/layout-recipes.md). They constrain recurring
-composition choices without imposing a universal column grid. Application panels
-adapt to available content width; editorial figures may break out of the shared
-65ch text track. Recipe-specific bounds remain local until another consumer
-establishes a shared contract.
+Foundations → Layout documents the exported workspace and editorial bounds,
+reading measure and responsive page inset. These first-pass shared defaults are
+owned by package CSS and consumed through Tailwind utilities; see
+[layout recipes](docs/layout-recipes.md) for cross-project usage. They constrain
+recurring decisions without imposing a universal grid. Ordinary gaps, panel
+proportions and collapse thresholds remain composition choices. Deprecated
+studies may consume these tokens but are not their documentation home.
 
 ## Geometry And Elevation
 

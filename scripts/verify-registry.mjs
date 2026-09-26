@@ -70,6 +70,15 @@ async function checkBrowser(browser, directory, item) {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(url);
     await expect(page.getByRole("main")).toHaveCSS("padding-top", "24px");
+    await expect(page.getByRole("main")).toHaveCSS("max-width", "1536px");
+    await expect(page.getByRole("main")).toHaveCSS("padding-inline-start", "48px");
+    await expect(page.getByTestId("editorial-layout")).toHaveCSS("max-width", "1120px");
+    await page.setViewportSize({ width: 320, height: 800 });
+    await expect(page.getByRole("main")).toHaveCSS("padding-inline-start", "24px");
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.evaluate(() => document.documentElement.style.setProperty("--container-workspace", "80rem"));
+    await expect(page.getByRole("main")).toHaveCSS("max-width", "1280px");
+    await page.evaluate(() => document.documentElement.style.removeProperty("--container-workspace"));
     await expect(page.locator("body")).toHaveCSS("margin", "0px");
     const button = page.getByRole("button", { name: "Count 0", exact: true });
     await expect(button).toBeVisible();

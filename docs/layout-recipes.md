@@ -1,8 +1,53 @@
 # Layout recipes
 
-Status: first-pass recipes, demonstrated in `/studies`. These are compositions,
-not new package tokens or mandatory layout components. Tailwind's spacing scale,
-CSS Grid and flexbox remain the implementation vocabulary.
+Status: first-pass shared defaults, inspectable at `/foundations#layout-reference`.
+Package CSS owns the exported variables. Deprecated studies are consumers, not
+the documentation home. These defaults are reviewable, not a universal grid.
+
+## Reuse in another project
+
+Once the source-owned `@anaphor/system` package is linked into the consuming
+project, import its stylesheet through Tailwind v4. The package is currently
+private; this is not an instruction to install a published npm package.
+
+```css
+@import "@anaphor/system/styles.css";
+@source "./"; /* Your source directory, relative to this stylesheet. */
+```
+
+| Exported CSS variable | Default | Tailwind utility |
+| --- | --- | --- |
+| `--container-workspace` | `96rem` | `max-w-workspace` |
+| `--container-editorial` | `70rem` | `max-w-editorial` |
+| `--container-reading` | `65ch` (existing) | `max-w-reading` |
+| `--spacing-page-inset` | `min(var(--anaphor-page-gutter), 3rem)` | `px-page-inset` |
+
+The inset inherits the existing responsive page gutter: 24px below 40rem and
+48px from 40rem at the default root size. It caps the manual's 80px desktop
+gutter rather than changing it. Width bounds include padding under Tailwind's
+border-box sizing. In plain CSS, use these variables with `max-width` and
+`padding-inline` instead of the generated utilities.
+
+```tsx
+<main className="mx-auto w-full max-w-workspace px-page-inset">…</main>
+
+<article className="mx-auto w-full max-w-editorial px-page-inset">
+  <div className="mx-auto max-w-reading">…</div>
+  <figure>…</figure>
+  <div className="mx-auto max-w-reading">…</div>
+</article>
+```
+
+Consumers can override a shared default after the import:
+
+```css
+@theme {
+  --container-workspace: 88rem;
+}
+```
+
+Ordinary gaps keep Tailwind names (`gap-6`, `p-6`, `space-y-12`). No new alias
+scale, wrapper components, or shared chart-column ratios are introduced.
 
 ## Design rationale
 
@@ -13,8 +58,9 @@ Anaphor proposals, not values prescribed by the book.
 
 ## Application: scan, inspect, act
 
-Signal uses a centered outer canvas capped at 96rem, including its inline inset.
-The inset consumes the existing page-gutter token but caps it at 3rem: 24px on
+Signal consumes `max-w-workspace` and `px-page-inset` rather than owning copies
+of their values. The default canvas is capped at 96rem, including its inline inset.
+The inset follows the existing page-gutter token but caps it at 3rem: 24px on
 small viewports, 48px from 40rem. Dense applications need not inherit the manual's
 80px desktop gutter. The existing navigation rail remains independent.
 
@@ -36,7 +82,8 @@ small dialogs. Let those tasks occupy less space.
 
 ## Editorial: read, pause, continue
 
-Field Notes caps its outer canvas at 70rem with the same 24–48px inset. The text
+Field Notes consumes `max-w-editorial` with `px-page-inset`. The default canvas
+is capped at 70rem with the same 24–48px inset. The text
 track uses the existing 65ch reading token. Header, paragraphs, quotes and footer
 share that track; the interactive figure spans the wider canvas through subgrid.
 At small sizes both tracks converge without negative margins or viewport overflow.
@@ -56,5 +103,6 @@ not as a universal grid or new primitive token scale. Preserve semantic document
 order when laying out the frames. Record outer bounds, insets, reading measure,
 group spacing and collapse behavior beside the examples.
 
-Promote a recipe value to a shared token only after another real consumer needs
-the same contract. Keep the existing public spacing and typography APIs intact.
+The exported bounds and inset are shared starting points. Keep other recipe
+values local unless a real consumer establishes the same need. Existing public
+spacing and typography APIs remain intact.

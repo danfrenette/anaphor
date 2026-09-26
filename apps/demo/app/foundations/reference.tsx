@@ -123,6 +123,31 @@ export function FoundationReference({ tokens, themes, springs }: { tokens: Token
       <TokenList tokens={tokens} names={names.filter(name => /^--(font-|text-|leading-|tracking-|container-reading|spacing-prose)/.test(name))} />
       <p className="mt-4 text-ui">Prose h3 also uses Tailwind’s text-xl (1.25rem). Weight utilities remain Tailwind defaults: normal 400, medium 500, bold 700, black 900.</p>
     </section>
+    <section aria-labelledby="layout-reference"><Text as="h2" variant="section" id="layout-reference" className="scroll-mt-24">Layout</Text>
+      <Text as="p" variant="description" className="mt-4">Reusable defaults exported by @anaphor/system/styles.css. Import that stylesheet in a Tailwind v4 project to use these variables and utilities. Widths are maximums, not fixed sizes; these first-pass defaults remain open to refinement.</Text>
+      <dl className="mt-6 divide-y divide-border">
+        {([
+          ["--container-workspace", "max-w-workspace", "Application canvas", "Bounds data-heavy workspaces, including their page inset."],
+          ["--container-editorial", "max-w-editorial", "Editorial canvas", "Leaves room for media around a narrower reading column."],
+          ["--container-reading", "max-w-reading", "Reading measure", "Keeps prose readable rather than filling the canvas."],
+          ["--spacing-page-inset", "px-page-inset", "Page inset", "Follows the existing responsive gutter, capped at 3rem: 24px below 40rem, 48px above it at the default root size."],
+        ] as const).map(([name, utility, label, description]) => <div key={name} className="grid min-w-0 gap-3 py-5 sm:grid-cols-2 sm:gap-6">
+          <dt className="min-w-0"><Text as="span" variant="ui" className="font-medium">{label}</Text><code className="mt-2 block break-words font-mono text-small">{name}</code></dt>
+          <dd className="min-w-0"><code className="block break-words font-mono text-small">{requireToken(tokens, name)}</code><code className="mt-2 block font-mono text-small">{utility}</code><p className="mt-2 text-ui text-muted-foreground">{description}</p></dd>
+        </div>)}
+      </dl>
+      <div className="mt-6 space-y-6">
+        <Text as="h3" variant="subheading">Use in another project</Text>
+        <p className="text-ui">Link the source-owned package into your project, or install its stylesheet through the Anaphor registry. The package is private, not a published npm dependency. The example below uses the linked-package import; registry consumers use their installed stylesheet path.</p>
+        <pre className="whitespace-pre-wrap break-words rounded-card bg-muted p-6 font-mono text-small"><code>{`/* Your app stylesheet, compiled with Tailwind v4 */\n@import "@anaphor/system/styles.css";\n@source "./"; /* Relative to this stylesheet */\n\n/* Application */\n<main className="mx-auto w-full max-w-workspace px-page-inset">\n  …\n</main>\n\n/* Editorial: text stays narrow, media can extend wider */\n<article className="mx-auto w-full max-w-editorial px-page-inset">\n  <div className="mx-auto max-w-reading">…</div>\n  <figure>…</figure>\n</article>`}</code></pre>
+        <div data-testid="layout-editorial-sample" className="mx-auto w-full max-w-editorial border-y border-border px-page-inset py-8">
+          <div className="mx-auto max-w-reading"><Text as="h3" variant="subheading">A reading column inside a canvas</Text><Text as="p" variant="body" className="mt-4">The column sets the measure. The surrounding canvas gives a figure more room without widening the prose.</Text></div>
+          <div className="my-6 bg-muted p-6 text-ui">Wider media or interactive content</div>
+          <p className="mx-auto max-w-reading text-ui text-muted-foreground">The text returns to the same alignment after the breakout.</p>
+        </div>
+        <p className="text-ui">Keep ordinary gaps and padding on Tailwind’s spacing scale. Column counts, chart proportions and collapse thresholds belong to the composition, not a mandatory global grid. Override these defaults in the consuming project’s theme when its content requires it.</p>
+      </div>
+    </section>
     <section aria-labelledby="geometry-reference"><Text as="h2" variant="section" id="geometry-reference">Space, geometry, elevation</Text>
       <p className="mt-4 text-body">Numeric spacing follows Tailwind’s 4px base. The documented rhythm is 4, 8, 12, 16, 24, 32, 48, 64 and 96px. Page gutters are 24px, 48px from 40rem, and 80px from 64rem.</p>
       <div className="mt-6 flex flex-wrap gap-6">{["sm", "md", "control", "card"].map(name => <div key={name} className="grid gap-2 text-small"><div aria-hidden="true" className="size-16 border border-border bg-muted" style={{ borderRadius: `var(--radius-${name})` }} /><span>{name} · {tokens[`--radius-${name}`]}</span></div>)}</div>

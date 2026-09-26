@@ -90,6 +90,9 @@
 @theme static {
   --spacing: 0.25rem;
   --container-reading: 65ch;
+  --container-workspace: 96rem;
+  --container-editorial: 70rem;
+  --spacing-page-inset: min(var(--anaphor-page-gutter), 3rem);
   --leading-reading: 1.6;
   --tracking-heading: -0.02em;
   --tracking-label: 0.08em;

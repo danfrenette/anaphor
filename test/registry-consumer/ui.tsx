@@ -24,7 +24,8 @@ function Consumer() {
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState(50);
-  return <main className="p-6 font-sans">
+  return <main className="mx-auto max-w-workspace px-page-inset py-6 font-sans">
+    <div data-testid="editorial-layout" className="mx-auto max-w-editorial"><p className="max-w-reading">Shared layout in an independent consumer.</p></div>
     <ContentSections defaultScope>
     <Section id="installed-intro" aria-label="Introduction">
     <Text as="h1" variant="title">Registry consumer</Text>
