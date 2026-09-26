@@ -75,7 +75,7 @@ export function ButtonDemo() {
               <ArrowRight aria-hidden="true" />
               <ButtonLabel>Composed</ButtonLabel>
             </Button>
-            <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" variant="destructive">
+            <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="danger" variant="solid">
               <Trash aria-hidden="true" />
               <ButtonLabel>Delete item</ButtonLabel>
             </Button>
