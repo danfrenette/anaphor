@@ -60,6 +60,11 @@ removal. Do not promote study-specific chart or shader values into shared tokens
 
 ## Paper checklist
 
+The Layout section exposes package-owned workspace/editorial bounds, reading
+measure and responsive page inset with their generated Tailwind utility names.
+See [layout recipes](layout-recipes.md) for importing and overriding them in a
+consumer. Do not mistake local chart ratios or ordinary gaps for exported tokens.
+
 Carry semantic names and exact code aliases together; record both themes;
 preserve type roles, reading measure, spacing rhythm, geometry and elevations;
 annotate contrast exceptions and behavioral recipes. Snapshot the approved

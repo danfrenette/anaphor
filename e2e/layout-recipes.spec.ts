@@ -1,5 +1,21 @@
 import { expect, test } from "@playwright/test";
 
+test("Foundations exposes package layout tokens and utilities", async ({ page }) => {
+  await page.goto("/foundations#layout-reference");
+  const layout = page.getByRole("region", { name: "Layout", exact: true });
+  for (const token of ["--container-workspace", "--container-editorial", "--container-reading", "--spacing-page-inset"]) {
+    await expect(layout).toContainText(token);
+  }
+  const sample = page.getByTestId("layout-editorial-sample");
+  await expect(sample).toHaveCSS("max-width", "1120px");
+  await page.setViewportSize({ width: 320, height: 800 });
+  await expect(sample).toHaveCSS("padding-inline-start", "24px");
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(sample).toHaveCSS("padding-inline-start", "48px");
+  await page.evaluate(() => document.documentElement.style.setProperty("--container-editorial", "60rem"));
+  await expect(sample).toHaveCSS("max-width", "960px");
+});
+
 for (const width of [320, 700, 1024, 1280, 1920]) {
   test(`layout recipes preserve bounds and reading order at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -40,8 +56,8 @@ for (const width of [320, 700, 1024, 1280, 1920]) {
 }
 
 test("recipes are discoverable and stay readable in a mirrored layout", async ({ page }) => {
-  await page.goto("/studies");
-  await expect(page.getByRole("heading", { name: "Layout recipes" })).toBeVisible();
+  await page.goto("/foundations#layout-reference");
+  await expect(page.getByRole("heading", { name: "Layout", exact: true })).toBeVisible();
   await page.goto("/studies/signal");
   await page.evaluate(() => { document.documentElement.dir = "rtl"; });
   await page.getByRole("button", { name: /image-pipeline/ }).click();

@@ -21,7 +21,7 @@
 .study-cover-caption h2 { font-size: 22px; font-family: var(--font-heading); margin-top: 8px; }
 .study-cover-caption p { font-size: 13px; color: var(--anaphor-font-tertiary); margin-top: 6px; }
 .study-cover-caption > span { font-size: 24px; }
-.signal-study { container: workspace / inline-size; background: var(--anaphor-background); color: var(--anaphor-font-secondary); min-height: calc(100svh - 56px); max-width: 96rem; margin-inline: auto; padding-inline: min(var(--anaphor-page-gutter), 3rem); }
+.signal-study { container: workspace / inline-size; background: var(--anaphor-background); color: var(--anaphor-font-secondary); min-height: calc(100svh - 56px); }
 .signal-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 80px; border-bottom: 1px solid var(--anaphor-input-border); }
 .signal-wordmark { display: flex; align-items: center; gap: 12px; font-size: 23px; font-weight: 600; letter-spacing: -.04em; }
 .signal-wordmark .study-eyebrow { margin-left: 12px; font-weight: 400; }
@@ -87,7 +87,6 @@
 .workload-detail p { margin-block: 8px; max-width: 80ch; line-height: 1.6; }
 .workload-detail > span { color: var(--anaphor-font-tertiary); }
 .empty-workloads { padding: 48px 20px; text-align: center; font-size: 14px; }
-.field-notes-study { max-width: 70rem; margin-inline: auto; padding-inline: min(var(--anaphor-page-gutter), 3rem); }
 .notes-masthead { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding-block: 32px; border-bottom: 1px solid var(--anaphor-input-border); }
 .notes-masthead > a { font-weight: 500; text-decoration: none; }
 .notes-article { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,var(--container-reading)) minmax(0,1fr); margin-block-start: 64px; }
@@ -140,16 +139,4 @@
   .notes-meta { flex-direction: column; }
   .attention-diagram { padding: 28px 12px; gap: 6px; }
   .chart-caption { flex-wrap: wrap; }
-}
-
-.layout-recipes { margin-block: 64px 32px; }
-.layout-recipes h2 { font-size: var(--text-heading); margin-block-end: 16px; }
-.layout-recipes > p { max-width: var(--container-reading); color: var(--anaphor-font-tertiary); line-height: 1.6; }
-.layout-recipe-list { margin-block-start: 32px; display: grid; gap: 32px; }
-.layout-recipe-list > div { display: grid; grid-template-columns: minmax(0,12rem) minmax(0,1fr); gap: 16px 32px; }
-.layout-recipe-list dt { font-weight: 600; }
-.layout-recipe-list dd { max-width: var(--container-reading); line-height: 1.6; }
-.layout-recipe-list small { display: block; margin-block-start: 8px; color: var(--anaphor-font-tertiary); font-size: 14px; }
-@media (max-width: 700px) {
-  .layout-recipe-list > div { grid-template-columns: minmax(0,1fr); gap: 8px; }
 }

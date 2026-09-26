@@ -3,7 +3,7 @@ import { AttentionFigure } from "./attention-figure";
 export const metadata = { title: "Not everything needs to move · Field Notes" };
 
 export default function FieldNotes() {
-  return <main id="content" tabIndex={-1} className="field-notes-study">
+  return <main id="content" tabIndex={-1} className="field-notes-study mx-auto max-w-editorial px-page-inset">
     <header className="notes-masthead"><a href="#article">Field Notes</a><span className="study-eyebrow">A personal notebook</span></header>
     <article id="article" className="notes-article">
       <header><p className="study-eyebrow">Design engineering · No. 001</p><h1>Not everything<br />needs to move.</h1><p className="notes-deck">A note on attention, interfaces, and the value of leaving things alone.</p><div className="notes-meta"><span>An Anaphor study</span><span>September 16, 2026</span><span>5 min read</span></div></header>

@@ -37,7 +37,7 @@ export default function Signal() {
     const link = document.createElement("a"); link.href = url; link.download = "signal-workloads.csv"; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  return <main id="content" tabIndex={-1} className="signal-study">
+  return <main id="content" tabIndex={-1} className="signal-study mx-auto max-w-workspace px-page-inset">
     <header className="signal-header"><div className="signal-wordmark"><span className="signal-mark" aria-hidden="true">⌁</span> Signal <span className="study-eyebrow">Compute observatory</span></div></header>
     <div className="signal-title-row"><div><p className="study-eyebrow">Workspace / Personal</p><h1>Overview</h1><p className="study-muted">Your workloads, at a glance.</p></div><div className="signal-title-actions"><span className="sample-label">Sample data · Sep 16</span><Button {...buttonProps} onClick={exportRows}><ButtonLabel>Export CSV ↓</ButtonLabel></Button></div></div>
     <section className="signal-summary" aria-label="Workspace metrics">
