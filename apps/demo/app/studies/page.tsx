@@ -17,6 +17,14 @@ export default function Studies() {
         <div className="study-cover-caption"><div><span className="study-eyebrow">02 / Editorial</span><h2>Field Notes</h2><p>Room for a thought to unfold.</p></div><span aria-hidden="true">↗</span></div>
       </Link>
     </div>
+    <section className="layout-recipes" aria-labelledby="layout-recipes">
+      <h2 id="layout-recipes">Layout recipes</h2>
+      <p>Choose the reading task, then the layout. These are starting points built from the existing spacing scale—not a grid every page has to obey.</p>
+      <dl className="layout-recipe-list">
+        <div><dt>Application</dt><dd>A bounded workspace. Scan the summary, inspect the main chart, then act on the data. Supporting visuals take less room; toolbars wrap before they crowd the content.<small>96rem outer limit · 24–48px page inset · 24px panel gap · 48px between major groups</small></dd></div>
+        <div><dt>Editorial</dt><dd>A stable reading column with room for wider figures. Headings stay with the paragraphs they introduce; metadata recedes without becoming illegible.<small>70rem outer limit · 65ch reading measure · 24px paragraph spacing · 48px section separation</small></dd></div>
+      </dl>
+    </section>
     <p className="study-footnote">Working examples, not new themes. All data and article content are illustrative.</p>
   </main>;
 }
