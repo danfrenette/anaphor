@@ -15,6 +15,8 @@ for (const theme of ["light", "dark"] as const) {
       await expect(specimen.getByTestId("contrast-result").first()).toContainText("Pass");
       await expect(specimen.getByTestId("contrast-result").last()).toContainText("Exception");
       await expect(specimen).not.toContainText("Measuring…");
+      const ratio = async (label: string) => Number.parseFloat(await specimen.getByRole("listitem").filter({ hasText: label }).getByTestId("contrast-result").innerText());
+      expect(await ratio("Reading / page")).toBeCloseTo(localTheme === "light" ? 13.27 : 10.98, 1);
       const result = await new AxeBuilder({ page }).include(`[data-testid="foundation-${localTheme}"]`).analyze();
       expect(result.violations).toEqual([]);
     }
@@ -48,6 +50,23 @@ test("foundation experiments are bounded, local, resettable and respect reduced 
   await page.reload();
   await expect(radius).toHaveAttribute("aria-valuenow", "12");
 });
+
+for (const theme of ["light", "dark"] as const) {
+  test(`remaining foundation defaults: ${theme}`, async ({ page }) => {
+    await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/foundations");
+    const specimen = page.getByTestId(`foundation-${theme}`);
+    await expect(specimen).toBeVisible();
+    await specimen.getByText("Theme elevation", { exact: true }).click();
+    await page.evaluate(() => document.fonts.ready);
+    await page.addStyleTag({ content: "header, [data-slot='morph-surface'], a[href='#content'] { visibility: hidden !important; }" });
+    await expect(specimen.locator("details").last()).toHaveScreenshot(`elevation-${theme}.png`);
+    for (const [name, file] of [["Type and reading", "type"], ["Space, geometry, elevation", "geometry"], ["Motion", "motion"], ["A bounded experiment", "experiment"]]) {
+      await expect(page.getByRole("region", { name, exact: true })).toHaveScreenshot(`${file}-${theme}.png`);
+    }
+  });
+}
 
 test("foundation defaults have deterministic theme baselines and tolerate enlarged text", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("anaphor-theme", "light"));
