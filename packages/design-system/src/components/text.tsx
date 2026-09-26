@@ -7,12 +7,12 @@ const variants = {
   heading: "font-heading text-heading font-black text-balance",
   section: "font-heading text-heading font-black tracking-normal uppercase text-balance",
   subheading: "font-heading text-body font-black text-balance",
-  body: "max-w-reading font-sans text-body font-normal text-reading text-wrap",
-  description: "max-w-reading font-sans text-body font-normal text-reading text-pretty",
-  ui: "font-sans text-ui font-normal text-wrap",
+  body: "max-w-reading font-sans text-body font-normal normal-case text-reading text-wrap",
+  description: "max-w-reading font-sans text-body font-normal normal-case text-reading text-pretty",
+  ui: "font-sans text-ui font-normal normal-case text-wrap",
   label: "font-sans text-label font-medium tracking-label uppercase text-wrap",
-  caption: "font-sans text-small font-normal text-muted-foreground text-wrap",
-  code: "font-mono text-ui font-normal not-italic text-wrap",
+  caption: "font-sans text-small font-normal normal-case text-muted-foreground text-wrap",
+  code: "font-mono text-ui font-normal normal-case not-italic text-wrap",
 } as const;
 
 type TextVariant = keyof typeof variants;

@@ -89,11 +89,14 @@ additional mono weights or italics remain deferred until licensed assets exist.
 
 ## Section titles, lists, and quotations
 
-`variant="section"` is the opt-in uppercase section title. It retains the 24px
-heading step and Bell Gothic Black 900, uses normal tracking rather than the
-sentence-case heading's negative tracking, and balances wrapping. Content stays
-in natural case; CSS owns capitalization. `as` still chooses the correct heading
-level. Existing heading variants keep their original casing. Do not use the
+Bell Gothic is uppercase by default: display, title, heading, section,
+subheading, native headings, and the `font-heading` utility all own uppercase
+presentation. Keep content in natural case; CSS owns capitalization. Inter and
+mono text roles retain their own casing even when rendered as a heading element.
+
+`variant="section"` retains the 24px heading step and Bell Gothic Black 900,
+uses normal tracking rather than the heading role's negative tracking, and
+balances wrapping. `as` still chooses the correct heading level. Do not use the
 24px section role for a child of a smaller heading.
 
 Prose lists keep native bullets and numbers. Top-level sibling items have 0.75em
