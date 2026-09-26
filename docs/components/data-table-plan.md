@@ -1,8 +1,8 @@
 # Data table and Popover — agreed design
 
 Status: design decisions agreed on September 24, 2026. The shared Popover
-foundation is implemented; see `popover.md` for its contract. The table remains
-planned, with visual explorations preceding DataTable implementation.
+foundation is implemented; see `popover.md` for its contract. Visual explorations now live in the dedicated Data table Components section
+(`/#data-table`). The reusable DataTable implementation remains planned.
 
 ## Direction
 
@@ -89,7 +89,10 @@ by stable record ID across sorting and page changes; clear it when search or
 filters change. The header checkbox selects eligible rows on the current page
 and displays the mixed state when appropriate.
 
-Open records through their name/link or explicit row action. Provide optional
+Open records through their name/link or explicit row action. Checkbox-only selection
+remains the default. An optional row-click selection mode is available for
+comparison in the exploration; it excludes interactive controls and text-selection
+gestures. Keyboard selection continues through the checkbox. Provide optional
 row-action menus, a bulk-action area, and expandable row details. The consuming
 application supplies actions and export behavior.
 
@@ -158,3 +161,33 @@ and playground integration are part of shipping the library addition.
 
 The responsive references demonstrate stacked records, not bespoke card layouts;
 the primary-field heading and custom renderer are our agreed extensions.
+
+## Current exploration
+
+The demo compares borderless, horizontal-rule, and full-grid treatments on twelve
+fictional studio projects. Controls provide editorial/compact spacing, full/minimal
+configuration, selection, preview width, card/scroll layouts, and records/loading/
+empty/error states. Theme follows the manual. Cards reflow below a 640px container
+width and retain all visible fields, order, record identity, and selection.
+
+Demo-local search, categorical filtering, single-column sorting, pagination,
+checkbox painting, column visibility, keyboard column ordering, and record detail
+popovers make the visual comparison interactive. They are not the public DataTable
+API. Search/filter changes clear selection; paging and sorting preserve it.
+
+Next: review the treatments, then implement the agreed TanStack foundation and
+remaining capabilities. No final visual choice has been recorded yet.
+
+Exploration refinements: columns have stable widths and truncate long values;
+project-name activation opens full details. The Columns popover keeps a stable,
+paintable visibility list with earlier/later ordering controls. Project is required
+but can move. Selection is fixed first; the optional non-sortable actions column
+is fixed last, with a three-dot menu also available on cards. Example actions
+select/deselect a project or filter to its owner. Row-click selection is configurable
+and remains off by default while the interaction is evaluated.
+
+Row hover now uses a single pointer-tracking highlight with the menu's fast 80ms,
+zero-bounce spring. Selection styling is independent. Touch has no hover effect;
+reduced motion makes highlight travel immediate. The chooser uses an icon-only
+sliders button labeled “Configure columns.” Shared tooltips replace native titles
+for column controls and project names; project details remain click-accessible.
