@@ -21,10 +21,10 @@ const neutralRoles = [
 ] as const;
 
 const chromaticRoles = [
-  ["Brand", "--anaphor-brand", "oklch(0.6217 0.185 39.44)"],
-  ["Focus", "--anaphor-focus", "oklch(0.618 0.161 39.44)"],
-  ["Danger", "--anaphor-danger", "oklch(0.4852 0.1691 10.14)"],
-  ["Danger / text", "--anaphor-danger-text", "oklch(0.4236 0.1691 10.14)"],
+  ["Brand", "--anaphor-brand"],
+  ["Focus", "--anaphor-focus"],
+  ["Danger", "--anaphor-danger"],
+  ["Danger / text", "--anaphor-danger-text"],
 ] as const;
 
 const colorRoles = [
@@ -133,7 +133,7 @@ export default function HomePage() {
                 <p className="text-label text-muted-foreground">{String(chromaticRoles.length).padStart(2, "0")} roles</p>
               </div>
               <ol className="mt-3 grid gap-4 sm:grid-cols-2">
-                {chromaticRoles.map(([role, token, value]) => (
+                {chromaticRoles.map(([role, token]) => (
                   <li key={role}>
                     <Card variant="default">
                       <div
@@ -143,7 +143,7 @@ export default function HomePage() {
                       <CardContent>
                         <p className="text-small font-medium">{role}</p>
                         <p className="mt-1 break-words font-mono text-label text-muted-foreground">
-                          {value}
+                          {token}
                         </p>
                       </CardContent>
                     </Card>
