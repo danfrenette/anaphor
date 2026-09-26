@@ -386,16 +386,23 @@ test("card copy confirms a write", async ({ page }) => {
     } });
   });
   await page.goto("/#card");
-  const copy = page.getByRole("button", { name: "Copy spacing tokens" });
-  const status = page.getByRole("group", { name: "Spacing tokens", exact: true }).getByRole("status");
+  const copy = page.getByRole("button", { name: "Copy development command" });
+  const status = page.getByRole("group", { name: "Local development", exact: true }).getByRole("status");
   await copy.click();
   await expect(status).toHaveText("Copied to clipboard.");
-  await expect(page.locator("html")).toHaveAttribute("data-copied-text", "--space-1: 4px;\n--space-2: 8px;\n--space-3: 12px;");
+  await expect(page.locator("html")).toHaveAttribute("data-copied-text", "pnpm dev");
   await expect(status).toBeEmpty();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await copy.focus();
   await page.keyboard.press("Enter");
   await expect(status).toHaveText("Copied to clipboard.");
+});
+
+test("editorial card links to its article", async ({ page }) => {
+  await page.goto("/#card");
+  await page.getByRole("link", { name: "Read the essay", exact: true }).click();
+  await expect(page).toHaveURL(/\/studies\/field-notes$/);
+  await expect(page.getByRole("heading", { name: "Not everything needs to move." })).toBeVisible();
 });
 
 test("showcase previews reflow in both themes", async ({ page }) => {
