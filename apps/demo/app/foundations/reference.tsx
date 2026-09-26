@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { Text, useTheme } from "@anaphor/system";
 import { Check, Range } from "../playground-fields";
+import { requireToken, type Tokens } from "./tokens";
+import { contrastRatio } from "./contrast";
 
 const roles = [
   ["background", "Page canvas"], ["foreground", "Primary text"],
@@ -14,7 +16,9 @@ const roles = [
   ["ring", "Focus indicator"],
 ] as const;
 
-const pairs = [
+type ColorRole = (typeof roles)[number][0];
+type ContrastPair = readonly [label: string, foreground: ColorRole, background: ColorRole, threshold: number, exception?: boolean];
+const pairs: readonly ContrastPair[] = [
   ["Text / page", "foreground", "background", 4.5],
   ["Reading / page", "reading", "background", 4.5],
   ["Reading / surface", "reading", "muted", 4.5],
@@ -24,37 +28,37 @@ const pairs = [
   ["Error / surface", "danger-foreground", "muted", 4.5],
   ["Focus / page", "ring", "background", 3],
   ["Focus / surface", "ring", "muted", 3],
-  ["Action label / orange", "primary-foreground", "primary", 4.5],
-] as const;
+  ["Action label / orange", "primary-foreground", "primary", 4.5, true],
+] as const satisfies readonly ContrastPair[];
 
-type Tokens = Record<string, string>;
 type Theme = "light" | "dark";
 const buttonClass = "min-h-11 rounded-md border border-border px-3 text-ui";
 
 function ThemeSpecimen({ theme, values, tokens }: { theme: Theme; values: Tokens; tokens: Tokens }) {
   const root = useRef<HTMLDivElement>(null);
   const [ratios, setRatios] = useState<number[]>([]);
-  const color = (role: string) => tokens[`--color-${role}`];
+  const color = (role: ColorRole) => requireToken(tokens, `--color-${role}`);
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
       const canvas = document.createElement("canvas");
       canvas.width = canvas.height = 1;
       const context = canvas.getContext("2d", { willReadFrequently: true });
       if (!context || !root.current) return;
-      const luminance = (pixels: Uint8ClampedArray) => [...pixels].slice(0, 3).reduce((sum, channel, index) => {
-        const value = channel / 255;
-        return sum + (value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4) * ([0.2126, 0.7152, 0.0722][index] ?? 0);
-      }, 0);
+      const pixel = (): [number, number, number, number] => {
+        const data = context.getImageData(0, 0, 1, 1).data;
+        return [data[0]!, data[1]!, data[2]!, data[3]! / 255];
+      };
       setRatios([...root.current.querySelectorAll<HTMLElement>("[data-contrast-pair]")].map(element => {
         const style = getComputedStyle(element);
         context.clearRect(0, 0, 1, 1);
         context.fillStyle = style.backgroundColor;
         context.fillRect(0, 0, 1, 1);
-        const background = luminance(context.getImageData(0, 0, 1, 1).data);
+        const background = pixel();
+        context.clearRect(0, 0, 1, 1);
         context.fillStyle = style.color;
         context.fillRect(0, 0, 1, 1);
-        const foreground = luminance(context.getImageData(0, 0, 1, 1).data);
-        return (Math.max(background, foreground) + 0.05) / (Math.min(background, foreground) + 0.05);
+        const foreground = pixel();
+        return contrastRatio([foreground[0], foreground[1], foreground[2]], [background[0], background[1], background[2]], foreground[3]);
       }));
     });
     return () => cancelAnimationFrame(frame);
@@ -74,10 +78,10 @@ function ThemeSpecimen({ theme, values, tokens }: { theme: Theme; values: Tokens
       <summary className="min-h-11 cursor-pointer text-ui font-medium">Contrast pairings</summary>
       <p className="mb-3 text-small">Measured in browser, sRGB with alpha compositing. Text AA: 4.5:1; non-text focus: 3:1. Rounded display only; pass checks use the full ratio.</p>
       <ul className="space-y-3">
-        {pairs.map(([label, foreground, background, threshold], index) => <li key={label} className="flex flex-wrap items-center justify-between gap-2 text-small">
+        {pairs.map(([label, foreground, background, threshold, exception], index) => <li key={label} className="flex flex-wrap items-center justify-between gap-2 text-small">
           <span>{label}</span>
           <span aria-hidden="true" data-contrast-pair style={{ color: color(foreground), background: color(background) }} className="sr-only">Sample</span>
-          <span className="font-mono tabular-nums" data-testid="contrast-result">{ratios[index] === undefined ? "Measuring…" : `${ratios[index].toFixed(2)}:1 · ${ratios[index] >= threshold ? "Pass" : index === pairs.length - 1 ? "Exception" : "Below target"}`}</span>
+          <span className="font-mono tabular-nums" data-testid="contrast-result">{ratios[index] === undefined ? "Measuring…" : `${ratios[index].toFixed(2)}:1 · ${ratios[index] >= threshold ? "Pass" : exception ? "Exception" : "Below target"}`}</span>
         </li>)}
       </ul>
       <p className="mt-4 text-small">Orange action labels retain the approved bright-label exception. This is not an AA pass. Disabled controls are exempt, and are not used as readable-content pairings.</p>
@@ -91,7 +95,7 @@ function ThemeSpecimen({ theme, values, tokens }: { theme: Theme; values: Tokens
 
 function TokenList({ names, tokens }: { names: string[]; tokens: Tokens }) {
   return <dl className="mt-5 divide-y divide-border">{names.map(name => <div key={name} className="grid min-w-0 gap-1 py-3 sm:grid-cols-2 sm:gap-6">
-    <dt className="break-words font-mono text-small">{name}</dt><dd className="break-words font-mono text-small">{tokens[name]}</dd>
+    <dt className="break-words font-mono text-small">{name}</dt><dd className="break-words font-mono text-small">{requireToken(tokens, name)}</dd>
   </div>)}</dl>;
 }
 

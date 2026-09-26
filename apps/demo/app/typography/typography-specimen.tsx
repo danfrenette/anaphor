@@ -6,7 +6,7 @@ import { Select } from "../playground-fields";
 
 const defaults = {
   size: "16", weight: "400", measure: "65", leading: "1.6",
-  tracking: "0", color: "Reading", decoration: "Solid",
+  tracking: "0", color: "Reading", decoration: "Solid", wrapping: "Normal",
 } as const;
 
 const longIdentifier = "deployment_production_us_east_01_abcdefghijklmnopqrstuvwxyz0123456789";
@@ -20,14 +20,16 @@ export function TypographySpecimen() {
   const [color, setColor] = useState<"Reading" | "Primary" | "Muted">(defaults.color);
   const [decoration, setDecoration] = useState<"Solid" | "Double">(defaults.decoration);
   const [expanded, setExpanded] = useState(false);
+  const [wrapping, setWrapping] = useState<"Normal" | "Pretty">(defaults.wrapping);
   const approved = size === defaults.size && weight === defaults.weight && measure === defaults.measure
     && leading === defaults.leading && tracking === defaults.tracking
-    && color === defaults.color && decoration === defaults.decoration;
+    && color === defaults.color && decoration === defaults.decoration && wrapping === defaults.wrapping;
 
   function reset() {
     setSize(defaults.size); setWeight(defaults.weight); setMeasure(defaults.measure);
     setLeading(defaults.leading); setTracking(defaults.tracking);
     setColor(defaults.color); setDecoration(defaults.decoration);
+    setWrapping(defaults.wrapping);
   }
 
   const previewStyle: CSSProperties = {
@@ -50,6 +52,7 @@ export function TypographySpecimen() {
           <Select label="Tracking (em)" value={tracking} options={["0", "0.01", "0.02"]} onChange={setTracking} />
           <Select label="Color role" value={color} options={["Reading", "Primary", "Muted"]} onChange={setColor} />
           <Select label="Link decoration" value={decoration} options={["Solid", "Double"]} onChange={setDecoration} />
+          <Select label="Paragraph wrapping" value={wrapping} options={["Normal", "Pretty"]} onChange={setWrapping} />
         </div>
         <Button className="mt-4" iconOnly={false} loading={false} nativeButton type="button" size="sm" shape="square" variant="outline" tone="neutral" onClick={reset}>
           <ButtonLabel>Reset typography</ButtonLabel>
@@ -58,7 +61,7 @@ export function TypographySpecimen() {
 
       <p role="status" className="my-6 text-small text-muted-foreground">{approved ? "Approved defaults" : "Local experiment — not a system change"}</p>
       <section aria-label="Typography specimen" className="min-w-0 bg-background py-4">
-        <Prose as="article" aria-label="Reading sample" style={previewStyle}>
+        <Prose as="article" aria-label="Reading sample" style={previewStyle} className={wrapping === "Pretty" ? "[&_p]:text-pretty" : undefined}>
           <Text as="h2" variant="section">A useful record of the work</Text>
           <p>A technical note should make its next step easy to find. Start with the decision, explain the constraint, and leave enough room for the reader to follow the example. <strong>Emphasis marks the important part.</strong> An aside can remain <em>quiet and readable.</em></p>
           <p>Use <code>deployment_id</code> when referring to a literal value. Follow the <a href="#type-reference" style={{ textDecorationStyle: decoration === "Double" ? "double" : "solid" }}>type reference</a> for the roles behind this page.</p>

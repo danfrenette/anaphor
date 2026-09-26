@@ -67,3 +67,17 @@ test("reading experiments are bounded, local, and resettable", async ({ page }) 
   expect(await sample.evaluate(element => element.style.cssText)).toBe(before);
   await expect(page.getByRole("status")).toHaveText("Approved defaults");
 });
+
+test("pretty wrapping only affects sample paragraphs and resets", async ({ page }) => {
+  await page.goto("/typography");
+  await page.getByText("Reading experiments", { exact: true }).click();
+  const sample = page.getByRole("article", { name: "Reading sample" });
+  await selectControl(page, "Paragraph wrapping", "Pretty");
+  await expect(sample.locator("p").first()).toHaveCSS("text-wrap-style", "pretty");
+  await expect(sample.locator("h2")).toHaveCSS("text-wrap-style", "balance");
+  await expect(sample.locator("pre")).toHaveCSS("white-space", "pre");
+  await expect(page.locator('#type-reference [data-variant="body"]').first()).toHaveCSS("text-wrap-style", "auto");
+  await page.getByRole("button", { name: "Reset typography" }).click();
+  await expect(sample.locator("p").first()).toHaveCSS("text-wrap-style", "auto");
+  await expect(page.getByRole("status")).toHaveText("Approved defaults");
+});
