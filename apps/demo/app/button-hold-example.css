@@ -1,0 +1,65 @@
+.hold-delete-button {
+  position: relative;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-control);
+  background: color-mix(in oklch, var(--anaphor-danger) 16%, var(--anaphor-background));
+  color: var(--anaphor-danger-text);
+  font: 500 var(--text-ui)/1.5 var(--font-sans);
+  touch-action: none;
+  user-select: none;
+  transition: transform 160ms var(--anaphor-ease-out);
+}
+
+.hold-delete-button:focus-visible {
+  outline: 2px solid var(--anaphor-focus);
+  outline-offset: 2px;
+}
+
+.hold-delete-button[data-holding] {
+  transform: scale(0.97);
+}
+
+.hold-delete-button__content,
+.hold-delete-button__overlay {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  white-space: nowrap;
+}
+
+.hold-delete-button :is(.hold-delete-button__content, .hold-delete-button__overlay) svg {
+  width: 16px;
+  height: 16px;
+}
+
+.hold-delete-button__overlay {
+  position: absolute;
+  inset: 0;
+  justify-content: center;
+  background: var(--anaphor-danger);
+  color: var(--anaphor-background);
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 200ms var(--anaphor-ease-out);
+}
+
+.hold-delete-button[data-holding] .hold-delete-button__overlay {
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 2s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hold-delete-button,
+  .hold-delete-button__overlay,
+  .hold-delete-button[data-holding] .hold-delete-button__overlay {
+    transition: none;
+  }
+
+  .hold-delete-button[data-holding] {
+    transform: none;
+  }
+}
