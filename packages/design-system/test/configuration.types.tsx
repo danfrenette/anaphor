@@ -1,4 +1,12 @@
 import { AdaptiveSurfaceTrigger, Button, CommandPalette, SidebarProvider, type ButtonProps, type SidebarProviderProps } from "@anaphor/system";
+import { Popover, PopoverPopup } from "@anaphor/system";
+
+<Popover defaultOpen={false}><PopoverPopup side="bottom" align="start" sideOffset={8} positionerProps={{ collisionPadding: 16, collisionAvoidance: { side: "flip", align: "shift" } }} /></Popover>;
+<Popover open={false} onOpenChange={() => {}} />;
+// @ts-expect-error Popup placement is explicitly configured.
+<PopoverPopup />;
+// @ts-expect-error Positioner passthrough cannot override required placement.
+<PopoverPopup side="bottom" align="start" sideOffset={8} positionerProps={{ side: "top" }} />;
 
 const button = {
   iconOnly: false,
@@ -12,13 +20,14 @@ const button = {
 } satisfies ButtonProps;
 
 <Button {...button} />;
+<Button {...button} variant="solid" tone="danger" />;
+<Button {...button} variant="soft" tone="danger" />;
 const { tone, ...withoutTone } = button;
 void tone;
-<Button {...withoutTone} variant="destructive" />;
-// @ts-expect-error Destructive buttons do not have a configurable tone.
-<Button {...button} variant="destructive" />;
-// @ts-expect-error A normal variant requires an explicit tone.
+// @ts-expect-error Every variant requires an explicit tone.
 <Button {...withoutTone} />;
+// @ts-expect-error Destructive is a tone, not a variant.
+<Button {...button} variant="destructive" />;
 const { size, ...withoutSize } = button;
 void size;
 // @ts-expect-error Size must be supplied rather than silently defaulted.

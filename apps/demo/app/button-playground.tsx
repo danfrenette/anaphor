@@ -9,7 +9,7 @@ import { Check, Range, Select } from "./playground-fields";
 type ButtonControls = {
   variant: ButtonProps["variant"];
   size: ButtonProps["size"];
-  tone: NonNullable<ButtonProps["tone"]>;
+  tone: ButtonProps["tone"];
   shape: ButtonProps["shape"];
   radius: number;
   iconOnly: boolean;
@@ -32,11 +32,11 @@ const buttonDefaults: ButtonControls = {
   duration: 125,
 };
 
-const variants = ["solid", "destructive", "outline", "ghost"] as const;
+const variants = ["solid", "outline", "ghost", "soft"] as const;
 
 export function ButtonPlayground({ children }: { children: ReactNode }) {
   const [controls, setButton] = useState(buttonDefaults);
-  const destructive = controls.variant === "destructive";
+  const destructive = controls.tone === "danger";
   const demoStyle: CSSProperties & Record<`--${string}`, string | number> = {
     "--anaphor-button-radius": `${controls.radius}px`,
     "--anaphor-button-press-scale": controls.pressScale,
@@ -55,7 +55,8 @@ export function ButtonPlayground({ children }: { children: ReactNode }) {
         <CardContent className="flex min-h-56 items-center justify-center">
           <Button nativeButton={true} type="button"
             data-testid="primary-button"
-            {...(controls.variant === "destructive" ? { variant: controls.variant } : { variant: controls.variant, tone: controls.tone })}
+            variant={controls.variant}
+            tone={controls.tone}
             size={controls.size}
             shape={controls.shape}
             iconOnly={controls.iconOnly}
@@ -82,7 +83,7 @@ function ButtonControlFields({ controls, setButton }: { controls: ButtonControls
   return <div className="grid grid-cols-2 gap-4">
           <Select label="Variant" value={controls.variant} options={variants} onChange={(value) => update("variant", value)} />
           <Select label="Size" value={controls.size} options={["xs", "sm", "md", "lg"]} onChange={(value) => update("size", value)} />
-          {controls.variant !== "destructive" && <Select label="Tone" value={controls.tone} options={["accent", "neutral"]} onChange={(value) => update("tone", value)} />}
+          <Select label="Tone" value={controls.tone} options={["accent", "neutral", "danger"]} onChange={(value) => update("tone", value)} />
           <Select label="Shape" value={controls.shape} options={["square", "round"]} onChange={(value) => update("shape", value)} />
           <Range label="Radius" value={controls.radius} min={0} max={24} step={2} unit="px" onChange={(value) => update("radius", value)} />
           <Range unit="" label="Press scale" value={controls.pressScale} min={0.94} max={1} step={0.01} onChange={(value) => update("pressScale", value)} />

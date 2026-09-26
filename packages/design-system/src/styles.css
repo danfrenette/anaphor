@@ -256,6 +256,29 @@
   .anaphor-prose > :last-child:not([data-prose-exclude]) { margin-block-end: 0; }
 }
 
+[data-slot="popover-popup"] {
+  transition: opacity 180ms var(--anaphor-ease-out), transform 180ms var(--anaphor-ease-out);
+}
+
+[data-slot="popover-popup"]:is([data-starting-style], [data-ending-style]) {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+[data-slot="popover-popup"][data-ending-style] {
+  transition-duration: 125ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="popover-popup"] {
+    transition: none;
+  }
+
+  [data-slot="popover-popup"]:is([data-starting-style], [data-ending-style]) {
+    transform: none;
+  }
+}
+
 [data-slot="menu-popup"] {
   transition:
     opacity var(--anaphor-menu-duration) var(--anaphor-ease-out),
@@ -281,6 +304,63 @@
 
 [data-stable-anchor]:active:not([data-disabled]) [data-slot="button-content"] {
   transform: scale(var(--anaphor-button-press-scale, 0.97));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-slot="button-loader-container"] {
+    transition:
+      opacity 200ms var(--anaphor-ease-in-out),
+      margin-inline-start 200ms var(--anaphor-ease-in-out),
+      margin-inline-end 200ms var(--anaphor-ease-in-out);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="button-loader-container"] {
+    transition: opacity 200ms var(--anaphor-ease-out);
+  }
+}
+
+[data-hold-button] [data-slot="hold-button-overlay"] {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--button-gap);
+  background: var(--button-tone);
+  color: var(--button-solid-ink);
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 200ms var(--anaphor-ease-out);
+}
+
+[data-hold-button] [data-slot="hold-button-overlay"] > svg {
+  width: var(--button-icon-size);
+  height: var(--button-icon-size);
+  flex-shrink: 0;
+}
+
+[data-hold-button][data-holding] [data-slot="hold-button-overlay"] {
+  animation: hold-reveal var(--hold-duration) linear forwards;
+}
+
+@keyframes hold-reveal {
+  to { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes hold-duration {
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-hold-button] [data-slot="hold-button-overlay"] {
+    transition: none;
+  }
+
+  [data-hold-button][data-holding] [data-slot="hold-button-overlay"] {
+    clip-path: inset(0 0 0 0);
+    animation-name: hold-duration;
+  }
 }
 
 [data-slot="menu-items"][data-fluid-hover] [data-slot="menu-item"][data-highlighted] {

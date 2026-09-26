@@ -13,6 +13,7 @@
         "danfrenette/anaphor/adaptive-surface",
         "danfrenette/anaphor/badge",
         "danfrenette/anaphor/button",
+        "danfrenette/anaphor/hold-button",
         "danfrenette/anaphor/card",
         "danfrenette/anaphor/card-copy-button",
         "danfrenette/anaphor/checkbox",
@@ -22,6 +23,7 @@
         "danfrenette/anaphor/input",
         "danfrenette/anaphor/kbd",
         "danfrenette/anaphor/menu",
+        "danfrenette/anaphor/popover",
         "danfrenette/anaphor/sidebar",
         "danfrenette/anaphor/morph-surface",
         "danfrenette/anaphor/theme",
@@ -150,6 +152,18 @@
       ]
     },
     {
+      "name": "hold-button",
+      "type": "registry:ui",
+      "registryDependencies": ["danfrenette/anaphor/button", "danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/hold-button.tsx",
+          "type": "registry:ui",
+          "target": "@ui/hold-button.tsx"
+        }
+      ]
+    },
+    {
       "name": "card",
       "type": "registry:ui",
       "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils", "danfrenette/anaphor/text"],
@@ -223,6 +237,19 @@
           "path": "packages/design-system/src/components/input.tsx",
           "type": "registry:ui",
           "target": "@ui/input.tsx"
+        }
+      ]
+    },
+    {
+      "name": "popover",
+      "type": "registry:ui",
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/popover.tsx",
+          "type": "registry:ui",
+          "target": "@ui/popover.tsx"
         }
       ]
     },

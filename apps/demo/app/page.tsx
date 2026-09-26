@@ -7,6 +7,7 @@ import { CheckboxDemo } from "./checkbox-demo";
 import { InputDemo } from "./input-demo";
 import { CommandPaletteDemo } from "./command-palette-demo";
 import { DropdownMenuDemo } from "./dropdown-menu-demo";
+import { PopoverDemo } from "./popover-demo";
 import { KbdDemo } from "./kbd-demo";
 import { SliderDemo } from "./slider-demo";
 import { TabsDemo } from "./tabs-demo";
@@ -245,6 +246,7 @@ export default function HomePage() {
           <SliderDemo />
           <CheckboxDemo />
           <DropdownMenuDemo />
+          <PopoverDemo />
           <KbdDemo />
           <TabsDemo />
           <CommandPaletteDemo />

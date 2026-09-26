@@ -74,7 +74,12 @@ export function CardDemo() {
           <Card variant="showcase">
             <CardPreview>
               <div className="grid grid-cols-2 grid-rows-2 bg-muted">
-                {(["solid", "outline", "ghost", "destructive"] as const).map((variant) => <div key={variant} className="grid place-items-center border-border p-3 odd:border-r [&:nth-child(-n+2)]:border-b"><Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" {...(variant === "destructive" ? { variant } : { variant, tone: "neutral" })} size="sm"><ButtonLabel>{variant.charAt(0).toUpperCase() + variant.slice(1)}</ButtonLabel></Button></div>)}
+                {([
+                  { label: "Solid", variant: "solid", tone: "neutral" },
+                  { label: "Outline", variant: "outline", tone: "neutral" },
+                  { label: "Ghost", variant: "ghost", tone: "neutral" },
+                  { label: "Destructive", variant: "solid", tone: "danger" },
+                ] as const).map(({ label, variant, tone }) => <div key={label} className="grid place-items-center border-border p-3 odd:border-r [&:nth-child(-n+2)]:border-b"><Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" variant={variant} tone={tone} size="sm"><ButtonLabel>{label}</ButtonLabel></Button></div>)}
               </div>
             </CardPreview>
             <CardHeader><CardTitle as="h3" variant="heading">A study in contrast</CardTitle><CardDescription>Four ways to give an action its place.</CardDescription></CardHeader>

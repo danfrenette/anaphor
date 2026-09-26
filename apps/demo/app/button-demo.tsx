@@ -3,6 +3,7 @@ import { ArrowRight, Trash } from "@phosphor-icons/react/dist/ssr";
 import type { ReactNode } from "react";
 import { ButtonPlayground } from "./button-playground";
 import { ButtonLoadingExample } from "./button-loading-example";
+import { ButtonHoldExample } from "./button-hold-example";
 
 
 export function ButtonDemo() {
@@ -59,6 +60,14 @@ export function ButtonDemo() {
         </div>
         <p className="mt-3 text-ui text-muted-foreground">Click either button to try a 1.5-second action. Both return to idle automatically.</p>
 
+        <Card variant="default" role="group" aria-label="Hold to delete example" className="mt-10">
+          <CardHeader>
+            <CardTitle as="h3" variant="heading">Hold to delete</CardTitle>
+            <CardDescription>A clipped color layer shows the 2-second hold. Releasing early cancels the action.</CardDescription>
+          </CardHeader>
+          <CardContent><ButtonHoldExample /></CardContent>
+        </Card>
+
         <Card variant="default" className="mt-10">
           <CardHeader><CardTitle as="h3" variant="label">Behavior</CardTitle></CardHeader>
           <CardContent className="flex flex-wrap items-center gap-3">
@@ -66,7 +75,7 @@ export function ButtonDemo() {
               <ArrowRight aria-hidden="true" />
               <ButtonLabel>Composed</ButtonLabel>
             </Button>
-            <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" variant="destructive">
+            <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="danger" variant="solid">
               <Trash aria-hidden="true" />
               <ButtonLabel>Delete item</ButtonLabel>
             </Button>

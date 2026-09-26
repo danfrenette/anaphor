@@ -87,9 +87,9 @@ Use `CardTitle className="font-mono"` for monospaced headings; combine it with
 
 ## Button variants
 
-Use `solid`, `outline`, or `ghost` with accent or neutral tone. Use
-`variant="destructive"` for destructive actions; its danger colors take
-precedence over tone. The former `soft` variant has been removed.
+Choose `solid`, `outline`, `ghost`, or `soft` independently of the `accent`,
+`neutral`, or `danger` tone. For a destructive action, use `tone="danger"`;
+the hold button pairs that tone with the soft variant and a clipped reveal.
 
 ## Button composition
 
