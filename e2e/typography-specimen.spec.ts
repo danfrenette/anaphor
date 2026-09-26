@@ -1,10 +1,13 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { selectControl } from "./playground-select";
 
 for (const theme of ["light", "dark"]) {
   test(`typography defaults: ${theme}`, async ({ page }) => {
+    await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/typography");
-    await page.evaluate(theme => document.documentElement.classList.toggle("dark", theme === "dark"), theme);
+    await expect.poll(() => page.locator("html").evaluate(element => element.classList.contains("dark"))).toBe(theme === "dark");
     await page.evaluate(() => document.fonts.ready);
     const sample = page.getByRole("article", { name: "Reading sample" });
     await expect(sample).toHaveCSS("font-size", "16px");
@@ -25,7 +28,7 @@ for (const theme of ["light", "dark"]) {
     await expect(sample.locator("em")).toHaveCSS("font-style", "italic");
     await expect(sample.locator("code").first()).toHaveCSS("font-family", /Magda Clean Mono/);
     expect((await new AxeBuilder({ page }).include("#content").analyze()).violations).toEqual([]);
-    const screenshotStyle = await page.addStyleTag({ content: "header { visibility: hidden !important; }" });
+    const screenshotStyle = await page.addStyleTag({ content: "header, [data-slot='morph-surface'], a[href='#content'] { visibility: hidden !important; }" });
     await expect(page.getByRole("region", { name: "Typography specimen", exact: true })).toHaveScreenshot(`typography-${theme}.png`, { animations: "disabled" });
     await screenshotStyle.evaluate(element => element.parentNode?.removeChild(element));
 
@@ -52,7 +55,7 @@ test("reading experiments are bounded, local, and resettable", async ({ page }) 
   const sample = page.getByRole("article", { name: "Reading sample" });
   const before = await sample.evaluate(element => element.style.cssText);
   for (const [label, value] of [["Body size (px)", "20"], ["Body weight", "600"], ["Measure (ch)", "45"], ["Leading", "1.8"], ["Tracking (em)", "0.02"], ["Color role", "Primary"], ["Link decoration", "Double"]] as const) {
-    await page.getByRole("combobox", { name: label, exact: true }).selectOption(value);
+    await selectControl(page, label, value);
   }
   await expect(page.getByRole("status")).toHaveText("Local experiment — not a system change");
   await expect(sample).toHaveCSS("font-size", "20px");
