@@ -14,6 +14,8 @@ hints. Use `render` to compose with existing buttons, including popover triggers
 
 TooltipPopup requires side, align, and sideOffset. It supports portal and positioner
 props, collision handling, and controlled state through the upstream root API.
+The popup owns its generated ID to preserve the trigger's accessible description;
+custom popup IDs are not supported.
 No caret. Opening fades/scales for 150ms; closing takes 100ms. Shared-delay instant
 switches and reduced-motion preferences remove transitions.
 
