@@ -1,4 +1,4 @@
-import { Section, Text, Badge, Button, ButtonLabel, Card, CardAction, CardCopyButton, CardPreview, CardContent, CardDescription, CardHeader, CardTitle } from "@anaphor/system";
+import { Section, Text, Badge, Button, ButtonLabel, Card, CardAction, CardCopyButton, CardPreview, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@anaphor/system";
 import { CardPlayground } from "./card-playground";
 
 export function CardDemo() {
@@ -29,13 +29,26 @@ export function CardDemo() {
         </Card>
       </div>
 
-      <Card variant="default" className="mt-8" role="group" aria-labelledby="spacing-tokens-title">
-        <CardHeader>
-          <CardTitle as="h3" variant="heading" id="spacing-tokens-title">Spacing tokens</CardTitle>
-          <CardAction><CardCopyButton value={"--space-1: 4px;\n--space-2: 8px;\n--space-3: 12px;"} aria-label="Copy spacing tokens" /></CardAction>
-        </CardHeader>
-        <CardContent><pre className="overflow-x-auto font-mono text-ui"><code>{"--space-1: 4px;\n--space-2: 8px;\n--space-3: 12px;"}</code></pre></CardContent>
-      </Card>
+      <div className="mt-8 grid items-start gap-6 sm:grid-cols-2">
+        <Card variant="default" role="group" aria-labelledby="card-command-title">
+          <CardHeader>
+            <CardTitle as="h3" variant="heading" id="card-command-title">Local development</CardTitle>
+            <CardDescription>Start the Anaphor demo from the repository root after installing dependencies.</CardDescription>
+            <CardAction><CardCopyButton value="pnpm dev" aria-label="Copy development command" /></CardAction>
+          </CardHeader>
+          <CardContent><pre className="overflow-x-auto font-mono text-ui"><code>pnpm dev</code></pre></CardContent>
+        </Card>
+        <Card variant="default" role="group" aria-labelledby="card-article-title">
+          <CardHeader>
+            <CardTitle as="h3" variant="heading" id="card-article-title">Not everything needs to move</CardTitle>
+            <CardDescription>A note on attention, interfaces, and the value of leaving things alone.</CardDescription>
+          </CardHeader>
+          <CardFooter className="justify-between">
+            <Text as="span" variant="caption">Field Notes · 5 min read</Text>
+            <a href="/studies/field-notes" className="inline-flex min-h-11 items-center text-ui underline underline-offset-4">Read the essay</a>
+          </CardFooter>
+        </Card>
+      </div>
 
       <div className="mt-12">
         <Text as="h3" variant="heading">Showcase</Text>
