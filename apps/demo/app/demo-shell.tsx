@@ -55,6 +55,7 @@ const groups: { label: string; items: NavItem[] }[] = [
     items: [
       { id: "purpose", label: "Introduction", href: "/#purpose", icon: House },
       { id: "principles", label: "Principles", href: "/#principles", icon: CursorClick },
+      { id: "foundations", label: "Token reference", href: "/foundations", icon: Palette },
       { id: "color", label: "Color", href: "/#color", icon: Palette },
       { id: "typography", label: "Typography", href: "/#typography", icon: TextAa },
       { id: "motion", label: "Motion", href: "/#motion", icon: CursorClick },

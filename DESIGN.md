@@ -8,6 +8,9 @@ flat; only interactive or movable objects earn rounded geometry.
 
 ## Color
 
+The inspectable `/foundations` reference and [foundation contract](docs/foundations.md)
+map public semantic names to exact shipped values, theme pairs and local exceptions.
+
 Use a restrained palette. Orange marks primary action, focus, selection, active
 navigation, and measurement traces. It never represents warning or error.
 
