@@ -1,4 +1,5 @@
 export { Button, ButtonLabel, type ButtonProps } from "./components/button";
+export { HoldButton, type HoldButtonProps } from "./components/hold-button";
 export { Separator } from "./components/separator";
 export { Card, CardPreview, CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter, type CardProps, type CardTitleProps } from "./components/card";
 export { CardCopyButton, type CardCopyButtonProps } from "./components/card-copy-button";

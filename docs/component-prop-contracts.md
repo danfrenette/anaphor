@@ -16,7 +16,7 @@ MenuPopup positioning; and the element and variant for typography.
 | --- | --- | --- | --- |
 | SidebarProvider | `mode="controlled"` | `open`, `onOpenChange`, `shortcut`, `resizable` | `defaultOpen` |
 | SidebarProvider | `mode="uncontrolled"` | `defaultOpen`, `shortcut`, `resizable` | `open` |
-| Button | `variant="destructive"` | shared button options | `tone` |
+| Button | `variant="destructive"` or `variant="destructive-soft"` | shared button options | `tone` |
 | Button | other variants | shared button options, `tone` | — |
 | Button | `nativeButton={true}` | `type` | — |
 | Button | `nativeButton={false}` | `render` | `type` |
@@ -33,7 +33,9 @@ Genuinely optional content, callbacks, positioning anchors, and native/third-par
 passthrough attributes remain optional. This pass does not redefine upstream
 React or Base UI APIs. The button playground retains a tone preference while
 editing other variants, but hides the tone control and omits the prop when
-rendering a destructive button.
+rendering a destructive button. `HoldButton` uses the shared soft destructive
+variant and accepts a duration and completion callback; it owns the hold input
+behavior while consumers own the completed action.
 
 `configuration.types.tsx` checks valid combinations and compile-time rejection
 of invalid ones. `text.types.tsx` checks native element refs and events.
