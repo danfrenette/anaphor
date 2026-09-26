@@ -95,7 +95,7 @@ function ThemeSpecimen({ theme, values, tokens }: { theme: Theme; values: Tokens
 
 function TokenList({ names, tokens }: { names: string[]; tokens: Tokens }) {
   return <dl className="mt-5 divide-y divide-border">{names.map(name => <div key={name} className="grid min-w-0 gap-1 py-3 sm:grid-cols-2 sm:gap-6">
-    <dt className="break-words font-mono text-small">{name}</dt><dd className="break-words font-mono text-small">{requireToken(tokens, name)}</dd>
+    <dt className="min-w-0 break-words font-mono text-small">{name}</dt><dd className="min-w-0 break-words font-mono text-small">{requireToken(tokens, name)}</dd>
   </div>)}</dl>;
 }
 
