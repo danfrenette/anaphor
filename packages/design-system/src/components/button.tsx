@@ -151,11 +151,10 @@ function Button({
     >
       <span
         aria-hidden="true"
+        data-slot="button-loader-container"
         className={cn(
           // Layout and visibility
           "pointer-events-none inline-flex w-[var(--button-icon-size)] shrink-0 items-center justify-center opacity-0",
-          // Motion
-          "motion-safe:transition-opacity motion-safe:duration-200 motion-safe:ease-[var(--anaphor-ease-out)]",
           iconOnly
             ? "absolute"
             : "-ms-[var(--button-icon-size)] me-0",

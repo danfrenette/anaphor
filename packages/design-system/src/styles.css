@@ -306,6 +306,21 @@
   transform: scale(var(--anaphor-button-press-scale, 0.97));
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  [data-slot="button-loader-container"] {
+    transition:
+      opacity 200ms var(--anaphor-ease-in-out),
+      margin-inline-start 200ms var(--anaphor-ease-in-out),
+      margin-inline-end 200ms var(--anaphor-ease-in-out);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="button-loader-container"] {
+    transition: opacity 200ms var(--anaphor-ease-out);
+  }
+}
+
 [data-slot="menu-items"][data-fluid-hover] [data-slot="menu-item"][data-highlighted] {
   background: transparent;
 }
