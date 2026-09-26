@@ -91,6 +91,13 @@ Spacing varies by purpose: compact inside controls, moderate within a demo,
 and generous between instructional sections. Rules and shared alignment lanes
 provide grouping before containers do.
 
+Application and editorial starting points are demonstrated in the studies and
+documented in [layout recipes](docs/layout-recipes.md). They constrain recurring
+composition choices without imposing a universal column grid. Application panels
+adapt to available content width; editorial figures may break out of the shared
+65ch text track. Recipe-specific bounds remain local until another consumer
+establishes a shared contract.
+
 ## Geometry And Elevation
 
 - Structural surfaces: square corners or 4px radius.
