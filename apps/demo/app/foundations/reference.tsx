@@ -136,16 +136,18 @@ export function FoundationReference({ tokens, themes, springs }: { tokens: Token
           <dd className="min-w-0"><code className="block break-words font-mono text-small">{requireToken(tokens, name)}</code><code className="mt-2 block font-mono text-small">{utility}</code><p className="mt-2 text-ui text-muted-foreground">{description}</p></dd>
         </div>)}
       </dl>
-      <div className="mt-6 space-y-6">
+      <div className="mt-8 space-y-8">
+        <div className="space-y-3">
         <Text as="h3" variant="subheading">Use in another project</Text>
-        <p className="text-ui">Link the source-owned package into your project, or install its stylesheet through the Anaphor registry. The package is private, not a published npm dependency. The example below uses the linked-package import; registry consumers use their installed stylesheet path.</p>
+        <Text as="p" variant="body">Link the source-owned package into your project, or install its stylesheet through the Anaphor registry. The package is private, not a published npm dependency. The example below uses the linked-package import; registry consumers use their installed stylesheet path.</Text>
+        </div>
         <pre className="whitespace-pre-wrap break-words rounded-card bg-muted p-6 font-mono text-small"><code>{`/* Your app stylesheet, compiled with Tailwind v4 */\n@import "@anaphor/system/styles.css";\n@source "./"; /* Relative to this stylesheet */\n\n/* Application */\n<main className="mx-auto w-full max-w-workspace px-page-inset">\n  …\n</main>\n\n/* Editorial: text stays narrow, media can extend wider */\n<article className="mx-auto w-full max-w-editorial px-page-inset">\n  <div className="mx-auto max-w-reading">…</div>\n  <figure>…</figure>\n</article>`}</code></pre>
         <div data-testid="layout-editorial-sample" className="mx-auto w-full max-w-editorial border-y border-border px-page-inset py-8">
-          <div className="mx-auto max-w-reading"><Text as="h3" variant="subheading">A reading column inside a canvas</Text><Text as="p" variant="body" className="mt-4">The column sets the measure. The surrounding canvas gives a figure more room without widening the prose.</Text></div>
+          <div className="mx-auto max-w-reading text-body"><Text as="h3" variant="subheading">A reading column inside a canvas</Text><Text as="p" variant="body" className="mt-4">The column sets the measure. The surrounding canvas gives a figure more room without widening the prose.</Text></div>
           <div className="my-6 bg-muted p-6 text-ui">Wider media or interactive content</div>
-          <p className="mx-auto max-w-reading text-ui text-muted-foreground">The text returns to the same alignment after the breakout.</p>
+          <div className="mx-auto max-w-reading text-body"><Text as="p" variant="body">The text returns to the same alignment after the breakout.</Text></div>
         </div>
-        <p className="text-ui">Keep ordinary gaps and padding on Tailwind’s spacing scale. Column counts, chart proportions and collapse thresholds belong to the composition, not a mandatory global grid. Override these defaults in the consuming project’s theme when its content requires it.</p>
+        <Text as="p" variant="body">Keep ordinary gaps and padding on Tailwind’s spacing scale. Column counts, chart proportions and collapse thresholds belong to the composition, not a mandatory global grid. Override these defaults in the consuming project’s theme when its content requires it.</Text>
       </div>
     </section>
     <section aria-labelledby="geometry-reference"><Text as="h2" variant="section" id="geometry-reference">Space, geometry, elevation</Text>
