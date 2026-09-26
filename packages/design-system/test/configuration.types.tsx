@@ -23,8 +23,11 @@ const button = {
 const { tone, ...withoutTone } = button;
 void tone;
 <Button {...withoutTone} variant="destructive" />;
+<Button {...withoutTone} variant="destructive-soft" />;
 // @ts-expect-error Destructive buttons do not have a configurable tone.
 <Button {...button} variant="destructive" />;
+// @ts-expect-error Soft destructive buttons do not have a configurable tone.
+<Button {...button} variant="destructive-soft" />;
 // @ts-expect-error A normal variant requires an explicit tone.
 <Button {...withoutTone} />;
 const { size, ...withoutSize } = button;

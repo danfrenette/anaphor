@@ -13,6 +13,7 @@
         "danfrenette/anaphor/adaptive-surface",
         "danfrenette/anaphor/badge",
         "danfrenette/anaphor/button",
+        "danfrenette/anaphor/hold-button",
         "danfrenette/anaphor/card",
         "danfrenette/anaphor/card-copy-button",
         "danfrenette/anaphor/checkbox",
@@ -147,6 +148,18 @@
           "path": "packages/design-system/src/components/button.tsx",
           "type": "registry:ui",
           "target": "@ui/button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "hold-button",
+      "type": "registry:ui",
+      "registryDependencies": ["danfrenette/anaphor/button", "danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/hold-button.tsx",
+          "type": "registry:ui",
+          "target": "@ui/hold-button.tsx"
         }
       ]
     },

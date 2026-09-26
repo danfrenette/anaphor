@@ -92,6 +92,12 @@ const destructiveStyles = cn(
   "active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-danger)_88%,black)]",
 );
 
+const destructiveSoftStyles = cn(
+  "bg-[color-mix(in_oklch,var(--anaphor-danger)_16%,var(--anaphor-background))] text-danger-foreground",
+  "hover:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-danger)_23%,var(--anaphor-background))]",
+  "active:not-data-disabled:bg-[color-mix(in_oklch,var(--anaphor-danger)_29%,var(--anaphor-background))]",
+);
+
 type ButtonProps = Omit<ButtonPrimitive.Props, "nativeButton" | "type"> & {
   iconOnly: boolean;
   loading: boolean;
@@ -99,7 +105,7 @@ type ButtonProps = Omit<ButtonPrimitive.Props, "nativeButton" | "type"> & {
   size: keyof typeof sizeStyles;
   children?: ReactNode;
 } & (
-  | { variant: "destructive"; tone?: never }
+  | { variant: "destructive" | "destructive-soft"; tone?: never }
   | { variant: "solid" | "outline" | "ghost"; tone: "accent" | "neutral" }
 ) & (
   | { nativeButton: true; type: "button" | "submit" | "reset" }
@@ -129,7 +135,7 @@ function Button({
           sizeStyles[size],
           iconOnly && "size-[var(--button-size)] min-w-0 shrink-0 px-0",
           shape === "round" && "rounded-full",
-          variant === "destructive" ? destructiveStyles : variantStyles[`${tone}-${variant}`],
+          variant === "destructive" ? destructiveStyles : variant === "destructive-soft" ? destructiveSoftStyles : tone && variantStyles[`${tone}-${variant}`],
           typeof className === "function" ? className(state) : className,
         )
       }
