@@ -20,16 +20,14 @@ const button = {
 } satisfies ButtonProps;
 
 <Button {...button} />;
+<Button {...button} variant="solid" tone="danger" />;
+<Button {...button} variant="soft" tone="danger" />;
 const { tone, ...withoutTone } = button;
 void tone;
-<Button {...withoutTone} variant="destructive" />;
-<Button {...withoutTone} variant="destructive-soft" />;
-// @ts-expect-error Destructive buttons do not have a configurable tone.
-<Button {...button} variant="destructive" />;
-// @ts-expect-error Soft destructive buttons do not have a configurable tone.
-<Button {...button} variant="destructive-soft" />;
-// @ts-expect-error A normal variant requires an explicit tone.
+// @ts-expect-error Every variant requires an explicit tone.
 <Button {...withoutTone} />;
+// @ts-expect-error Destructive is a tone, not a variant.
+<Button {...button} variant="destructive" />;
 const { size, ...withoutSize } = button;
 void size;
 // @ts-expect-error Size must be supplied rather than silently defaulted.

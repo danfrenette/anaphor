@@ -328,8 +328,8 @@
   align-items: center;
   justify-content: center;
   gap: var(--button-gap);
-  background: var(--anaphor-danger);
-  color: var(--anaphor-background);
+  background: var(--button-tone);
+  color: var(--button-solid-ink);
   clip-path: inset(0 100% 0 0);
   transition: clip-path 200ms var(--anaphor-ease-out);
 }
@@ -341,14 +341,25 @@
 }
 
 [data-hold-button][data-holding] [data-slot="hold-button-overlay"] {
-  clip-path: inset(0 0 0 0);
-  transition: clip-path var(--hold-duration) linear;
+  animation: hold-reveal var(--hold-duration) linear forwards;
+}
+
+@keyframes hold-reveal {
+  to { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes hold-duration {
+  to { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-hold-button] [data-slot="hold-button-overlay"],
-  [data-hold-button][data-holding] [data-slot="hold-button-overlay"] {
+  [data-hold-button] [data-slot="hold-button-overlay"] {
     transition: none;
+  }
+
+  [data-hold-button][data-holding] [data-slot="hold-button-overlay"] {
+    clip-path: inset(0 0 0 0);
+    animation-name: hold-duration;
   }
 }
 

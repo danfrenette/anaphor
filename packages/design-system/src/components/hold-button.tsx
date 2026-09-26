@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
+import { useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { Button, type ButtonProps } from "./button";
 import { cn } from "../lib/utils";
 
@@ -14,6 +14,7 @@ type HoldButtonProps = Omit<
   onHoldComplete: () => void;
   shape: ButtonProps["shape"];
   size: ButtonProps["size"];
+  tone: ButtonProps["tone"];
   style?: ComponentProps<"button">["style"];
 };
 
@@ -26,29 +27,17 @@ function HoldButton({
   shape,
   size,
   style,
+  tone,
   ...props
 }: HoldButtonProps) {
   const [holding, setHolding] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pressed = useRef(false);
+  const animationStarted = useRef(false);
   const holdStyle = { ...style, "--hold-duration": `${duration}ms` };
 
-  useEffect(() => () => {
-    if (timer.current !== null) clearTimeout(timer.current);
-  }, []);
-
-  useEffect(() => {
-    if (!disabled || timer.current === null) return;
-    clearTimeout(timer.current);
-    timer.current = null;
-    pressed.current = false;
-    setHolding(false);
-  }, [disabled]);
-
   function cancelHold() {
-    if (timer.current !== null) clearTimeout(timer.current);
-    timer.current = null;
     pressed.current = false;
+    animationStarted.current = false;
     setHolding(false);
   }
 
@@ -56,11 +45,6 @@ function HoldButton({
     if (disabled || pressed.current) return;
     pressed.current = true;
     setHolding(true);
-    timer.current = setTimeout(() => {
-      timer.current = null;
-      setHolding(false);
-      onHoldComplete();
-    }, duration);
   }
 
   return (
@@ -70,13 +54,14 @@ function HoldButton({
       type="button"
       iconOnly={false}
       loading={false}
-      variant="destructive-soft"
+      variant="soft"
+      tone={tone}
       shape={shape}
       size={size}
       disabled={disabled}
       className={cn("overflow-hidden touch-none", className)}
       data-hold-button=""
-      data-holding={holding || undefined}
+      data-holding={holding && !disabled || undefined}
       style={holdStyle}
       onPointerDown={(event) => {
         if (event.button !== 0) return;
@@ -99,7 +84,20 @@ function HoldButton({
       }}
     >
       {children}
-      <span data-slot="hold-button-overlay" aria-hidden="true">{children}</span>
+      <span
+        data-slot="hold-button-overlay"
+        aria-hidden="true"
+        onAnimationStart={(event) => {
+          if (event.target !== event.currentTarget) return;
+          if (animationStarted.current) cancelHold();
+          else animationStarted.current = true;
+        }}
+        onAnimationEnd={(event) => {
+          if (event.target !== event.currentTarget || !pressed.current || !holding || disabled) return;
+          setHolding(false);
+          onHoldComplete();
+        }}
+      >{children}</span>
     </Button>
   );
 }
