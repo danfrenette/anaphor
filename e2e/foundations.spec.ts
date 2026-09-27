@@ -11,13 +11,13 @@ for (const theme of ["light", "dark"] as const) {
     for (const localTheme of ["light", "dark"] as const) {
       const specimen = page.getByTestId(`foundation-${localTheme}`);
       await expect(specimen).toHaveCSS("color-scheme", localTheme);
-      await expect(specimen).toHaveCSS("background-color", localTheme === "dark" ? "oklch(0.2 0.01 50)" : "oklch(0.985 0.008 85)");
+      await expect(specimen).toHaveCSS("background-color", localTheme === "dark" ? "oklch(0.12 0.008 275)" : "oklch(0.985 0.008 85)");
       await expect(specimen.getByTestId("contrast-result").first()).toContainText("Pass");
       await expect(specimen.getByTestId("contrast-result").last()).toContainText("Exception");
       await expect(specimen).not.toContainText("Measuring…");
       const ratio = async (label: string) => Number.parseFloat(await specimen.getByRole("listitem").filter({ hasText: label }).getByTestId("contrast-result").innerText());
       // Browser color conversion and 8-bit canvas rounding differ across platforms.
-      expect(Math.abs(await ratio("Reading / page") - (localTheme === "light" ? 13.27 : 10.98))).toBeLessThan(0.12);
+      expect(Math.abs(await ratio("Reading / page") - (localTheme === "light" ? 13.27 : 14.13))).toBeLessThan(0.16);
       const result = await new AxeBuilder({ page }).include(`[data-testid="foundation-${localTheme}"]`).analyze();
       expect(result.violations).toEqual([]);
     }

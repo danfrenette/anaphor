@@ -9,7 +9,7 @@ test("formatting does not change shipped theme inventories", () => {
   const expected = extractInventory(css);
   expect(extractInventory(css.replaceAll(" {", "{"))).toEqual(expected);
   expect(expected.themes.light["--anaphor-background"]).toBe("oklch(0.985 0.008 85)");
-  expect(expected.themes.dark["--anaphor-background"]).toBe("oklch(0.2 0.01 50)");
+  expect(expected.themes.dark["--anaphor-background"]).toBe("oklch(0.12 0.008 275)");
   expect(expected.tokens["--color-foreground"]).toBe("var(--anaphor-font-secondary)");
   expect(expected.tokens["--container-workspace"]).toBe("96rem");
   expect(expected.tokens["--container-editorial"]).toBe("70rem");
