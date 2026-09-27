@@ -26,6 +26,14 @@ fill with a light theme-neutral label and the darker danger step on hover and
 press. Destructive color overrides accent/neutral tone; explicitly disabled
 states use the shared neutral treatment. Soft buttons are not supported.
 
+The Crimson direction was confirmed in the `/proto/danger` study. Keep its
+current fill in both themes, its light-theme text step above, and the
+`oklch(0.7 0.1691 10.14)` dark-theme text step. Keep surrounding error and
+destructive surfaces neutral so the color marks the action itself. Oxide was
+rejected because its muted, warm outline made the danger signal too quiet;
+Berry was rejected because its tinted error and action surfaces made the
+warning too pervasive. The study route was removed after this decision.
+
 Components consume these ten color roles directly. Interaction states derive by
 mixing the shared brand accent toward the appropriate neutral role rather than
 adding more variables. The high-chroma orange stays clear against dark surfaces
