@@ -19,7 +19,7 @@ test("headings load Bell Gothic and article text keeps a single 90% alpha", asyn
       };
     });
     expect(result.color).toMatch(/\/ 0\.9\)/);
-    expect(Number(result.color.match(/oklch\(([\d.]+)/)?.[1])).toBeCloseTo(theme === "dark" ? 0.9 : 0.2, 3);
+    expect(Number(result.color.match(/oklch\(([\d.]+)/)?.[1])).toBeCloseTo(theme === "dark" ? 0.95 : 0.2, 3);
     expect(result.opacity).toBe("1");
     expect(result.lineHeight).toBe("25.6px");
     for (const child of result.children) {

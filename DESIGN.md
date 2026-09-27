@@ -16,10 +16,17 @@ navigation, and measurement traces. It never represents warning or error.
 
 Colors use OKLCH so lightness and chroma can be tuned independently. Six
 theme-aware neutrals cover `font-secondary`, `font-tertiary`, `input-disabled`,
-`input-border`, `foreground`, and `background`. They borrow the quiet warmth of
-the YoRHa beige and charcoal pairs without reproducing those values. Both themes
-share `oklch(0.6217 0.185 39.44)` as the brand and action color. The quieter
+`input-border`, `foreground`, and `background`. The light theme keeps the quiet
+warmth of the YoRHa beige pair; the dark theme uses a cool, nearly monochrome
+charcoal ramp with a rich near-black canvas. Both themes share
+`oklch(0.6217 0.185 39.44)` as the brand and action color. The quieter
 `oklch(0.618 0.161 39.44)` value is reserved for focus.
+The Carbon direction was confirmed in the `/proto/dark-theme` study. Its six
+dark neutrals and card keyline keep surface depth restrained while preserving
+Anaphor orange for actions and focus and Crimson for danger. Warm was rejected
+for its chocolate cast; Graphite kept too much separation between surfaces;
+Ink retained more blue-violet color than desired; Geist Black made the canvas
+and action treatment too stark. The study route was removed after this decision.
 Danger elements use `oklch(0.4852 0.1691 10.14)`; danger text uses the darker
 `oklch(0.4236 0.1691 10.14)` step. Destructive buttons use the danger
 fill with a light theme-neutral label and the darker danger step on hover and
