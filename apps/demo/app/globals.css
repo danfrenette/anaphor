@@ -2,3 +2,19 @@
 
 @source "./**/*.{ts,tsx}";
 @source "../components/**/*.{ts,tsx}";
+
+#content [data-slot="section"]:focus-visible {
+  outline: none;
+}
+
+#content [data-slot="section"]:focus-visible:not(:has(h1, h2)) > :first-child {
+  outline: 2px solid var(--anaphor-focus);
+  outline-offset: 4px;
+}
+
+#content [data-slot="section"]:focus-visible :is(h1, h2):first-of-type {
+  text-decoration: underline;
+  text-decoration-color: var(--anaphor-focus);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.15em;
+}

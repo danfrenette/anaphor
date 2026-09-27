@@ -133,7 +133,7 @@ function DemoSidebar({ onSearch }: { onSearch: () => void }) {
         </nav>
       </SidebarContent>
 
-      <SidebarFooter><span className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-primary" />Registry healthy</span><span className="font-mono">v0.1</span></SidebarFooter>
+      <SidebarFooter><span>Source registry</span><span className="font-mono">v0.1</span></SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
@@ -152,6 +152,23 @@ function ManualNavigation() {
   </>;
 }
 
+function ManualBreadcrumb() {
+  const pathname = usePathname();
+  const { activeId } = useContentSections();
+  const current = pathname === "/"
+    ? groups.flatMap(group => group.items.map(item => ({ group: group.label, label: item.label, id: item.id, href: item.href }))).find(({ id }) => id === activeId)
+      ?? { group: "Foundations", label: "Introduction" }
+    : pathname === "/foundations"
+      ? { group: "Foundations", label: "Token reference" }
+      : pathname === "/typography"
+        ? { group: "Foundations", label: "Typography" }
+        : groups.flatMap(group => group.items.map(item => ({ group: group.label, label: item.label, href: item.href }))).find(({ href }) => href === pathname);
+  const group = current?.group ?? "Manual";
+  const label = current?.label ?? "Overview";
+
+  return <p className="flex items-center gap-2 text-small"><span className="text-muted-foreground">{group}</span><b className="font-normal text-border">/</b><strong className="font-medium">{label}</strong></p>;
+}
+
 export function DemoShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   return (
@@ -164,7 +181,7 @@ export function DemoShell({ children }: { children: ReactNode }) {
             <SidebarTrigger target="mobile" className="md:hidden" />
             <SidebarTrigger target="desktop" className="hidden md:grid" />
             <span className="h-4 w-px bg-border" />
-            <p className="flex items-center gap-2 text-small"><span className="text-muted-foreground">{pathname.startsWith("/studies") ? "Studies" : "Library"}</span><b className="font-normal text-border">/</b><strong className="font-medium">{pathname === "/studies/signal" ? "Signal" : pathname === "/studies/field-notes" ? "Field Notes" : pathname === "/studies" ? "Overview" : "Components"}</strong></p>
+            <ManualBreadcrumb />
           </header>
           {children}
         </SidebarInset>
