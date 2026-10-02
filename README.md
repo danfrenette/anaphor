@@ -7,6 +7,18 @@ apps/demo/              Next.js reference manual
 packages/design-system/ tokens, styles, and components
 ```
 
+## Use Anaphor with an agent
+
+Install the reusable Paper/design and implementation skill from this checkout:
+
+```sh
+node scripts/install-skill.mjs
+```
+
+Reopen your agent session, then ask it to use `$anaphor`. See the
+[agent setup guide](docs/using-anaphor-with-agents.md) for destinations, example
+requests, and the distinction between the skill and component installation.
+
 ## Development
 
 ```sh
