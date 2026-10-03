@@ -23,10 +23,8 @@ const tabStyles = cn(
 );
 
 const activeTabStyles = cn(
-  // Default variant
-  "bg-background text-foreground shadow-[var(--anaphor-shadow-card)]",
+  "text-foreground",
   // Line variant
-  "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:shadow-none",
   "after:absolute after:bg-foreground group-data-[variant=default]/tabs-list:after:hidden",
   // Horizontal and vertical indicator placement
   "group-data-[orientation=horizontal]/tabs:after:inset-x-2 group-data-[orientation=horizontal]/tabs:after:-bottom-1 group-data-[orientation=horizontal]/tabs:after:h-0.5",
@@ -135,6 +133,7 @@ function TabsList({
           className={cn(
             "pointer-events-none absolute inset-0 z-[1] flex items-center p-1",
             "group-data-[orientation=vertical]/tabs:flex-col",
+            variant === "default" && "bg-background",
           )}
         >
           {visualTabs}
