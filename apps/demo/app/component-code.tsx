@@ -3,6 +3,11 @@
 import { CardCopyButton } from "@anaphor/system";
 
 const examples: Record<string, { title: string; item: string; code: string }> = {
+  skeleton: { title: "Skeleton", item: "skeleton", code: `import { SkeletonRegion, SkeletonText } from "@/components/ui/skeleton";
+
+<SkeletonRegion isLoading={isLoading} variant="pulse" label="Loading article">
+  <h2><SkeletonText>{title ?? "Representative title"}</SkeletonText></h2>
+</SkeletonRegion>` },
   tooltip: { title: "Tooltip", item: "tooltip", code: `import { TooltipGroup, Tooltip, TooltipTrigger, TooltipPopup } from "@/components/ui/tooltip";
 
 <TooltipGroup delay={400} closeDelay={80} timeout={400}>

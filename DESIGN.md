@@ -344,3 +344,12 @@ a subtle light keyline and stronger neutral shadows.
 
 The documented MorphSurface and section-navigation timing exceptions remain
 unchanged. These are deliberate examples, not defaults for application controls.
+
+## Skeletons
+
+Loading placeholders follow actual content geometry through explicit text and box
+participants. Stable shells remain visible; mock content is inert and hidden from
+assistive technology. Pulse, stationary sheen, and static variants use theme
+neutrals. Opacity-only 1.8s/2.4s loops are an ongoing-status exception to short
+interaction timings. Reduced motion stops all effects; completion is immediate.
+The API, limitations, and credits live in [Skeleton](docs/components/skeleton.md).

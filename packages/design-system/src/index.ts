@@ -30,3 +30,4 @@ export { ThemeProvider, ThemeToggle, useTheme } from "./components/theme";
 
 export { Slider, type SliderProps } from "#components/slider";
 export { Tooltip, TooltipGroup, TooltipProvider, TooltipTrigger, TooltipPopup, type TooltipPopupProps } from "./components/tooltip";
+export { Skeleton, SkeletonRegion, SkeletonText, SkeletonBox, type SkeletonProps, type SkeletonRegionProps, type SkeletonTextProps, type SkeletonVariant } from "./components/skeleton";
