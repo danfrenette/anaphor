@@ -2,7 +2,7 @@
 
 import { MorphSurface, Tabs, TabsList, TabsTab, TabsPanel, ThemeToggle } from "@anaphor/system";
 import { Code, SlidersHorizontal } from "@phosphor-icons/react";
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { usePathname } from "next/navigation";
@@ -15,6 +15,14 @@ type ControlsHost = {
   target: HTMLDivElement | null;
 };
 const ControlsContext = createContext<ControlsHost | null>(null);
+
+const subscribeToMount = () => () => {};
+
+function ToolsPortal({ children }: { children: ReactNode }) {
+  const mounted = useSyncExternalStore(subscribeToMount, () => true, () => false);
+  // Portal the entire tabs tree to preserve its ancestor-based styles.
+  return mounted ? createPortal(children, document.body) : null;
+}
 
 export function PlaygroundHost({ children }: { children: ReactNode }) {
   const [playgrounds, setPlaygrounds] = useState<Playground[]>([]);
@@ -61,6 +69,7 @@ export function PlaygroundHost({ children }: { children: ReactNode }) {
   return (
     <ControlsContext value={{ register, activeId: active?.sectionId, target }}>
       {children}
+      <ToolsPortal>
       <Tabs value={open ? view : null} onValueChange={value => {
         if (value === "controls" || value === "code") setView(value);
       }} onKeyDownCapture={() => setKeyboard(true)} onPointerDownCapture={() => setKeyboard(false)}>
@@ -86,6 +95,7 @@ export function PlaygroundHost({ children }: { children: ReactNode }) {
           <TabsPanel value="code" keepMounted className="data-[hidden]:hidden"><ComponentCode sectionId={sectionId} /></TabsPanel>
         </MorphSurface>
       </Tabs>
+      </ToolsPortal>
     </ControlsContext>
   );
 }

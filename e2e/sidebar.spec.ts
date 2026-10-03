@@ -207,3 +207,43 @@ test("mobile keyboard and reduced motion remove positional travel", async ({ pag
     .filter((animation) => animation.effect instanceof KeyframeEffect && animation.effect.getKeyframes()
       .some((frame) => String(frame.transform).includes("matrix") || String(frame.transform).includes("translate"))).length)).toBe(0);
 });
+
+
+test("morph surface stays fixed through sidebar opening and closing on a scrolled page", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Desktop sidebar layout motion");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  await page.locator("#input").evaluate(element => element.scrollIntoView());
+  const surface = page.locator('[data-slot="morph-surface"]');
+  await expect(surface).toBeVisible();
+
+  for (const label of ["Collapse sidebar", "Open sidebar"]) {
+    const samples = await surface.evaluate(async (element, name) => {
+      const sample = () => {
+        const { x, y, width, height } = element.getBoundingClientRect();
+        const center = document.elementFromPoint(x + width / 2, y + height / 2);
+        return { x, y, width, height, visible: Boolean(center && element.contains(center)) };
+      };
+      const frames = [sample()];
+      const trigger = [...document.querySelectorAll<HTMLButtonElement>('[data-slot="sidebar-trigger"]')]
+        .find(button => button.getAttribute("aria-label") === name && getComputedStyle(button).display !== "none");
+      if (!trigger) throw new Error("Missing desktop sidebar trigger");
+      trigger.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+      const start = performance.now();
+      do {
+        await new Promise(requestAnimationFrame);
+        frames.push(sample());
+      } while (performance.now() - start < 400);
+      return frames;
+    }, label);
+    const before = samples[0]!;
+    expect(samples.length).toBeGreaterThan(2);
+    for (const frame of samples) {
+      expect(frame.visible).toBe(true);
+      expect(frame.x).toBeCloseTo(before.x, 1);
+      expect(frame.y).toBeCloseTo(before.y, 1);
+      expect(frame.width).toBeCloseTo(before.width, 1);
+      expect(frame.height).toBeCloseTo(before.height, 1);
+    }
+  }
+});
