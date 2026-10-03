@@ -25,9 +25,29 @@ import {
   AdaptiveSurfacePopup,
   AdaptiveSurfacePortal,
   AdaptiveSurfaceProvider,
+  useAdaptiveSurface,
 } from "./adaptive-surface";
 
+type SidebarLayoutTiming = { enter: number; exit: number; ease: [number, number, number, number] };
+const defaultSidebarTiming: SidebarLayoutTiming = { enter: 0.24, exit: 0.16, ease: [0.23, 1, 0.32, 1] };
+
+function readSidebarTiming(element: HTMLElement): SidebarLayoutTiming {
+  const styles = getComputedStyle(element);
+  function seconds(token: string, fallback: number) {
+    const value = styles.getPropertyValue(token).trim();
+    return value ? parseFloat(value) / (value.endsWith("ms") ? 1000 : 1) : fallback;
+  }
+  const curve = styles.getPropertyValue("--anaphor-ease-out").match(/cubic-bezier\(([^)]+)\)/)?.[1];
+  const [a = 0.23, b = 1, c = 0.32, d = 1] = curve ? curve.split(",").map(Number) : [];
+  return {
+    enter: seconds("--anaphor-sidebar-duration", defaultSidebarTiming.enter),
+    exit: seconds("--anaphor-sidebar-exit-duration", defaultSidebarTiming.exit),
+    ease: [a, b, c, d],
+  };
+}
+
 type SidebarContextValue = {
+  layoutTiming: SidebarLayoutTiming;
   desktopOpen: boolean;
   mobileTriggerRef: React.RefObject<HTMLButtonElement | null>;
   mobileOpen: boolean;
@@ -64,10 +84,16 @@ function SidebarProvider({
 }: SidebarProviderProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen ?? false);
   const [mobileOpen, setMobileOpenState] = useState(false);
-  const [motionEnabled, prepareMotion] = useState(true);
+  const [motionEnabled, setMotionEnabled] = useState(true);
+  const [layoutTiming, setLayoutTiming] = useState(defaultSidebarTiming);
   const desktopOpen = mode === "controlled" ? open : internalOpen;
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  const prepareMotion = useCallback((animate: boolean) => {
+    setMotionEnabled(animate);
+    if (rootRef.current) setLayoutTiming(readSidebarTiming(rootRef.current));
+  }, []);
 
   const setDesktopOpen = useCallback((next: boolean) => {
     if (mode === "uncontrolled") setInternalOpen(next);
@@ -103,7 +129,7 @@ function SidebarProvider({
         setMobileOpen(nextOpen, animate);
       }}
     >
-      <SidebarContext value={{ desktopOpen, mobileOpen, mobileTriggerRef, motionEnabled, prepareMotion, rootRef, resizable, setMobileOpen, toggleDesktop, toggleMobile }}>
+      <SidebarContext value={{ layoutTiming, desktopOpen, mobileOpen, mobileTriggerRef, motionEnabled, prepareMotion, rootRef, resizable, setMobileOpen, toggleDesktop, toggleMobile }}>
         <div
           ref={rootRef}
           data-desktop-open={desktopOpen}
@@ -547,8 +573,31 @@ function SidebarClose({ children, className, ...props }: ComponentProps<"button"
   );
 }
 
-function SidebarInset({ className, ...props }: ComponentProps<"div">) {
-  return <div data-slot="sidebar-inset" className={cn("min-w-0 bg-background", className)} {...props} />;
+function useSidebarLayoutMotion() {
+  const { desktopOpen, motionEnabled, layoutTiming } = useSidebar();
+  const { mobile } = useAdaptiveSurface();
+  const reducedMotion = useReducedMotion();
+  const duration = desktopOpen ? layoutTiming.enter : layoutTiming.exit;
+  return {
+    layout: "position" as const,
+    layoutDependency: desktopOpen,
+    initial: false as const,
+    transition: { layout: { type: "tween" as const, duration: mobile || reducedMotion || !motionEnabled ? 0 : duration, ease: layoutTiming.ease } },
+  };
+}
+
+type SidebarInsetProps = Omit<ComponentProps<typeof motion.div>, "layout" | "layoutDependency" | "transition" | "initial">;
+
+function SidebarInset({ className, ...props }: SidebarInsetProps) {
+  const layoutMotion = useSidebarLayoutMotion();
+  return <motion.div data-slot="sidebar-inset" className={cn("min-w-0 bg-background", className)} {...props} {...layoutMotion} />;
+}
+
+// Register independently aligned content with the inset's layout projection.
+// Position-only projection keeps text and controls at their natural scale.
+function SidebarInsetContent({ className, ...props }: SidebarInsetProps) {
+  const layoutMotion = useSidebarLayoutMotion();
+  return <motion.div data-slot="sidebar-inset-content" className={cn("min-w-0", className)} {...props} {...layoutMotion} />;
 }
 
 export {
@@ -560,6 +609,7 @@ export {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
+  SidebarInsetContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,

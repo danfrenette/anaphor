@@ -25,7 +25,9 @@ supplies only its navigation groups and destinations.
   </Sidebar>
   <SidebarInset>
     <SidebarTrigger target="desktop" />
-    {/* page content */}
+    <SidebarInsetContent className="mx-auto max-w-5xl">
+      {/* page content */}
+    </SidebarInsetContent>
   </SidebarInset>
 </SidebarProvider>
 ```
@@ -37,10 +39,14 @@ updates are coalesced to the next animation frame, so a busy mouse cannot force
 more than one measurement per frame. The hover layer fades out over the selected
 item without replacing selection.
 
-Motion uses the shared `spring.fast`, `spring.moderate`, and `spring.slow`
-tiers. Hover fades quickly and travels at the moderate tier, selection travel is moderate, and the larger canvas shift
-is slow. Closing is one tier quicker than opening. Reduced-motion preferences
-preserve opacity and color feedback while removing positional travel.
+Pointer toggles use a coordinated position-only layout transition: 240ms to open
+and 160ms to close, with the shared ease-out curve. The inset and sidebar move
+together without scaling text. Wrap independently centered or aligned page
+content in `SidebarInsetContent` (and put its `max-width` / auto margins on that
+component) so its position is projected too. Width changes use the final layout;
+text may rewrap at narrower widths, but is never stretched by the animation.
+Keyboard toggles and reduced-motion preferences settle positions immediately.
+Menu hover and selection continue to use the shared spring tiers.
 
 Desktop and mobile layout are controlled by Tailwind breakpoint and pointer
 variants. `AdaptiveSurfaceProvider` uses a shared media-query subscription only

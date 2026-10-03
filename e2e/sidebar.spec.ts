@@ -18,44 +18,50 @@ test("resize is opt-in and the layout honors provider-local width changes", asyn
   await expect.poll(async () => (await page.locator('[data-slot="sidebar-inset"]').boundingBox())?.x).toBe(320);
 });
 
-test("desktop pointer toggles preserve position and width, then reverse in place", async ({ page, isMobile }) => {
+test("desktop pointer toggles move the inset and centered content together and reverse in place", async ({ page, isMobile }) => {
   test.skip(isMobile, "Desktop disclosure is hidden at the mobile breakpoint");
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
-
+  const provider = page.locator('[data-slot="sidebar-provider"]');
   const inset = page.locator('[data-slot="sidebar-inset"]');
-  const firstFrames = await inset.evaluate((element) => {
-    const rect = () => {
-      const { x, width } = element.getBoundingClientRect();
-      return { width, x };
-    };
-    const trigger = [...document.querySelectorAll<HTMLButtonElement>('[data-slot="sidebar-trigger"]')]
-      .find((button) => button.getAttribute("aria-label") === "Collapse sidebar" && getComputedStyle(button).display !== "none");
-    const before = rect();
-    trigger?.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
-    return { after: rect(), before };
+  const content = page.locator('[data-slot="sidebar-inset-content"]');
+  // Slow both participants so the test can inspect a committed intermediate frame.
+  await provider.evaluate(element => {
+    if (!(element instanceof HTMLElement)) throw new Error("Expected provider element");
+    element.style.setProperty("--anaphor-sidebar-duration", "1000ms");
+    element.style.setProperty("--anaphor-sidebar-exit-duration", "1000ms");
   });
+  const before = await content.boundingBox();
+  const insetBefore = await inset.boundingBox();
+  if (!before || !insetBefore) throw new Error("Expected desktop content");
+  await page.getByRole("button", { name: "Collapse sidebar", exact: true }).click();
+  await expect(provider).toHaveAttribute("data-desktop-open", "false");
+  await page.waitForTimeout(100);
+  const during = await content.boundingBox();
+  const insetDuring = await inset.boundingBox();
+  if (!during || !insetDuring) throw new Error("Expected content during close");
+  expect(insetDuring.x).toBeGreaterThan(0);
+  expect(insetDuring.x).toBeLessThan(insetBefore.x);
+  expect(during.x).toBeLessThan(before.x);
+  expect(during.x).toBeGreaterThan(before.x - insetBefore.x / 2);
+  expect(during.width).toBeCloseTo(before.width, 0);
+  const sidebarEdge = await sidebar(page).evaluate(element => element.getBoundingClientRect().right);
+  expect(Math.abs(sidebarEdge - insetDuring.x)).toBeLessThan(35);
 
-  expect(firstFrames.after.x).toBeCloseTo(firstFrames.before.x, 0);
-  expect(firstFrames.after.width).toBeCloseTo(firstFrames.before.width, 0);
-
-  await page.waitForTimeout(60);
-  const reversalFrames = await inset.evaluate((element) => {
-    const rect = () => {
-      const { x, width } = element.getBoundingClientRect();
-      return { width, x };
-    };
-    const trigger = [...document.querySelectorAll<HTMLButtonElement>('[data-slot="sidebar-trigger"]')]
-      .find((button) => button.getAttribute("aria-label") === "Open sidebar" && getComputedStyle(button).display !== "none");
-    const before = rect();
-    trigger?.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
-    return { after: rect(), before };
+  // Wait for the commit and a painted frame; measuring in the click handler
+  // itself only sees React's previous layout and misses the original regression.
+  const reversal = await content.evaluate(async element => {
+    const before = element.getBoundingClientRect().x;
+    const trigger = [...document.querySelectorAll<HTMLButtonElement>('[data-slot="sidebar-trigger"][aria-expanded="false"]')].find(button => getComputedStyle(button).display !== "none");
+    if (!trigger) throw new Error("Missing desktop trigger");
+    trigger.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+    return { before, after: element.getBoundingClientRect().x };
   });
-  expect(reversalFrames.after.x).toBeCloseTo(reversalFrames.before.x, 0);
-  expect(reversalFrames.after.width).toBeCloseTo(reversalFrames.before.width, 0);
-  await expect.poll(async () => (await inset.boundingBox())?.x ?? 0).toBeGreaterThan(reversalFrames.after.x);
-
-  await expect(page.locator('[data-slot="sidebar-provider"]')).toHaveAttribute("data-desktop-open", "true");
+  expect(Math.abs(reversal.after - reversal.before)).toBeLessThan(35);
+  await expect(provider).toHaveAttribute("data-desktop-open", "true");
+  await expect.poll(async () => (await content.boundingBox())?.x).toBeCloseTo(before.x, 0);
   await expect(sidebar(page)).toBeVisible();
 });
 
@@ -73,11 +79,30 @@ test("desktop keyboard toggles are instant", async ({ page, isMobile }) => {
     element.getAnimations().filter((animation) => Number(animation.effect?.getTiming().duration) > 0).length,
   )).toBe(0);
 
+  await page.locator('[data-slot="sidebar-inset"]').evaluate(() => new Promise(requestAnimationFrame));
+  expect((await page.locator('[data-slot="sidebar-inset"]').boundingBox())?.x).toBe(0);
+
   await page.keyboard.press("Meta+b");
   await expect(provider).toHaveAttribute("data-desktop-open", "true");
   expect(await provider.evaluate((element) =>
     element.getAnimations().filter((animation) => Number(animation.effect?.getTiming().duration) > 0).length,
   )).toBe(0);
+});
+
+test("desktop reduced motion settles the content immediately", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Desktop disclosure is hidden at the mobile breakpoint");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Collapse sidebar", exact: true }).click();
+  const inset = page.locator('[data-slot="sidebar-inset"]');
+  await expect(page.locator('[data-slot="sidebar-provider"]')).toHaveAttribute("data-desktop-open", "false");
+  await inset.evaluate(() => new Promise(requestAnimationFrame));
+  expect((await inset.boundingBox())?.x).toBe(0);
+  const content = page.locator('[data-slot="sidebar-inset-content"]');
+  const rect = await content.boundingBox();
+  const viewport = page.viewportSize();
+  if (!rect || !viewport) throw new Error("Expected content and viewport");
+  expect(rect.x).toBeCloseTo((viewport.width - rect.width) / 2, 0);
 });
 
 test("fine-pointer hover stays continuous through the selected row", async ({ page, isMobile }) => {
