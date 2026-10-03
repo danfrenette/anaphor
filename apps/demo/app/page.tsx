@@ -1,4 +1,4 @@
-import { Section, Prose, Text, Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
+import { SidebarInsetContent, Section, Prose, Text, Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
 import { ButtonDemo } from "./button-demo";
 import { BadgeDemo } from "./badge-demo";
 import { NodeEdgeDemo } from "./node-edge-demo";
@@ -42,7 +42,8 @@ export default function HomePage() {
       tabIndex={-1}
       className="min-w-0 px-[var(--anaphor-page-gutter)] py-12 lg:py-14"
     >
-        <article className="mx-auto max-w-[840px]">
+      <SidebarInsetContent className="mx-auto max-w-[840px]">
+        <article>
           <Section as="header" id="purpose" className="pb-10">
             <div className="flex items-center justify-between gap-6 text-label tracking-[0.08em] text-muted-foreground uppercase">
               <p>00.01 / Contract</p>
@@ -255,6 +256,7 @@ export default function HomePage() {
           <TabsDemo />
           <CommandPaletteDemo />
         </article>
+      </SidebarInsetContent>
     </main>
   );
 }
