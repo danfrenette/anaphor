@@ -12,6 +12,7 @@ import { DataTableDemo } from "./data-table-demo";
 import { PopoverDemo } from "./popover-demo";
 import { KbdDemo } from "./kbd-demo";
 import { SliderDemo } from "./slider-demo";
+import { SkeletonDemo } from "./skeleton-demo";
 import { TabsDemo } from "./tabs-demo";
 
 const neutralRoles = [
@@ -244,6 +245,7 @@ export default function HomePage() {
           <CardDemo />
           <BadgeDemo />
           <NodeEdgeDemo />
+          <SkeletonDemo />
           <InputDemo />
           <SliderDemo />
           <CheckboxDemo />

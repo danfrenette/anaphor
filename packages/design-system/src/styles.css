@@ -433,3 +433,52 @@ html[data-theme-transition]::view-transition-new(root) {
   [data-slot="tooltip-popup"] { transition: none; }
   [data-slot="tooltip-popup"]:is([data-starting-style], [data-ending-style]) { transform: none; }
 }
+
+/* Skeletons retain real layout. Sheen breathes a static gradient: no animated paint properties. */
+.anaphor-skeleton,
+[data-slot="skeleton-region"] {
+  --skeleton-fill: var(--anaphor-input-border);
+  --skeleton-highlight: var(--anaphor-input-disabled);
+  --skeleton-image: none;
+  --skeleton-animation: none;
+}
+:is(.anaphor-skeleton, [data-slot="skeleton-region"])[data-variant="pulse"] {
+  --skeleton-animation: anaphor-skeleton-pulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+:is(.anaphor-skeleton, [data-slot="skeleton-region"])[data-variant="sheen"] {
+  --skeleton-image: linear-gradient(110deg, var(--skeleton-fill) 15%, var(--skeleton-highlight) 45%, var(--skeleton-fill) 80%);
+  --skeleton-animation: anaphor-skeleton-sheen 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.anaphor-skeleton,
+[data-slot="skeleton-region"][data-loading="true"] :is(.anaphor-skeleton-text, .anaphor-skeleton-box) {
+  background-color: var(--skeleton-fill);
+  background-image: var(--skeleton-image);
+  animation: var(--skeleton-animation);
+}
+.anaphor-skeleton-text {
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+[data-slot="skeleton-region"][data-loading="true"] .anaphor-skeleton-text {
+  color: transparent;
+  text-shadow: none;
+  user-select: none;
+}
+[data-slot="skeleton-region"][data-loading="true"] .anaphor-skeleton-box > [data-slot="skeleton-box-content"] {
+  visibility: hidden;
+}
+@keyframes anaphor-skeleton-pulse { 50% { opacity: 0.5; } }
+@keyframes anaphor-skeleton-sheen { 50% { opacity: 0.72; } }
+@media (prefers-reduced-motion: reduce) {
+  .anaphor-skeleton,
+  [data-slot="skeleton-region"][data-loading="true"] :is(.anaphor-skeleton-text, .anaphor-skeleton-box) { animation: none; }
+}
+@media (forced-colors: active) {
+  .anaphor-skeleton,
+  [data-slot="skeleton-region"][data-loading="true"] :is(.anaphor-skeleton-text, .anaphor-skeleton-box) {
+    forced-color-adjust: none;
+    background: GrayText;
+    color: transparent;
+    animation: none;
+  }
+}

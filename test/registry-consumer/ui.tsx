@@ -15,6 +15,7 @@ import { Menu, MenuItem, MenuPopup, MenuTrigger } from "./components/ui/menu";
 import { Popover, PopoverBody, PopoverClose, PopoverPopup, PopoverTitle, PopoverTrigger } from "./components/ui/popover";
 import { ContentSections, Section } from "./components/ui/sections";
 import { Separator } from "./components/ui/separator";
+import { Skeleton, SkeletonRegion, SkeletonText, SkeletonBox } from "./components/ui/skeleton";
 import { Slider } from "./components/ui/slider";
 import { Text } from "./components/ui/text";
 import { Prose } from "./components/ui/prose";
@@ -40,6 +41,11 @@ function Consumer() {
         <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" onClick={() => setCount(count + 1)}><ButtonLabel>Count {count}</ButtonLabel></Button>
         <Field orientation="vertical"><FieldLabel>Email</FieldLabel><Input size="md" type="email" /><FieldFeedback hint="Your email address" error="Enter an email" invalid={false} /></Field>
         <FieldGroup><Field orientation="horizontal"><Checkbox /><FieldContent><FieldLabel>Accept updates</FieldLabel><FieldDescription>Occasional product news.</FieldDescription></FieldContent></Field></FieldGroup>
+        <Skeleton variant="static" className="size-10 rounded-full" data-testid="skeleton-avatar" />
+        <SkeletonRegion isLoading variant="pulse" label="Loading registry preview">
+          <SkeletonBox><p>Media area</p></SkeletonBox>
+          <SkeletonText>Installed skeleton</SkeletonText>
+        </SkeletonRegion>
         <Separator orientation="horizontal" />
         <Slider label="Amount" value={amount} onChange={setAmount} min={0} max={100} step={10} snap="magnetic" releaseThreshold={0.6} />
         <CardCopyButton value="Registry consumer" aria-label="Copy to clipboard" />

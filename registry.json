@@ -31,6 +31,7 @@
         "danfrenette/anaphor/tabs",
         "danfrenette/anaphor/slider",
         "danfrenette/anaphor/separator",
+        "danfrenette/anaphor/skeleton",
         "danfrenette/anaphor/text",
         "danfrenette/anaphor/prose",
         "danfrenette/anaphor/sections"
@@ -461,6 +462,22 @@
           "path": "packages/design-system/src/lib/slider-utils.ts",
           "type": "registry:lib",
           "target": "@components/lib/slider-utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "title": "Skeleton",
+      "description": "Content-shaped loading placeholders with pulse, sheen, and static variants.",
+      "registryDependencies": [
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/utils"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/skeleton.tsx",
+          "type": "registry:ui"
         }
       ]
     }
