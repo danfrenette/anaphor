@@ -187,7 +187,7 @@ function Sidebar({ className, style, ...props }: ComponentProps<"aside">) {
               "[transform:translate3d(-100%,0,0)] will-change-transform [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)]",
               "motion-safe:transition-[transform,visibility] motion-safe:duration-[var(--anaphor-sidebar-motion-duration)] motion-safe:ease-[var(--anaphor-ease-out)]",
               // Entry and responsive states
-              "data-starting-style:[transform:translate3d(-100%,0,0)] md:sticky md:w-[var(--anaphor-sidebar-current-width)]",
+              "data-starting-style:[transform:translate3d(-100%,0,0)] md:sticky md:w-[var(--anaphor-sidebar-current-width)] md:h-[calc(100svh-var(--anaphor-bottom-bar-height,0px))]",
               // Open states
               mobileOpen && "visible [transform:translate3d(0,0,0)] [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]",
               desktopOpen ? "md:visible md:[transform:translate3d(0,0,0)] md:[--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]" : "md:invisible md:[transform:translate3d(-100%,0,0)]",

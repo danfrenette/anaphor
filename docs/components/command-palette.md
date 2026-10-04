@@ -70,13 +70,12 @@ The top anchor is stable during filtering. Desktop opening focuses search;
 coarse-pointer opening focuses the dialog so it does not summon a virtual
 keyboard before the user asks to type. The search icon does not block input hits.
 
-## Manual sidebar
+## Manual shell
 
-The header separates identity from utility: a compact mark/name/subtitle row,
-then a full-width search trigger. The mobile close button has its own column.
+The sidebar header carries identity in a compact mark/name/subtitle row. Search lives in the bottom bar, where it remains available across pages and no longer repeats in the sidebar. The mobile close button has its own column.
 The unsupported New component action and misleading brand chevron are removed.
 Search uses the same destination data as navigation, so it cannot advertise
-unsupported pages. The sidebar uses the instant default. The Command palette section explains the
+unsupported pages. The manual uses the instant default. The Command palette section explains the
 philosophy and provides a separate example with morph-surface controls for
 highlight animation, icons, and shortcut hints. Reset restores instant highlights,
 visible icons, and visible shortcuts.
