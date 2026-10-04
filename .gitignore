@@ -16,3 +16,9 @@ test-results
 
 # Local design-review screenshots.
 .impeccable/review/
+
+# Machine-local Impeccable consent and session state.
+**/.impeccable/config.local.json
+**/.impeccable/hook.cache.json
+**/.impeccable/live/*
+!**/.impeccable/live/config.json
