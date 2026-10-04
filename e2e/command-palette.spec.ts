@@ -14,8 +14,8 @@ test("sidebar search opens, filters, and navigates on desktop and mobile", async
   expect(box!.x).toBeGreaterThanOrEqual(0);
   expect(box!.x + box!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
   await input.fill("Typography");
-  await expect(dialog.getByRole("option")).toHaveCount(1);
-  await expect(dialog.getByRole("option", { name: "Typography" })).toBeVisible();
+  await expect(dialog.getByRole("option", { name: "Typography", exact: true })).toBeVisible();
+  await expect(dialog.getByRole("option", { name: "Typography specimen", exact: true })).toBeVisible();
   expect((await new AxeBuilder({ page }).include('[data-slot="command-palette"]').analyze()).violations).toEqual([]);
   await input.press("Enter");
   await expect(dialog).not.toBeVisible();

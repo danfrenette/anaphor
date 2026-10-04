@@ -58,6 +58,7 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "foundations", label: "Token reference", href: "/foundations", icon: Palette },
       { id: "color", label: "Color", href: "/#color", icon: Palette },
       { id: "typography", label: "Typography", href: "/#typography", icon: TextAa },
+      { id: "typography-specimen", label: "Typography specimen", href: "/typography", icon: TextAa },
       { id: "motion", label: "Motion", href: "/#motion", icon: CursorClick },
     ],
   },
@@ -77,6 +78,7 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "tooltip", label: "Tooltip", href: "/#tooltip", icon: Rectangle },
       { id: "data-table", label: "Data table", href: "/#data-table", icon: ListDashes },
       { id: "kbd", label: "Kbd", href: "/#kbd", icon: Keyboard },
+      { id: "tabs", label: "Tabs", href: "/#tabs", icon: Rectangle },
       { id: "command-palette", label: "Command palette", href: "/#command-palette", icon: MagnifyingGlass },
     ],
   },
@@ -159,11 +161,7 @@ function ManualBreadcrumb() {
   const current = pathname === "/"
     ? groups.flatMap(group => group.items.map(item => ({ group: group.label, label: item.label, id: item.id, href: item.href }))).find(({ id }) => id === activeId)
       ?? { group: "Foundations", label: "Introduction" }
-    : pathname === "/foundations"
-      ? { group: "Foundations", label: "Token reference" }
-      : pathname === "/typography"
-        ? { group: "Foundations", label: "Typography" }
-        : groups.flatMap(group => group.items.map(item => ({ group: group.label, label: item.label, href: item.href }))).find(({ href }) => href === pathname);
+    : groups.flatMap(group => group.items.map(item => ({ group: group.label, label: item.label, href: item.href }))).find(({ href }) => href === pathname);
   const group = current?.group ?? "Manual";
   const label = current?.label ?? "Overview";
 
