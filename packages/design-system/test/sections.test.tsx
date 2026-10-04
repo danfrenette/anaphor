@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import { useRef } from "react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { ContentSections, Section, useContentSections } from "@anaphor/system";
@@ -59,4 +60,28 @@ test("the focused nested group owns navigation and outside focus uses the explic
   expect(screen.getByRole("region", { name: "Outer one" })).toHaveFocus();
   await user.keyboard("j");
   expect(screen.getByRole("region", { name: "Outer two" })).toHaveFocus();
+});
+
+test("navigates sections inside a supplied scroll container", async () => {
+  const user = userEvent.setup();
+  function Example() {
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    return <ContentSections scrollContainerRef={scrollContainerRef}>
+      <Navigation />
+      <div ref={scrollContainerRef} aria-label="Article scroll area">
+        <Section id="contained" aria-label="Contained">Contained</Section>
+      </div>
+    </ContentSections>;
+  }
+  render(<Example />);
+  const scrollArea = screen.getByLabelText("Article scroll area");
+  const scrollTo = vi.fn();
+  scrollArea.scrollTo = scrollTo;
+  Object.defineProperty(scrollArea, "scrollHeight", { configurable: true, value: 1000 });
+  Object.defineProperty(scrollArea, "clientHeight", { configurable: true, value: 200 });
+  vi.spyOn(scrollArea, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 20));
+  vi.spyOn(screen.getByRole("region", { name: "Contained" }), "getBoundingClientRect").mockReturnValue(new DOMRect(0, 120));
+  await user.click(screen.getByRole("button", { name: "First section" }));
+  expect(scrollTo).toHaveBeenCalledWith({ top: 100, behavior: "instant" });
+  expect(window.scrollTo).not.toHaveBeenCalled();
 });

@@ -10,11 +10,12 @@ for (const viewport of [{ width: 320, height: 720 }, { width: 640, height: 720 }
     const region = page.getByRole("region", { name: "Input controls" });
     const surface = page.locator('[data-slot="morph-surface"]');
     const gutter = viewport.width >= 640 ? 48 : 24;
+    const barHeight = (await page.getByRole("contentinfo", { name: "Manual utilities" }).boundingBox())?.height ?? 0;
     await expect.poll(async () => (await surface.boundingBox())!.height).toBeLessThanOrEqual(Math.min(viewport.height * 0.45, 320) + 1);
     const box = (await surface.boundingBox())!;
     expect(box.x).toBeCloseTo(gutter, 1);
     expect(box.width).toBeCloseTo(viewport.width - gutter * 2, 1);
-    expect(box.y + box.height).toBeCloseTo(viewport.height - gutter, 1);
+    expect(box.y + box.height).toBeCloseTo(viewport.height - gutter - barHeight, 1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
 
     const close = page.getByRole("button", { name: "Close controls" });
@@ -73,8 +74,9 @@ test("desktop controls retain their width and screen inset", async ({ page }) =>
   const surface = page.locator('[data-slot="morph-surface"]');
   await expect(surface).toHaveCSS("width", "360px");
   const box = (await surface.boundingBox())!;
+  const barHeight = (await page.getByRole("contentinfo", { name: "Manual utilities" }).boundingBox())?.height ?? 0;
   expect(box.x + box.width).toBe(1184);
-  expect(box.y + box.height).toBe(784);
+  expect(box.y + box.height).toBe(784 - barHeight);
   await page.getByRole("tab", { name: "Code", exact: true }).click();
   await expect(surface).toHaveCSS("width", "560px");
 });

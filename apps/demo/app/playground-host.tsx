@@ -41,9 +41,11 @@ export function PlaygroundHost({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let frame = 0;
+    const scrollContainer = document.querySelector<HTMLElement>('[data-app-shell] [data-slot="workspace-card-body"]');
     const update = () => {
       if (interacting) return;
-      const line = window.innerHeight / 3;
+      const bounds = scrollContainer?.getBoundingClientRect();
+      const line = bounds ? bounds.top + bounds.height / 3 : window.innerHeight / 3;
       const section = [...document.querySelectorAll<HTMLElement>('[data-slot="section"]')].find(element => {
         const bounds = element.getBoundingClientRect();
         return bounds.top <= line && bounds.bottom > line;
@@ -56,11 +58,13 @@ export function PlaygroundHost({ children }: { children: ReactNode }) {
     };
     schedule();
     window.addEventListener("scroll", schedule, { passive: true });
+    scrollContainer?.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
     window.addEventListener("hashchange", schedule);
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", schedule);
+      scrollContainer?.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
       window.removeEventListener("hashchange", schedule);
     };

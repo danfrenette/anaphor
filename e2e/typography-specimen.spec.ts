@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { selectControl } from "./playground-select";
+import { prepareContentSnapshot } from "./content-snapshot";
 
 for (const theme of ["light", "dark"]) {
   test(`typography defaults: ${theme}`, async ({ page }) => {
@@ -30,7 +31,7 @@ for (const theme of ["light", "dark"]) {
     await expect(sample.locator("em")).toHaveCSS("font-style", "italic");
     await expect(sample.locator("code").first()).toHaveCSS("font-family", /Magda Clean Mono/);
     expect((await new AxeBuilder({ page }).include("#content").analyze()).violations).toEqual([]);
-    const screenshotStyle = await page.addStyleTag({ content: "header, [data-slot='morph-surface'], a[href='#content'] { visibility: hidden !important; }" });
+    const screenshotStyle = await prepareContentSnapshot(page);
     await expect(page.getByRole("region", { name: "Typography specimen", exact: true })).toHaveScreenshot(`typography-${theme}.png`, { animations: "disabled" });
     await screenshotStyle.evaluate(element => element.parentNode?.removeChild(element));
 

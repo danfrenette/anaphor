@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ComponentProps } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ComponentProps, type RefObject } from "react";
 import { useShortcut, type ShortcutBinding } from "../lib/shortcut";
 import { useAnimatedScroll } from "../lib/use-animated-scroll";
 import { cn } from "../lib/utils";
@@ -17,6 +17,7 @@ export type ContentSectionsProps = Omit<ComponentProps<"div">, "ref"> & {
   defaultScope?: boolean;
   bindings?: Partial<SectionBindings>;
   onActiveChange?: (id: string | null) => void;
+  scrollContainerRef?: RefObject<HTMLElement | null>;
 };
 
 type ContentSectionsValue = {
@@ -36,7 +37,7 @@ export function useContentSections(): Omit<ContentSectionsValue, "register"> {
   return context;
 }
 
-export function ContentSections({ children, enabled = true, defaultScope = false, bindings, onActiveChange, className, ...props }: ContentSectionsProps) {
+export function ContentSections({ children, enabled = true, defaultScope = false, bindings, onActiveChange, scrollContainerRef, className, ...props }: ContentSectionsProps) {
   const root = useRef<HTMLDivElement>(null);
   const elements = useRef(new Map<string, HTMLElement>());
   const active = useRef<string | null>(null);
@@ -55,14 +56,18 @@ export function ContentSections({ children, enabled = true, defaultScope = false
   }, []);
   const updateVisible = useCallback(() => {
     const entries = ordered();
+    const container = scrollContainerRef?.current;
+    const top = container?.getBoundingClientRect().top ?? 0;
     let current: string | null = entries[0]?.[0] ?? null;
     for (const [id, element] of entries) {
-      if (element.getBoundingClientRect().top <= (parseFloat(getComputedStyle(element).scrollMarginTop) || 0) + 1) current = id;
+      if (element.getBoundingClientRect().top <= top + (parseFloat(getComputedStyle(element).scrollMarginTop) || 0) + 1) current = id;
     }
-    if (window.scrollY > 0 && window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1) current = entries.at(-1)?.[0] ?? null;
+    if (container
+      ? container.scrollTop > 0 && container.scrollTop + container.clientHeight >= container.scrollHeight - 1
+      : window.scrollY > 0 && window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1) current = entries.at(-1)?.[0] ?? null;
     select(current);
-  }, [ordered, select]);
-  const { scrollTo, stop, isScrolling } = useAnimatedScroll(updateVisible);
+  }, [ordered, scrollContainerRef, select]);
+  const { scrollTo, stop, isScrolling } = useAnimatedScroll(updateVisible, scrollContainerRef);
   const register = useCallback((id: string, element: HTMLElement) => {
     if (elements.current.has(id)) throw new Error(`Duplicate Section id: ${id}`);
     elements.current.set(id, element);
@@ -119,13 +124,14 @@ export function ContentSections({ children, enabled = true, defaultScope = false
     const observe = () => {
       resize.disconnect();
       for (const element of elements.current.values()) resize.observe(element);
+      if (scrollContainerRef?.current) resize.observe(scrollContainerRef.current);
       reconcile();
     };
     const mutations = new MutationObserver(observe);
     if (root.current) mutations.observe(root.current, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden", "inert"] });
     observe();
     return () => { resize.disconnect(); mutations.disconnect(); };
-  }, [isScrolling, ordered, stop, updateVisible]);
+  }, [isScrolling, ordered, scrollContainerRef, stop, updateVisible]);
 
   return <ContentSectionsContext value={{ activeId, goTo, next, previous, first, last, register }}>
     <div {...props} ref={root} data-slot="sections" className={cn("[--anaphor-section-offset:0px]", className)}>{children}</div>

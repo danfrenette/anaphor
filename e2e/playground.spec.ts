@@ -64,7 +64,7 @@ test("Escape restores bar focus and outside presses leave focus with their targe
   await expect(trigger).toBeFocused();
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
   await trigger.click();
-  await page.getByRole("banner").click({ position: { x: 8, y: 8 } });
+  await page.locator('[data-slot="workspace-top-bar"]').first().click({ position: { x: 8, y: 8 } });
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
   await expect(page.getByRole("group", { name: "Manual tools" })).toBeVisible();
 });

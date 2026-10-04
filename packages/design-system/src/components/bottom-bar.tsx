@@ -4,13 +4,16 @@ import { useRender } from "@base-ui/react/use-render";
 import type { ComponentProps, ReactElement } from "react";
 import { cn } from "../lib/utils";
 
-function BottomBar({ className, ...props }: ComponentProps<"footer">): ReactElement {
+type BottomBarProps = ComponentProps<"footer"> & { appearance?: "standalone" | "integrated" };
+
+function BottomBar({ appearance = "standalone", className, ...props }: BottomBarProps): ReactElement {
   return (
     <footer
       data-slot="bottom-bar"
       className={cn(
         "flex min-h-11 w-full items-center justify-between gap-4 border-t border-border bg-muted px-2 text-small text-muted-foreground",
         "pointer-coarse:min-h-12 [padding-inline-start:max(0.5rem,env(safe-area-inset-left))] [padding-inline-end:max(0.5rem,env(safe-area-inset-right))] [padding-bottom:env(safe-area-inset-bottom)]",
+        appearance === "integrated" && "col-start-1 col-end-4 row-start-3 border-0 bg-transparent",
         className,
       )}
       {...props}
@@ -47,4 +50,4 @@ function BottomBarAction({ className, render, ...props }: BottomBarActionProps):
   });
 }
 
-export { BottomBar, BottomBarAction, BottomBarGroup, BottomBarStatus, type BottomBarActionProps };
+export { BottomBar, BottomBarAction, BottomBarGroup, BottomBarStatus, type BottomBarActionProps, type BottomBarProps };
