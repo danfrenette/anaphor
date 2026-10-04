@@ -24,7 +24,7 @@ for (const theme of ["light", "dark"] as const) {
     expect(await page.evaluate(() => localStorage.getItem("anaphor-theme"))).toBe(theme);
     expect(await page.locator("html").evaluate(element => element.classList.contains("dark"))).toBe(theme === "dark");
     await page.getByRole("checkbox", { name: "Compare themes" }).uncheck();
-    await expect(page.getByTestId(`foundation-${theme === "light" ? "dark" : "light"}`)).toHaveCount(0);
+    await expect(page.getByTestId(`foundation-${theme === "light" ? "dark" : "light"}`)).toBeHidden();
   });
 }
 

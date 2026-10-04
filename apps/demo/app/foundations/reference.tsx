@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { Text, useTheme } from "@anaphor/system";
+import { Text } from "@anaphor/system";
 import { Check, Range } from "../playground-fields";
 import { requireToken, type Tokens } from "./tokens";
 import { contrastRatio } from "./contrast";
@@ -32,9 +32,10 @@ const pairs: readonly ContrastPair[] = [
 ] as const satisfies readonly ContrastPair[];
 
 type Theme = "light" | "dark";
+const themeVisibility: Record<Theme, string> = { light: "dark:hidden", dark: "hidden dark:block" };
 const buttonClass = "min-h-11 rounded-md border border-border px-3 text-ui";
 
-function ThemeSpecimen({ theme, values, tokens }: { theme: Theme; values: Tokens; tokens: Tokens }) {
+function ThemeSpecimen({ theme, values, tokens, className = "" }: { theme: Theme; values: Tokens; tokens: Tokens; className?: string }) {
   const root = useRef<HTMLDivElement>(null);
   const [ratios, setRatios] = useState<number[]>([]);
   const color = (role: ColorRole) => requireToken(tokens, `--color-${role}`);
@@ -65,7 +66,7 @@ function ThemeSpecimen({ theme, values, tokens }: { theme: Theme; values: Tokens
   }, [theme, values, tokens]);
 
   const themeStyle: CSSProperties = { ...values, colorScheme: theme, background: color("background"), color: color("foreground") };
-  return <div ref={root} data-testid={`foundation-${theme}`} style={themeStyle} className="min-w-0 rounded-card border border-border p-5">
+  return <div ref={root} data-testid={`foundation-${theme}`} style={themeStyle} className={`min-w-0 rounded-card border border-border p-5 ${className}`}>
     <Text as="h3" variant="label">{theme} theme</Text>
     <dl className="mt-5 divide-y divide-[var(--anaphor-input-border)]">
       {roles.map(([role, purpose]) => <div key={role} className="relative min-w-0 py-3 ps-10">
@@ -100,23 +101,20 @@ function TokenList({ names, tokens }: { names: string[]; tokens: Tokens }) {
 }
 
 export function FoundationReference({ tokens, themes, springs }: { tokens: Tokens; themes: Record<Theme, Tokens>; springs: Record<string, unknown> }) {
-  const { resolvedTheme } = useTheme();
   const [compare, setCompare] = useState(false);
   const [radius, setRadius] = useState(12);
   const [space, setSpace] = useState(24);
   const [duration, setDuration] = useState(200);
   const [moved, setMoved] = useState(false);
-  const theme: Theme = resolvedTheme === "dark" ? "dark" : "light";
-  const displayedThemes: Theme[] = compare ? ["light", "dark"] : [theme];
   const names = Object.keys(tokens);
   return <div className="mt-12 space-y-12">
     <section aria-labelledby="color-reference">
       <div className="flex flex-wrap items-center justify-between gap-4"><Text as="h2" variant="section" id="color-reference">Color roles</Text><Check label="Compare themes" checked={compare} onChange={setCompare} /></div>
       <Text as="p" variant="description" className="mt-4">Public Tailwind roles come first; backing variables remain visible. The private foreground variable is a surface, while the public foreground role means text. Comparison is local and never changes the global theme.</Text>
       <div className={`mt-6 grid gap-6 ${compare ? "xl:grid-cols-2" : ""}`}>
-        {displayedThemes.map(value => <ThemeSpecimen key={value} theme={value} values={themes[value]} tokens={tokens} />)}
+        {(["light", "dark"] as const).map(value => <ThemeSpecimen key={value} theme={value} values={themes[value]} tokens={tokens} className={compare ? "" : themeVisibility[value]} />)}
       </div>
-      <details className="mt-5"><summary className="min-h-11 cursor-pointer text-ui">Component-only color roles</summary><TokenList tokens={themes[theme]} names={["--anaphor-checkbox-mark", "--anaphor-input-disabled"]} /></details>
+      <details className="mt-5"><summary className="min-h-11 cursor-pointer text-ui">Component-only color roles</summary>{(["light", "dark"] as const).map(value => <div key={value} className={themeVisibility[value]}><TokenList tokens={themes[value]} names={["--anaphor-checkbox-mark", "--anaphor-input-disabled"]} /></div>)}</details>
     </section>
     <section aria-labelledby="type-reference"><Text as="h2" variant="section" id="type-reference">Type and reading</Text>
       <p className="mt-4 text-body">Three families, purpose-based sizes, a 65ch reading measure. <Link className="underline" href="/typography">See typography in use</Link>, including uppercase section titles and article rhythm.</p>
