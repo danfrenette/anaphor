@@ -31,6 +31,10 @@ for (const theme of ["light", "dark"] as const) {
     if (isMobile) await code.tap();
     else await code.click();
     await expect(page.getByRole("region", { name: "Install Anaphor" })).toBeVisible();
+    await page.setViewportSize({ width: 320, height: 800 });
+    await expect(controls.getByText("Controls", { exact: true })).toBeVisible();
+    expect((await new AxeBuilder({ page }).include('[data-slot="morph-surface"]').analyze()).violations).toEqual([]);
+    await page.screenshot({ path: `.impeccable/review/manual-tools-code-${theme}-320-${testInfo.project.name}.png` });
     await page.getByRole("button", { name: "Close controls" }).click();
     if (isMobile) await themeToggle.tap();
     else await themeToggle.click();
@@ -77,5 +81,11 @@ test("narrow component tool labels fit and open controls with touch", async ({ p
   expect(bounds.x).toBeGreaterThanOrEqual(24);
   expect(bounds.x + bounds.width).toBeLessThanOrEqual(296);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const code = tools.getByRole("tab", { name: "Code", exact: true });
+  if (isMobile) await code.tap();
+  else await code.click();
+  await expect(page.getByRole("region", { name: "Input code" })).toBeVisible();
+  expect((await new AxeBuilder({ page }).include('[data-slot="morph-surface"]').analyze()).violations).toEqual([]);
+  await controls.click();
   await page.screenshot({ path: `.impeccable/review/manual-tools-open-320-${testInfo.project.name}.png` });
 });

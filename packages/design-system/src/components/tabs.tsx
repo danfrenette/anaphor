@@ -197,6 +197,7 @@ function collectVisualTabs(children: ReactNode): ReactElement[] {
         className={cn(
           tabStyles,
           activeTabStyles,
+          props.disabled && "invisible",
           typeof props.className === "string" ? props.className : undefined,
         )}
       >
