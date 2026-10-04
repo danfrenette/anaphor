@@ -128,7 +128,7 @@ function MorphSurface({ open, onOpenChange, onInteractionChange, title, icon, ba
 
   return <div ref={root} data-slot="morph-surface" data-open={open || undefined}
     style={surfaceStyle}
-    className={cn("fixed [--surface-gutter:var(--anaphor-page-gutter)] md:[--surface-gutter:1rem] right-[max(var(--surface-gutter),env(safe-area-inset-right))] bottom-[max(var(--surface-gutter),env(safe-area-inset-bottom))] z-[var(--anaphor-z-floating)] max-w-[calc(100vw-max(var(--surface-gutter),env(safe-area-inset-left))-max(var(--surface-gutter),env(safe-area-inset-right)))] max-h-[min(45dvh,320px)] md:max-h-none flex flex-col overflow-hidden rounded-[24px] bg-muted text-foreground shadow-card",
+    className={cn("fixed [--surface-gutter:var(--anaphor-page-gutter)] md:[--surface-gutter:1rem] right-[max(var(--surface-gutter),env(safe-area-inset-right))] bottom-[calc(var(--anaphor-bottom-bar-height,0px)+max(var(--surface-gutter),env(safe-area-inset-bottom)))] z-[var(--anaphor-z-floating)] max-w-[calc(100vw-max(var(--surface-gutter),env(safe-area-inset-left))-max(var(--surface-gutter),env(safe-area-inset-right)))] max-h-[min(45dvh,320px)] md:max-h-none flex flex-col overflow-hidden rounded-[24px] bg-muted text-foreground shadow-card",
       instant ? "transition-none" : "transition-[width] ease-[cubic-bezier(0.65,0,0.35,1)]",
       open ? "duration-[270ms]" : "duration-200",
       open ? "w-[calc(100vw-max(var(--surface-gutter),env(safe-area-inset-left))-max(var(--surface-gutter),env(safe-area-inset-right)))] md:w-[var(--surface-width)]" : bar ? "w-[var(--surface-bar-width)]" : "w-[304px]")}>

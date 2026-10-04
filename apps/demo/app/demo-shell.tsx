@@ -8,12 +8,13 @@ import {
   useShortcut,
   ContentSections,
   useContentSections,
-  Button,
-  ButtonLabel,
+  BottomBar,
+  BottomBarAction,
+  BottomBarGroup,
+  BottomBarStatus,
   Sidebar,
   SidebarClose,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarHeader,
@@ -24,6 +25,7 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
+  ThemeToggle,
   useSidebar,
 } from "@anaphor/system";
 import {
@@ -34,6 +36,7 @@ import {
   ListDashes,
   MagnifyingGlass,
   Palette,
+  Question,
   Rectangle,
   ShareNetwork,
   SlidersHorizontal,
@@ -80,6 +83,7 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "kbd", label: "Kbd", href: "/#kbd", icon: Keyboard },
       { id: "tabs", label: "Tabs", href: "/#tabs", icon: Rectangle },
       { id: "command-palette", label: "Command palette", href: "/#command-palette", icon: MagnifyingGlass },
+      { id: "bottom-bar", label: "Bottom bar", href: "/#bottom-bar", icon: Rectangle },
     ],
   },
   {
@@ -92,7 +96,7 @@ const groups: { label: string; items: NavItem[] }[] = [
   },
 ];
 
-function DemoSidebar({ onSearch }: { onSearch: () => void }) {
+function DemoSidebar() {
   const pathname = usePathname();
   const { activeId } = useContentSections();
   const { setMobileOpen } = useSidebar();
@@ -100,7 +104,7 @@ function DemoSidebar({ onSearch }: { onSearch: () => void }) {
 
   return (
     <Sidebar aria-label="Component manual navigation">
-      <SidebarHeader className="gap-3">
+      <SidebarHeader>
         <div className="flex min-h-11 items-center gap-2">
           <Link href="/" onNavigate={closeMobile} aria-label="Anaphor home" className="flex min-w-0 flex-1 items-center gap-3 rounded-md px-2 text-foreground no-underline">
             <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-sm bg-foreground font-heading text-heading text-background">a</span>
@@ -111,10 +115,6 @@ function DemoSidebar({ onSearch }: { onSearch: () => void }) {
           </Link>
           <SidebarClose className="shrink-0" />
         </div>
-        <Button onClick={onSearch} aria-haspopup="dialog" iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" variant="outline" tone="neutral" className="w-full justify-start [&>[data-slot=button-content]]:w-full">
-          <MagnifyingGlass aria-hidden="true" /><ButtonLabel>Search manual</ButtonLabel>
-          <KbdGroup aria-label="Command or Control K" className="ms-auto"><Kbd>Mod</Kbd><Kbd>K</Kbd></KbdGroup>
-        </Button>
       </SidebarHeader>
 
       <SidebarContent>
@@ -136,23 +136,17 @@ function DemoSidebar({ onSearch }: { onSearch: () => void }) {
         </nav>
       </SidebarContent>
 
-      <SidebarFooter><span>Source registry</span><span className="font-mono">v0.1</span></SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
 }
 
-function ManualNavigation() {
-  const [open, setOpen] = useState(false);
+function ManualPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { setMobileOpen } = useSidebar();
   const router = useRouter();
-  useShortcut("Mod+K", () => setOpen(true), { allowInInputs: true });
-  return <>
-    <DemoSidebar onSearch={() => setOpen(true)} />
-    <CommandPalette open={open} onOpenChange={setOpen} title="Search the manual" placeholder="Find a component or foundation…"
+  return <CommandPalette open={open} onOpenChange={onOpenChange} title="Search the manual" placeholder="Find a component or foundation…"
       items={groups.flatMap(group => group.items.map(item => ({ ...item, group: group.label, icon: <item.icon aria-hidden="true" /> })))}
-      onSelect={item => { setMobileOpen(false, true); router.push(item.href); }} />
-  </>;
+      onSelect={item => { setMobileOpen(false, true); router.push(item.href); }} />;
 }
 
 function ManualBreadcrumb() {
@@ -170,12 +164,14 @@ function ManualBreadcrumb() {
 
 export function DemoShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const [searchOpen, setSearchOpen] = useState(false);
+  useShortcut("Mod+K", () => setSearchOpen(true), { allowInInputs: true });
   return (
     <ContentSections defaultScope enabled={pathname === "/"} className="contents [--manual-header-height:calc(var(--spacing)*14)] [--anaphor-section-offset:calc(var(--manual-header-height)+var(--spacing)*8)]">
       <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false}>
         <a href="#content" className="fixed start-3 top-3 z-[var(--anaphor-z-a11y)] -translate-y-[200%] bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0">Skip to content</a>
-        <ManualNavigation />
-        <SidebarInset>
+        <DemoSidebar />
+        <SidebarInset className="pb-[calc(var(--anaphor-bottom-bar-height)+4rem)]">
           <header className="sticky top-0 z-[var(--anaphor-z-navigation)] flex h-[var(--manual-header-height)] items-center gap-3 border-b border-border bg-[color-mix(in_oklch,var(--anaphor-background)_88%,transparent)] px-4 backdrop-blur-md">
             <SidebarTrigger target="mobile" className="md:hidden" />
             <SidebarTrigger target="desktop" className="hidden md:grid" />
@@ -184,6 +180,22 @@ export function DemoShell({ children }: { children: ReactNode }) {
           </header>
           {children}
         </SidebarInset>
+        <BottomBar aria-label="Manual utilities" className="fixed inset-x-0 bottom-0 z-[var(--anaphor-z-navigation)]">
+          <BottomBarGroup>
+            <BottomBarAction render={<a href="https://github.com/danfrenette/anaphor#readme" target="_blank" rel="noreferrer" />} aria-label="Help and documentation">
+              <Question aria-hidden="true" /><span className="hidden sm:inline">Help</span>
+            </BottomBarAction>
+            <BottomBarStatus className="hidden md:inline">Source registry · <span className="font-mono">v0.1</span></BottomBarStatus>
+          </BottomBarGroup>
+          <BottomBarGroup>
+            <BottomBarAction onClick={() => setSearchOpen(true)} aria-label="Search manual" aria-haspopup="dialog">
+              <MagnifyingGlass aria-hidden="true" /><span className="hidden sm:inline">Search</span>
+              <KbdGroup aria-hidden="true" className="ms-2 hidden lg:inline-flex"><Kbd>Mod</Kbd><Kbd>K</Kbd></KbdGroup>
+            </BottomBarAction>
+            <ThemeToggle className="min-h-10 min-w-10 rounded-sm px-2 text-small pointer-coarse:min-h-11 pointer-coarse:min-w-11" title="Switch theme"><span className="hidden sm:inline">Theme</span></ThemeToggle>
+          </BottomBarGroup>
+        </BottomBar>
+        <ManualPalette open={searchOpen} onOpenChange={setSearchOpen} />
       </SidebarProvider>
     </ContentSections>
   );

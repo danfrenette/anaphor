@@ -26,6 +26,7 @@
         "danfrenette/anaphor/popover",
         "danfrenette/anaphor/tooltip",
         "danfrenette/anaphor/sidebar",
+        "danfrenette/anaphor/bottom-bar",
         "danfrenette/anaphor/morph-surface",
         "danfrenette/anaphor/theme",
         "danfrenette/anaphor/tabs",
@@ -137,6 +138,19 @@
           "path": "packages/design-system/src/components/sidebar.tsx",
           "type": "registry:ui",
           "target": "@ui/sidebar.tsx"
+        }
+      ]
+    },
+    {
+      "name": "bottom-bar",
+      "type": "registry:ui",
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/bottom-bar.tsx",
+          "type": "registry:ui",
+          "target": "@ui/bottom-bar.tsx"
         }
       ]
     },

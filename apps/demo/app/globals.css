@@ -3,6 +3,16 @@
 @source "./**/*.{ts,tsx}";
 @source "../components/**/*.{ts,tsx}";
 
+:root {
+  --anaphor-bottom-bar-height: calc(2.75rem + env(safe-area-inset-bottom));
+}
+
+@media (pointer: coarse) {
+  :root {
+    --anaphor-bottom-bar-height: calc(3rem + env(safe-area-inset-bottom));
+  }
+}
+
 #content [data-slot="section"]:focus-visible {
   outline: none;
 }

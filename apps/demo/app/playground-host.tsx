@@ -1,6 +1,6 @@
 "use client";
 
-import { MorphSurface, Tabs, TabsList, TabsTab, TabsPanel, ThemeToggle } from "@anaphor/system";
+import { MorphSurface, Tabs, TabsList, TabsTab, TabsPanel } from "@anaphor/system";
 import { Code, SlidersHorizontal } from "@phosphor-icons/react";
 import { createContext, useCallback, useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -78,8 +78,7 @@ export function PlaygroundHost({ children }: { children: ReactNode }) {
           title={view === "code" ? codeTitle(sectionId) : `${active?.title ?? "Component"} controls`}
           viewKey={`${view}-${sectionId ?? "setup"}`} wide={view === "code"}
           bar={() => <div role="group" aria-label="Manual tools" className="flex items-center">
-            <ThemeToggle className="flex-1 rounded-[18px]" title="Switch theme"><span className="sr-only">Theme</span></ThemeToggle>
-            <TabsList aria-label="Component tools" className="w-2/3 rounded-[18px] bg-transparent p-0 [--radius-control:22px] [--tabs-item-size:44px] [&>[data-slot=tabs-indicator]]:p-0">
+            <TabsList aria-label="Component tools" className="rounded-[18px] bg-transparent p-0 [--radius-control:22px] [--tabs-item-size:44px] [&>[data-slot=tabs-indicator]]:p-0">
               <TabsTab value="controls" aria-label={active ? `Open ${active.title} controls` : "Component controls unavailable"}
                 disabled={!active} aria-expanded={open && view === "controls"}
                 onClick={() => { if (open && view === "controls") setView(null); }}>

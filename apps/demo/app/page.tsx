@@ -14,6 +14,7 @@ import { KbdDemo } from "./kbd-demo";
 import { SliderDemo } from "./slider-demo";
 import { SkeletonDemo } from "./skeleton-demo";
 import { TabsDemo } from "./tabs-demo";
+import { BottomBarDemo } from "./bottom-bar-demo";
 
 const neutralRoles = [
   ["Font / tertiary", "--anaphor-font-tertiary"],
@@ -257,6 +258,7 @@ export default function HomePage() {
           <KbdDemo />
           <TabsDemo />
           <CommandPaletteDemo />
+          <BottomBarDemo />
         </article>
       </SidebarInsetContent>
     </main>
