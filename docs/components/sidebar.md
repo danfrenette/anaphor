@@ -39,12 +39,33 @@ updates are coalesced to the next animation frame, so a busy mouse cannot force
 more than one measurement per frame. The hover layer fades out over the selected
 item without replacing selection.
 
+`SidebarProvider` accepts `side="left"` (the default), `side="right"`, or
+`side="both"`. A single `Sidebar` follows the provider's chosen edge. For
+`side="both"`, render two `Sidebar` elements with explicit sides around one
+`SidebarInset`:
+
+```tsx
+<SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false} side="both">
+  <Sidebar side="left" aria-label="Navigation">{/* navigation */}</Sidebar>
+  <Sidebar side="right" aria-label="Page outline">{/* outline */}</Sidebar>
+  <SidebarInset>{/* page content */}</SidebarInset>
+</SidebarProvider>
+```
+
+At wide desktop widths, both panels share the provider's open state. From the
+`md` breakpoint until `lg`, the right panel is hidden so the reading area keeps
+usable width. On mobile, `both` uses one left modal drawer and omits the right
+panel, retaining one focus trap and one dismissal path. Each desktop rail stores
+its own width in `both` mode. The
+right rail grows toward the page for pointer and arrow-key resizing.
+
 Pointer toggles use a coordinated position-only layout transition: 240ms to open
 and 160ms to close, with the shared ease-out curve. The inset and sidebar move
 together without scaling text. Wrap independently centered or aligned page
 content in `SidebarInsetContent` (and put its `max-width` / auto margins on that
 component) so its position is projected too. Width changes use the final layout;
 text may rewrap at narrower widths, but is never stretched by the animation.
+The position-only projection follows left, right, and both placements.
 Keyboard toggles and reduced-motion preferences settle positions immediately.
 Menu hover and selection continue to use the shared spring tiers.
 
