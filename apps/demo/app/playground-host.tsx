@@ -1,8 +1,8 @@
 "use client";
 
-import { MorphSurface, Tabs, TabsList, TabsTab, TabsPanel, ThemeToggle } from "@anaphor/system";
+import { MorphSurface, Tabs, TabsList, TabsTab, TabsPanel, Text, ThemeToggle } from "@anaphor/system";
 import { Code, SlidersHorizontal } from "@phosphor-icons/react";
-import { createContext, useCallback, useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useId, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { usePathname } from "next/navigation";
@@ -25,6 +25,7 @@ function ToolsPortal({ children }: { children: ReactNode }) {
 }
 
 export function PlaygroundHost({ children }: { children: ReactNode }) {
+  const unavailableId = useId();
   const [playgrounds, setPlaygrounds] = useState<Playground[]>([]);
   const [sectionId, setSectionId] = useState<string>();
   const [keyboard, setKeyboard] = useState(false);
@@ -77,19 +78,23 @@ export function PlaygroundHost({ children }: { children: ReactNode }) {
           focusOnOpen={false} animate={!keyboard}
           title={view === "code" ? codeTitle(sectionId) : `${active?.title ?? "Component"} controls`}
           viewKey={`${view}-${sectionId ?? "setup"}`} wide={view === "code"}
-          bar={() => <div role="group" aria-label="Manual tools" className="flex items-center">
-            <ThemeToggle className="flex-1 rounded-[18px]" title="Switch theme"><span className="sr-only">Theme</span></ThemeToggle>
-            <TabsList aria-label="Component tools" className="w-2/3 rounded-[18px] bg-transparent p-0 [--radius-control:22px] [--tabs-item-size:44px] [&>[data-slot=tabs-indicator]]:p-0">
-              <TabsTab value="controls" aria-label={active ? `Open ${active.title} controls` : "Component controls unavailable"}
-                disabled={!active} aria-expanded={open && view === "controls"}
-                onClick={() => { if (open && view === "controls") setView(null); }}>
-                <SlidersHorizontal aria-hidden="true" /><span className="sr-only">Controls</span>
-              </TabsTab>
-              <TabsTab value="code" aria-expanded={view === "code"}
-                onClick={() => { if (view === "code") setView(null); }}>
-                <Code aria-hidden="true" /><span className="sr-only">Code</span>
-              </TabsTab>
-            </TabsList>
+          bar={() => <div role="group" aria-label="Manual tools" className="flex flex-col">
+            <div className="flex items-center">
+              <ThemeToggle className="shrink-0 gap-1.5 rounded-[18px] px-2 text-small font-medium">Theme</ThemeToggle>
+              <TabsList size="sm" aria-label="Component tools" className="shrink-0 rounded-[18px] bg-transparent p-0 [--radius-control:22px] [--tabs-item-size:44px] [--tabs-icon-size:1rem] [&>[data-slot=tabs-indicator]]:p-0">
+                <TabsTab value="controls" aria-label={active ? `Open ${active.title} controls` : "Component controls unavailable"}
+                  aria-describedby={!active ? unavailableId : undefined}
+                  disabled={!active} aria-expanded={open && view === "controls"}
+                  onClick={() => { if (open && view === "controls") setView(null); }}>
+                  <SlidersHorizontal aria-hidden="true" /><span>Controls</span>
+                </TabsTab>
+                <TabsTab value="code" aria-expanded={view === "code"}
+                  onClick={() => { if (view === "code") setView(null); }}>
+                  <Code aria-hidden="true" /><span>Code</span>
+                </TabsTab>
+              </TabsList>
+            </div>
+            {!active && <Text as="p" variant="caption" id={unavailableId} className="max-w-[248px] px-2 pb-1">Controls appear in component sections.</Text>}
           </div>}>
           <TabsPanel value="controls" keepMounted className="data-[hidden]:hidden"><div ref={setTarget} /></TabsPanel>
           <TabsPanel value="code" keepMounted className="data-[hidden]:hidden"><ComponentCode sectionId={sectionId} /></TabsPanel>
