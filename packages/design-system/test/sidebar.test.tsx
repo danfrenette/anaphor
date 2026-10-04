@@ -85,6 +85,71 @@ test("supports desktop disclosure", () => {
   expect(desktopTrigger).toHaveAttribute("aria-expanded", "false");
 });
 
+test("places the sidebar on the right through the provider interface", () => {
+  const { container } = render(
+    <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut={null} resizable={false} side="right">
+      <Sidebar><SidebarRail /></Sidebar>
+      <SidebarInset>Content</SidebarInset>
+    </SidebarProvider>,
+  );
+
+  expect(container.firstElementChild).toHaveAttribute("data-side", "right");
+  expect(container.querySelector('[data-slot="sidebar"]')).toHaveAttribute("data-side", "right");
+});
+
+test("right-side resize keys increase width toward the content", () => {
+  const { container } = render(
+    <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut={null} resizable side="right">
+      <Sidebar><SidebarRail /></Sidebar>
+    </SidebarProvider>,
+  );
+  fireEvent.keyDown(screen.getByRole("button", { name: "Adjust or collapse sidebar" }), { key: "ArrowLeft" });
+  expect(container.firstElementChild).toHaveStyle("--anaphor-sidebar-drag-width: 16px");
+});
+
+test("supports two sidebars around one inset", () => {
+  const { container } = render(
+    <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut={null} resizable={false} side="both">
+      <Sidebar side="left" aria-label="Navigation" />
+      <Sidebar side="right" aria-label="Outline" />
+      <SidebarInset>Content</SidebarInset>
+    </SidebarProvider>,
+  );
+
+  expect(container.firstElementChild).toHaveAttribute("data-side", "both");
+  expect(screen.getByRole("complementary", { name: "Navigation" })).toHaveAttribute("data-side", "left");
+  expect(screen.getByRole("complementary", { name: "Outline" })).toHaveAttribute("data-side", "right");
+});
+
+test("both rails keep their widths independent", () => {
+  const { container } = render(
+    <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut={null} resizable side="both">
+      <Sidebar side="left"><SidebarRail /></Sidebar>
+      <Sidebar side="right"><SidebarRail /></Sidebar>
+      <SidebarInset>Content</SidebarInset>
+    </SidebarProvider>,
+  );
+  const rails = container.querySelectorAll<HTMLButtonElement>('[data-slot="sidebar-rail"]');
+  fireEvent.keyDown(rails[0]!, { key: "ArrowRight" });
+  fireEvent.keyDown(rails[1]!, { key: "ArrowLeft" });
+  expect(container.firstElementChild).toHaveStyle("--anaphor-sidebar-left-drag-width: 16px");
+  expect(container.firstElementChild).toHaveStyle("--anaphor-sidebar-right-drag-width: 16px");
+});
+
+test("both placement uses one left drawer on mobile", () => {
+  mediaMatches = true;
+  render(
+    <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut={null} resizable={false} side="both">
+      <Sidebar side="left" aria-label="Navigation" />
+      <Sidebar side="right" aria-label="Outline" />
+      <SidebarTrigger target="mobile" />
+    </SidebarProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Open sidebar" }));
+  expect(document.querySelectorAll('[data-slot="sidebar"]')).toHaveLength(1);
+  expect(screen.getByRole("dialog", { name: "Navigation" })).toBeInTheDocument();
+});
+
 test("uses modal dialog behavior on mobile", () => {
   mediaMatches = true;
   render(<Example />);

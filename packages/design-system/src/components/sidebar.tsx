@@ -47,6 +47,7 @@ function readSidebarTiming(element: HTMLElement): SidebarLayoutTiming {
 }
 
 type SidebarContextValue = {
+  side: "left" | "right" | "both";
   layoutTiming: SidebarLayoutTiming;
   desktopOpen: boolean;
   mobileTriggerRef: React.RefObject<HTMLButtonElement | null>;
@@ -61,10 +62,12 @@ type SidebarContextValue = {
 };
 
 const SidebarContext = createContext<SidebarContextValue | null>(null);
+const SidebarPanelContext = createContext<"left" | "right" | null>(null);
 
 type SidebarProviderProps = ComponentProps<"div"> & {
   shortcut: string | null;
   resizable: boolean;
+  side?: "left" | "right" | "both";
 } & (
   | { mode: "controlled"; open: boolean; onOpenChange: (open: boolean) => void; defaultOpen?: never }
   | { mode: "uncontrolled"; defaultOpen: boolean; onOpenChange?: (open: boolean) => void; open?: never }
@@ -79,6 +82,7 @@ function SidebarProvider({
   open,
   shortcut,
   resizable,
+  side = "left",
   style,
   ...props
 }: SidebarProviderProps) {
@@ -129,7 +133,7 @@ function SidebarProvider({
         setMobileOpen(nextOpen, animate);
       }}
     >
-      <SidebarContext value={{ layoutTiming, desktopOpen, mobileOpen, mobileTriggerRef, motionEnabled, prepareMotion, rootRef, resizable, setMobileOpen, toggleDesktop, toggleMobile }}>
+      <SidebarContext value={{ layoutTiming, desktopOpen, mobileOpen, mobileTriggerRef, motionEnabled, prepareMotion, rootRef, resizable, side, setMobileOpen, toggleDesktop, toggleMobile }}>
         <div
           ref={rootRef}
           data-desktop-open={desktopOpen}
@@ -137,18 +141,23 @@ function SidebarProvider({
           data-motion={motionEnabled ? "animate" : "instant"}
           data-slot="sidebar-provider"
           data-resizable={resizable}
+          data-side={side}
           className={cn(
             // Layout
             "group/sidebar grid min-h-svh grid-cols-[var(--anaphor-sidebar-current-width)_minmax(0,1fr)] overflow-x-clip",
             // Motion and responsive layout
             "[--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)] max-md:block",
             // Open state
+            side === "right" && "md:grid-cols-[minmax(0,1fr)_var(--anaphor-sidebar-current-width)]",
+            side === "both" && "md:grid-cols-[var(--anaphor-sidebar-left-current-width)_minmax(0,1fr)] lg:grid-cols-[var(--anaphor-sidebar-left-current-width)_minmax(0,1fr)_var(--anaphor-sidebar-right-current-width)]",
             desktopOpen
               ? "[--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]"
-              : "md:grid-cols-[0_minmax(0,1fr)]",
+              : side === "right" ? "md:grid-cols-[minmax(0,1fr)_0]" : side === "both" ? "md:grid-cols-[0_minmax(0,1fr)] lg:grid-cols-[0_minmax(0,1fr)_0]" : "md:grid-cols-[0_minmax(0,1fr)]",
             className,
             // Sizing and interaction state
             "[--anaphor-sidebar-current-width:clamp(var(--anaphor-sidebar-min-width),var(--anaphor-sidebar-drag-width,var(--anaphor-sidebar-width)),var(--anaphor-sidebar-max-width))]",
+            "[--anaphor-sidebar-left-current-width:clamp(var(--anaphor-sidebar-min-width),var(--anaphor-sidebar-left-drag-width,var(--anaphor-sidebar-width)),var(--anaphor-sidebar-max-width))]",
+            "[--anaphor-sidebar-right-current-width:clamp(var(--anaphor-sidebar-min-width),var(--anaphor-sidebar-right-drag-width,var(--anaphor-sidebar-width)),var(--anaphor-sidebar-max-width))]",
             "data-[motion=instant]:[--anaphor-sidebar-motion-duration:0ms] data-resizing:transition-none",
           )}
           style={style}
@@ -167,9 +176,15 @@ function useSidebar() {
   return context;
 }
 
-function Sidebar({ className, style, ...props }: ComponentProps<"aside">) {
-  const { desktopOpen, mobileOpen, mobileTriggerRef, motionEnabled } = useSidebar();
+type SidebarProps = ComponentProps<"aside"> & { side?: "left" | "right" };
+
+function Sidebar({ className, side: requestedSide, style, ...props }: SidebarProps) {
+  const { desktopOpen, mobileOpen, mobileTriggerRef, motionEnabled, side: placement } = useSidebar();
+  const { mobile } = useAdaptiveSurface();
+  const side = placement === "both" ? requestedSide ?? "left" : placement;
+  if (placement === "both" && side === "right" && mobile) return null;
   return (
+    <SidebarPanelContext value={side}>
     <AdaptiveSurfacePortal>
       <SidebarScrim />
       <AdaptiveSurfacePopup
@@ -177,6 +192,7 @@ function Sidebar({ className, style, ...props }: ComponentProps<"aside">) {
         render={
           <aside
             data-slot="sidebar"
+            data-side={side}
             data-motion={motionEnabled ? "animate" : "instant"}
             className={cn(
               // Position and layout
@@ -184,7 +200,7 @@ function Sidebar({ className, style, ...props }: ComponentProps<"aside">) {
               // Surface
               "border-e border-border bg-muted text-muted-foreground",
               // Transform and motion
-              "[transform:translate3d(-100%,0,0)] will-change-transform [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)]",
+              "[transform:translate3d(-100%,0,0)] [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)]",
               "motion-safe:transition-[transform,visibility] motion-safe:duration-[var(--anaphor-sidebar-motion-duration)] motion-safe:ease-[var(--anaphor-ease-out)]",
               // Entry and responsive states
               "data-starting-style:[transform:translate3d(-100%,0,0)] md:sticky md:w-[var(--anaphor-sidebar-current-width)] md:h-[calc(100svh-var(--anaphor-bottom-bar-height,0px))]",
@@ -194,6 +210,11 @@ function Sidebar({ className, style, ...props }: ComponentProps<"aside">) {
               className,
               // Instant motion override
               "data-[motion=instant]:[--anaphor-sidebar-motion-duration:0ms] md:data-[motion=instant]:[--anaphor-sidebar-motion-duration:0ms]",
+              side === "right" && "end-0 start-auto border-e-0 border-s [transform:translate3d(100%,0,0)] data-starting-style:[transform:translate3d(100%,0,0)] md:col-start-2 md:row-start-1 md:[transform:translate3d(100%,0,0)] md:data-starting-style:[transform:translate3d(100%,0,0)] md:invisible",
+              side === "right" && desktopOpen && "md:visible md:[transform:translate3d(0,0,0)]",
+              side === "right" && mobileOpen && "visible [transform:translate3d(0,0,0)]",
+              placement === "both" && side === "left" && "md:col-start-1 md:row-start-1 md:w-[var(--anaphor-sidebar-left-current-width)]",
+              placement === "both" && side === "right" && "md:hidden lg:col-start-3 lg:row-start-1 lg:flex lg:w-[var(--anaphor-sidebar-right-current-width)]",
             )}
             style={style}
             {...props}
@@ -201,6 +222,7 @@ function Sidebar({ className, style, ...props }: ComponentProps<"aside">) {
         }
       />
     </AdaptiveSurfacePortal>
+    </SidebarPanelContext>
   );
 }
 
@@ -432,7 +454,7 @@ function SidebarTrigger({ children, className, onClick, target, ...props }: Side
         "grid size-9 place-items-center rounded-md border-0 bg-transparent text-muted-foreground",
         // Motion and interaction states
         "motion-safe:transition-[color,background-color,transform] duration-150 ease-[var(--anaphor-ease-out)]",
-        "hover:bg-muted hover:text-foreground motion-safe:active:scale-[0.97]",
+        "hover:bg-muted hover:text-foreground motion-safe:active:scale-[0.96]",
         // Icon treatment
         "[&>svg]:size-4",
         className,
@@ -455,7 +477,10 @@ function SidebarTrigger({ children, className, onClick, target, ...props }: Side
 }
 
 function SidebarRail({ className, onClick, onKeyDown, onPointerCancel, onPointerDown, onPointerMove, onPointerUp, ...props }: ComponentProps<"button">) {
-  const { resizable, rootRef, toggleDesktop } = useSidebar();
+  const { resizable, rootRef, side: placement, toggleDesktop } = useSidebar();
+  const panelSide = useContext(SidebarPanelContext);
+  const side = panelSide ?? (placement === "both" ? "left" : placement);
+  const widthProperty = placement === "both" ? `--anaphor-sidebar-${side}-drag-width` : "--anaphor-sidebar-drag-width";
   const drag = useRef({ startX: 0, startWidth: 0, moved: false });
   const [dragging, setDragging] = useState(false);
 
@@ -464,7 +489,7 @@ function SidebarRail({ className, onClick, onKeyDown, onPointerCancel, onPointer
   function start(event: ReactPointerEvent<HTMLButtonElement>) {
     if (event.button !== 0) return;
     const root = rootRef.current;
-    const sidebar = root?.querySelector<HTMLElement>('[data-slot="sidebar"]');
+    const sidebar = root?.querySelector<HTMLElement>(`[data-slot="sidebar"][data-side="${side}"]`);
     if (!root || !sidebar) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     drag.current = { startX: event.clientX, startWidth: sidebar.getBoundingClientRect().width, moved: false };
@@ -474,9 +499,9 @@ function SidebarRail({ className, onClick, onKeyDown, onPointerCancel, onPointer
 
   function move(event: ReactPointerEvent<HTMLButtonElement>) {
     if (!dragging) return;
-    const distance = event.clientX - drag.current.startX;
+    const distance = (event.clientX - drag.current.startX) * (side === "right" ? -1 : 1);
     if (Math.abs(distance) > 3) drag.current.moved = true;
-    rootRef.current?.style.setProperty("--anaphor-sidebar-drag-width", `${drag.current.startWidth + distance}px`);
+    rootRef.current?.style.setProperty(widthProperty, `${drag.current.startWidth + distance}px`);
   }
 
   function finish(event: ReactPointerEvent<HTMLButtonElement>, cancelled = false) {
@@ -504,6 +529,7 @@ function SidebarRail({ className, onClick, onKeyDown, onPointerCancel, onPointer
         "motion-safe:after:transition-[background-color,transform] after:duration-150",
         "motion-safe:pointer-fine:hover:after:scale-x-200 pointer-fine:hover:after:bg-primary",
         dragging && "after:bg-primary",
+        side === "right" && "-start-2 end-auto",
         className,
       )}
       onClick={(event) => {
@@ -514,11 +540,11 @@ function SidebarRail({ className, onClick, onKeyDown, onPointerCancel, onPointer
         onKeyDown?.(event);
         if (event.defaultPrevented || (event.key !== "ArrowLeft" && event.key !== "ArrowRight")) return;
         const root = rootRef.current;
-        const sidebar = root?.querySelector<HTMLElement>('[data-slot="sidebar"]');
+        const sidebar = root?.querySelector<HTMLElement>(`[data-slot="sidebar"][data-side="${side}"]`);
         if (!root || !sidebar) return;
         event.preventDefault();
-        const delta = event.key === "ArrowRight" ? 16 : -16;
-        root.style.setProperty("--anaphor-sidebar-drag-width", `${sidebar.getBoundingClientRect().width + delta}px`);
+        const delta = (event.key === "ArrowRight" ? 16 : -16) * (side === "right" ? -1 : 1);
+        root.style.setProperty(widthProperty, `${sidebar.getBoundingClientRect().width + delta}px`);
       }}
       onPointerDown={(event) => { start(event); onPointerDown?.(event); }}
       onPointerMove={(event) => { move(event); onPointerMove?.(event); }}
@@ -561,7 +587,7 @@ function SidebarClose({ children, className, ...props }: ComponentProps<"button"
         "grid size-9 place-items-center rounded-md border-0 bg-transparent text-muted-foreground md:hidden",
         // Motion and interaction states
         "motion-safe:transition-colors duration-150 ease-[var(--anaphor-ease-out)]",
-        "hover:bg-muted hover:text-foreground motion-safe:active:scale-[0.97]",
+        "hover:bg-muted hover:text-foreground motion-safe:active:scale-[0.96]",
         // Icon treatment
         "[&>svg]:size-4",
         className,
@@ -574,13 +600,13 @@ function SidebarClose({ children, className, ...props }: ComponentProps<"button"
 }
 
 function useSidebarLayoutMotion() {
-  const { desktopOpen, motionEnabled, layoutTiming } = useSidebar();
+  const { desktopOpen, motionEnabled, layoutTiming, side } = useSidebar();
   const { mobile } = useAdaptiveSurface();
   const reducedMotion = useReducedMotion();
   const duration = desktopOpen ? layoutTiming.enter : layoutTiming.exit;
   return {
     layout: "position" as const,
-    layoutDependency: desktopOpen,
+    layoutDependency: `${side}:${desktopOpen}`,
     initial: false as const,
     transition: { layout: { type: "tween" as const, duration: mobile || reducedMotion || !motionEnabled ? 0 : duration, ease: layoutTiming.ease } },
   };
@@ -590,7 +616,8 @@ type SidebarInsetProps = Omit<ComponentProps<typeof motion.div>, "layout" | "lay
 
 function SidebarInset({ className, ...props }: SidebarInsetProps) {
   const layoutMotion = useSidebarLayoutMotion();
-  return <motion.div data-slot="sidebar-inset" className={cn("min-w-0 bg-background", className)} {...props} {...layoutMotion} />;
+  const { side } = useSidebar();
+  return <motion.div data-slot="sidebar-inset" className={cn("min-w-0 bg-background", side === "right" && "md:col-start-1 md:row-start-1", side === "both" && "md:col-start-2 md:row-start-1", className)} {...props} {...layoutMotion} />;
 }
 
 // Register independently aligned content with the inset's layout projection.

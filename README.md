@@ -21,6 +21,9 @@ requests, and the distinction between the skill and component installation.
 
 ## Development
 
+Feature-specific browser checks are indexed in
+[docs/verification/README.md](docs/verification/README.md).
+
 ```sh
 pnpm install
 pnpm dev

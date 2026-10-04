@@ -15,6 +15,7 @@ import { SliderDemo } from "./slider-demo";
 import { SkeletonDemo } from "./skeleton-demo";
 import { TabsDemo } from "./tabs-demo";
 import { BottomBarDemo } from "./bottom-bar-demo";
+import { SidebarDemo } from "./sidebar-demo";
 
 const neutralRoles = [
   ["Font / tertiary", "--anaphor-font-tertiary"],
@@ -243,6 +244,7 @@ export default function HomePage() {
             </Text>
           </Section>
 
+          <SidebarDemo />
           <ButtonDemo />
           <CardDemo />
           <BadgeDemo />

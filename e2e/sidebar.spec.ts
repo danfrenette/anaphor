@@ -18,6 +18,84 @@ test("resize is opt-in and the layout honors provider-local width changes", asyn
   await expect.poll(async () => (await page.locator('[data-slot="sidebar-inset"]').boundingBox())?.x).toBe(320);
 });
 
+test("right placement keeps the desktop sidebar and centered content coordinated", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Desktop grid behavior");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  await page.getByRole("group", { name: "Sidebar placement" }).getByRole("button", { name: "Right" }).click();
+
+  const provider = page.locator('[data-slot="sidebar-provider"]');
+  const panel = sidebar(page);
+  const inset = page.locator('[data-slot="sidebar-inset"]');
+  const content = page.locator('[data-slot="sidebar-inset-content"]');
+  await expect(provider).toHaveAttribute("data-side", "right");
+  await expect.poll(async () => (await inset.boundingBox())?.x).toBeCloseTo(0, 0);
+  const initialPanel = await panel.boundingBox();
+  const initialInset = await inset.boundingBox();
+  const initialContent = await content.boundingBox();
+  const viewport = page.viewportSize();
+  if (!initialPanel || !initialInset || !initialContent || !viewport) throw new Error("Expected right sidebar layout");
+  expect(initialPanel.x + initialPanel.width).toBeCloseTo(viewport.width, 0);
+  expect(initialInset.x).toBeCloseTo(0, 0);
+  expect(initialInset.width).toBeCloseTo(initialPanel.x, 0);
+
+  await provider.evaluate(element => {
+    if (!(element instanceof HTMLElement)) throw new Error("Expected provider");
+    element.style.setProperty("--anaphor-sidebar-exit-duration", "1000ms");
+  });
+  await page.getByRole("button", { name: "Collapse sidebar", exact: true }).click();
+  await expect(provider).toHaveAttribute("data-desktop-open", "false");
+  await page.waitForTimeout(100);
+  const during = await content.boundingBox();
+  if (!during) throw new Error("Expected moving content");
+  expect(during.x).toBeGreaterThan(initialContent.x);
+  expect(during.x).toBeLessThan(initialContent.x + initialPanel.width / 2);
+  expect(during.width).toBeCloseTo(initialContent.width, 0);
+  await expect.poll(async () => (await inset.boundingBox())?.width).toBeCloseTo(viewport.width, 0);
+  await expect.poll(async () => (await content.boundingBox())?.x).toBeCloseTo((viewport.width - initialContent.width) / 2, 0);
+});
+
+test("right mobile drawer enters from the right and restores focus", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "Mobile drawer behavior");
+  await page.goto("/");
+  await page.getByRole("group", { name: "Sidebar placement" }).getByRole("button", { name: "Right" }).click();
+  const trigger = page.getByRole("button", { name: "Open sidebar", exact: true });
+  await trigger.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  const viewport = page.viewportSize();
+  if (!viewport) throw new Error("Expected mobile viewport");
+  await expect.poll(async () => {
+    const panel = await sidebar(page).boundingBox();
+    return panel ? panel.x + panel.width : null;
+  }).toBeCloseTo(viewport.width, 0);
+  await page.getByRole("button", { name: "Close sidebar" }).click();
+  await expect(trigger).toBeFocused();
+});
+
+test("the manual can place navigation and outline around core content", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Desktop has room for both panels");
+  await page.goto("/#sidebar");
+  const choices = page.getByRole("group", { name: "Sidebar placement" });
+  await choices.getByRole("button", { name: "Both" }).click();
+  await expect(choices.getByRole("button", { name: "Both" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("complementary", { name: "Component manual navigation" })).toBeVisible();
+  await expect(page.getByRole("complementary", { name: "Page outline" })).toBeVisible();
+  const panels = page.locator('[data-slot="sidebar"]');
+  const inset = page.locator('[data-slot="sidebar-inset"]');
+  const left = await panels.nth(0).boundingBox();
+  const right = await panels.nth(1).boundingBox();
+  const center = await inset.boundingBox();
+  if (!left || !right || !center) throw new Error("Expected both sidebars and core content");
+  expect(center.x).toBeCloseTo(left.width, 0);
+  expect(center.x + center.width).toBeCloseTo(right.x, 0);
+  await page.setViewportSize({ width: 900, height: 720 });
+  await expect(page.getByRole("complementary", { name: "Page outline" })).toBeHidden();
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await expect(page.getByRole("complementary", { name: "Page outline" })).toBeVisible();
+  await page.getByRole("button", { name: "Collapse sidebar", exact: true }).click();
+  await expect.poll(async () => (await inset.boundingBox())?.width).toBeCloseTo(page.viewportSize()!.width, 0);
+});
+
 test("desktop pointer toggles move the inset and centered content together and reverse in place", async ({ page, isMobile }) => {
   test.skip(isMobile, "Desktop disclosure is hidden at the mobile breakpoint");
   await page.emulateMedia({ reducedMotion: "no-preference" });

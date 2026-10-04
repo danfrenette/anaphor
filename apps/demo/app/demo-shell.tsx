@@ -48,7 +48,15 @@ import {
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
+
+type SidebarPlacement = "left" | "right" | "both";
+const SidebarPlacementContext = createContext<{ placement: SidebarPlacement; setPlacement: (placement: SidebarPlacement) => void } | null>(null);
+export function useSidebarPlacement() {
+  const context = useContext(SidebarPlacementContext);
+  if (!context) throw new Error("Sidebar placement controls require DemoShell");
+  return context;
+}
 
 type NavItem = { id: string; label: string; href: Route; icon: Icon };
 
@@ -69,6 +77,7 @@ const groups: { label: string; items: NavItem[] }[] = [
     label: "Components",
     items: [
       { id: "button", label: "Button", href: "/#button", icon: Rectangle },
+      { id: "sidebar", label: "Sidebar", href: "/#sidebar", icon: ListDashes },
       { id: "card", label: "Card", href: "/#card", icon: SlidersHorizontal },
       { id: "badge", label: "Badge", href: "/#badge", icon: Tag },
       { id: "node-edge-graphs", label: "Node-edge graphs", href: "/#node-edge-graphs", icon: ShareNetwork },
@@ -96,14 +105,14 @@ const groups: { label: string; items: NavItem[] }[] = [
   },
 ];
 
-function DemoSidebar() {
+function DemoSidebar({ side }: { side?: "left" | "right" }) {
   const pathname = usePathname();
   const { activeId } = useContentSections();
   const { setMobileOpen } = useSidebar();
   const closeMobile = () => setMobileOpen(false, true);
 
   return (
-    <Sidebar aria-label="Component manual navigation">
+    <Sidebar side={side} aria-label="Component manual navigation">
       <SidebarHeader>
         <div className="flex min-h-11 items-center gap-2">
           <Link href="/" onNavigate={closeMobile} aria-label="Anaphor home" className="flex min-w-0 flex-1 items-center gap-3 rounded-md px-2 text-foreground no-underline">
@@ -141,6 +150,18 @@ function DemoSidebar() {
   );
 }
 
+function ManualOutline() {
+  return <Sidebar side="right" aria-label="Page outline">
+    <SidebarHeader><Text as="span" variant="subheading" className="px-2">On this page</Text></SidebarHeader>
+    <SidebarContent><nav aria-label="Page outline"><SidebarMenu>
+      {[["Introduction", "purpose"], ["Principles", "principles"], ["Color", "color"], ["Typography", "typography"], ["Motion", "motion"], ["Sidebar", "sidebar"]].map(([label, id]) => (
+        <SidebarMenuItem key={id}><SidebarMenuButton isActive={false} render={<a href={`/#${id}`} />}>{label}</SidebarMenuButton></SidebarMenuItem>
+      ))}
+    </SidebarMenu></nav></SidebarContent>
+    <SidebarRail />
+  </Sidebar>;
+}
+
 function ManualPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { setMobileOpen } = useSidebar();
   const router = useRouter();
@@ -165,12 +186,15 @@ function ManualBreadcrumb() {
 export function DemoShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [sidebarSide, setSidebarSide] = useState<SidebarPlacement>("left");
   useShortcut("Mod+K", () => setSearchOpen(true), { allowInInputs: true });
   return (
+    <SidebarPlacementContext value={{ placement: sidebarSide, setPlacement: setSidebarSide }}>
     <ContentSections defaultScope enabled={pathname === "/"} className="contents [--manual-header-height:calc(var(--spacing)*14)] [--anaphor-section-offset:calc(var(--manual-header-height)+var(--spacing)*8)]">
-      <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false}>
+      <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false} side={sidebarSide}>
         <a href="#content" className="fixed start-3 top-3 z-[var(--anaphor-z-a11y)] -translate-y-[200%] bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0">Skip to content</a>
-        <DemoSidebar />
+        <DemoSidebar side={sidebarSide === "both" ? "left" : undefined} />
+        {sidebarSide === "both" ? <ManualOutline /> : null}
         <SidebarInset className="pb-[calc(var(--anaphor-bottom-bar-height)+4rem)]">
           <header className="sticky top-0 z-[var(--anaphor-z-navigation)] flex h-[var(--manual-header-height)] items-center gap-3 border-b border-border bg-[color-mix(in_oklch,var(--anaphor-background)_88%,transparent)] px-4 backdrop-blur-md">
             <SidebarTrigger target="mobile" className="md:hidden" />
@@ -198,5 +222,6 @@ export function DemoShell({ children }: { children: ReactNode }) {
         <ManualPalette open={searchOpen} onOpenChange={setSearchOpen} />
       </SidebarProvider>
     </ContentSections>
+    </SidebarPlacementContext>
   );
 }
