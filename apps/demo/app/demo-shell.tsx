@@ -12,6 +12,15 @@ import {
   BottomBarAction,
   BottomBarGroup,
   BottomBarStatus,
+  Tabs,
+  TabsList,
+  TabsPanel,
+  TabsTab,
+  WorkspaceShell,
+  WorkspaceTopBar,
+  WorkspaceCard,
+  WorkspaceCardHeader,
+  WorkspaceCardBody,
   Sidebar,
   SidebarClose,
   SidebarContent,
@@ -48,7 +57,7 @@ import {
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useRef, useState, type ReactNode } from "react";
 
 type SidebarPlacement = "left" | "right" | "both";
 const SidebarPlacementContext = createContext<{ placement: SidebarPlacement; setPlacement: (placement: SidebarPlacement) => void } | null>(null);
@@ -76,6 +85,7 @@ const groups: { label: string; items: NavItem[] }[] = [
   {
     label: "Components",
     items: [
+      { id: "workspace-shell", label: "Workspace shell", href: "/#workspace-shell", icon: Rectangle },
       { id: "button", label: "Button", href: "/#button", icon: Rectangle },
       { id: "sidebar", label: "Sidebar", href: "/#sidebar", icon: ListDashes },
       { id: "card", label: "Card", href: "/#card", icon: SlidersHorizontal },
@@ -105,7 +115,7 @@ const groups: { label: string; items: NavItem[] }[] = [
   },
 ];
 
-function DemoSidebar({ side }: { side?: "left" | "right" }) {
+function DemoSidebar({ side, onSearch }: { side?: "left" | "right"; onSearch: () => void }) {
   const pathname = usePathname();
   const { activeId } = useContentSections();
   const { setMobileOpen } = useSidebar();
@@ -122,6 +132,7 @@ function DemoSidebar({ side }: { side?: "left" | "right" }) {
               <Text as="span" variant="caption" className="block">Reference manual</Text>
             </span>
           </Link>
+          <button type="button" aria-label="Search manual" onClick={() => { closeMobile(); onSearch(); }} className="grid size-10 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-background focus-visible:outline-2 focus-visible:outline-ring md:hidden"><MagnifyingGlass aria-hidden="true" className="size-4" /></button>
           <SidebarClose className="shrink-0" />
         </div>
       </SidebarHeader>
@@ -183,45 +194,66 @@ function ManualBreadcrumb() {
   return <p className="flex items-center gap-2 text-small"><span className="text-muted-foreground">{group}</span><b className="font-normal text-border">/</b><strong className="font-medium">{label}</strong></p>;
 }
 
+function ManualTopBar({ placement }: { placement: SidebarPlacement }) {
+  const { desktopOpen } = useSidebar();
+  const triggerInRail = desktopOpen && placement !== "right";
+  return <WorkspaceTopBar>
+    {triggerInRail && <div className="col-start-1 hidden items-center px-2 md:flex"><SidebarTrigger target="desktop" /></div>}
+    <div className="col-start-2 flex min-w-0 items-center gap-2 px-2">
+      <SidebarTrigger target="mobile" className="md:hidden" />
+      {!triggerInRail && <SidebarTrigger target="desktop" className="hidden md:grid" />}
+      <TabsList aria-label="Workspace views" className="min-w-0 bg-transparent p-0">
+        <TabsTab value="manual" className="min-w-0 max-w-64 px-4">Reference manual</TabsTab>
+      </TabsList>
+    </div>
+  </WorkspaceTopBar>;
+}
+
 export function DemoShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const [sidebarSide, setSidebarSide] = useState<SidebarPlacement>("left");
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   useShortcut("Mod+K", () => setSearchOpen(true), { allowInInputs: true });
+
   return (
     <SidebarPlacementContext value={{ placement: sidebarSide, setPlacement: setSidebarSide }}>
-    <ContentSections defaultScope enabled={pathname === "/"} className="contents [--manual-header-height:calc(var(--spacing)*14)] [--anaphor-section-offset:calc(var(--manual-header-height)+var(--spacing)*8)]">
-      <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false} side={sidebarSide}>
-        <a href="#content" className="fixed start-3 top-3 z-[var(--anaphor-z-a11y)] -translate-y-[200%] bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0">Skip to content</a>
-        <DemoSidebar side={sidebarSide === "both" ? "left" : undefined} />
-        {sidebarSide === "both" ? <ManualOutline /> : null}
-        <SidebarInset className="pb-[calc(var(--anaphor-bottom-bar-height)+4rem)]">
-          <header className="sticky top-0 z-[var(--anaphor-z-navigation)] flex h-[var(--manual-header-height)] items-center gap-3 border-b border-border bg-[color-mix(in_oklch,var(--anaphor-background)_88%,transparent)] px-4 backdrop-blur-md">
-            <SidebarTrigger target="mobile" className="md:hidden" />
-            <SidebarTrigger target="desktop" className="hidden md:grid" />
-            <span className="h-4 w-px bg-border" />
-            <ManualBreadcrumb />
-          </header>
-          {children}
-        </SidebarInset>
-        <BottomBar aria-label="Manual utilities" className="fixed inset-x-0 bottom-0 z-[var(--anaphor-z-navigation)]">
-          <BottomBarGroup>
-            <BottomBarAction render={<a href="https://github.com/danfrenette/anaphor#readme" target="_blank" rel="noreferrer" />} aria-label="Help and documentation">
-              <Question aria-hidden="true" /><span className="hidden sm:inline">Help</span>
-            </BottomBarAction>
-            <BottomBarStatus className="hidden md:inline">Source registry · <span className="font-mono">v0.1</span></BottomBarStatus>
-          </BottomBarGroup>
-          <BottomBarGroup>
-            <BottomBarAction onClick={() => setSearchOpen(true)} aria-label="Search manual" aria-haspopup="dialog">
-              <MagnifyingGlass aria-hidden="true" /><span className="hidden sm:inline">Search</span>
-              <KbdGroup aria-hidden="true" className="ms-2 hidden lg:inline-flex"><Kbd>Mod</Kbd><Kbd>K</Kbd></KbdGroup>
-            </BottomBarAction>
-            <ThemeToggle className="min-h-10 min-w-10 rounded-sm px-2 text-small pointer-coarse:min-h-11 pointer-coarse:min-w-11" title="Switch theme"><span className="hidden sm:inline">Theme</span></ThemeToggle>
-          </BottomBarGroup>
-        </BottomBar>
-        <ManualPalette open={searchOpen} onOpenChange={setSearchOpen} />
-      </SidebarProvider>
-    </ContentSections>
+      <ContentSections defaultScope enabled={pathname === "/"} scrollContainerRef={scrollContainerRef} className="contents [--anaphor-section-offset:calc(var(--spacing)*8)]">
+        <Tabs defaultValue="manual" className="contents">
+          <WorkspaceShell data-app-shell="">
+            <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false} side={sidebarSide} layout="workspace">
+              <a href="#content" className="fixed start-3 top-3 z-[var(--anaphor-z-a11y)] -translate-y-[200%] bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0">Skip to content</a>
+              <ManualTopBar placement={sidebarSide} />
+              <DemoSidebar side={sidebarSide === "both" ? "left" : undefined} onSearch={() => setSearchOpen(true)} />
+              {sidebarSide === "both" ? <ManualOutline /> : null}
+              <SidebarInset>
+                <WorkspaceCard>
+                  <WorkspaceCardHeader><ManualBreadcrumb /></WorkspaceCardHeader>
+                  <WorkspaceCardBody ref={scrollContainerRef}>
+                    <TabsPanel value="manual" className="block">{children}</TabsPanel>
+                  </WorkspaceCardBody>
+                </WorkspaceCard>
+              </SidebarInset>
+              <BottomBar appearance="integrated" aria-label="Manual utilities">
+                <BottomBarGroup>
+                  <BottomBarAction render={<a href="https://github.com/danfrenette/anaphor#readme" target="_blank" rel="noreferrer" />} aria-label="Help and documentation">
+                    <Question aria-hidden="true" /><span className="hidden sm:inline">Help</span>
+                  </BottomBarAction>
+                  <BottomBarStatus className="hidden md:inline">Source registry · <span className="font-mono">v0.1</span></BottomBarStatus>
+                </BottomBarGroup>
+                <BottomBarGroup>
+                  <BottomBarAction onClick={() => setSearchOpen(true)} aria-label="Search manual" aria-haspopup="dialog">
+                    <MagnifyingGlass aria-hidden="true" /><span className="hidden sm:inline">Search</span>
+                    <KbdGroup aria-hidden="true" className="ms-2 hidden lg:inline-flex"><Kbd>Mod</Kbd><Kbd>K</Kbd></KbdGroup>
+                  </BottomBarAction>
+                  <ThemeToggle className="min-h-10 min-w-10 rounded-sm px-2 text-small pointer-coarse:min-h-11 pointer-coarse:min-w-11" title="Switch theme"><span className="hidden sm:inline">Theme</span></ThemeToggle>
+                </BottomBarGroup>
+              </BottomBar>
+              <ManualPalette open={searchOpen} onOpenChange={setSearchOpen} />
+            </SidebarProvider>
+          </WorkspaceShell>
+        </Tabs>
+      </ContentSections>
     </SidebarPlacementContext>
   );
 }

@@ -1,6 +1,11 @@
 import { expect, test } from "@playwright/test";
 
 const section = (page: import("@playwright/test").Page, id: string) => page.locator(`[data-slot="section"][id="${id}"]`);
+const sectionTarget = async (page: import("@playwright/test").Page, id: string) => {
+  const body = await page.locator('[data-slot="workspace-card-body"]').first().boundingBox();
+  if (!body) throw new Error("Missing card scroll body");
+  return body.y + Number.parseFloat(await section(page, id).evaluate(element => getComputedStyle(element).scrollMarginTop));
+};
 
 test("manual navigation moves focus, retargets held keys, and keeps the URL quiet", async ({ page }) => {
   await page.goto("/");
@@ -10,15 +15,15 @@ test("manual navigation moves focus, retargets held keys, and keeps the URL quie
   await page.keyboard.down("j");
   await page.keyboard.up("j");
   await expect(section(page, "typography")).toBeFocused();
-  await expect.poll(async () => Math.abs(((await section(page, "typography").boundingBox())?.y ?? 0) - 88)).toBeLessThan(1);
+  await expect.poll(async () => Math.abs(((await section(page, "typography").boundingBox())?.y ?? 0) - await sectionTarget(page, "typography"))).toBeLessThan(1);
   await page.keyboard.press("k");
   await expect(section(page, "color")).toBeFocused();
   await page.keyboard.press("Shift+G");
-  await expect(section(page, "dropdown-menu")).toBeFocused();
+  await expect(section(page, "bottom-bar")).toBeFocused();
   await page.keyboard.press("j");
-  await expect(section(page, "dropdown-menu")).toBeFocused();
+  await expect(section(page, "bottom-bar")).toBeFocused();
   await page.keyboard.press("g");
-  await expect(section(page, "dropdown-menu")).toBeFocused();
+  await expect(section(page, "bottom-bar")).toBeFocused();
   await page.keyboard.press("g");
   await expect(section(page, "purpose")).toBeFocused();
   await page.keyboard.press("k");
@@ -28,7 +33,7 @@ test("manual navigation moves focus, retargets held keys, and keeps the URL quie
 
 test("manual scrolling determines the next section and Tab enters its content", async ({ page, isMobile }) => {
   await page.goto("/");
-  await section(page, "typography").evaluate(element => window.scrollTo({ top: window.scrollY + element.getBoundingClientRect().top - 88, behavior: "instant" }));
+  await section(page, "typography").evaluate(element => element.scrollIntoView({ block: "start", behavior: "instant" }));
   await expect(section(page, "typography")).toHaveAttribute("data-active", "");
   if (!isMobile) await expect(page.getByRole("link", { name: "Typography", exact: true })).toHaveAttribute("aria-current", "page");
   await page.keyboard.press("j");
@@ -62,26 +67,25 @@ test("uses 100 ms motion and reduced motion settles immediately", async ({ page 
   await page.goto("/");
   await expect(page.locator('[data-slot="sections"]')).toHaveCSS("--anaphor-section-duration", /^(100ms|0?\.1s)$/);
   await page.keyboard.press("j");
-  await expect.poll(async () => Math.abs(((await section(page, "principles").boundingBox())?.y ?? 0) - 88)).toBeLessThan(1);
+  await expect.poll(async () => Math.abs(((await section(page, "principles").boundingBox())?.y ?? 0) - await sectionTarget(page, "principles"))).toBeLessThan(1);
   await page.emulateMedia({ reducedMotion: "reduce" });
   const top = await page.evaluate(() => {
     document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "j", bubbles: true }));
     return document.getElementById("color")!.getBoundingClientRect().top;
   });
-  expect(Math.abs(top - 88)).toBeLessThan(1);
+  expect(Math.abs(top - await sectionTarget(page, "color"))).toBeLessThan(1);
   await expect(section(page, "color")).toBeFocused();
 });
 
-test("header CSS variables drive both layout and navigation spacing", async ({ page }) => {
+test("card section spacing follows its navigation offset", async ({ page }) => {
   await page.goto("/");
-  await page.locator('[data-slot="sections"]').evaluate(element => element.style.setProperty("--manual-header-height", "96px"));
-  await expect(page.locator('header.sticky')).toHaveCSS("height", "96px");
-  await expect(section(page, "principles")).toHaveCSS("scroll-margin-top", "128px");
+  await page.locator('[data-slot="sections"]').evaluate(element => element.style.setProperty("--anaphor-section-offset", "96px"));
+  await expect(section(page, "principles")).toHaveCSS("scroll-margin-top", "96px");
   await page.keyboard.press("j");
-  await expect.poll(async () => Math.abs(((await section(page, "principles").boundingBox())?.y ?? 0) - 128)).toBeLessThan(1);
+  await expect.poll(async () => Math.abs(((await section(page, "principles").boundingBox())?.y ?? 0) - await sectionTarget(page, "principles"))).toBeLessThan(1);
   await expect(section(page, "principles")).toHaveAttribute("data-active", "");
-  await page.locator('[data-slot="sections"]').evaluate(element => element.style.setProperty("--manual-header-height", "128px"));
+  await page.locator('[data-slot="sections"]').evaluate(element => element.style.setProperty("--anaphor-section-offset", "128px"));
   await page.keyboard.press("j");
-  await expect(section(page, "color")).toHaveCSS("scroll-margin-top", "160px");
-  await expect.poll(async () => Math.abs(((await section(page, "color").boundingBox())?.y ?? 0) - 160)).toBeLessThan(1);
+  await expect(section(page, "color")).toHaveCSS("scroll-margin-top", "128px");
+  await expect.poll(async () => Math.abs(((await section(page, "color").boundingBox())?.y ?? 0) - await sectionTarget(page, "color"))).toBeLessThan(1);
 });

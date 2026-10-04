@@ -2,6 +2,7 @@ import { selectControl } from "./playground-select";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { seekAnimations } from "./animation";
+import { prepareContentSnapshot } from "./content-snapshot";
 
 test("renders an accessible reference manual without horizontal overflow", async ({
   page,
@@ -407,14 +408,13 @@ test("editorial card links to its article", async ({ page }) => {
 
 test("showcase previews reflow in both themes", async ({ page }) => {
   await page.goto("/#card");
-  await page.locator(".fixed").evaluateAll(elements => elements.forEach(element => {
-    if (element instanceof HTMLElement) element.style.visibility = "hidden";
-  }));
+  const snapshotStyle = await prepareContentSnapshot(page);
   const showcase = page.locator('#card [data-variant="showcase"]').first();
   await showcase.scrollIntoViewIfNeeded();
   for (const theme of ["light", "dark"] as const) {
     await page.locator("html").evaluate((element, dark) => element.classList.toggle("dark", dark), theme === "dark");
     await expect(showcase).toHaveScreenshot(`card-showcase-${theme}.png`);
   }
+  await snapshotStyle.evaluate(element => element.parentNode?.removeChild(element));
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });

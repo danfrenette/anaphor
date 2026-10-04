@@ -1,0 +1,83 @@
+import { expect, test } from "@playwright/test";
+
+test("the manual has a continuous shell around an inset, independently scrolling card", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The desktop canvas and card edge are visible together");
+  await page.goto("/#workspace-shell");
+  const shell = page.locator('[data-app-shell]');
+  const top = shell.locator('[data-slot="workspace-top-bar"]').first();
+  const card = shell.locator('[data-slot="workspace-card"]').first();
+  const sidebar = shell.locator('[data-slot="sidebar"][data-side="left"]').first();
+  const bottom = page.getByRole("contentinfo", { name: "Manual utilities" });
+  const body = shell.locator('[data-slot="workspace-card-body"]').first();
+  const topBox = await top.boundingBox();
+  const cardBox = await card.boundingBox();
+  const bottomBox = await bottom.boundingBox();
+  if (!topBox || !cardBox || !bottomBox) throw new Error("Expected shell regions");
+  expect(cardBox.y).toBeGreaterThan(topBox.y + topBox.height);
+  expect(cardBox.y + cardBox.height).toBeLessThan(bottomBox.y);
+  expect(await top.evaluate(element => getComputedStyle(element).backgroundColor)).toBe(await bottom.evaluate(element => getComputedStyle(element).backgroundColor));
+  expect(await sidebar.evaluate(element => getComputedStyle(element).borderRightWidth)).toBe("0px");
+  expect(await bottom.evaluate(element => getComputedStyle(element).borderTopWidth)).toBe("0px");
+  expect(await card.evaluate(element => getComputedStyle(element).boxShadow)).not.toBe("none");
+  expect(await shell.evaluate(element => element.scrollTop)).toBe(0);
+
+  await page.locator("#input").scrollIntoViewIfNeeded();
+  expect(await body.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+  expect(await shell.evaluate(element => element.scrollTop)).toBe(0);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+});
+
+test("direct section links keep the shell and card anchored", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The desktop shell shows all frame edges");
+  await page.goto("/#workspace-shell");
+  const shell = page.locator('[data-app-shell]');
+  const top = shell.locator('[data-slot="workspace-top-bar"]').first();
+  const body = shell.locator('[data-slot="workspace-card-body"]').first();
+  await expect.poll(async () => await body.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+  expect(await shell.evaluate(element => element.scrollTop)).toBe(0);
+  expect((await top.boundingBox())?.y).toBe(0);
+});
+
+test("optional shell regions collapse without blank tracks", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The compact preview uses desktop shell tracks");
+  await page.goto("/#workspace-shell");
+  const preview = page.locator('[data-slot="workspace-shell"][aria-label="Workspace composition preview"]');
+  const controls = page.getByRole("group", { name: "Preview regions" });
+  const card = preview.locator('[data-slot="workspace-card"]');
+  const top = preview.locator('[data-slot="workspace-top-bar"]');
+  const bottom = preview.locator('[data-slot="bottom-bar"]');
+  const left = preview.getByRole("complementary", { name: "Preview navigation" });
+  const right = preview.getByRole("complementary", { name: "Preview context" });
+  const names = ["Top", "Navigation", "Context", "Bottom"] as const;
+
+  for (let mask = 0; mask < 16; mask += 1) {
+    for (let index = 0; index < names.length; index += 1) {
+      const shouldShow = Boolean(mask & (1 << index));
+      const control = controls.getByRole("button", { name: names[index], exact: true });
+      if ((await control.getAttribute("aria-pressed")) !== String(shouldShow)) await control.click();
+    }
+    await expect(top).toHaveCount(Number(Boolean(mask & 1)));
+    await expect(left).toHaveCount(Number(Boolean(mask & 2)));
+    await expect(right).toHaveCount(Number(Boolean(mask & 4)));
+    await expect(bottom).toHaveCount(Number(Boolean(mask & 8)));
+    const frame = await preview.boundingBox();
+    const content = await card.boundingBox();
+    if (!frame || !content) throw new Error("Expected card and preview frame");
+    expect(content.x).toBeGreaterThanOrEqual(frame.x + 8);
+    expect(content.x + content.width).toBeLessThanOrEqual(frame.x + frame.width - 8);
+    if (!(mask & 1)) expect(content.y).toBeCloseTo(frame.y + 9, 0);
+    if (!(mask & 8)) expect(content.y + content.height).toBeCloseTo(frame.y + frame.height - 9, 0);
+  }
+});
+
+test("top tabs can be omitted while top controls remain", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The compact preview uses desktop shell tracks");
+  await page.goto("/#workspace-shell");
+  const preview = page.locator('[data-slot="workspace-shell"][aria-label="Workspace composition preview"]');
+  await preview.getByRole("tab", { name: "Details" }).click();
+  await expect(preview.getByText("Each view supplies its own content.")).toBeVisible();
+  await page.getByRole("group", { name: "Preview regions" }).getByRole("button", { name: "Tabs", exact: true }).click();
+  await expect(preview.getByRole("tablist")).toHaveCount(0);
+  await expect(preview.getByText("Workspace controls")).toBeVisible();
+  await expect(preview.locator('[data-slot="workspace-top-bar"]')).toBeVisible();
+});

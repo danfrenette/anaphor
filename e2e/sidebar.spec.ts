@@ -50,9 +50,12 @@ test("right placement keeps the desktop sidebar and centered content coordinated
   if (!during) throw new Error("Expected moving content");
   expect(during.x).toBeGreaterThan(initialContent.x);
   expect(during.x).toBeLessThan(initialContent.x + initialPanel.width / 2);
-  expect(during.width).toBeCloseTo(initialContent.width, 0);
+  expect(await content.evaluate(element => new DOMMatrix(getComputedStyle(element).transform).a)).toBeCloseTo(1, 2);
   await expect.poll(async () => (await inset.boundingBox())?.width).toBeCloseTo(viewport.width, 0);
-  await expect.poll(async () => (await content.boundingBox())?.x).toBeCloseTo((viewport.width - initialContent.width) / 2, 0);
+  await expect.poll(async () => {
+    const frame = await content.boundingBox();
+    return frame ? frame.x - (viewport.width - frame.width) / 2 : null;
+  }).toBeCloseTo(0, 0);
 });
 
 test("right mobile drawer enters from the right and restores focus", async ({ page, isMobile }) => {
@@ -122,9 +125,8 @@ test("desktop pointer toggles move the inset and centered content together and r
   expect(insetDuring.x).toBeLessThan(insetBefore.x);
   expect(during.x).toBeLessThan(before.x);
   expect(during.x).toBeGreaterThan(before.x - insetBefore.x / 2);
-  expect(during.width).toBeCloseTo(before.width, 0);
-  const sidebarEdge = await sidebar(page).evaluate(element => element.getBoundingClientRect().right);
-  expect(Math.abs(sidebarEdge - insetDuring.x)).toBeLessThan(35);
+  expect(await content.evaluate(element => new DOMMatrix(getComputedStyle(element).transform).a)).toBeCloseTo(1, 2);
+  expect(insetDuring.width).toBeGreaterThan(insetBefore.width);
 
   // Wait for the commit and a painted frame; measuring in the click handler
   // itself only sees React's previous layout and misses the original regression.
@@ -291,7 +293,8 @@ test("morph surface stays fixed through sidebar opening and closing on a scrolle
   test.skip(isMobile, "Desktop sidebar layout motion");
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
-  await page.locator("#input").evaluate(element => element.scrollIntoView());
+  await page.locator("#input").evaluate(element => element.scrollIntoView({ block: "start", behavior: "instant" }));
+  await expect.poll(async () => page.locator('[data-slot="workspace-card-body"]').first().evaluate(element => element.scrollTop)).toBeGreaterThan(0);
   const surface = page.locator('[data-slot="morph-surface"]');
   await expect(surface).toBeVisible();
   await expect(page.getByRole("tab", { name: "Open Input controls" })).toBeEnabled();

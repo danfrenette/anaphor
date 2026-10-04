@@ -14,7 +14,8 @@ export { Kbd, KbdGroup } from "./components/kbd";
 export { Menu, MenuRadioGroup, MenuRadioItem, MenuGroup, MenuGroupLabel, MenuItem, MenuPopup, MenuPortal, MenuSeparator, MenuShortcut, MenuTrigger, type MenuGroupLabelProps, type MenuItemProps, type MenuPopupProps } from "./components/menu";
 export { Tabs, TabsList, TabsPanel, TabsPrimitive, TabsTab, type TabsListProps, type TabsPanelProps, type TabsProps, type TabsTabProps } from "./components/tabs";
 export { Sidebar, SidebarClose, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarInsetContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail, SidebarTrigger, useSidebar, type SidebarMenuButtonProps, type SidebarProviderProps, type SidebarTriggerProps } from "./components/sidebar";
-export { BottomBar, BottomBarAction, BottomBarGroup, BottomBarStatus, type BottomBarActionProps } from "./components/bottom-bar";
+export { BottomBar, BottomBarAction, BottomBarGroup, BottomBarStatus, type BottomBarActionProps, type BottomBarProps } from "./components/bottom-bar";
+export { WorkspaceShell, WorkspaceTopBar, WorkspaceCard, WorkspaceCardHeader, WorkspaceCardBody } from "./components/workspace-shell";
 
 export { Text, type TextProps, type TextVariant } from "./components/text";
 export { Prose, type ProseProps } from "./components/prose";

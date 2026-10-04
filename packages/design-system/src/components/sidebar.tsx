@@ -48,6 +48,7 @@ function readSidebarTiming(element: HTMLElement): SidebarLayoutTiming {
 
 type SidebarContextValue = {
   side: "left" | "right" | "both";
+  layout: "standalone" | "workspace";
   layoutTiming: SidebarLayoutTiming;
   desktopOpen: boolean;
   mobileTriggerRef: React.RefObject<HTMLButtonElement | null>;
@@ -68,6 +69,7 @@ type SidebarProviderProps = ComponentProps<"div"> & {
   shortcut: string | null;
   resizable: boolean;
   side?: "left" | "right" | "both";
+  layout?: "standalone" | "workspace";
 } & (
   | { mode: "controlled"; open: boolean; onOpenChange: (open: boolean) => void; defaultOpen?: never }
   | { mode: "uncontrolled"; defaultOpen: boolean; onOpenChange?: (open: boolean) => void; open?: never }
@@ -83,6 +85,7 @@ function SidebarProvider({
   shortcut,
   resizable,
   side = "left",
+  layout = "standalone",
   style,
   ...props
 }: SidebarProviderProps) {
@@ -133,7 +136,7 @@ function SidebarProvider({
         setMobileOpen(nextOpen, animate);
       }}
     >
-      <SidebarContext value={{ layoutTiming, desktopOpen, mobileOpen, mobileTriggerRef, motionEnabled, prepareMotion, rootRef, resizable, side, setMobileOpen, toggleDesktop, toggleMobile }}>
+      <SidebarContext value={{ layout, layoutTiming, desktopOpen, mobileOpen, mobileTriggerRef, motionEnabled, prepareMotion, rootRef, resizable, side, setMobileOpen, toggleDesktop, toggleMobile }}>
         <div
           ref={rootRef}
           data-desktop-open={desktopOpen}
@@ -142,17 +145,18 @@ function SidebarProvider({
           data-slot="sidebar-provider"
           data-resizable={resizable}
           data-side={side}
+          data-layout={layout}
           className={cn(
-            // Layout
-            "group/sidebar grid min-h-svh grid-cols-[var(--anaphor-sidebar-current-width)_minmax(0,1fr)] overflow-x-clip",
-            // Motion and responsive layout
-            "[--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)] max-md:block",
-            // Open state
-            side === "right" && "md:grid-cols-[minmax(0,1fr)_var(--anaphor-sidebar-current-width)]",
-            side === "both" && "md:grid-cols-[var(--anaphor-sidebar-left-current-width)_minmax(0,1fr)] lg:grid-cols-[var(--anaphor-sidebar-left-current-width)_minmax(0,1fr)_var(--anaphor-sidebar-right-current-width)]",
-            desktopOpen
-              ? "[--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]"
-              : side === "right" ? "md:grid-cols-[minmax(0,1fr)_0]" : side === "both" ? "md:grid-cols-[0_minmax(0,1fr)] lg:grid-cols-[0_minmax(0,1fr)_0]" : "md:grid-cols-[0_minmax(0,1fr)]",
+            "group/sidebar [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)]",
+            layout === "workspace"
+              ? "contents"
+              : cn(
+                  "grid min-h-svh grid-cols-[var(--anaphor-sidebar-current-width)_minmax(0,1fr)] overflow-x-clip max-md:block",
+                  side === "right" && "md:grid-cols-[minmax(0,1fr)_var(--anaphor-sidebar-current-width)]",
+                  side === "both" && "md:grid-cols-[var(--anaphor-sidebar-left-current-width)_minmax(0,1fr)] lg:grid-cols-[var(--anaphor-sidebar-left-current-width)_minmax(0,1fr)_var(--anaphor-sidebar-right-current-width)]",
+                  !desktopOpen && (side === "right" ? "md:grid-cols-[minmax(0,1fr)_0]" : side === "both" ? "md:grid-cols-[0_minmax(0,1fr)] lg:grid-cols-[0_minmax(0,1fr)_0]" : "md:grid-cols-[0_minmax(0,1fr)]"),
+                ),
+            desktopOpen && "[--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-duration)]",
             className,
             // Sizing and interaction state
             "[--anaphor-sidebar-current-width:clamp(var(--anaphor-sidebar-min-width),var(--anaphor-sidebar-drag-width,var(--anaphor-sidebar-width)),var(--anaphor-sidebar-max-width))]",
@@ -179,7 +183,7 @@ function useSidebar() {
 type SidebarProps = ComponentProps<"aside"> & { side?: "left" | "right" };
 
 function Sidebar({ className, side: requestedSide, style, ...props }: SidebarProps) {
-  const { desktopOpen, mobileOpen, mobileTriggerRef, motionEnabled, side: placement } = useSidebar();
+  const { desktopOpen, layout, mobileOpen, mobileTriggerRef, motionEnabled, side: placement } = useSidebar();
   const { mobile } = useAdaptiveSurface();
   const side = placement === "both" ? requestedSide ?? "left" : placement;
   if (placement === "both" && side === "right" && mobile) return null;
@@ -215,6 +219,9 @@ function Sidebar({ className, side: requestedSide, style, ...props }: SidebarPro
               side === "right" && mobileOpen && "visible [transform:translate3d(0,0,0)]",
               placement === "both" && side === "left" && "md:col-start-1 md:row-start-1 md:w-[var(--anaphor-sidebar-left-current-width)]",
               placement === "both" && side === "right" && "md:hidden lg:col-start-3 lg:row-start-1 lg:flex lg:w-[var(--anaphor-sidebar-right-current-width)]",
+              layout === "workspace" && "md:relative md:inset-auto md:row-start-2 lg:row-start-2 md:h-full md:border-0 md:bg-transparent",
+              layout === "workspace" && (side === "left" ? "md:col-start-1" : "md:col-start-3"),
+              layout === "workspace" && !desktopOpen && "md:w-0 lg:w-0",
             )}
             style={style}
             {...props}
@@ -227,7 +234,8 @@ function Sidebar({ className, side: requestedSide, style, ...props }: SidebarPro
 }
 
 function SidebarHeader({ className, ...props }: ComponentProps<"header">) {
-  return <header data-slot="sidebar-header" className={cn("flex shrink-0 flex-col gap-1 border-b border-border p-3", className)} {...props} />;
+  const { layout } = useSidebar();
+  return <header data-slot="sidebar-header" className={cn("flex shrink-0 flex-col gap-1 border-b border-border p-3", layout === "workspace" && "md:border-0", className)} {...props} />;
 }
 
 function SidebarContent({ className, ...props }: ComponentProps<"div">) {
@@ -616,8 +624,8 @@ type SidebarInsetProps = Omit<ComponentProps<typeof motion.div>, "layout" | "lay
 
 function SidebarInset({ className, ...props }: SidebarInsetProps) {
   const layoutMotion = useSidebarLayoutMotion();
-  const { side } = useSidebar();
-  return <motion.div data-slot="sidebar-inset" className={cn("min-w-0 bg-background", side === "right" && "md:col-start-1 md:row-start-1", side === "both" && "md:col-start-2 md:row-start-1", className)} {...props} {...layoutMotion} />;
+  const { layout, side } = useSidebar();
+  return <motion.div data-slot="sidebar-inset" className={cn("min-w-0", layout === "workspace" ? "col-start-2 row-start-2 flex min-h-0 bg-transparent" : cn("bg-background", side === "right" && "md:col-start-1 md:row-start-1", side === "both" && "md:col-start-2 md:row-start-1"), className)} {...props} {...layoutMotion} />;
 }
 
 // Register independently aligned content with the inset's layout projection.

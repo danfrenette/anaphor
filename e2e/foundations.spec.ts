@@ -1,4 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
+import { prepareContentSnapshot } from "./content-snapshot";
 import { expect, test } from "@playwright/test";
 
 for (const theme of ["light", "dark"] as const) {
@@ -62,11 +63,12 @@ for (const theme of ["light", "dark"] as const) {
     await specimen.getByText("Theme elevation", { exact: true }).click();
     await page.evaluate(() => document.fonts.ready);
     expect(await page.locator("html").evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
-    await page.addStyleTag({ content: "header, [data-slot='morph-surface'], a[href='#content'] { visibility: hidden !important; }" });
+    const snapshotStyle = await prepareContentSnapshot(page);
     await expect(specimen.locator("details").last()).toHaveScreenshot(`elevation-${theme}.png`);
     for (const [name, file] of [["Type and reading", "type"], ["Space, geometry, elevation", "geometry"], ["Motion", "motion"], ["A bounded experiment", "experiment"]]) {
       await expect(page.getByRole("region", { name, exact: true })).toHaveScreenshot(`${file}-${theme}.png`);
     }
+    await snapshotStyle.evaluate(element => element.parentNode?.removeChild(element));
   });
 }
 
@@ -76,7 +78,7 @@ test("foundation defaults have deterministic theme baselines and tolerate enlarg
   await page.goto("/foundations");
   await page.getByRole("checkbox", { name: "Compare themes" }).check();
   await page.evaluate(() => document.fonts.ready);
-  const snapshotStyle = await page.addStyleTag({ content: "header, [data-slot='morph-surface'], a[href='#content'] { display: none !important; }" });
+  const snapshotStyle = await prepareContentSnapshot(page);
   for (const theme of ["light", "dark"]) {
     const specimen = page.getByTestId(`foundation-${theme}`);
     await expect(specimen).not.toContainText("Measuring…");

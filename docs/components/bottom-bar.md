@@ -1,6 +1,6 @@
 # Bottom bar
 
-`BottomBar` is a full-width shell surface for persistent utilities and concise status. The manual uses it below the sidebar and article. `BottomBarGroup` separates start and end content, `BottomBarAction` supplies an interactive target, and `BottomBarStatus` truncates passive text when space is tight.
+`BottomBar` is a full-width surface for persistent utilities and concise status. `BottomBarGroup` separates start and end content, `BottomBarAction` supplies an interactive target, and `BottomBarStatus` truncates passive text when space is tight.
 
 ```tsx
 <BottomBar aria-label="Workspace utilities">
@@ -18,7 +18,7 @@
 </BottomBar>
 ```
 
-The component handles its surface, grouping, action states, and safe-area padding. The application decides whether the bar is fixed or in normal flow. For a fixed bar, reserve its height under scrollable content and shorten any full-height sidebar by the same amount. The manual defines `--anaphor-bottom-bar-height` on the root, including the bottom safe area, so its portaled morph surface can also sit above the bar.
+The component handles its surface, grouping, action states, and safe-area padding. In a [Workspace shell](workspace-shell.md), use `appearance="integrated"` to join the shared canvas without a top border. The shell places it in the bottom row, so the content card needs no bar-specific padding and the sidebar needs no height subtraction. The manual defines `--anaphor-bottom-bar-height` only while the bar is mounted so its portaled morph surface can sit above it. The default appearance remains available in standalone layouts.
 
 The manual keeps global Search and Theme in the bottom bar. The sidebar carries navigation and identity; the morph surface carries only contextual Controls and Code. Its closed toolbar clears the bar by one gutter, and the final article has enough scroll padding to clear both surfaces.
 

@@ -5,10 +5,9 @@ import { useAnimatedScroll } from "../src/lib/use-animated-scroll";
 type AnimationRequest = { onUpdate: (value: number) => void; onComplete: () => void; stop: ReturnType<typeof vi.fn> };
 const motion = vi.hoisted(() => {
   const requests: AnimationRequest[] = [];
-  return { requests, unsubscribe: vi.fn() };
+  return { requests };
 });
 vi.mock("motion", () => ({
-  scroll: () => motion.unsubscribe,
   animate: (_from: number, _to: number, callbacks: { onUpdate: (value: number) => void; onComplete: () => void }) => {
     const request = { ...callbacks, stop: vi.fn() };
     motion.requests.push(request);
@@ -45,7 +44,7 @@ test("retargeting ignores stale animation updates and completion", () => {
   expect(onScroll).toHaveBeenCalledOnce();
 });
 
-test("manual input stops movement and unmount releases Motion observation", () => {
+test("manual input stops movement and unmount stops the current animation", () => {
   const { result, go, unmount } = setup();
   go();
   act(() => window.dispatchEvent(new Event("wheel")));
@@ -53,7 +52,6 @@ test("manual input stops movement and unmount releases Motion observation", () =
   expect(motion.requests[0]?.stop).toHaveBeenCalledOnce();
   go(); unmount();
   expect(motion.requests[1]?.stop).toHaveBeenCalledOnce();
-  expect(motion.unsubscribe).toHaveBeenCalled();
 });
 
 test("changing reduced motion stops an in-flight request", () => {

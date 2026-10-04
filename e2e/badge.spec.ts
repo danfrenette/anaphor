@@ -1,15 +1,14 @@
 import { selectControl } from "./playground-select";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { prepareContentSnapshot } from "./content-snapshot";
 
 test("badges remain readable in both themes and controls reset", async ({ page }) => {
   await page.goto("/#badge");
   await expect(page.getByRole("heading", { name: "Badge", exact: true })).toBeVisible();
   const result = await new AxeBuilder({ page }).include("#badge").withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
   expect(result.violations).toEqual([]);
-  const screenshotStyle = await page.addStyleTag({
-    content: ".fixed, .fixed *, header.sticky { visibility: hidden !important; } #badge { scroll-margin: 0 !important; }",
-  });
+  const screenshotStyle = await prepareContentSnapshot(page);
   await page.locator("#badge").evaluate(element => element.scrollIntoView({ block: "start", behavior: "instant" }));
   await expect(page.locator("#badge")).toHaveScreenshot("badge.png");
   await screenshotStyle.evaluate(element => element.parentNode?.removeChild(element));

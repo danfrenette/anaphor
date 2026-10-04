@@ -26,6 +26,7 @@
         "danfrenette/anaphor/popover",
         "danfrenette/anaphor/tooltip",
         "danfrenette/anaphor/sidebar",
+        "danfrenette/anaphor/workspace-shell",
         "danfrenette/anaphor/bottom-bar",
         "danfrenette/anaphor/morph-surface",
         "danfrenette/anaphor/theme",
@@ -138,6 +139,18 @@
           "path": "packages/design-system/src/components/sidebar.tsx",
           "type": "registry:ui",
           "target": "@ui/sidebar.tsx"
+        }
+      ]
+    },
+    {
+      "name": "workspace-shell",
+      "type": "registry:ui",
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/workspace-shell.tsx",
+          "type": "registry:ui",
+          "target": "@ui/workspace-shell.tsx"
         }
       ]
     },

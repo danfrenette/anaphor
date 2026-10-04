@@ -5,6 +5,7 @@ package scripts in [README.md](../../README.md#development) own setup and test
 commands. Each recipe names the browser actions and assertions that matter.
 
 - [Sidebar placement and motion](sidebar.md)
+- [Workspace shell composition](workspace-shell.md)
 
 For a browser run, build and start the Reference manual through the Playwright
 configuration in `playwright.config.ts`. Check that the target responds at

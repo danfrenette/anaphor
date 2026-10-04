@@ -90,7 +90,7 @@ test("visible validation feedback transitions without moving the form", async ({
 
 test("search and button compose without overflow and preserve native editing", async ({ page }) => {
   await page.goto("/#input");
-  const form = page.getByRole("search");
+  const form = page.locator('#input').getByRole("search");
   const input = form.getByRole("searchbox", { name: "Search the manual" });
   await input.fill("Button");
   await input.press("ControlOrMeta+A");

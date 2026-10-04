@@ -4,6 +4,11 @@ The sidebar is a composable Anaphor component. The system owns its responsive
 layout, open state, resize rail, keyboard shortcut, and motion; an application
 supplies only its navigation groups and destinations.
 
+Use `layout="workspace"` on `SidebarProvider` inside [Workspace shell](workspace-shell.md).
+That mode makes desktop panels part of the shared canvas, without a vertical
+border or separate background. The default `layout="standalone"` retains the
+original in-flow grid and surface.
+
 ```tsx
 <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false}>
   <Sidebar>
