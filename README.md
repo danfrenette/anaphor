@@ -19,6 +19,28 @@ Reopen your agent session, then ask it to use `$anaphor`. See the
 [agent setup guide](docs/using-anaphor-with-agents.md) for destinations, example
 requests, and the distinction between the skill and component installation.
 
+### Impeccable
+
+Use the Impeccable Codex plugin for interface work in `apps/demo` and
+`packages/design-system`. Both targets inherit the root `PRODUCT.md` and
+`DESIGN.md`; exact runtime values remain owned by the package CSS.
+Code-first is the saved default in the root and each target's
+`.impeccable/config.json`. These configs enable design checks from the
+Impeccable plugin's bundled hook. In the interactive Codex CLI, review and
+trust the plugin hook with `/hooks` if prompted; `/hooks` is not a desktop-app
+slash command.
+
+Name the target in requests, for example:
+
+- `Use Impeccable to audit apps/demo.`
+- `Use Impeccable to polish packages/design-system/src/components/button.tsx.`
+- `Start Impeccable live for apps/demo.`
+
+The manual's live configuration targets `app/layout.tsx`. Live mode uses the
+running Next.js app to preview component-library changes. Local consent,
+detector caches, and live session state are gitignored; shared configuration
+can be committed with the project.
+
 ## Development
 
 ```sh
