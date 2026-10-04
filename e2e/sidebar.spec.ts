@@ -216,6 +216,10 @@ test("morph surface stays fixed through sidebar opening and closing on a scrolle
   await page.locator("#input").evaluate(element => element.scrollIntoView());
   const surface = page.locator('[data-slot="morph-surface"]');
   await expect(surface).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Open Input controls" })).toBeEnabled();
+  const tools = page.getByRole("group", { name: "Manual tools" });
+  await expect.poll(async () => (await surface.boundingBox())!.width)
+    .toBeCloseTo((await tools.boundingBox())!.width + 12, 1);
 
   for (const label of ["Collapse sidebar", "Open sidebar"]) {
     const samples = await surface.evaluate(async (element, name) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import { useEffect, useEffectEvent, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useEffectEvent, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { cn } from "../lib/utils";
 import { Text } from "./text";
 
@@ -30,16 +30,38 @@ function MorphSurface({ open, onOpenChange, onInteractionChange, title, icon, ba
   const root = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const measured = useRef<HTMLDivElement>(null);
+  const persistentBar = useRef<HTMLDivElement>(null);
+  const barContent = useRef<HTMLDivElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
   const [height, setHeight] = useState(0);
+  const [barHeight, setBarHeight] = useState(56);
+  const [barWidth, setBarWidth] = useState<number | null>(null);
   const changeOpen = useEffectEvent(onOpenChange);
   const reportInteraction = useEffectEvent((value: boolean) => onInteractionChange?.(value));
+  const surfaceStyle: CSSProperties & Record<`--${string}`, string> = {
+    "--surface-width": wide ? "560px" : "360px",
+    "--surface-bar-height": `${barHeight}px`,
+    "--surface-bar-width": barWidth === null ? "max-content" : `${barWidth}px`,
+  };
 
   useEffect(() => {
     const element = measured.current;
     if (!element) return;
     const observer = new ResizeObserver(() => setHeight(element.getBoundingClientRect().height));
     observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const element = persistentBar.current;
+    const actions = barContent.current;
+    if (!element) return;
+    const observer = new ResizeObserver(() => {
+      setBarHeight(element.getBoundingClientRect().height);
+      if (actions) setBarWidth(actions.getBoundingClientRect().width + 12);
+    });
+    observer.observe(element);
+    if (actions) observer.observe(actions);
     return () => observer.disconnect();
   }, []);
 
@@ -105,21 +127,22 @@ function MorphSurface({ open, onOpenChange, onInteractionChange, title, icon, ba
   }, [open, focusOnOpen]);
 
   return <div ref={root} data-slot="morph-surface" data-open={open || undefined}
-    className={cn("fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-[var(--anaphor-z-floating)] max-w-[calc(100vw-2rem)] flex flex-col overflow-hidden rounded-[24px] bg-muted text-foreground shadow-card",
+    style={surfaceStyle}
+    className={cn("fixed [--surface-gutter:var(--anaphor-page-gutter)] md:[--surface-gutter:1rem] right-[max(var(--surface-gutter),env(safe-area-inset-right))] bottom-[max(var(--surface-gutter),env(safe-area-inset-bottom))] z-[var(--anaphor-z-floating)] max-w-[calc(100vw-max(var(--surface-gutter),env(safe-area-inset-left))-max(var(--surface-gutter),env(safe-area-inset-right)))] max-h-[min(45dvh,320px)] md:max-h-none flex flex-col overflow-hidden rounded-[24px] bg-muted text-foreground shadow-card",
       instant ? "transition-none" : "transition-[width] ease-[cubic-bezier(0.65,0,0.35,1)]",
       open ? "duration-[270ms]" : "duration-200",
-      open ? wide ? "w-[560px]" : "w-[360px]" : bar ? "w-[160px]" : "w-[304px]")}>
-    <div className={cn("p-1.5", open && "border-t border-border")} onFocusCapture={event => {
+      open ? "w-[calc(100vw-max(var(--surface-gutter),env(safe-area-inset-left))-max(var(--surface-gutter),env(safe-area-inset-right)))] md:w-[var(--surface-width)]" : bar ? "w-[var(--surface-bar-width)]" : "w-[304px]")}>
+    <div ref={persistentBar} className={cn("flex shrink-0 justify-end p-1.5", open && "border-t border-border")} onFocusCapture={event => {
       if (event.target instanceof HTMLButtonElement && event.target.hasAttribute("aria-controls")) returnFocus.current = event.target;
     }}>
-      {bar ? bar({ panelId: id }) : <button type="button" aria-label={`Open ${title}`} aria-expanded={open} aria-controls={id}
+      {bar ? <div ref={barContent} className="w-max">{bar({ panelId: id })}</div> : <button type="button" aria-label={`Open ${title}`} aria-expanded={open} aria-controls={id}
         onClick={() => onOpenChange(!open)} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full text-ui focus-visible:outline-2 focus-visible:outline-ring">{icon}{title}</button>}
     </div>
     <motion.div initial={false} animate={{ height: open ? height : 0 }} transition={{ duration: instant ? 0 : open ? 0.27 : 0.2, ease: [0.65, 0, 0.35, 1] }}
-      className="order-first overflow-hidden" inert={!open} aria-hidden={!open || undefined}>
-      <div ref={measured} className={wide ? "w-[min(560px,calc(100vw-32px))]" : "w-[min(360px,calc(100vw-32px))]"}>
-        <div ref={content} id={id} role="region" aria-label={title} tabIndex={-1} className="outline-none">
-          <div className="flex items-center gap-3 px-5 pt-3 pb-1">
+      className={cn("order-first min-h-0 overflow-hidden", bar && !open && barWidth === null && "w-0")} inert={!open} aria-hidden={!open || undefined}>
+      <div ref={measured} className="w-[calc(100vw-max(var(--surface-gutter),env(safe-area-inset-left))-max(var(--surface-gutter),env(safe-area-inset-right)))] max-h-[max(0px,calc(min(45dvh,320px)-var(--surface-bar-height)))] md:w-[min(var(--surface-width),calc(100vw-2rem))] md:max-h-none">
+        <div ref={content} id={id} role="region" aria-label={title} tabIndex={-1} className="flex max-h-[inherit] min-h-0 flex-col outline-none">
+          <div className="flex shrink-0 items-center gap-3 px-5 pt-3 pb-1">
             <Text as="h2" variant="heading" className="min-w-0 flex-1">{title}</Text>
             <button type="button" aria-label="Close controls" className="flex size-11 shrink-0 items-center justify-center rounded-full bg-background focus-visible:outline-2 focus-visible:outline-ring"
               onClick={() => { onOpenChange(false); returnFocus.current?.focus(); }}>
@@ -127,7 +150,7 @@ function MorphSurface({ open, onOpenChange, onInteractionChange, title, icon, ba
             </button>
           </div>
           <motion.div key={viewKey} initial={false} animate={{ opacity: instant ? 1 : [0, 1], y: instant ? 0 : [4, 0] }} transition={{ duration: instant ? 0 : 0.2 }}
-            className="max-h-[min(55dvh,calc(100dvh-10rem),32rem)] overflow-y-auto overscroll-contain px-5 pt-2 pb-4">
+            className="min-h-0 overflow-y-auto overscroll-contain px-5 pt-2 pb-4 md:max-h-[min(55dvh,calc(100dvh-10rem),32rem)]">
             {children}
           </motion.div>
         </div>

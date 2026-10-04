@@ -39,7 +39,10 @@ test("code fits narrow screens, scrolls long lines, and has accessible copy acti
     await page.locator("#button").evaluate(element => element.scrollIntoView());
     await expect(page.getByRole("heading", { name: "Button code" })).toBeVisible();
     const surface = page.locator('[data-slot="morph-surface"]');
-    await expect(surface).toHaveCSS("width", `${Math.min(560, width - 32)}px`);
+    const gutter = width < 640 ? 24 : width < 768 ? 48 : 16;
+    const box = (await surface.boundingBox())!;
+    expect(box.width).toBe(Math.min(560, width - gutter * 2));
+    expect(box.x + box.width).toBe(width - gutter);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await expect(page.getByRole("button", { name: "Copy Install" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Copy Usage" })).toBeVisible();
@@ -135,7 +138,12 @@ test("one shell grows from the icon bar and keeps its bottom edge anchored", asy
   await page.getByRole("tab", { name: "Code", exact: true }).click();
   await expect(surface).toHaveAttribute("data-continuity-check", "original");
   await page.getByRole("button", { name: "Close controls" }).click();
-  await expect(surface).toHaveCSS("width", "160px");
+  const dock = page.getByRole("group", { name: "Manual tools" });
+  await expect.poll(async () => (await surface.boundingBox())!.width).toBeCloseTo((await dock.boundingBox())!.width + 12, 1);
+  const closed = (await surface.boundingBox())!;
+  expect(closed.y + closed.height).toBeCloseTo(first.bottom, 1);
+  expect(await dock.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+  expect(closed.width).toBeLessThanOrEqual(await page.evaluate(() => innerWidth));
 });
 
 test("theme switching works without View Transitions", async ({ page }) => {
