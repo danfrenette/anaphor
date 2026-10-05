@@ -83,6 +83,7 @@ test("the manual can place navigation and outline around core content", async ({
   await expect(choices.getByRole("button", { name: "Both" })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByRole("complementary", { name: "Component manual navigation" })).toBeVisible();
   await expect(page.getByRole("complementary", { name: "Page outline" })).toBeVisible();
+  await expect(page.getByRole("complementary", { name: "Page outline" }).getByRole("link", { name: "Workspace shell" })).toHaveAttribute("aria-current", "page");
   const panels = page.locator('[data-slot="sidebar"]');
   const inset = page.locator('[data-slot="sidebar-inset"]');
   const left = await panels.nth(0).boundingBox();

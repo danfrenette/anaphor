@@ -115,6 +115,7 @@ test("palette controls opt into motion and reset to instant highlights", async (
   await dialog.getByRole("option", { name: /^Add to favorites/ }).click();
   await expect(page.getByRole("status").filter({ hasText: "Selected: Add to favorites" })).toBeVisible();
   // The nonmodal controls dismiss when the example is opened.
+  await page.locator("#command-palette").evaluate(element => element.scrollIntoView({ block: "start" }));
   const controls = page.getByRole("tab", { name: "Open Command palette controls", exact: true });
   if (await controls.getAttribute("aria-expanded") === "false") await controls.click();
   await page.getByRole("button", { name: "Reset controls", exact: true }).click();

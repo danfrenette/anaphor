@@ -162,11 +162,12 @@ function DemoSidebar({ side, onSearch }: { side?: "left" | "right"; onSearch: ()
 }
 
 function ManualOutline() {
+  const { activeId } = useContentSections();
   return <Sidebar side="right" aria-label="Page outline">
     <SidebarHeader><Text as="span" variant="subheading" className="px-2">On this page</Text></SidebarHeader>
     <SidebarContent><nav aria-label="Page outline"><SidebarMenu>
-      {[["Introduction", "purpose"], ["Principles", "principles"], ["Color", "color"], ["Typography", "typography"], ["Motion", "motion"], ["Sidebar", "sidebar"]].map(([label, id]) => (
-        <SidebarMenuItem key={id}><SidebarMenuButton isActive={false} render={<a href={`/#${id}`} />}>{label}</SidebarMenuButton></SidebarMenuItem>
+      {[["Introduction", "purpose"], ["Principles", "principles"], ["Color", "color"], ["Typography", "typography"], ["Motion", "motion"], ["Sidebar", "sidebar"], ["Workspace shell", "workspace-shell"]].map(([label, id]) => (
+        <SidebarMenuItem key={id}><SidebarMenuButton isActive={activeId === id} render={<a href={`/#${id}`} />}>{label}</SidebarMenuButton></SidebarMenuItem>
       ))}
     </SidebarMenu></nav></SidebarContent>
     <SidebarRail />

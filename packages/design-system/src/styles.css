@@ -8,13 +8,13 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @media (min-width: 48rem) {
-  [data-slot="workspace-shell"]:has([data-slot="sidebar-provider"][data-desktop-open="false"][data-side="left"]) {
+  [data-slot="workspace-shell"]:has(> [data-slot="sidebar-provider"][data-desktop-open="false"][data-side="left"]) {
     grid-template-columns: 0 minmax(0, 1fr) auto;
   }
-  [data-slot="workspace-shell"]:has([data-slot="sidebar-provider"][data-desktop-open="false"][data-side="right"]) {
+  [data-slot="workspace-shell"]:has(> [data-slot="sidebar-provider"][data-desktop-open="false"][data-side="right"]) {
     grid-template-columns: auto minmax(0, 1fr) 0;
   }
-  [data-slot="workspace-shell"]:has([data-slot="sidebar-provider"][data-desktop-open="false"][data-side="both"]) {
+  [data-slot="workspace-shell"]:has(> [data-slot="sidebar-provider"][data-desktop-open="false"][data-side="both"]) {
     grid-template-columns: 0 minmax(0, 1fr) 0;
   }
 }

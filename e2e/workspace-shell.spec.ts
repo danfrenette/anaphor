@@ -60,14 +60,48 @@ test("optional shell regions collapse without blank tracks", async ({ page, isMo
     await expect(left).toHaveCount(Number(Boolean(mask & 2)));
     await expect(right).toHaveCount(Number(Boolean(mask & 4)));
     await expect(bottom).toHaveCount(Number(Boolean(mask & 8)));
+    await expect(preview.getByRole("tab", { name: "Overview" })).toHaveCount(Number(Boolean(mask & 1)));
     const frame = await preview.boundingBox();
     const content = await card.boundingBox();
     if (!frame || !content) throw new Error("Expected card and preview frame");
-    expect(content.x).toBeGreaterThanOrEqual(frame.x + 8);
-    expect(content.x + content.width).toBeLessThanOrEqual(frame.x + frame.width - 8);
+    const leftWidth = (await left.count()) ? (await left.boundingBox())?.width ?? 0 : 0;
+    const rightWidth = (await right.count()) ? (await right.boundingBox())?.width ?? 0 : 0;
+    expect(content.x - frame.x).toBeCloseTo(leftWidth + 9, 0);
+    expect(frame.x + frame.width - content.x - content.width).toBeCloseTo(rightWidth + 9, 0);
     if (!(mask & 1)) expect(content.y).toBeCloseTo(frame.y + 9, 0);
     if (!(mask & 8)) expect(content.y + content.height).toBeCloseTo(frame.y + frame.height - 9, 0);
   }
+});
+
+test("the mobile card becomes a flush page surface", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "Mobile page surface");
+  await page.goto("/#workspace-shell");
+  const shell = page.locator("[data-app-shell]");
+  const card = shell.locator('[data-slot="workspace-card"]').first();
+  const body = shell.locator('[data-slot="workspace-card-body"]').first();
+  const viewport = page.viewportSize();
+  const box = await card.boundingBox();
+  if (!viewport || !box) throw new Error("Expected mobile card");
+  expect(box.x).toBeCloseTo(0, 0);
+  expect(box.width).toBeCloseTo(viewport.width, 0);
+  expect(await card.evaluate(element => getComputedStyle(element).borderRadius)).toBe("0px");
+  expect(await card.evaluate(element => getComputedStyle(element).boxShadow)).toMatch(/^(none|(?:rgba\([^)]*, 0\)(?: [^,]+)?(?:, )?)+)$/);
+  expect(await body.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+  await expect(page.getByRole("contentinfo", { name: "Manual utilities" })).toBeVisible();
+});
+
+test("the two-sided card stays within the viewport at RTL and 200% zoom", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Desktop composition");
+  await page.goto("/#workspace-shell");
+  await page.getByRole("group", { name: "Sidebar placement" }).getByRole("button", { name: "Both" }).click();
+  await page.evaluate(() => { document.documentElement.dir = "rtl"; document.documentElement.style.zoom = "2"; });
+  const card = page.locator('[data-app-shell] [data-slot="workspace-card"]').first();
+  const box = await card.boundingBox();
+  const viewport = page.viewportSize();
+  if (!box || !viewport) throw new Error("Expected zoomed card");
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1);
+  await expect(page.getByRole("contentinfo", { name: "Manual utilities" })).toBeVisible();
 });
 
 test("top tabs can be omitted while top controls remain", async ({ page, isMobile }) => {

@@ -28,6 +28,8 @@ surface and perimeter. Shell chrome has no border seams. The card body scrolls
 without moving the viewport or fixed shell. Top and bottom rows vanish when omitted; side
 columns vanish when omitted. With the top row present but tabs absent, other
 top controls remain visible. Tabs use normal selection and keyboard behavior.
+At mobile width, the card meets both viewport edges and has no radius or visible shadow.
+At 200% zoom and RTL direction, the two-sided card stays within the viewport.
 The manual's breadcrumb stays inside the card header. Sidebar placement and
 modal behavior follow [Sidebar placement and motion](sidebar.md). A missing
 bottom bar reserves no clearance; Search, Theme, and morph controls remain

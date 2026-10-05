@@ -298,6 +298,8 @@ Tab continues into its content, scrolls below the configured header offset in
 100 ms, and updates `useContentSections().activeId`. Reduced motion jumps immediately.
 Wheel, touch, or pointer interaction interrupts the scroll; repeated navigation
 retargets from its current position. Ordinary scrolling also updates active state.
+By default, navigation scrolls the document viewport. Pass `scrollContainerRef`
+to `ContentSections` to navigate inside a scrollable card body, as the manual does.
 
 ```tsx
 import { ContentSections, Section, useContentSections, useShortcut } from "@anaphor/system";
