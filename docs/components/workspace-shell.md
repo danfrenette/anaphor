@@ -50,12 +50,13 @@ The shell fills the viewport by default. For an embedded preview, override its
 position and height, for example `className="relative inset-auto h-80"`. It
 provides three grid columns and three rows; the top and bottom span all columns.
 The left and right columns size to their contents, or collapse when omitted.
-The card has its own gutter, background, radius, and shadow. Sidebars in
+On desktop, the card has its own gutter, background, radius, and shadow. Sidebars in
 `layout="workspace"` and the integrated bottom bar use the shell's canvas
 without outer borders. Standalone sidebar and bottom bar appearances remain
 available for compositions outside this shell.
 
 At medium widths the second sidebar hides. On mobile, the sidebar uses a modal
-drawer while the card and utilities remain reachable. When a bottom bar is
-omitted, no height should be reserved for it. Floating controls that need
+drawer and the card becomes a flush page surface without a desktop gutter,
+rounded perimeter, or shadow. The card body and utilities remain reachable.
+When a bottom bar is omitted, no height should be reserved for it. Floating controls that need
 clearance can use `--anaphor-bottom-bar-height` only while a bar is mounted.

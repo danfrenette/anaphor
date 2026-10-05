@@ -1,5 +1,3 @@
-"use client";
-
 import type { ComponentProps, ReactElement } from "react";
 import { cn } from "../lib/utils";
 
@@ -30,7 +28,7 @@ function WorkspaceCard({ className, ...props }: ComponentProps<"div">): ReactEle
   return (
     <div
       data-slot="workspace-card"
-      className={cn("col-start-2 row-start-2 m-2 flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-card bg-background shadow-card", className)}
+      className={cn("col-start-2 row-start-2 m-2 flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-card bg-background shadow-card max-md:m-0 max-md:rounded-none max-md:shadow-none", className)}
       {...props}
     />
   );
