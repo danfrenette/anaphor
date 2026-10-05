@@ -1,7 +1,8 @@
 # Workspace shell: a continuous canvas around the work
 
-A person using the Reference manual can place navigation on the left, the right,
-or both sides while reading in one content card. The top strip can hold tabs or
+A person using the Reference manual can place its navigation on the left or
+right while reading in one content card. Consumers can also compose distinct
+navigation and context panels on both sides. The top strip can hold tabs or
 other controls, and the bottom bar can hold persistent utilities. A consumer can
 leave out any of those regions without creating a blank track or border seam.
 This makes the shell usable for many application layouts rather than tying tabs
@@ -9,8 +10,10 @@ or sidebars to a particular route.
 
 This walkthrough covers [PR #27](https://github.com/danfrenette/anaphor/pull/27),
 based on [the merged bottom bar PR #26](https://github.com/danfrenette/anaphor/pull/26).
-Code links are pinned to implementation revision
+The original implementation links below are pinned to revision
 [`19e08f9`](https://github.com/danfrenette/anaphor/commit/19e08f92ed1ba9a3e7d89f1a38170b09d3f18e8b).
+The guide-specific duplicate right outline was removed in a later revision of
+the same PR; the reusable two-sided layout remains available.
 The supplied Linear images informed the visual direction; the accepted product
 choices were a full-width top row, generic caller-provided tab content and
 actions, a breadcrumb inside the card, and a continuous canvas behind the side
@@ -31,9 +34,9 @@ container](https://github.com/danfrenette/anaphor/blob/19e08f92ed1ba9a3e7d89f1a3
 Passing its ref to
 [ContentSections](https://github.com/danfrenette/anaphor/blob/19e08f92ed1ba9a3e7d89f1a38170b09d3f18e8b/packages/design-system/src/components/sections.tsx#L40-L70)
 keeps hash navigation, keyboard section movement, and the current-section
-indicator tied to the card instead of the browser window. The right
-[outline reads that current section](https://github.com/danfrenette/anaphor/blob/19e08f92ed1ba9a3e7d89f1a38170b09d3f18e8b/apps/demo/app/demo-shell.tsx#L164-L174)
-and marks its matching link with `aria-current`.
+indicator tied to the card instead of the browser window. The manual uses one
+navigation rail; its section links remain in the left or right rail selected
+by the reader.
 
 ## Optional regions and motion
 
@@ -79,12 +82,12 @@ cover direct links, card scrolling, all 16 top/left/right/bottom combinations,
 top controls without tabs, mobile flush geometry, and a representative RTL
 and 200% zoom pass. [Sidebar browser
 tests](https://github.com/danfrenette/anaphor/blob/19e08f92ed1ba9a3e7d89f1a38170b09d3f18e8b/e2e/sidebar.spec.ts#L61-L102)
-cover placement, drawer focus, and the active outline. The repeatable
+cover placement and drawer focus. The repeatable
 [verification recipe](https://github.com/danfrenette/anaphor/blob/19e08f92ed1ba9a3e7d89f1a38170b09d3f18e8b/docs/verification/workspace-shell.md)
 lists entry points and assertions.
 
 The Standards, Spec, Principles, and execution review passes found no
-remaining material issue after refinements to the mobile card, outline state,
+remaining material issue after refinements to the mobile card, sidebar state,
 and omission assertions. These are local verification receipts summarized in
 the [draft PR](https://github.com/danfrenette/anaphor/pull/27); they do not
 claim a separate CI result. A reviewer should still inspect real consumer

@@ -59,7 +59,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useRef, useState, type ReactNode } from "react";
 
-type SidebarPlacement = "left" | "right" | "both";
+type SidebarPlacement = "left" | "right";
 const SidebarPlacementContext = createContext<{ placement: SidebarPlacement; setPlacement: (placement: SidebarPlacement) => void } | null>(null);
 export function useSidebarPlacement() {
   const context = useContext(SidebarPlacementContext);
@@ -115,14 +115,14 @@ const groups: { label: string; items: NavItem[] }[] = [
   },
 ];
 
-function DemoSidebar({ side, onSearch }: { side?: "left" | "right"; onSearch: () => void }) {
+function DemoSidebar({ onSearch }: { onSearch: () => void }) {
   const pathname = usePathname();
   const { activeId } = useContentSections();
   const { setMobileOpen } = useSidebar();
   const closeMobile = () => setMobileOpen(false, true);
 
   return (
-    <Sidebar side={side} aria-label="Component manual navigation">
+    <Sidebar aria-label="Component manual navigation">
       <SidebarHeader>
         <div className="flex min-h-11 items-center gap-2">
           <Link href="/" onNavigate={closeMobile} aria-label="Anaphor home" className="flex min-w-0 flex-1 items-center gap-3 rounded-md px-2 text-foreground no-underline">
@@ -159,19 +159,6 @@ function DemoSidebar({ side, onSearch }: { side?: "left" | "right"; onSearch: ()
       <SidebarRail />
     </Sidebar>
   );
-}
-
-function ManualOutline() {
-  const { activeId } = useContentSections();
-  return <Sidebar side="right" aria-label="Page outline">
-    <SidebarHeader><Text as="span" variant="subheading" className="px-2">On this page</Text></SidebarHeader>
-    <SidebarContent><nav aria-label="Page outline"><SidebarMenu>
-      {[["Introduction", "purpose"], ["Principles", "principles"], ["Color", "color"], ["Typography", "typography"], ["Motion", "motion"], ["Sidebar", "sidebar"], ["Workspace shell", "workspace-shell"]].map(([label, id]) => (
-        <SidebarMenuItem key={id}><SidebarMenuButton isActive={activeId === id} render={<a href={`/#${id}`} />}>{label}</SidebarMenuButton></SidebarMenuItem>
-      ))}
-    </SidebarMenu></nav></SidebarContent>
-    <SidebarRail />
-  </Sidebar>;
 }
 
 function ManualPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
@@ -225,8 +212,7 @@ export function DemoShell({ children }: { children: ReactNode }) {
             <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false} side={sidebarSide} layout="workspace">
               <a href="#content" className="fixed start-3 top-3 z-[var(--anaphor-z-a11y)] -translate-y-[200%] bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0">Skip to content</a>
               <ManualTopBar placement={sidebarSide} />
-              <DemoSidebar side={sidebarSide === "both" ? "left" : undefined} onSearch={() => setSearchOpen(true)} />
-              {sidebarSide === "both" ? <ManualOutline /> : null}
+              <DemoSidebar onSearch={() => setSearchOpen(true)} />
               <SidebarInset>
                 <WorkspaceCard>
                   <WorkspaceCardHeader><ManualBreadcrumb /></WorkspaceCardHeader>

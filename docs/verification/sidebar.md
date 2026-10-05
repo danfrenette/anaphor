@@ -1,10 +1,10 @@
 # Sidebar placement and motion
 
-**Outcome:** A Reference manual reader selects Left, Right, or Both in the
-Sidebar section. The desktop layout places navigation and, in Both mode, a page
-outline around the core content at wide widths. Open and close movement keeps
-centered content at natural scale. At medium widths Both keeps the left panel;
-on mobile it uses one left modal drawer with focus return.
+**Outcome:** A Reference manual reader places its single navigation rail on
+the Left or Right. Open and close movement keeps centered content at natural
+scale. On mobile it uses one modal drawer with focus return. Consumers can
+compose separate navigation and context rails with `side="both"`; the workspace
+shell preview demonstrates that combination.
 
 **Entry points:** `/#sidebar` in the Reference manual; `SidebarProvider` and
 `Sidebar` from `@anaphor/system`. The top strip opens or closes the sidebar.
@@ -20,9 +20,9 @@ closing, reopening, and reversing quickly. At a narrow viewport, open the
 drawer, dismiss it, and check focus returns to the trigger.
 
 **Assertions:** `aria-pressed` identifies the selected placement. Left and
-Right use their named edge; Both shows navigation left and outline right at
-wide desktop widths, with the inset between them. The outline hides below
-`lg`. Closing gives the inset full viewport width; the content card remains
+Right use their named edge, with one guide navigation rail and no duplicate
+outline. The workspace preview can show distinct navigation and context
+regions around its card. Closing gives the inset full viewport width; the content card remains
 inset within it. Content moves without scaling. Mobile has one modal dialog, scroll lock, Escape/outside
 dismissal, and focus return. Keyboard and reduced-motion toggles settle without
 positional travel. A rail grows toward the page, including the right rail, and
