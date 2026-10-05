@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       foundation_baselines:
-        description: Generate candidate Linux foundation and typography baselines for review
+        description: Generate candidate Linux visual baselines for review
         type: boolean
         default: false
 
@@ -25,9 +25,9 @@ env:
 jobs:
   foundation-baselines:
     if: github.event_name == 'workflow_dispatch' && inputs.foundation_baselines
-    name: Candidate foundation baselines
+    name: Candidate visual baselines
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble
       options: --ipc=host
@@ -39,14 +39,13 @@ jobs:
           node-version: '24'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright test foundations.spec.ts typography-specimen.spec.ts --update-snapshots
-      - run: pnpm exec playwright test foundations.spec.ts typography-specimen.spec.ts
+      - run: pnpm exec playwright test badge.spec.ts foundations.spec.ts manual.spec.ts typography-specimen.spec.ts --grep 'badges remain|remaining foundation defaults|foundation defaults have|default and destructive buttons|cards compose readable|showcase previews reflow|typography defaults' --update-snapshots
+      - run: pnpm exec playwright test badge.spec.ts foundations.spec.ts manual.spec.ts typography-specimen.spec.ts --grep 'badges remain|remaining foundation defaults|foundation defaults have|default and destructive buttons|cards compose readable|showcase previews reflow|typography defaults'
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
         with:
-          name: candidate-foundation-baselines
-          path: |
-            e2e/foundations.spec.ts-snapshots/*-linux.png
-            e2e/typography-specimen.spec.ts-snapshots/*-linux.png
+          name: candidate-visual-baselines
+          path: e2e/*-snapshots/*-linux.png
           retention-days: 14
 
   quality:
