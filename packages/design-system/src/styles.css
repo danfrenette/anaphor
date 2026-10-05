@@ -380,6 +380,7 @@
 }
 
 [data-slot="tabs-indicator"] {
+  padding: inherit;
   clip-path: inset(
     var(--active-tab-top)
     var(--active-tab-right)

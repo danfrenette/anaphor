@@ -115,3 +115,32 @@ test("top tabs can be omitted while top controls remain", async ({ page, isMobil
   await expect(preview.getByText("Workspace controls")).toBeVisible();
   await expect(preview.locator('[data-slot="workspace-top-bar"]')).toBeVisible();
 });
+
+test("active tab labels stay aligned with their interactive tabs", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The desktop preview shows both tab labels together");
+  await page.goto("/#workspace-shell");
+  const preview = page.locator('[data-slot="workspace-shell"][aria-label="Workspace composition preview"]');
+  const alignment = () => preview.evaluate(root => {
+    const tabs = [...root.querySelectorAll('[data-slot="tabs-tab"]')];
+    const copies = [...root.querySelectorAll('[data-slot="tabs-active-copy"]')];
+    return tabs.map((tab, index) => {
+      const original = tab.getBoundingClientRect();
+      const activeCopy = copies[index];
+      if (!activeCopy) throw new Error("Expected a visual copy for each tab");
+      const copy = activeCopy.getBoundingClientRect();
+      return { x: copy.x - original.x, y: copy.y - original.y };
+    });
+  });
+  for (const offset of await alignment()) {
+    expect(Math.abs(offset.x)).toBeLessThan(0.5);
+    expect(Math.abs(offset.y)).toBeLessThan(0.5);
+  }
+  const card = preview.locator('[data-slot="workspace-card"]');
+  const before = await card.boundingBox();
+  await preview.getByRole("tab", { name: "Details" }).click();
+  for (const offset of await alignment()) {
+    expect(Math.abs(offset.x)).toBeLessThan(0.5);
+    expect(Math.abs(offset.y)).toBeLessThan(0.5);
+  }
+  expect(await card.boundingBox()).toEqual(before);
+});
