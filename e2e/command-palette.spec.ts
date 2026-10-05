@@ -29,7 +29,7 @@ test("Command-K opens from an input and Escape restores focus", async ({ page, i
   await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
   const field = page.getByRole("textbox", { name: "Email address", exact: true });
   await field.focus();
-  await field.press("Meta+k");
+  await field.press("ControlOrMeta+k");
   const input = page.getByRole("combobox", { name: "Search the manual" });
   await expect(input).toBeFocused();
   await input.press("ArrowDown");
@@ -39,7 +39,7 @@ test("Command-K opens from an input and Escape restores focus", async ({ page, i
   await input.press("Escape");
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await expect(field).toBeFocused();
-  await field.press("Meta+k");
+  await field.press("ControlOrMeta+k");
   await expect(input).toHaveValue("");
   await input.press("Escape");
   await expect(field).toBeFocused();

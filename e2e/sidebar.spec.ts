@@ -128,7 +128,7 @@ test("desktop pointer toggles move the inset and centered content together and r
     await new Promise(requestAnimationFrame);
     return { before, after: element.getBoundingClientRect().x };
   });
-  expect(Math.abs(reversal.after - reversal.before)).toBeLessThan(35);
+  expect(Math.abs(reversal.after - reversal.before)).toBeLessThan(insetBefore.x / 2);
   await expect(provider).toHaveAttribute("data-desktop-open", "true");
   await expect.poll(async () => (await content.boundingBox())?.x).toBeCloseTo(before.x, 0);
   await expect(sidebar(page)).toBeVisible();

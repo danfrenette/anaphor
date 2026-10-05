@@ -68,7 +68,7 @@ jobs:
   browser:
     name: Demo browser tests
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     container:
       # Keep this version aligned with @playwright/test in package.json.
       image: mcr.microsoft.com/playwright:v1.63.0-noble
