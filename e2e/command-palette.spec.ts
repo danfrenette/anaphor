@@ -26,6 +26,7 @@ test("sidebar search opens, filters, and navigates on desktop and mobile", async
 test("Command-K opens from an input and Escape restores focus", async ({ page, isMobile }) => {
   test.skip(isMobile, "Hardware keyboard shortcut is covered on desktop");
   await page.goto("/#input");
+  await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
   const field = page.getByRole("textbox", { name: "Email address", exact: true });
   await field.focus();
   await field.press("Meta+k");

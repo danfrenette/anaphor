@@ -57,7 +57,7 @@ import {
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { createContext, useContext, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 
 type SidebarPlacement = "left" | "right";
 const SidebarPlacementContext = createContext<{ placement: SidebarPlacement; setPlacement: (placement: SidebarPlacement) => void } | null>(null);
@@ -201,14 +201,18 @@ export function DemoShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const [sidebarSide, setSidebarSide] = useState<SidebarPlacement>("left");
+  const shellRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   useShortcut("Mod+K", () => setSearchOpen(true), { allowInInputs: true });
+  useEffect(() => {
+    shellRef.current?.setAttribute("data-hydrated", "true");
+  }, []);
 
   return (
     <SidebarPlacementContext value={{ placement: sidebarSide, setPlacement: setSidebarSide }}>
       <ContentSections defaultScope enabled={pathname === "/"} scrollContainerRef={scrollContainerRef} className="contents [--anaphor-section-offset:calc(var(--spacing)*8)]">
         <Tabs defaultValue="manual" className="contents">
-          <WorkspaceShell data-app-shell="">
+          <WorkspaceShell ref={shellRef} data-app-shell="">
             <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false} side={sidebarSide} layout="workspace">
               <a href="#content" className="fixed start-3 top-3 z-[var(--anaphor-z-a11y)] -translate-y-[200%] bg-foreground px-3 py-2 text-ui text-background focus-visible:translate-y-0">Skip to content</a>
               <ManualTopBar placement={sidebarSide} />

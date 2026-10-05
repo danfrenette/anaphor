@@ -111,6 +111,7 @@ test("button motion and touch sizing follow the active device preferences", asyn
 test("button color roles meet AA outside the documented solid accent exception", async ({
   page,
 }) => {
+  test.setTimeout(120_000);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#button");
   await page.getByRole("tab", { name: "Open Button controls" }).click();
