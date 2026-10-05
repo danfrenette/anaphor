@@ -314,7 +314,8 @@ import { ContentSections, Section, useContentSections, useShortcut } from "@anap
 and `last()`. Place a consumer-owned contents navigation inside `ContentSections` to
 share that state. `Section` renders a native section (or `as="header"`), requires
 a unique stable ID, and supports normal HTML attributes. Hidden/inert sections
-are skipped. Navigation currently scrolls the document viewport. Set `--anaphor-section-offset` on `ContentSections` to clear a sticky header; it
+are skipped. Navigation scrolls the viewport or the supplied `scrollContainerRef`.
+Set `--anaphor-section-offset` on `ContentSections` to clear a sticky header; it
 defaults to zero. For example, use
 `[--anaphor-section-offset:calc(var(--header-height)+var(--spacing)*8)]`
 and use the same `--header-height` variable for the header. Both native anchor
