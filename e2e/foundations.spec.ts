@@ -58,9 +58,11 @@ for (const theme of ["light", "dark"] as const) {
     await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/foundations");
+    await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
     const specimen = page.getByTestId(`foundation-${theme}`);
     await expect(specimen).toBeVisible();
     await specimen.getByText("Theme elevation", { exact: true }).click();
+    await expect(specimen.locator("details").last()).toHaveAttribute("open", "");
     await page.evaluate(() => document.fonts.ready);
     expect(await page.locator("html").evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
     const snapshotStyle = await prepareContentSnapshot(page);

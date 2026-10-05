@@ -231,6 +231,10 @@ test("mobile is modal, animates pointer entry, and restores focus", async ({ pag
   test.skip(!isMobile, "Mobile drawer behavior is breakpoint-specific");
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
+  await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
+  await page.locator('[data-slot="sidebar-provider"]').evaluate(element => {
+    if (element instanceof HTMLElement) element.style.setProperty("--anaphor-sidebar-duration", "1200ms");
+  });
 
   const trigger = page.getByRole("button", { name: "Open sidebar", exact: true });
   await trigger.click();

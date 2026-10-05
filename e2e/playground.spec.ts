@@ -224,6 +224,7 @@ test("theme reveal spreads its travel across 350ms instead of rushing the first 
 test("keyboard theme activation is immediate", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light", reducedMotion: "no-preference" });
   await page.goto("/");
+  await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
   const theme = page.getByRole("button", { name: "Switch to dark theme" });
   await theme.focus();
   await theme.press("Enter");
