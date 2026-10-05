@@ -3,7 +3,7 @@
 import { Section, Text } from "@anaphor/system";
 import { useSidebarPlacement } from "./demo-shell";
 
-const placements = ["left", "right", "both"] as const;
+const placements = ["left", "right"] as const;
 
 export function SidebarDemo() {
   const { placement, setPlacement } = useSidebarPlacement();
@@ -11,9 +11,9 @@ export function SidebarDemo() {
     <p className="text-label tracking-[0.08em] uppercase">02.00 / Layout</p>
     <Text as="h2" variant="heading" className="mt-3">Sidebar</Text>
     <Text as="p" variant="description" className="mt-3">
-      Place navigation on either edge, or pair it with a page outline. The reading area keeps its measure as the panels open and close.
+      Place the manual navigation on either edge. The reading area keeps its measure as the panel opens and closes.
     </Text>
-    <p className="mt-3 text-small text-muted-foreground lg:hidden">On smaller screens, Both keeps one left panel; the right outline appears when there is room.</p>
+    <p className="mt-3 text-small text-muted-foreground">The workspace shell preview above shows how a separate context panel can sit on the other side when an app needs one.</p>
 
     <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
       <div role="group" aria-label="Sidebar placement" className="inline-flex rounded-xl bg-muted p-1 shadow-[var(--anaphor-shadow-card)]">
@@ -44,7 +44,7 @@ export function SidebarDemo() {
       </div>
     </div>
     <p role="status" className="mt-3 text-small text-muted-foreground">
-      {placement === "both" ? "Navigation on the left; page outline on the right." : `Navigation on the ${placement}.`}
+      {`Navigation on the ${placement}.`}
     </p>
   </Section>;
 }

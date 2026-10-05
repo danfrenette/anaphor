@@ -90,17 +90,19 @@ test("the mobile card becomes a flush page surface", async ({ page, isMobile }) 
   await expect(page.getByRole("contentinfo", { name: "Manual utilities" })).toBeVisible();
 });
 
-test("the two-sided card stays within the viewport at RTL and 200% zoom", async ({ page, isMobile }) => {
+test("the two-sided preview card stays within its shell at RTL and 200% zoom", async ({ page, isMobile }) => {
   test.skip(isMobile, "Desktop composition");
   await page.goto("/#workspace-shell");
-  await page.getByRole("group", { name: "Sidebar placement" }).getByRole("button", { name: "Both" }).click();
   await page.evaluate(() => { document.documentElement.dir = "rtl"; document.documentElement.style.zoom = "2"; });
-  const card = page.locator('[data-app-shell] [data-slot="workspace-card"]').first();
+  const preview = page.locator('[data-slot="workspace-shell"][aria-label="Workspace composition preview"]');
+  await expect(preview.getByRole("complementary", { name: "Preview navigation" })).toBeVisible();
+  await expect(preview.getByRole("complementary", { name: "Preview context" })).toBeVisible();
+  const card = preview.locator('[data-slot="workspace-card"]');
   const box = await card.boundingBox();
-  const viewport = page.viewportSize();
-  if (!box || !viewport) throw new Error("Expected zoomed card");
-  expect(box.x).toBeGreaterThanOrEqual(0);
-  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1);
+  const frame = await preview.boundingBox();
+  if (!box || !frame) throw new Error("Expected zoomed preview card");
+  expect(box.x).toBeGreaterThanOrEqual(frame.x);
+  expect(box.x + box.width).toBeLessThanOrEqual(frame.x + frame.width + 1);
   await expect(page.getByRole("contentinfo", { name: "Manual utilities" })).toBeVisible();
 });
 

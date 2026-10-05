@@ -75,29 +75,17 @@ test("right mobile drawer enters from the right and restores focus", async ({ pa
   await expect(trigger).toBeFocused();
 });
 
-test("the manual can place navigation and outline around core content", async ({ page, isMobile }) => {
-  test.skip(isMobile, "Desktop has room for both panels");
+test("the manual uses one navigation rail on either edge", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Desktop rail placement");
   await page.goto("/#sidebar");
   const choices = page.getByRole("group", { name: "Sidebar placement" });
-  await choices.getByRole("button", { name: "Both" }).click();
-  await expect(choices.getByRole("button", { name: "Both" })).toHaveAttribute("aria-pressed", "true");
+  await expect(choices.getByRole("button")).toHaveCount(2);
   await expect(page.getByRole("complementary", { name: "Component manual navigation" })).toBeVisible();
-  await expect(page.getByRole("complementary", { name: "Page outline" })).toBeVisible();
-  await expect(page.getByRole("complementary", { name: "Page outline" }).getByRole("link", { name: "Workspace shell" })).toHaveAttribute("aria-current", "page");
-  const panels = page.locator('[data-slot="sidebar"]');
-  const inset = page.locator('[data-slot="sidebar-inset"]');
-  const left = await panels.nth(0).boundingBox();
-  const right = await panels.nth(1).boundingBox();
-  const center = await inset.boundingBox();
-  if (!left || !right || !center) throw new Error("Expected both sidebars and core content");
-  expect(center.x).toBeCloseTo(left.width, 0);
-  expect(center.x + center.width).toBeCloseTo(right.x, 0);
-  await page.setViewportSize({ width: 900, height: 720 });
-  await expect(page.getByRole("complementary", { name: "Page outline" })).toBeHidden();
-  await page.setViewportSize({ width: 1280, height: 720 });
-  await expect(page.getByRole("complementary", { name: "Page outline" })).toBeVisible();
-  await page.getByRole("button", { name: "Collapse sidebar", exact: true }).click();
-  await expect.poll(async () => (await inset.boundingBox())?.width).toBeCloseTo(page.viewportSize()!.width, 0);
+  await expect(page.getByRole("complementary", { name: "Page outline" })).toHaveCount(0);
+  await expect(page.locator('[data-app-shell] [data-slot="sidebar"]')).toHaveCount(1);
+  await choices.getByRole("button", { name: "Right" }).click();
+  await expect(page.locator('[data-app-shell] [data-slot="sidebar-provider"]')).toHaveAttribute("data-side", "right");
+  await expect(page.locator('[data-app-shell] [data-slot="sidebar"]')).toHaveCount(1);
 });
 
 test("desktop pointer toggles move the inset and centered content together and reverse in place", async ({ page, isMobile }) => {

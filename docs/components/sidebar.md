@@ -52,7 +52,7 @@ item without replacing selection.
 ```tsx
 <SidebarProvider mode="uncontrolled" defaultOpen={true} shortcut="b" resizable={false} side="both">
   <Sidebar side="left" aria-label="Navigation">{/* navigation */}</Sidebar>
-  <Sidebar side="right" aria-label="Page outline">{/* outline */}</Sidebar>
+  <Sidebar side="right" aria-label="Context tools">{/* task context */}</Sidebar>
   <SidebarInset>{/* page content */}</SidebarInset>
 </SidebarProvider>
 ```
