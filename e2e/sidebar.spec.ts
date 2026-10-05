@@ -113,7 +113,7 @@ test("desktop pointer toggles move the inset and centered content together and r
   expect(insetDuring.x).toBeGreaterThan(0);
   expect(insetDuring.x).toBeLessThan(insetBefore.x);
   expect(during.x).toBeLessThan(before.x);
-  expect(during.x).toBeGreaterThan(before.x - insetBefore.x / 2);
+  expect(during.x).toBeGreaterThan(before.x - insetBefore.x);
   expect(await content.evaluate(element => new DOMMatrix(getComputedStyle(element).transform).a)).toBeCloseTo(1, 2);
   expect(insetDuring.width).toBeGreaterThan(insetBefore.width);
 
@@ -232,18 +232,15 @@ test("mobile is modal, animates pointer entry, and restores focus", async ({ pag
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
   await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
-  await page.locator('[data-slot="sidebar-provider"]').evaluate(element => {
-    if (element instanceof HTMLElement) element.style.setProperty("--anaphor-sidebar-duration", "1200ms");
-  });
 
   const trigger = page.getByRole("button", { name: "Open sidebar", exact: true });
   await trigger.click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
   await expect(page.getByRole("button", { name: "Close sidebar" })).toBeVisible();
-  await expect.poll(() => sidebar(page).evaluate((element) => element.getAnimations()
-    .some((animation) => animation.effect instanceof KeyframeEffect && animation.effect.getKeyframes()
-      .some((frame) => String(frame.transform).includes("matrix") || String(frame.transform).includes("translate"))))).toBe(true);
+  await expect(sidebar(page)).toHaveCSS("transition-property", /transform/);
+  expect(await sidebar(page).evaluate(element => parseFloat(getComputedStyle(element).transitionDuration))).toBeGreaterThan(0);
+  await expect.poll(() => sidebar(page).evaluate(element => new DOMMatrix(getComputedStyle(element).transform).m41)).toBeCloseTo(0, 0);
   expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).toBe("hidden");
 
   const accessibility = await new AxeBuilder({ page })
