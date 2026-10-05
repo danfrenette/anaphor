@@ -131,7 +131,7 @@ function TabsList({
           data-slot="tabs-indicator"
           renderBeforeHydration
           className={cn(
-            "pointer-events-none absolute inset-0 z-[1] flex items-center p-1",
+            "pointer-events-none absolute inset-0 z-[1] flex items-center",
             "group-data-[orientation=vertical]/tabs:flex-col",
             variant === "default" && "bg-background",
           )}
