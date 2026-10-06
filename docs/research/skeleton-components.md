@@ -4,11 +4,13 @@ Checked 2026-10-03. Research for an Anaphor component built from shadcn/ui's Bas
 
 ## Findings
 
-Prioritize **one coordinated shimmer across a layout**, **placeholders that inherit real geometry**, and **a deliberate handoff to loaded content**. This is a curated design judgment, not an exhaustive ranking of X.
+Prioritize **one coordinated shimmer across a layout**, **placeholders that inherit real geometry**, and **a deliberate handoff to loaded content**.
+
+The posts below are qualitative examples of interesting implementations, selected for their distinct techniques and relevance to Anaphor. Likes, reposts, replies, and views were not systematically collected or compared. Inclusion and ordering do not indicate popularity or community preference.
 
 Technical claims below rely on primary documentation. Original X text and inspected layouts are distinguished from unverified media and performance.
 
-## Shortlist
+## Qualitative examples
 
 | Reference | Distinctive idea | X evidence | Best use for Anaphor |
 | --- | --- | --- | --- |
