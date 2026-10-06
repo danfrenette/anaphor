@@ -60,6 +60,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { AnaphorMark } from "../components/anaphor-mark";
 
 type SidebarPlacement = "left" | "right";
 const SidebarPlacementContext = createContext<{ placement: SidebarPlacement; setPlacement: (placement: SidebarPlacement) => void } | null>(null);
@@ -130,25 +131,22 @@ function DemoSidebar({ onSearch }: { onSearch: () => void }) {
 
   return (
     <Sidebar aria-label="Component manual navigation">
-      <SidebarHeader>
+      <SidebarHeader className="border-0 px-3 pb-5 pt-3">
         <div className="flex min-h-11 items-center gap-2">
-          <Link href="/" onNavigate={closeMobile} aria-label="Anaphor home" className="flex min-w-0 flex-1 items-center gap-3 rounded-md px-2 text-foreground no-underline">
-            <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-sm bg-foreground font-heading text-heading text-background">a</span>
-            <span className="min-w-0">
-              <Text as="span" variant="subheading" className="block">Anaphor</Text>
-              <Text as="span" variant="caption" className="block">Reference manual</Text>
-            </span>
+          <Link href="/" onNavigate={closeMobile} aria-label="Anaphor home" className="flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-md px-2 text-foreground no-underline transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-ring">
+            <AnaphorMark className="size-9 shrink-0" />
+            <Text as="span" variant="ui" className="min-w-0 font-semibold tracking-tight">Anaphor</Text>
           </Link>
           <button type="button" aria-label="Search manual" onClick={() => { closeMobile(); onSearch(); }} className="grid size-10 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-background focus-visible:outline-2 focus-visible:outline-ring md:hidden"><MagnifyingGlass aria-hidden="true" className="size-4" /></button>
           <SidebarClose className="shrink-0" />
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="pt-0">
         <nav aria-label="Manual index">
           {groups.map((group) => (
-            <SidebarGroup key={group.label}>
-              <SidebarGroupLabel><span>{group.label}</span><span className="font-mono">{String(group.items.length).padStart(2, "0")}</span></SidebarGroupLabel>
+            <SidebarGroup key={group.label} className="mt-6">
+              <SidebarGroupLabel className="mb-1 font-medium">{group.label}</SidebarGroupLabel>
               <SidebarMenu>
                 {group.items.map(({ id, label, href, icon: ItemIcon }) => (
                   <SidebarMenuItem key={id}>
@@ -226,7 +224,7 @@ export function DemoShell({ children }: { children: ReactNode }) {
               <ManualTopBar placement={sidebarSide} />
               <DemoSidebar onSearch={() => setSearchOpen(true)} />
               <SidebarInset>
-                <WorkspaceCard>
+                <WorkspaceCard className="[--anaphor-shadow-card:var(--manual-panel-shadow)]">
                   <WorkspaceCardHeader><ManualBreadcrumb /></WorkspaceCardHeader>
                   <WorkspaceCardBody ref={scrollContainerRef}>
                     <TabsPanel value="manual" className="block">{children}</TabsPanel>
