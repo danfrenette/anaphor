@@ -1,4 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="8" fill="#f05a1f" />
-  <path d="M9 16h14M16 9v14" stroke="#1c1c1a" stroke-width="2" />
+<svg width="176" height="176" viewBox="-88 -88 176 176" xmlns="http://www.w3.org/2000/svg">
+  <style>svg { color: #191919; } @media (prefers-color-scheme: dark) { svg { color: #f5f5f5; } }</style>
+  <circle cx="0" cy="0" r="77.6" fill="none" stroke="currentColor" stroke-width="12" />
+  <g transform="translate(0 4.5) scale(0.92)">
+    <path transform="rotate(0)" d="M0 -5A34.641 34.641 0 0 1 0 -65A34.641 34.641 0 0 1 0 -5Z" fill="currentColor" />
+    <path transform="rotate(120)" d="M0 -5A34.641 34.641 0 0 1 0 -65A34.641 34.641 0 0 1 0 -5Z" fill="currentColor" />
+    <path transform="rotate(240)" d="M0 -5A34.641 34.641 0 0 1 0 -65A34.641 34.641 0 0 1 0 -5Z" fill="currentColor" />
+  </g>
 </svg>
