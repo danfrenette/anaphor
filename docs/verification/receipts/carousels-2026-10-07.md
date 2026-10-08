@@ -5,6 +5,10 @@ The isolated carousel PR is based on remote `main` at
 demo because that implementation was absent from the base. Existing local emblem
 and sidebar changes are excluded.
 
+Tested executable source revision: `c07118f7e4e45c84a503b41bb18ef051d0b59973`.
+The following receipt-only commit changes documentation without changing that
+verified application or test content.
+
 ## Executed results
 
 The production demo built successfully and its focused suite passed **20 tests,
