@@ -77,9 +77,10 @@ outside the focused local recipe.
 
 The [PR deployment](https://vercel.com/danrfrenettes-projects/anaphor/FJXFivf35rCnixKyhFwfCVEAFLPV)
 and [merge deployment](https://vercel.com/danrfrenettes-projects/anaphor/534ZnvCBP5ZJctKEK4fonzYy18si)
-both report failed Vercel status. On October 8, the public
+were blocked before building because the `anaphor` Vercel account is not a
+member of the project team. Vercel's membership and redeploy flow quotes an
+additional $20 per month; no access or billing change had been submitted when
+this walkthrough was written. On October 8, the public
 [`/carousels` route](https://anaphor.vercel.app/carousels) returned 404 while the
-older manual remained available. Deployment logs were inaccessible to this
-reviewer, so the cause is undetermined. A reviewer with Vercel project access
-should inspect those build logs and confirm a successful deployment before
-calling the feature live.
+older manual remained available. [ANAPHOR-225](https://linear.app/anaphor/issue/ANAPHOR-225/restore-vercel-deployment-for-merged-carousel)
+tracks resolution and production verification.
