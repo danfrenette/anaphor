@@ -1,0 +1,8 @@
+.carousel-promoted-deck-card {
+  transition: transform 220ms var(--anaphor-ease-out), opacity 220ms var(--anaphor-ease-out);
+  transform-origin: 50% 80%;
+}
+.carousel-promoted-deck-card[data-instant] { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .carousel-promoted-deck-card { transition: none; }
+}

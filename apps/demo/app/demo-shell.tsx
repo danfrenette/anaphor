@@ -106,6 +106,10 @@ const groups: { label: string; items: NavItem[] }[] = [
     ],
   },
   {
+    label: "Carousels",
+    items: [{ id: "carousels", label: "Rail and Deck", href: "/carousels", icon: Rectangle }],
+  },
+  {
     label: "Studies",
     items: [
       { id: "studies", label: "Overview", href: "/studies", icon: Palette },
