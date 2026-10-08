@@ -27,7 +27,7 @@ export function Rail() {
   }}>
     <div ref={viewport} className="cursor-grab overflow-hidden p-2 pb-6 active:cursor-grabbing">
       <div className="flex touch-pan-y gap-6 select-none">
-        {stories.map((story, index) => <div key={story.title} className="min-w-0 flex-[0_0_min(82%,21rem)]" onFocusCapture={() => move(index, true)}><StoryCard index={index} /></div>)}
+        {stories.map((story, index) => <div key={story.title} role="group" aria-roledescription="slide" aria-label={story.title} className="min-w-0 flex-[0_0_min(82%,21rem)]" onFocusCapture={() => move(index, true)}><StoryCard index={index} /></div>)}
       </div>
     </div>
     <Pager index={navigation.index} move={move} showCounter={false} canPrevious={navigation.previous} canNext={navigation.next} />
