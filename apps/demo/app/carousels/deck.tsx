@@ -15,7 +15,7 @@ export function Deck() {
         const offset = index - browse.index;
         const active = offset === 0;
         const visible = Math.abs(offset) <= 2;
-        return <div key={story.title} data-instant={browse.instant || undefined} className="carousel-promoted-deck-card relative col-start-1 row-start-1 mx-auto w-[min(70%,23rem)]" style={{ transform: `translateX(${offset * 22}%) translateY(${Math.abs(offset) * 10}px) rotate(${offset * 2}deg) scale(${1 - Math.min(Math.abs(offset), 3) * .055})`, opacity: visible ? 1 : 0, zIndex: stories.length - Math.abs(offset), visibility: visible ? "visible" : "hidden" }}>
+        return <div key={story.title} role="group" aria-roledescription="slide" aria-label={story.title} data-instant={browse.instant || undefined} className="carousel-promoted-deck-card relative col-start-1 row-start-1 mx-auto w-[min(70%,23rem)]" style={{ transform: `translateX(${offset * 22}%) translateY(${Math.abs(offset) * 10}px) rotate(${offset * 2}deg) scale(${1 - Math.min(Math.abs(offset), 3) * .055})`, opacity: visible ? 1 : 0, zIndex: stories.length - Math.abs(offset), visibility: visible ? "visible" : "hidden" }}>
           <div inert={!active} aria-hidden={!active || undefined} className="h-full"><StoryCard index={index} /></div>
           {!active && visible && <button type="button" aria-label={`Show ${story.title}`} className="absolute inset-0 cursor-pointer rounded-card focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4" onClick={event => {
             root.current?.focus({ preventScroll: true });

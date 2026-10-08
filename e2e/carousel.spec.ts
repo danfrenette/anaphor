@@ -193,6 +193,7 @@ for (const style of ["rail", "deck"] as const) {
       await expect(page.getByRole("button", { name: `Switch to ${theme === "light" ? "dark" : "light"} theme` })).toBeVisible();
       const carousel = page.getByRole("region", { name: style === "rail" ? railName : deckName });
       await expect(carousel).toBeVisible();
+      await expect(carousel.getByRole("group", { name: "Give movement a job", exact: true })).toHaveAttribute("aria-roledescription", "slide");
       await page.evaluate(() => document.fonts.ready);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       const bounds = await carousel.boundingBox();
