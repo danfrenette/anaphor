@@ -77,10 +77,15 @@ outside the focused local recipe.
 
 The [PR deployment](https://vercel.com/danrfrenettes-projects/anaphor/FJXFivf35rCnixKyhFwfCVEAFLPV)
 and [merge deployment](https://vercel.com/danrfrenettes-projects/anaphor/534ZnvCBP5ZJctKEK4fonzYy18si)
-were blocked before building because the `anaphor` Vercel account is not a
-member of the project team. Vercel's membership and redeploy flow quotes an
-additional $20 per month; no access or billing change had been submitted when
-this walkthrough was written. On October 8, the public
-[`/carousels` route](https://anaphor.vercel.app/carousels) returned 404 while the
-older manual remained available. [ANAPHOR-225](https://linear.app/anaphor/issue/ANAPHOR-225/restore-vercel-deployment-for-merged-carousel)
-tracks resolution and production verification.
+were blocked before building because the commit author's GitHub login was
+associated with a Vercel account outside the project team. Vercel offered a
+paid team seat, but none was added. The GitHub login was instead associated
+with the existing `danfrenette` Vercel team member. Vercel then confirmed the
+merge deployment could be redeployed.
+
+The [production redeployment](https://vercel.com/danrfrenettes-projects/anaphor/77mmsZZWpbWb1zU4m5NeqLLWnQfN)
+of main commit `5464b82` completed successfully on October 8. The public
+[`/carousels` route](https://anaphor.vercel.app/carousels) now loads. In Zen,
+Rail's Next control became reversible, and Deck advanced from `01 / 05` to
+`02 / 05`. [ANAPHOR-225](https://linear.app/anaphor/issue/ANAPHOR-225/restore-vercel-deployment-for-merged-carousel)
+records the deployment recovery.
