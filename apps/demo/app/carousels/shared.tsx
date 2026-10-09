@@ -25,10 +25,14 @@ export function StoryCard({ index, detailed = false }: { index: number; detailed
 export function useBrowse() {
   const [index,setIndex]=useState(0);
   const [instant,setInstant]=useState(false);
-  const start=useRef<{x:number;y:number}|null>(null);
+  const start=useRef<{x:number;y:number;pointerId:number}|null>(null);
   const move=(next:number,keyboard=false)=>{setInstant(keyboard);setIndex(Math.max(0,Math.min(stories.length-1,next)));};
   const onKeyDown=(e:KeyboardEvent)=>{if(e.altKey||e.metaKey||e.ctrlKey)return;let next=index;if(e.key==="ArrowRight")next++;else if(e.key==="ArrowLeft")next--;else if(e.key==="Home")next=0;else if(e.key==="End")next=stories.length-1;else return;e.preventDefault();e.stopPropagation();move(next,true);};
-  return {index,instant,move,onKeyDown,swipe:{onPointerDown:(e:React.PointerEvent)=>{if(e.pointerType!=="mouse")start.current={x:e.clientX,y:e.clientY};},onPointerUp:(e:React.PointerEvent)=>{if(!start.current)return;const dx=e.clientX-start.current.x,dy=e.clientY-start.current.y;start.current=null;if(Math.abs(dx)>48&&Math.abs(dx)>Math.abs(dy)*1.5)move(index+(dx<0?1:-1));},onPointerCancel:()=>{start.current=null;}}};
+  return {index,instant,move,onKeyDown,swipe:{
+    onPointerDown:(e:React.PointerEvent)=>{if(e.pointerType!=="mouse"&&e.isPrimary&&!start.current)start.current={x:e.clientX,y:e.clientY,pointerId:e.pointerId};},
+    onPointerUp:(e:React.PointerEvent)=>{if(start.current?.pointerId!==e.pointerId)return;const dx=e.clientX-start.current.x,dy=e.clientY-start.current.y;start.current=null;if(Math.abs(dx)>48&&Math.abs(dx)>Math.abs(dy)*1.5)move(index+(dx<0?1:-1));},
+    onPointerCancel:(e:React.PointerEvent)=>{if(start.current?.pointerId===e.pointerId)start.current=null;},
+  }};
 }
 export function Pager({index,move,showCounter=true,canPrevious=index>0,canNext=index<stories.length-1}:{index:number;move:(next:number,keyboard?:boolean)=>void;showCounter?:boolean;canPrevious?:boolean;canNext?:boolean}) {
   const props={nativeButton:true,type:"button",focusableWhenDisabled:true,iconOnly:true,loading:false,shape:"square",size:"md",variant:"outline",tone:"neutral"} as const;

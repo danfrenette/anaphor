@@ -1,5 +1,5 @@
 .carousel-promoted-deck-card {
-  transition: transform 220ms var(--anaphor-ease-out), opacity 220ms var(--anaphor-ease-out);
+  transition: transform 260ms var(--anaphor-ease-out), opacity 260ms var(--anaphor-ease-out), visibility 260ms linear;
   transform-origin: 50% 80%;
 }
 .carousel-promoted-deck-card[data-instant] { transition: none; }
