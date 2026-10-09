@@ -99,6 +99,37 @@ test("Rail mouse dragging moves the collection without opening a dragged link", 
   await expect(page).toHaveURL(/\/studies\/field-notes#useful-motion$/);
 });
 
+test("Rail accepts horizontal wheel gestures while vertical wheel input scrolls the page", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Wheel and trackpad input is a desktop path");
+  await page.goto("/carousels?tab=rail");
+  const rail = page.getByRole("region", { name: railName });
+  const first = rail.getByRole("heading", { name: "Give movement a job" });
+  const viewport = rail.locator(":scope > div").first();
+  await viewport.scrollIntoViewIfNeeded();
+  const bounds = await viewport.boundingBox();
+  const before = await first.boundingBox();
+  if (!bounds || !before) throw new Error("Expected the Rail viewport");
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+  const pageScroll = page.locator('[data-slot="workspace-card-body"]');
+  const pageY = await pageScroll.evaluate(element => element.scrollTop);
+  await page.mouse.wheel(0, 240);
+  await expect.poll(() => pageScroll.evaluate(element => element.scrollTop)).toBeGreaterThan(pageY);
+  await expect.poll(async () => (await first.boundingBox())?.x ?? before.x).toBeCloseTo(before.x, 0);
+  await page.mouse.wheel(320, 0);
+  await expect.poll(async () => (await first.boundingBox())?.x ?? before.x).toBeLessThan(before.x - 80);
+  await expect(rail.getByRole("button", { name: "Previous card" })).toBeEnabled();
+  await rail.focus();
+  await rail.press("Home");
+  const reset = await first.boundingBox();
+  const visibleViewport = await viewport.boundingBox();
+  if (!reset || !visibleViewport) throw new Error("Expected the reset Rail viewport");
+  await page.mouse.move(visibleViewport.x + visibleViewport.width / 2, visibleViewport.y + visibleViewport.height / 2);
+  await page.keyboard.down("Shift");
+  await page.mouse.wheel(0, 320);
+  await page.keyboard.up("Shift");
+  await expect.poll(async () => (await first.boundingBox())?.x ?? reset.x).toBeLessThan(reset.x - 80);
+});
+
 test("trusted touch swipes navigate Rail and Deck at 320px", async ({ browser, browserName, baseURL }) => {
   test.skip(browserName !== "chromium", "Playwright's trusted touch movement requires Chromium CDP");
   const context = await browser.newContext({ baseURL, viewport: { width: 320, height: 800 }, hasTouch: true, isMobile: true });
