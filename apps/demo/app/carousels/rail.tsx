@@ -1,17 +1,25 @@
 "use client";
 import { useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
 import { Pager, StoryCard, stories } from "./shared";
 
 export function Rail() {
-  const [viewport, api] = useEmblaCarousel({ align: "start", dragFree: true, loop: false, watchFocus: false });
+  const [viewport, api] = useEmblaCarousel({ align: "start", dragFree: true, loop: false, watchFocus: false }, [WheelGesturesPlugin({ forceWheelAxis: "x" })]);
   const [navigation, setNavigation] = useState({ index: 0, previous: false, next: true });
   useEffect(() => {
     if (!api) return;
     const sync = () => setNavigation({ index: api.selectedScrollSnap(), previous: api.canScrollPrev(), next: api.canScrollNext() });
     sync();
     api.on("select", sync).on("reInit", sync).on("settle", sync);
-    return () => { api.off("select", sync).off("reInit", sync).off("settle", sync); };
+    const node = api.rootNode();
+    const shiftWheel = (event: WheelEvent) => {
+      if (!event.shiftKey || event.ctrlKey || event.metaKey || event.altKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      event.preventDefault();
+      node.dispatchEvent(new WheelEvent("wheel", { deltaX: event.deltaY, deltaMode: event.deltaMode, clientX: event.clientX, clientY: event.clientY, bubbles: true, cancelable: true }));
+    };
+    node.addEventListener("wheel", shiftWheel, { passive: false });
+    return () => { api.off("select", sync).off("reInit", sync).off("settle", sync); node.removeEventListener("wheel", shiftWheel); };
   }, [api]);
   const move = (next: number, keyboard = false) => api?.scrollTo(next, keyboard || matchMedia("(prefers-reduced-motion: reduce)").matches);
 
