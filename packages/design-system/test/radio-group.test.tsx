@@ -143,3 +143,35 @@ test("custom rendering preserves consumer refs, handlers, and disabled focus beh
   await user.tab();
   expect(screen.getByRole("button", { name: "Continue" })).toHaveFocus();
 });
+
+test("a group with a disabled selected choice keeps an enabled keyboard entry point", async () => {
+  const user = userEvent.setup();
+  render(<><RadioGroup aria-label="Frequency" defaultValue="daily">
+    <label><Radio value="daily" disabled />Daily digest</label>
+    <label><Radio value="weekly" />Weekly digest</label>
+  </RadioGroup><button>Continue</button></>);
+  await user.tab();
+  expect(screen.getByRole("radio", { name: "Weekly digest" })).toHaveFocus();
+  await user.keyboard(" ");
+  expect(screen.getByRole("radio", { name: "Weekly digest" })).toBeChecked();
+  await user.tab();
+  expect(screen.getByRole("button", { name: "Continue" })).toHaveFocus();
+});
+
+test("disabling the selected choice moves keyboard entry to an enabled sibling", async () => {
+  const user = userEvent.setup();
+  function Preferences() {
+    const [disabled, setDisabled] = useState(false);
+    return <><button onClick={() => setDisabled(current => !current)}>Toggle daily availability</button>
+      <RadioGroup aria-label="Frequency" defaultValue="daily">
+        <label><Radio value="daily" disabled={disabled} />Daily digest</label>
+        <label><Radio value="weekly" />Weekly digest</label>
+      </RadioGroup><button>Continue</button></>;
+  }
+  render(<Preferences />);
+  await user.click(screen.getByRole("button", { name: "Toggle daily availability" }));
+  await user.tab();
+  expect(screen.getByRole("radio", { name: "Weekly digest" })).toHaveFocus();
+  await user.keyboard(" ");
+  expect(screen.getByRole("radio", { name: "Weekly digest" })).toBeChecked();
+});

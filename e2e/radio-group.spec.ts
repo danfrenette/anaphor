@@ -26,6 +26,8 @@ test("required choices show feedback on submit and clear it on selection", async
   await form.getByRole("button", { name: "Save required preference" }).click();
   await expect(form.getByText("Choose a notification frequency.")).toBeVisible();
   await expect(group).toHaveAttribute("aria-invalid", "true");
+  await expect(group.getByRole("radio", { name: "Every update" })).toBeFocused();
+  await expect(group.getByRole("radio", { name: "Every update" })).toHaveAccessibleDescription("Choose a notification frequency.");
   await group.getByText("Weekly digest", { exact: true }).click();
   await expect(form.getByText("Choose a notification frequency.")).toBeHidden();
   await form.getByRole("button", { name: "Save required preference" }).click();
@@ -46,7 +48,7 @@ test("disabled choices are skipped and read-only selection stays fixed", async (
   await expect(daily).toBeChecked();
   await expect(fixed.getByRole("radio", { name: "Weekly digest" })).not.toBeChecked();
   await fixed.getByRole("radio", { name: "Weekly digest" }).press("Tab");
-  await expect(page.getByRole("radiogroup", { name: "Unavailable frequency" }).getByRole("radio").first()).not.toBeFocused();
+  await expect(available.getByRole("radio", { name: "Weekly digest" })).toBeFocused();
 });
 
 test("controls reset the controlled frequency and state", async ({ page }) => {
@@ -87,10 +89,13 @@ test("radio appearance, focus, themes and narrow reflow remain accessible", asyn
     await every.press("ArrowDown");
   }
   await expect(daily).toHaveCSS("transition-duration", "0s");
-  await page.locator("html").evaluate(element => { element.style.zoom = "2"; });
+  // Browser zoom reduces the CSS viewport; avoid CSS zoom, which leaves
+  // responsive media queries at the unzoomed size (and would test 160px mobile).
+  const viewport = page.viewportSize()!;
+  await page.setViewportSize({ width: 640, height: 800 });
   expect(await page.locator("#radio-group").evaluate(element => element.scrollWidth > element.clientWidth)).toBe(false);
   await expect(form.getByRole("button", { name: "Save preference" })).toBeVisible();
-  await page.locator("html").evaluate(element => { element.style.zoom = "1"; });
+  await page.setViewportSize(viewport);
   await page.emulateMedia({ forcedColors: "active" });
   await daily.press("ArrowUp");
   const every = form.getByRole("radio", { name: "Every update" });

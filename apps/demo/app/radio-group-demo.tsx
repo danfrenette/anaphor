@@ -1,4 +1,4 @@
-import { Field, FieldItem, FieldLabel, Radio, RadioGroup, Section, Text } from "@anaphor/system";
+import { Field, FieldDescription, FieldItem, FieldLabel, Radio, RadioGroup, Section, Text } from "@anaphor/system";
 import { RadioGroupPlayground, RadioRequiredExample } from "./radio-group-playground";
 
 export function RadioGroupDemo() {
@@ -23,7 +23,7 @@ export function RadioGroupDemo() {
       </div>
     </div>
     <Text as="h3" variant="heading" className="mt-8">Unavailable option</Text>
-    <Field orientation="vertical" className="mt-4"><FieldLabel>Digest availability</FieldLabel><RadioGroup defaultValue="daily">
+    <Field orientation="vertical" className="mt-4"><FieldLabel>Digest availability</FieldLabel><FieldDescription>The saved choice is unavailable. Choose a digest instead.</FieldDescription><RadioGroup defaultValue="every">
       <FieldItem orientation="horizontal"><Radio value="daily" /><FieldLabel>Daily digest</FieldLabel></FieldItem>
       <FieldItem orientation="horizontal" disabled><Radio value="every" /><FieldLabel>Every update</FieldLabel></FieldItem>
       <FieldItem orientation="horizontal"><Radio value="weekly" /><FieldLabel>Weekly digest</FieldLabel></FieldItem>
