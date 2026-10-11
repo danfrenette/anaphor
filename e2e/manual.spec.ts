@@ -192,12 +192,13 @@ test("loading preserves action colors while explicit disabled stays neutral", as
 });
 
 test("default and destructive buttons retain their approved visual appearance", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "light" });
   await page.goto("/");
   const defaultButton = page.getByRole("group", { name: "Default button example" }).getByRole("button");
   const destructiveButton = page.getByRole("button", { name: "Delete item", exact: true });
   for (const theme of ["light", "dark"] as const) {
-    await page.locator("html").evaluate((element, dark) => element.classList.toggle("dark", dark), theme === "dark");
+    if (theme === "dark") await page.getByRole("button", { name: "Switch to dark theme", exact: true }).click();
+    await expect(page.locator("html")).toHaveCSS("color-scheme", theme);
     await expect(defaultButton).toHaveScreenshot(`button-default-${theme}.png`);
     await expect(destructiveButton).toHaveScreenshot(`button-destructive-${theme}.png`);
   }
