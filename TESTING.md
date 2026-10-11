@@ -158,3 +158,18 @@ repository. Its Next.js root is `apps/demo`, Node is 24.x, and access to files
 outside the root is enabled for the shared workspace package. `main` deploys to
 https://anaphor.vercel.app; branches receive preview deployments linked from PRs.
 Keep validation in GitHub Actions; the Vercel Git integration handles deployments.
+
+
+## Pull request review
+
+Before reporting a PR ready, fetch its actual target branch and record the base,
+head, and merge-base revisions. Review the full three-dot diff and commit list
+against that target, including inherited commits; a feature's starting checkout
+is not a substitute for the PR baseline. Remove unrelated changes from the final
+diff or document an explicitly accepted dependency.
+
+Check mergeability against the fetched target. After integration or conflict
+resolution, run the release gate on the resulting code and repeat the affected
+review. Recheck the remote PR head before reporting; additional changes require
+review of that delta. The receipt records commands, outcomes, and the revisions
+they establish, with unexecuted checks called out explicitly.
