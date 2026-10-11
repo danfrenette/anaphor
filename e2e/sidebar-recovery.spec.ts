@@ -78,12 +78,15 @@ for (const side of ["left", "right"] as const) {
   for (const { direction, zoom } of [{ direction: "ltr", zoom: 1 }, { direction: "rtl", zoom: 1 }, { direction: "ltr", zoom: 2 }] as const) {
     test(`${side} rail and card keep their gutter on every frame, including reversals (${direction}, ${zoom}x)`, async ({ page, isMobile }) => {
       test.skip(isMobile, "Desktop workspace geometry");
+      await page.clock.install();
       await page.emulateMedia({ reducedMotion: "no-preference" });
       await page.goto("/#sidebar");
       await page.evaluate(({ direction, zoom }) => { document.documentElement.dir = direction; document.documentElement.style.zoom = String(zoom); }, { direction, zoom });
       await page.getByRole("group", { name: "Sidebar placement" }).getByRole("button", { name: new RegExp(`^${side}$`, "i") }).click();
       await page.evaluate(() => document.fonts.ready);
-      const result = await panel(page).evaluate(async (rail, physicalLeft) => {
+      await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+      await page.clock.runFor(16);
+      const sampling = panel(page).evaluate(async (rail, physicalLeft) => {
         const shell = rail.closest('[data-slot="workspace-shell"]')!;
         const provider = rail.closest<HTMLElement>('[data-slot="sidebar-provider"]')!;
         // Inspect many intermediate frames, rather than only settled endpoints.
@@ -122,6 +125,9 @@ for (const side of ["left", "right"] as const) {
         }
         return { initial, samples, expectedTextWidth, largestReversalStep };
       }, (side === "left") !== (direction === "rtl"));
+      await expect(page.locator('[data-app-shell] [data-slot="sidebar-provider"]')).toHaveAttribute("data-desktop-open", "false");
+      await page.clock.runFor(2000);
+      const result = await sampling;
       expect(result.samples.length).toBeGreaterThan(50);
       expect(result.largestReversalStep).toBeLessThan(40 * zoom);
       expect(new Set(result.samples.map(sample => Math.round(sample.cardWidth))).size).toBeGreaterThan(10);
@@ -168,23 +174,18 @@ for (const interrupt of ["reduced motion", "viewport resize", "text direction"] 
 
 test("the left exit keeps text painted after a delayed commit at normal timing", async ({ page, isMobile }) => {
   test.skip(isMobile, "Desktop workspace exit");
+  await page.clock.install();
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#sidebar");
   await page.evaluate(() => document.fonts.ready);
-  const samples = await panel(page).evaluate(async rail => {
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+  await page.clock.runFor(16);
+  const sampling = panel(page).evaluate(async rail => {
     const provider = rail.closest<HTMLElement>('[data-slot="sidebar-provider"]')!;
     const destination = rail.querySelector('[data-slot="sidebar-menu-button"]')!;
     const text = document.createRange();
     text.selectNodeContents(destination);
     const initial = rail.getBoundingClientRect();
-    const delayedCommit = new MutationObserver(() => {
-      if (provider.dataset.desktopOpen !== "false") return;
-      delayedCommit.disconnect();
-      // Model work after the coordinator's layout effect and before paint.
-      const until = performance.now() + 80;
-      while (performance.now() < until) { /* Busy commit */ }
-    });
-    delayedCommit.observe(provider, { attributes: true, attributeFilter: ["data-desktop-open"] });
     const frames: Array<{ distance: number; textRight: number; visibility: string }> = [];
     const trigger = provider.querySelector<HTMLButtonElement>('[data-slot="workspace-top-bar"] [data-slot="sidebar-trigger"]')!;
     trigger.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
@@ -192,9 +193,13 @@ test("the left exit keeps text painted after a delayed commit at normal timing",
       await new Promise(requestAnimationFrame);
       frames.push({ distance: initial.x - rail.getBoundingClientRect().x, textRight: text.getBoundingClientRect().right, visibility: getComputedStyle(destination).visibility });
     }
-    delayedCommit.disconnect();
     return { frames, width: initial.width };
   });
+  await expect(page.locator('[data-app-shell] [data-slot="sidebar-provider"]')).toHaveAttribute("data-desktop-open", "false");
+  // One delayed RAF models an 80ms blocked commit; later frames advance at 16ms.
+  await page.clock.fastForward(80);
+  await page.clock.runFor(480);
+  const samples = await sampling;
   const firstMoving = samples.frames.find(frame => frame.distance > 1);
   expect(firstMoving).toBeDefined();
   expect(firstMoving!.distance).toBeLessThan(samples.width / 2);
