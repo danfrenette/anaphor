@@ -3,6 +3,13 @@
 import { CardCopyButton } from "@anaphor/system";
 
 const examples: Record<string, { title: string; item: string; code: string }> = {
+  "radio-group": { title: "Radio group", item: "radio-group", code: `import { RadioGroup, Radio } from "@/components/ui/radio-group";
+
+<RadioGroup name="frequency" defaultValue="daily" aria-label="Notification frequency">
+  <label><Radio value="every" />Every update</label>
+  <label><Radio value="daily" />Daily digest</label>
+  <label><Radio value="weekly" />Weekly digest</label>
+</RadioGroup>` },
   "file-upload": { title: "File upload", item: "file-upload", code: `import { FileUpload, FileUploadDropzone, FileUploadTrigger, FileUploadProgress } from "@/components/ui/file-upload";
 import { ButtonLabel } from "@/components/ui/button";
 

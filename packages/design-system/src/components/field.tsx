@@ -8,6 +8,9 @@ import { CheckboxGroup } from "./checkbox";
 type FieldProps = ComponentProps<typeof FieldPrimitive.Root> & {
   orientation: "vertical" | "horizontal";
 };
+type FieldItemProps = ComponentProps<typeof FieldPrimitive.Item> & {
+  orientation: "vertical" | "horizontal";
+};
 
 function Field({ className, orientation, ...props }: FieldProps) {
   return <FieldPrimitive.Root {...props} data-slot="field" data-orientation={orientation} className={(state) => cn(
@@ -21,6 +24,16 @@ function Field({ className, orientation, ...props }: FieldProps) {
 
 function FieldContent({ className, ...props }: ComponentProps<"div">) {
   return <div {...props} data-slot="field-content" className={cn("flex min-w-0 flex-1 flex-col gap-1", className)} />;
+}
+
+function FieldItem({ className, orientation, ...props }: FieldItemProps) {
+  return <FieldPrimitive.Item {...props} data-slot="field-item" data-orientation={orientation} className={(state) => cn(
+    "group/field min-w-0 gap-2",
+    orientation === "horizontal"
+      ? "flex items-center gap-3 has-[>[data-slot=field-content]]:items-start has-[>[data-slot=field-content]]:[&>[data-slot=radio]]:mt-3"
+      : "grid",
+    typeof className === "function" ? className(state) : className,
+  )} />;
 }
 
 function FieldGroup({ className, ...props }: ComponentProps<"div">) {
@@ -48,4 +61,4 @@ function FieldError({ className, ...props }: ComponentProps<typeof FieldPrimitiv
   return <FieldPrimitive.Error data-slot="field-error" className={(state) => cn("text-ui text-danger-foreground", typeof className === "function" ? className(state) : className)} {...props} />;
 }
 
-export { Field, FieldContent, FieldGroup, FieldLabel, FieldDescription, FieldError, type FieldProps };
+export { Field, FieldItem, FieldContent, FieldGroup, FieldLabel, FieldDescription, FieldError, type FieldProps, type FieldItemProps };

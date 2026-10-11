@@ -37,3 +37,8 @@ consumers own the completed action.
 
 `configuration.types.tsx` checks valid combinations and compile-time rejection
 of invalid ones. `text.types.tsx` checks native element refs and events.
+
+`FieldItem` requires `orientation`, matching Field's layout contract. RadioGroup
+and Radio preserve Base UI's generic value/state and rendering props; the
+indicator uses Checkbox's fixed geometry rather than adding visual configuration.
+`radio-group.types.tsx` checks value inference and public refs/composition.
