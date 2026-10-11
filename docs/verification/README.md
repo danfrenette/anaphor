@@ -13,3 +13,5 @@ configuration in `playwright.config.ts`. Check that the target responds at
 `http://127.0.0.1:3105/` before driving it. Keep Playwright traces and test
 output under `test-results/` until the result is recorded, then stop only the
 server started by that run.
+
+- [Collapsible sections and source outline](collapsible.md)

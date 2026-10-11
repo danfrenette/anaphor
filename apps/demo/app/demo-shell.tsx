@@ -1,5 +1,7 @@
 "use client";
 
+import { SourceOutline } from "./source-outline";
+
 import {
   CommandPalette,
   Kbd,
@@ -87,6 +89,7 @@ const groups: { label: string; items: NavItem[] }[] = [
     items: [
       { id: "workspace-shell", label: "Workspace shell", href: "/#workspace-shell", icon: Rectangle },
       { id: "button", label: "Button", href: "/#button", icon: Rectangle },
+      { id: "collapsible", label: "Collapsible", href: "/#collapsible", icon: ListDashes },
       { id: "sidebar", label: "Sidebar", href: "/#sidebar", icon: ListDashes },
       { id: "card", label: "Card", href: "/#card", icon: SlidersHorizontal },
       { id: "badge", label: "Badge", href: "/#badge", icon: Tag },
@@ -158,6 +161,7 @@ function DemoSidebar({ onSearch }: { onSearch: () => void }) {
             </SidebarGroup>
           ))}
         </nav>
+        <SourceOutline />
       </SidebarContent>
 
       <SidebarRail />

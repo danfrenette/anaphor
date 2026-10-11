@@ -17,6 +17,7 @@
         "danfrenette/anaphor/card",
         "danfrenette/anaphor/card-copy-button",
         "danfrenette/anaphor/checkbox",
+        "danfrenette/anaphor/collapsible",
         "danfrenette/anaphor/command-palette",
         "danfrenette/anaphor/field",
         "danfrenette/anaphor/field-feedback",
@@ -505,6 +506,26 @@
         {
           "path": "packages/design-system/src/components/skeleton.tsx",
           "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "collapsible",
+      "type": "registry:ui",
+      "title": "Collapsible",
+      "description": "Composable disclosure with controlled state and focus return.",
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "registryDependencies": [
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/utils"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/collapsible.tsx",
+          "type": "registry:ui",
+          "target": "@ui/collapsible.tsx"
         }
       ]
     }

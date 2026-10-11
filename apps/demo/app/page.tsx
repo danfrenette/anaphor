@@ -1,3 +1,4 @@
+import { CollapsibleDemo } from "./collapsible-demo";
 import { SidebarInsetContent, Section, Prose, Text, Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
 import { ButtonDemo } from "./button-demo";
 import { BadgeDemo } from "./badge-demo";
@@ -262,6 +263,7 @@ export default function HomePage() {
           <KbdDemo />
           <TabsDemo />
           <CommandPaletteDemo />
+          <CollapsibleDemo />
           <BottomBarDemo />
         </article>
       </SidebarInsetContent>
