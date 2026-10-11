@@ -29,6 +29,11 @@ test("magnetic mode holds detents until the release threshold", async ({ page })
   const amount = page.getByRole("slider", { name: "Amount", exact: true });
   const dragTo = async (points: number[], expected: number[]) => {
     await amount.scrollIntoViewIfNeeded();
+    // The closing controls surface can briefly cover the slider on mobile.
+    await expect.poll(() => amount.evaluate(element => {
+      const rect = element.getBoundingClientRect();
+      return element === document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    })).toBe(true);
     const rect = (await amount.boundingBox())!;
     await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2);
     await page.mouse.down();
