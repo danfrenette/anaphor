@@ -153,6 +153,7 @@ export {
   AdaptiveSurfaceProvider,
   AdaptiveSurfaceTrigger,
   useAdaptiveSurface,
+  useMediaQuery,
   type AdaptiveSurfaceProviderProps,
   type AdaptiveSurfaceTriggerProps,
 };

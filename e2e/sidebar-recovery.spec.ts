@@ -73,3 +73,94 @@ test("the sidebar example operates the rail or drawer and returns mobile focus",
     await expect(panel(page)).toBeVisible();
   }
 });
+
+for (const side of ["left", "right"] as const) {
+  for (const { direction, zoom } of [{ direction: "ltr", zoom: 1 }, { direction: "rtl", zoom: 1 }, { direction: "ltr", zoom: 2 }] as const) {
+    test(`${side} rail and card keep their gutter on every frame, including reversals (${direction}, ${zoom}x)`, async ({ page, isMobile }) => {
+      test.skip(isMobile, "Desktop workspace geometry");
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      await page.goto("/#sidebar");
+      await page.evaluate(({ direction, zoom }) => { document.documentElement.dir = direction; document.documentElement.style.zoom = String(zoom); }, { direction, zoom });
+      await page.getByRole("group", { name: "Sidebar placement" }).getByRole("button", { name: new RegExp(`^${side}$`, "i") }).click();
+      await page.evaluate(() => document.fonts.ready);
+      const result = await panel(page).evaluate(async (rail, physicalLeft) => {
+        const shell = rail.closest('[data-slot="workspace-shell"]')!;
+        const provider = rail.closest<HTMLElement>('[data-slot="sidebar-provider"]')!;
+        // Inspect many intermediate frames, rather than only settled endpoints.
+        provider.style.setProperty("--anaphor-sidebar-duration", "600ms");
+        provider.style.setProperty("--anaphor-sidebar-exit-duration", "600ms");
+        const card = shell.querySelector('[data-slot="workspace-card"]')!;
+        const label = card.querySelector("#sidebar h2")!;
+        const text = document.createRange();
+        text.selectNodeContents(label);
+        const expectedTextWidth = text.getBoundingClientRect().width;
+        const read = () => {
+          const p = rail.getBoundingClientRect();
+          const c = card.getBoundingClientRect();
+          return { gap: physicalLeft ? c.left - p.right : p.left - c.right,
+            outerEdge: physicalLeft ? c.right : c.left,
+            cardWidth: c.width, textWidth: text.getBoundingClientRect().width,
+            closed: provider.dataset.desktopOpen === "false", inert: rail instanceof HTMLElement && rail.inert };
+        };
+        const initial = read();
+        const samples = [initial];
+        const toggle = () => {
+          const trigger = [...shell.querySelectorAll<HTMLButtonElement>('[data-slot="workspace-top-bar"] [data-slot="sidebar-trigger"]')].find(button => getComputedStyle(button).display !== "none");
+          if (!trigger) throw new Error("Missing desktop trigger");
+          trigger.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+        };
+        let largestReversalStep = 0;
+        for (const frames of [8, 8, 45, 45]) {
+          const before = read();
+          toggle();
+          for (let frame = 0; frame < frames; frame += 1) {
+            await new Promise(requestAnimationFrame);
+            const sample = read();
+            if (frame === 0) largestReversalStep = Math.max(largestReversalStep, Math.abs(sample.cardWidth - before.cardWidth));
+            samples.push(sample);
+          }
+        }
+        return { initial, samples, expectedTextWidth, largestReversalStep };
+      }, (side === "left") !== (direction === "rtl"));
+      expect(result.samples.length).toBeGreaterThan(50);
+      expect(result.largestReversalStep).toBeLessThan(40 * zoom);
+      expect(new Set(result.samples.map(sample => Math.round(sample.cardWidth))).size).toBeGreaterThan(10);
+      for (const sample of result.samples) {
+        expect(sample.gap).toBeCloseTo(result.initial.gap, 0);
+        expect(sample.outerEdge).toBeCloseTo(result.initial.outerEdge, 0);
+        expect(sample.textWidth).toBeCloseTo(result.expectedTextWidth, 0);
+        expect(sample.inert).toBe(sample.closed);
+      }
+      await expect(panel(page)).toBeVisible();
+    });
+  }
+}
+
+for (const interrupt of ["reduced motion", "viewport resize", "text direction"] as const) {
+  test(`workspace motion settles when interrupted by ${interrupt}`, async ({ page, isMobile }) => {
+    test.skip(isMobile, "Desktop workspace transition");
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto("/#sidebar");
+    const card = page.locator('[data-app-shell] [data-slot="workspace-card"]').first();
+    await page.locator('[data-app-shell] [data-slot="sidebar-provider"]').evaluate(element => {
+      if (!(element instanceof HTMLElement)) throw new Error("Expected provider");
+      element.style.setProperty("--anaphor-sidebar-exit-duration", "1000ms");
+    });
+    await top(page).getByRole("button", { name: "Collapse sidebar", exact: true }).click();
+    await expect.poll(() => card.evaluate(element => element.style.transform)).not.toBe("");
+    if (interrupt === "reduced motion") await page.emulateMedia({ reducedMotion: "reduce" });
+    else if (interrupt === "viewport resize") await page.setViewportSize({ width: 320, height: 800 });
+    else await page.evaluate(() => { document.documentElement.dir = "rtl"; });
+    await expect(card).toHaveCSS("transform", "none");
+    await expect.poll(() => card.evaluate(element => element.getBoundingClientRect().width)).toBe(interrupt === "viewport resize" ? 320 : 1264);
+    await expect.poll(() => card.evaluate(element => [...element.children].every(child => !(child instanceof HTMLElement) || child.style.transform === ""))).toBe(true);
+    if (interrupt === "viewport resize") {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await top(page).getByRole("button", { name: "Open sidebar", exact: true }).click();
+      await expect(panel(page)).toBeVisible();
+      await expect(card).toHaveCSS("transform", "none");
+    } else {
+      await expect(panel(page)).toBeHidden();
+    }
+  });
+}

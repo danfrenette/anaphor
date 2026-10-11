@@ -140,6 +140,11 @@
           "path": "packages/design-system/src/components/sidebar.tsx",
           "type": "registry:ui",
           "target": "@ui/sidebar.tsx"
+        },
+        {
+          "path": "packages/design-system/src/lib/workspace-sidebar-motion.ts",
+          "type": "registry:lib",
+          "target": "@lib/workspace-sidebar-motion.ts"
         }
       ]
     },

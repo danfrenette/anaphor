@@ -88,12 +88,12 @@ test("the manual uses one navigation rail on either edge", async ({ page, isMobi
   await expect(page.locator('[data-app-shell] [data-slot="sidebar"]')).toHaveCount(1);
 });
 
-test("desktop pointer toggles move the inset and centered content together and reverse in place", async ({ page, isMobile }) => {
+test("desktop pointer toggles move the surface and centered content together and reverse in place", async ({ page, isMobile }) => {
   test.skip(isMobile, "Desktop disclosure is hidden at the mobile breakpoint");
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
   const provider = page.locator('[data-slot="sidebar-provider"]');
-  const inset = page.locator('[data-slot="sidebar-inset"]');
+  const surface = page.locator('[data-app-shell] [data-slot="workspace-card"]').first();
   const content = page.locator('[data-slot="workspace-card-body"] [data-slot="sidebar-inset-content"]');
   // Slow both participants so the test can inspect a committed intermediate frame.
   await provider.evaluate(element => {
@@ -104,24 +104,24 @@ test("desktop pointer toggles move the inset and centered content together and r
   const tab = page.getByRole("tab", { name: "Reference manual", exact: true });
   const tabBefore = await tab.boundingBox();
   const before = await content.boundingBox();
-  const insetBefore = await inset.boundingBox();
-  if (!before || !insetBefore || !tabBefore) throw new Error("Expected desktop content");
+  const surfaceBefore = await surface.boundingBox();
+  if (!before || !surfaceBefore || !tabBefore) throw new Error("Expected desktop content");
   await page.getByRole("button", { name: "Collapse sidebar", exact: true }).click();
   await expect(provider).toHaveAttribute("data-desktop-open", "false");
   await page.waitForTimeout(100);
   const during = await content.boundingBox();
-  const insetDuring = await inset.boundingBox();
-  if (!during || !insetDuring) throw new Error("Expected content during close");
-  expect(insetDuring.x).toBeGreaterThan(0);
-  expect(insetDuring.x).toBeLessThan(insetBefore.x);
+  const surfaceDuring = await surface.boundingBox();
+  if (!during || !surfaceDuring) throw new Error("Expected content during close");
+  expect(surfaceDuring.x).toBeGreaterThan(8);
+  expect(surfaceDuring.x).toBeLessThan(surfaceBefore.x);
   expect(during.x).toBeLessThan(before.x);
-  expect(during.x).toBeGreaterThan(before.x - insetBefore.x);
+  expect(during.x).toBeGreaterThan(before.x - surfaceBefore.x);
   expect(await content.evaluate(element => new DOMMatrix(getComputedStyle(element).transform).a)).toBeCloseTo(1, 2);
-  expect(insetDuring.width).toBeGreaterThan(insetBefore.width);
+  expect(surfaceDuring.width).toBeGreaterThan(surfaceBefore.width);
   const tabDuring = await tab.boundingBox();
   if (!tabDuring) throw new Error("Expected manual tab during close");
   expect(tabDuring.x).toBeLessThan(tabBefore.x);
-  expect(tabDuring.x).toBeGreaterThan(tabBefore.x - insetBefore.x + 40);
+  expect(tabDuring.x).toBeGreaterThan(tabBefore.x - surfaceBefore.x + 40);
 
   // Wait for the commit and a painted frame; measuring in the click handler
   // itself only sees React's previous layout and misses the original regression.
@@ -137,8 +137,8 @@ test("desktop pointer toggles move the inset and centered content together and r
     await new Promise(requestAnimationFrame);
     return { before, after: element.getBoundingClientRect().x, tabBefore, tabAfter: tab.getBoundingClientRect().x };
   });
-  expect(Math.abs(reversal.after - reversal.before)).toBeLessThan(insetBefore.x / 2);
-  expect(Math.abs(reversal.tabAfter - reversal.tabBefore)).toBeLessThan(insetBefore.x / 2);
+  expect(Math.abs(reversal.after - reversal.before)).toBeLessThan(surfaceBefore.x / 2);
+  expect(Math.abs(reversal.tabAfter - reversal.tabBefore)).toBeLessThan(surfaceBefore.x / 2);
   await expect(provider).toHaveAttribute("data-desktop-open", "true");
   await expect.poll(async () => (await content.boundingBox())?.x).toBeCloseTo(before.x, 0);
   await expect.poll(async () => (await tab.boundingBox())?.x).toBeCloseTo(tabBefore.x, 0);

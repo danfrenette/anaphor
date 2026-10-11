@@ -17,6 +17,7 @@ import {
   type ReactElement,
 } from "react";
 import { cn } from "../lib/utils";
+import { useWorkspaceSidebarMotion } from "../lib/workspace-sidebar-motion";
 import { useShortcut } from "../lib/shortcut";
 import { fluidHoverFade, sidebarHoverTravel, sidebarSelectionTravel, spring } from "../lib/motion";
 import {
@@ -26,6 +27,7 @@ import {
   AdaptiveSurfacePortal,
   AdaptiveSurfaceProvider,
   useAdaptiveSurface,
+  useMediaQuery,
 } from "./adaptive-surface";
 
 type SidebarLayoutTiming = { enter: number; exit: number; ease: [number, number, number, number] };
@@ -94,8 +96,16 @@ function SidebarProvider({
   const [motionEnabled, setMotionEnabled] = useState(true);
   const [layoutTiming, setLayoutTiming] = useState(defaultSidebarTiming);
   const desktopOpen = mode === "controlled" ? open : internalOpen;
+  const mobile = useMediaQuery("(max-width: 47.999rem)");
+  const reducedMotion = useReducedMotion();
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  useWorkspaceSidebarMotion({
+    rootRef, enabled: layout === "workspace" && !mobile, open: desktopOpen, side,
+    duration: reducedMotion || !motionEnabled ? 0 : desktopOpen ? layoutTiming.enter : layoutTiming.exit,
+    ease: layoutTiming.ease,
+  });
 
   const prepareMotion = useCallback((animate: boolean) => {
     setMotionEnabled(animate);
@@ -198,6 +208,8 @@ function Sidebar({ className, side: requestedSide, style, ...props }: SidebarPro
             data-slot="sidebar"
             data-side={side}
             data-motion={motionEnabled ? "animate" : "instant"}
+            inert={!mobile && !desktopOpen}
+            aria-hidden={!mobile && !desktopOpen || undefined}
             className={cn(
               // Position and layout
               "invisible fixed inset-y-0 start-0 z-[var(--anaphor-z-overlay)] flex h-svh w-[min(var(--anaphor-sidebar-mobile-width),calc(100vw-var(--spacing-12)))] flex-col",
@@ -219,7 +231,8 @@ function Sidebar({ className, side: requestedSide, style, ...props }: SidebarPro
               side === "right" && mobileOpen && "visible [transform:translate3d(0,0,0)]",
               placement === "both" && side === "left" && "md:col-start-1 md:row-start-1 md:w-[var(--anaphor-sidebar-left-current-width)]",
               placement === "both" && side === "right" && "md:hidden lg:col-start-3 lg:row-start-1 lg:flex lg:w-[var(--anaphor-sidebar-right-current-width)]",
-              layout === "workspace" && "md:relative md:inset-auto md:row-start-2 lg:row-start-2 md:h-full md:border-0 md:bg-transparent",
+              layout === "workspace" && "md:relative md:inset-auto md:row-start-2 lg:row-start-2 md:h-full md:border-0 md:bg-transparent md:transition-none",
+              layout === "workspace" && !desktopOpen && (side === "left" ? "md:rtl:[transform:translate3d(100%,0,0)]" : "md:rtl:[transform:translate3d(-100%,0,0)]"),
               // The grid track closes while the panel keeps its width, so labels do not wrap during exit.
               layout === "workspace" && (side === "left" ? "md:col-start-1" : "md:col-start-3 md:justify-self-end"),
             )}
@@ -609,12 +622,12 @@ function SidebarClose({ children, className, ...props }: ComponentProps<"button"
 }
 
 function useSidebarLayoutMotion() {
-  const { desktopOpen, motionEnabled, layoutTiming, side } = useSidebar();
+  const { desktopOpen, layout, motionEnabled, layoutTiming, side } = useSidebar();
   const { mobile } = useAdaptiveSurface();
   const reducedMotion = useReducedMotion();
   const duration = desktopOpen ? layoutTiming.enter : layoutTiming.exit;
   return {
-    layout: "position" as const,
+    layout: layout === "workspace" ? false as const : "position" as const,
     layoutDependency: `${side}:${desktopOpen}`,
     initial: false as const,
     transition: { layout: { type: "tween" as const, duration: mobile || reducedMotion || !motionEnabled ? 0 : duration, ease: layoutTiming.ease } },

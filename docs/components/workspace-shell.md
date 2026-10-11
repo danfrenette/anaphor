@@ -60,3 +60,10 @@ drawer and the card becomes a flush page surface without a desktop gutter,
 rounded perimeter, or shadow. The card body and utilities remain reachable.
 When a bottom bar is omitted, no height should be reserved for it. Floating controls that need
 clearance can use `--anaphor-bottom-bar-height` only while a bar is mounted.
+
+Workspace sidebar toggles keep the rail and content-card boundary separated by
+the same gutter on every frame. The shared transition transforms the card surface
+and counter-scales its contents, keeping text at its natural scale. Use
+`SidebarInsetContent` for independently aligned content. Keyboard toggles,
+reduced motion, viewport changes, and text direction changes settle the destination
+layout immediately.
