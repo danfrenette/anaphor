@@ -84,6 +84,3 @@ selection, keyboard, and forms. [Coss Radio Group](https://coss.com/ui/docs/comp
 informs the thin RadioGroup/Radio structure and built-in indicator; Checkbox is
 the visual reference. The wrapper corrects Base UI 1.9.0's disabled selected item
 remaining in Tab order while preserving consumer render composition.
-
-Use the [verification recipe](../verification/radio-group.md) for package,
-manual-browser, and installed-source checks.
