@@ -22,7 +22,7 @@ function RadioGroupElement({ elementProps, state, render }: {
     // and arrow navigation with Base UI. Observe dynamic disabled choices too.
     function repairEntryPoint() {
       if (!group) return;
-      const enabled = Array.from(group.querySelectorAll<HTMLElement>('[role="radio"]')).filter(radio => radio.closest('[role="radiogroup"]') === group && radio.getAttribute("aria-disabled") !== "true" && !radio.hasAttribute("disabled"));
+      const enabled = Array.from(group.querySelectorAll<HTMLElement>('[role="radio"]')).filter(radio => radio.closest('[role="radiogroup"]') === group && radio.getAttribute("aria-disabled") !== "true" && !radio.hasAttribute("disabled") && !radio.closest("[hidden]") && radio.checkVisibility?.({ visibilityProperty: true }) !== false);
       const tabStops = enabled.filter(radio => radio.tabIndex === 0);
       const entry = enabled.find(radio => radio === document.activeElement)
         ?? enabled.find(radio => radio.getAttribute("aria-checked") === "true")
@@ -35,7 +35,7 @@ function RadioGroupElement({ elementProps, state, render }: {
     }
     repairEntryPoint();
     const observer = new MutationObserver(repairEntryPoint);
-    observer.observe(group, { subtree: true, childList: true, attributes: true, attributeFilter: ["aria-disabled", "aria-checked", "disabled", "tabindex"] });
+    observer.observe(group, { subtree: true, childList: true, attributes: true, attributeFilter: ["aria-disabled", "aria-checked", "disabled", "tabindex", "hidden", "style", "class"] });
     return () => observer.disconnect();
   }, [group]);
   return useRender({ defaultTagName: "div", ref: setGroup, props: { ...elementProps }, render: typeof render === "function" ? props => render(props, state) : render });
