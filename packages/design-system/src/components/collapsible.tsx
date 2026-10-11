@@ -66,11 +66,12 @@ function CollapsibleTrigger({ className, ref, ...props }: CollapsibleTriggerProp
   )} {...props} />;
 }
 
-function CollapsibleContent({ className, ref, ...props }: CollapsibleContentProps) {
+function CollapsibleContent({ className, ref, hiddenUntilFound = true, ...props }: CollapsibleContentProps) {
   const { panel: panelRef, open } = useContext(Context)!;
   const mergedRef = useMemo(() => mergePartRefs(panelRef, ref), [panelRef, ref]);
-  return <Primitive.Panel ref={mergedRef} inert={!open || undefined} aria-hidden={!open || undefined} data-slot="collapsible-content" className={state => cn(
-    "h-[var(--collapsible-panel-height)] overflow-hidden transition-[height] duration-[var(--anaphor-motion-duration-standard)] ease-[var(--anaphor-ease-out)] data-starting-style:h-0 data-ending-style:h-0 motion-reduce:transition-none motion-reduce:duration-0",
+  // Inert subtrees are excluded from browser Find; native hidden-until-found handles closed panels.
+  return <Primitive.Panel ref={mergedRef} hiddenUntilFound={hiddenUntilFound} inert={!open && !hiddenUntilFound || undefined} aria-hidden={!open || undefined} data-slot="collapsible-content" className={state => cn(
+    "h-[var(--collapsible-panel-height)] overflow-hidden transition-[height] duration-[var(--anaphor-motion-duration-standard)] ease-[var(--anaphor-ease-out)] data-starting-style:h-0 data-ending-style:h-0 data-ending-style:invisible motion-reduce:transition-none motion-reduce:duration-0",
     typeof className === "function" ? className(state) : className,
   )} {...props} />;
 }
