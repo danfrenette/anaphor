@@ -190,3 +190,20 @@ test("keyboard entry skips hidden choices when the selected choice is disabled",
   await user.keyboard(" ");
   expect(screen.getByRole("radio", { name: "Monthly digest" })).toBeChecked();
 });
+
+test("revealing a kept-mounted group restores an enabled keyboard entry point", async () => {
+  const user = userEvent.setup();
+  function Preferences() {
+    const [hidden, setHidden] = useState(true);
+    return <><button onClick={() => setHidden(false)}>Show frequencies</button><div hidden={hidden}>
+      <RadioGroup aria-label="Frequency" defaultValue="daily">
+        <label><Radio value="daily" disabled />Daily digest</label>
+        <label><Radio value="weekly" />Weekly digest</label>
+      </RadioGroup>
+    </div></>;
+  }
+  render(<Preferences />);
+  await user.click(screen.getByRole("button", { name: "Show frequencies" }));
+  await user.tab();
+  expect(screen.getByRole("radio", { name: "Weekly digest" })).toHaveFocus();
+});

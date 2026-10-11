@@ -36,7 +36,13 @@ function RadioGroupElement({ elementProps, state, render }: {
     repairEntryPoint();
     const observer = new MutationObserver(repairEntryPoint);
     observer.observe(group, { subtree: true, childList: true, attributes: true, attributeFilter: ["aria-disabled", "aria-checked", "disabled", "tabindex", "hidden", "style", "class"] });
-    return () => observer.disconnect();
+    // A kept-mounted panel can reveal the group by changing an outer ancestor.
+    for (let ancestor = group.parentElement; ancestor; ancestor = ancestor.parentElement) {
+      observer.observe(ancestor, { attributes: true, attributeFilter: ["hidden", "style", "class"] });
+    }
+    const view = group.ownerDocument.defaultView;
+    view?.addEventListener("resize", repairEntryPoint);
+    return () => { observer.disconnect(); view?.removeEventListener("resize", repairEntryPoint); };
   }, [group]);
   return useRender({ defaultTagName: "div", ref: setGroup, props: { ...elementProps }, render: typeof render === "function" ? props => render(props, state) : render });
 }
