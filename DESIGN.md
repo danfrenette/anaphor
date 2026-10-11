@@ -30,8 +30,10 @@ and action treatment too stark. The study route was removed after this decision.
 Danger elements use `oklch(0.4852 0.1691 10.14)`; danger text uses the darker
 `oklch(0.4236 0.1691 10.14)` step. Destructive buttons use the danger
 fill with a light theme-neutral label and the darker danger step on hover and
-press. Destructive color overrides accent/neutral tone; explicitly disabled
-states use the shared neutral treatment. Soft buttons are not supported.
+press. Button tone (`accent`, `neutral`, or `danger`) is independent of its
+`solid`, `outline`, `ghost`, or `soft` variant. Explicitly disabled states use
+the shared neutral treatment. Soft buttons use a tinted fill; HoldButton uses
+the soft variant with its independently selected tone.
 
 The Crimson direction was confirmed in the `/proto/danger` study. Keep its
 current fill in both themes, its light-theme text step above, and the
@@ -197,12 +199,12 @@ mobile morph surface, including its trigger. Card and clipped-surface shadows ar
 derived from one shared set of elevation primitives.
 
 Motion is adapted from the supplied Devouring Details Morph Surface prototype:
-opening uses the deliberate 300ms duration and closing uses the standard 200ms
-fade. Geometry collapse waits 80ms so the fade remains legible, while the shared
-dot uses its own reference-derived spring. Pointer and keyboard activation follow
-the same motion path; reduced motion keeps the fade and removes spatial movement.
-The original pill, feedback form, and auto-loop are replaced with our square,
-component controls, and explicit open state.
+width and measured content height open over 270ms and close over 200ms using
+`cubic-bezier(0.65, 0, 0.35, 1)`. A changed view fades and moves into place
+over 200ms. Reduced motion or `animate={false}` makes geometry and view changes
+immediate. The persistent action bar remains available while closed; the content
+stays mounted and becomes inert immediately. The consumer chooses whether
+keyboard activation disables spatial motion through the `animate` prop.
 
 ## Input feedback
 
