@@ -19,6 +19,8 @@ Install only the required registry items unless a full-system install was reques
 
 Use the shipped stylesheet, semantic utilities, typography roles, and layout bounds. Read component-specific docs for composition contracts such as ButtonLabel, field associations, overlay placement, and theme integration. Preserve the component's keyboard, focus, loading, disabled, and reduced-motion behavior instead of replacing it with a visual approximation.
 
+Read the installed types before writing call sites. Anaphor intentionally differs from stock shadcn: supply explicit component configuration, group coherent button text in `ButtonLabel`, select Button `tone` independently of `variant`, and use its integrated `loading` contract. Loading blocks activation while preserving focus and action color; explicit `disabled` adds the neutral treatment. Do not substitute a standalone spinner and disabled flag for that behavior. Use `Text` roles for interface text and `Prose` for article markup; named `text-*` sizes are registered in the shipped class merger, so upstream `type-*` workarounds are not required.
+
 Keep consumer overrides scoped to the requested project and name them in the handoff. Source-owned installation means later upstream changes require a reviewed update, not automatic synchronization.
 
 Done: the page uses actual installed components and styles; every new local abstraction has a page requirement that the existing API cannot express directly.
@@ -28,5 +30,7 @@ Done: the page uses actual installed components and styles; every new local abst
 Run the destination's relevant checks from its scripts. Inspect the page with loaded fonts at narrow and wide widths and in each supported theme. Exercise the controls used on the page: focus, keyboard activation, disabled/loading states, validation, and overlay dismissal. Verify reduced-motion handling when the page contains motion.
 
 Check that long text and data do not cause page-level overflow, body text returns to the same track after wide media, and theme-specific surfaces and focus rings remain visible. Separate failures in new work from existing project failures.
+
+Review the typical composition first, then the states and edge cases relevant to its task: long text, empty/error content, loading, and disabled controls. Report missing shared recipes as follow-up candidates instead of expanding the component catalog during a consumer task.
 
 Done: report which checks passed and which remain unverified. A successful build alone does not establish visual or interaction parity.
