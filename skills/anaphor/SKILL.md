@@ -11,7 +11,17 @@ Treat Anaphor as a source-owned system, not a visual mood to approximate.
 
 Use the user's Anaphor checkout or [repository](https://github.com/danfrenette/anaphor). A local checkout must contain `packages/design-system/src/styles.css` and `registry.json`; the destination application alone is not the upstream reference. If neither source is accessible, ask for repository access or an exported reference before inventing system values.
 
-Read `docs/foundations.md` and `docs/layout-recipes.md` from that checkout. Read the relevant component source and component documentation for the requested screen. Consult `DESIGN.md` for rationale; exact values, props, and behavior come from shipped CSS and component source. Report discrepancies rather than silently changing the system to reconcile stale prose.
+Read `PRODUCT.md`, `DESIGN.md`, `docs/foundations.md`, and `docs/layout-recipes.md` from that checkout. Read `docs/component-prop-contracts.md` and the relevant component source and documentation for the requested screen. Resolve each decision through its owner:
+
+| Decision | Authoritative source |
+| --- | --- |
+| Purpose, design intent, and constraints | `PRODUCT.md` and `DESIGN.md` |
+| Exact tokens, font declarations, theme values, and shared utilities | Shipped package CSS and font source |
+| Supported props, composition, and interaction behavior | Component source and `docs/component-prop-contracts.md` |
+| Installable items, files, and dependencies | `registry.json` and the README installation instructions |
+| Consumer-specific customizations | Installed consumer source; compare with upstream before updating |
+
+If guidance disagrees with shipped source, report the discrepancy and use the shipped contract for the requested page. Do not change upstream to make the prose true. Follow the exception links in `docs/foundations.md` and the relevant component docs; report a missing contract as a gap rather than filling it with a stock shadcn rule. Existing Anaphor is the foundation: a generator preset is not permission to replace its tokens or install an entire catalog.
 
 Finish this step with the source revision, destination, requested theme(s), and needed components identified. Infer these from the request and existing project; ask only for choices that materially change the result.
 

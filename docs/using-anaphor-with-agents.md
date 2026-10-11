@@ -62,3 +62,8 @@ Before promoting an edited skill, run these scenarios with a fresh agent and ins
 | Existing consumer has customized components | Preserves those changes and scopes any upstream update explicitly. |
 
 For a rule whose value is uncertain, compare runs with and without it. Keep changes that alter the desired behavior. Structural validation and a manual walkthrough are useful draft checks, not a substitute for this fresh-agent evaluation.
+
+Use the [consumer verification recipe](verification/agent-consumer.md) for a
+bounded comparison: the same settings-page brief, frozen source, seeded
+customization and agent settings, with only the supplied skill changed. Record
+actual outcomes and corrections; one pair does not establish general reliability.
