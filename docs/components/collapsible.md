@@ -29,17 +29,56 @@ for each nested section. A direct child Phosphor `CaretRight` rotates when open.
 Other labels and content remain consumer-owned.
 
 The trigger uses button semantics: Tab reaches visible controls, Enter/Space
-toggles. Closing content becomes inert and hidden from assistive technology
-immediately, including during its height transition. If focus was in that panel,
+toggles. Closing content becomes hidden from assistive technology immediately. During
+the closing transition it is invisible and cannot receive keyboard focus. If focus was in that panel,
 closing returns it to the corresponding trigger. External controlled closure
 does not take focus from a control elsewhere. Reduced motion removes transitions.
 The panel clips its transition; give inner content padding for visible focus rings.
+
+### Browser Find and nested content
+
+Panels default to `hiddenUntilFound={true}`: closed content stays mounted with
+`hidden="until-found"`, so native Find (Ctrl+F / Cmd+F) can match it. A match opens
+the containing disclosures through their normal `onOpenChange` callbacks,
+including nested ancestors. Controlled consumers must accept that open request.
+The panel deliberately avoids `inert` in this mode because inert content is
+excluded from browser search. A closed panel remains outside normal keyboard
+navigation and the accessibility tree until revealed.
+
+This uses [Base UI's native hidden-until-found support](https://base-ui.com/react/components/collapsible#hidden-until-found)
+and requires Base UI 1.9 or later for its synchronous match geometry fix. Browsers
+without native hidden-until-found support keep the content hidden until the
+trigger opens it; Find cannot reveal it there. Content inside a separately hidden
+container, such as a closed mobile Sidebar drawer, is also outside page search.
+
+Use `<CollapsibleContent hiddenUntilFound={false}>` for intentionally unmounted
+content (or combine it with `keepMounted` for conventional hidden content). This
+opt-out cannot be found while closed. Mounted searchable panels retain descendant
+state and effects while collapsed; do not put expensive lazy-only work inside one
+without accounting for that lifecycle.
+
+Nest a complete root/trigger/content composition inside a panel:
+
+```tsx
+<Collapsible defaultOpen>
+  <CollapsibleTrigger>Reading journal</CollapsibleTrigger>
+  <CollapsibleContent>
+    <Collapsible>
+      <CollapsibleTrigger>Chapter notes</CollapsibleTrigger>
+      <CollapsibleContent>A phrase to find inside the notes.</CollapsibleContent>
+    </Collapsible>
+  </CollapsibleContent>
+</Collapsible>
+```
+
+The manual's “Nested reading notes” example shows three levels, independent
+siblings, and a deeply nested phrase, “orchard notebook,” to try with Find.
 
 The manual's `/#collapsible` section demonstrates standalone state and a close
 control inside the panel. The existing Sidebar contains a nested Source outline
 after the manual index. It uses lists and buttons, with `aria-current` on the
 selected section. Each chapter owns expansion; the outline owns selection above
-all panels. This separation preserves selection when content unmounts. Tab visits
+all panels. This separation preserves selection even when a consumer opts into unmounting. Tab visits
 visible controls; arrow keys have ordinary browser behavior. This is not an ARIA
 tree. Chapter 2 includes an illustrative nested branch beyond the initial wireframe.
 

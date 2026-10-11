@@ -1,7 +1,7 @@
 # Collapsible sections and source outline
 
 Outcome: a reader can collapse irrelevant chapters without changing the selected
-section. Requirements: [ANAPHOR-227](https://linear.app/anaphor/issue/ANAPHOR-227/keep-long-source-outlines-navigable-with-collapsible-sections).
+section, and native browser Find reveals matching content inside closed panels. Requirements: [ANAPHOR-227](https://linear.app/anaphor/issue/ANAPHOR-227/keep-long-source-outlines-navigable-with-collapsible-sections).
 
 Entry points: `/#collapsible`, the Source outline after the Sidebar's manual
 index, exported Collapsible parts, and the source registry's `collapsible`/`ui` items.
@@ -39,3 +39,17 @@ retains failure traces/screenshots in `test-results/`; capture evidence before a
 subsequent run overwrites that directory. The harness stops its own server.
 Registry success removes its temporary consumers; failure retains their path.
 Reload resets this example; persistent selection and tree navigation are not claims.
+
+
+For nested content, use the “Nested reading notes” group in the main example.
+Open Field observations and Questions to revisit independently, close Chapter
+notes and Reading journal, then search for “orchard notebook” with Ctrl+F (Cmd+F
+on macOS). The matching panel and its ancestors should open without opening
+Further reading. Closed panels remain out of Tab order. Repeat with the controlled
+section using its inner text to confirm application-owned state accepts the reveal.
+
+Automated coverage separates the native matching path from the event contract:
+Chromium text-fragment navigation finds the phrase with all three levels closed;
+Chromium and WebKit both dispatch the browser's `beforematch` event and assert
+nested state and visibility. The event test does not establish native Find support
+in WebKit. Browsers without `hidden="until-found"` support require manual expansion.

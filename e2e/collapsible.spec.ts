@@ -47,7 +47,7 @@ test("standalone controls expose state, hide descendants and return focus", asyn
   await controlled.press("Space");
   await expect(close).toBeVisible();
   const disabled = demo.getByRole("button", { name: "Unavailable section", exact: true });
-  await expect(disabled).toHaveAttribute("aria-disabled", "true");
+  await expect(disabled).toBeDisabled();
   await expect(disabled).toHaveAttribute("aria-expanded", "false");
   await demo.getByRole("button", { name: "Reset controlled example" }).click();
   await expect(controlled).toHaveAttribute("aria-expanded", "false");
@@ -92,4 +92,45 @@ test("rapid disclosure reversals settle without clipping visible content", async
   const panel = page.locator("#collapsible").locator('[data-slot="collapsible-content"]').filter({ hasText: "Expansion belongs" });
   await expect(panel.getByRole("button", { name: "Close from inside" })).toBeVisible();
   await expect.poll(() => panel.evaluate(element => Math.abs(element.clientHeight - element.scrollHeight))).toBeLessThanOrEqual(1);
+});
+
+test("nested reading notes retain independent state and reveal every ancestor on a match", async ({ page }) => {
+  await page.goto("/#collapsible");
+  const notes = page.getByRole("group", { name: "Nested reading notes", exact: true });
+  const journal = notes.getByRole("button", { name: "Reading journal", exact: true });
+  const chapter = notes.getByRole("button", { name: "Chapter notes", exact: true });
+  const field = notes.getByRole("button", { name: "Field observations", exact: true });
+  const content = notes.getByText("The orchard notebook connects field observations to a shared language.", { exact: true });
+  await field.click();
+  await expect(content).toBeVisible();
+  await notes.getByRole("button", { name: "Questions to revisit", exact: true }).click();
+  await expect(field).toHaveAttribute("aria-expanded", "true");
+  await field.click();
+  await chapter.click();
+  await journal.click();
+  await expect(content).toBeHidden();
+  const panel = notes.locator('[data-slot="collapsible-content"]').filter({ hasText: "The orchard notebook connects field observations to a shared language." }).last();
+  await expect(panel).toHaveAttribute("hidden", "until-found");
+  // Exercises the browser event contract in both engines; native matching is checked separately.
+  await panel.evaluate(element => element.dispatchEvent(new Event("beforematch", { bubbles: true })));
+  await expect(journal).toHaveAttribute("aria-expanded", "true");
+  await expect(chapter).toHaveAttribute("aria-expanded", "true");
+  await expect(field).toHaveAttribute("aria-expanded", "true");
+  await expect(content).toBeVisible();
+  await expect(notes.getByRole("button", { name: "Questions to revisit", exact: true })).toHaveAttribute("aria-expanded", "true");
+  await expect(notes.getByRole("button", { name: "Further reading", exact: true })).toHaveAttribute("aria-expanded", "false");
+});
+
+test("native text search reveals collapsed content", async ({ page, browserName }) => {
+  test.skip(browserName !== "chromium", "Text fragment navigation is verified in Chromium; both engines cover beforematch.");
+  await page.goto("/#collapsible");
+  await page.getByRole("button", { name: "Chapter notes", exact: true }).click();
+  await page.getByRole("button", { name: "Reading journal", exact: true }).click();
+  const ancestors = page.getByRole("group", { name: "Nested reading notes", exact: true }).locator('[data-slot="collapsible-content"]').filter({ hasText: "The orchard notebook connects field observations to a shared language." });
+  for (const panel of await ancestors.all()) await expect(panel).toHaveAttribute("hidden", "until-found");
+  await page.goto("/#:~:text=orchard%20notebook");
+  await expect(page.getByRole("button", { name: "Reading journal", exact: true })).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByRole("button", { name: "Chapter notes", exact: true })).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByRole("button", { name: "Field observations", exact: true })).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByText("The orchard notebook connects field observations to a shared language.", { exact: true })).toBeVisible();
 });

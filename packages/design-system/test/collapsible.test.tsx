@@ -1,14 +1,33 @@
 import { createRef, useState } from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@anaphor/system";
 
 describe("Collapsible", () => {
+  it("keeps closed content searchable and opens controlled ancestors on a browser match", () => {
+    function Example() {
+      const [open, setOpen] = useState(false);
+      return <Collapsible open={open} onOpenChange={setOpen}><CollapsibleTrigger>Search parent</CollapsibleTrigger><CollapsibleContent data-testid="search-parent"><Collapsible><CollapsibleTrigger>Search child</CollapsibleTrigger><CollapsibleContent data-testid="search-child"><button>Hidden field note</button></CollapsibleContent></Collapsible></CollapsibleContent></Collapsible>;
+    }
+    render(<Example />);
+    const parent = screen.getByTestId("search-parent");
+    const child = screen.getByTestId("search-child");
+    expect(parent).toHaveAttribute("hidden", "until-found");
+    expect(child).toHaveAttribute("hidden", "until-found");
+    expect(parent).not.toHaveAttribute("inert");
+    expect(child).not.toHaveAttribute("inert");
+    expect(screen.queryByRole("button", { name: "Hidden field note" })).not.toBeInTheDocument();
+    act(() => { child.dispatchEvent(new Event("beforematch", { bubbles: true })); });
+    expect(screen.getByRole("button", { name: "Search parent" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "Search child" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "Hidden field note" })).toBeVisible();
+  });
+
   it("clears the consumer panel ref when closed content unmounts", async () => {
     const user = userEvent.setup();
     const panelRef = createRef<HTMLDivElement>();
-    render(<Collapsible defaultOpen><CollapsibleTrigger>Ref chapter</CollapsibleTrigger><CollapsibleContent ref={panelRef}>Ref content</CollapsibleContent></Collapsible>);
+    render(<Collapsible defaultOpen><CollapsibleTrigger>Ref chapter</CollapsibleTrigger><CollapsibleContent hiddenUntilFound={false} ref={panelRef}>Ref content</CollapsibleContent></Collapsible>);
     expect(panelRef.current).toBe(screen.getByText("Ref content"));
     await user.click(screen.getByRole("button", { name: "Ref chapter" }));
     await waitFor(() => expect(screen.queryByText("Ref content")).not.toBeInTheDocument());
@@ -17,7 +36,7 @@ describe("Collapsible", () => {
   it("runs callback ref cleanup when the panel unmounts", async () => {
     const user = userEvent.setup();
     let attached = false;
-    render(<Collapsible defaultOpen><CollapsibleTrigger>Observed chapter</CollapsibleTrigger><CollapsibleContent ref={node => {
+    render(<Collapsible defaultOpen><CollapsibleTrigger>Observed chapter</CollapsibleTrigger><CollapsibleContent hiddenUntilFound={false} ref={node => {
       attached = node !== null;
       return () => { attached = false; };
     }}>Observed content</CollapsibleContent></Collapsible>);
