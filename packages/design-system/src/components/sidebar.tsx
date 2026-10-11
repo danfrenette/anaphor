@@ -30,8 +30,9 @@ import {
   useMediaQuery,
 } from "./adaptive-surface";
 
-type SidebarLayoutTiming = { enter: number; exit: number; ease: [number, number, number, number] };
-const defaultSidebarTiming: SidebarLayoutTiming = { enter: 0.24, exit: 0.16, ease: [0.23, 1, 0.32, 1] };
+type SidebarLayoutTiming = { enter: number; exit: number; ease: [number, number, number, number]; exitEase: [number, number, number, number] };
+const defaultSidebarTiming: SidebarLayoutTiming = { enter: 0.24, exit: 0.16, ease: [0.23, 1, 0.32, 1], exitEase: [0.23, 1, 0.32, 1] };
+const workspaceSidebarTiming: SidebarLayoutTiming = { ...defaultSidebarTiming, exit: 0.22, exitEase: [0.32, 0.72, 0, 1] };
 
 function readSidebarTiming(element: HTMLElement): SidebarLayoutTiming {
   const styles = getComputedStyle(element);
@@ -39,12 +40,17 @@ function readSidebarTiming(element: HTMLElement): SidebarLayoutTiming {
     const value = styles.getPropertyValue(token).trim();
     return value ? parseFloat(value) / (value.endsWith("ms") ? 1000 : 1) : fallback;
   }
-  const curve = styles.getPropertyValue("--anaphor-ease-out").match(/cubic-bezier\(([^)]+)\)/)?.[1];
-  const [a = 0.23, b = 1, c = 0.32, d = 1] = curve ? curve.split(",").map(Number) : [];
+  function easing(token: string, fallback: SidebarLayoutTiming["ease"]): SidebarLayoutTiming["ease"] {
+    const curve = styles.getPropertyValue(token).match(/cubic-bezier\(([^)]+)\)/)?.[1];
+    const [a = fallback[0], b = fallback[1], c = fallback[2], d = fallback[3]] = curve ? curve.split(",").map(Number) : [];
+    return [a, b, c, d];
+  }
+  const ease = easing("--anaphor-ease-out", defaultSidebarTiming.ease);
   return {
     enter: seconds("--anaphor-sidebar-duration", defaultSidebarTiming.enter),
     exit: seconds("--anaphor-sidebar-exit-duration", defaultSidebarTiming.exit),
-    ease: [a, b, c, d],
+    ease,
+    exitEase: easing("--anaphor-sidebar-exit-ease", ease),
   };
 }
 
@@ -94,7 +100,7 @@ function SidebarProvider({
   const [internalOpen, setInternalOpen] = useState(defaultOpen ?? false);
   const [mobileOpen, setMobileOpenState] = useState(false);
   const [motionEnabled, setMotionEnabled] = useState(true);
-  const [layoutTiming, setLayoutTiming] = useState(defaultSidebarTiming);
+  const [layoutTiming, setLayoutTiming] = useState(layout === "workspace" ? workspaceSidebarTiming : defaultSidebarTiming);
   const desktopOpen = mode === "controlled" ? open : internalOpen;
   const mobile = useMediaQuery("(max-width: 47.999rem)");
   const reducedMotion = useReducedMotion();
@@ -104,7 +110,7 @@ function SidebarProvider({
   useWorkspaceSidebarMotion({
     rootRef, enabled: layout === "workspace" && !mobile, open: desktopOpen, side,
     duration: reducedMotion || !motionEnabled ? 0 : desktopOpen ? layoutTiming.enter : layoutTiming.exit,
-    ease: layoutTiming.ease,
+    ease: desktopOpen ? layoutTiming.ease : layoutTiming.exitEase,
   });
 
   const prepareMotion = useCallback((animate: boolean) => {
@@ -159,7 +165,7 @@ function SidebarProvider({
           className={cn(
             "group/sidebar [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)]",
             layout === "workspace"
-              ? "contents"
+              ? "contents md:[--anaphor-sidebar-exit-duration:220ms] md:[--anaphor-sidebar-exit-ease:cubic-bezier(0.32,0.72,0,1)]"
               : cn(
                   "grid min-h-svh grid-cols-[var(--anaphor-sidebar-current-width)_minmax(0,1fr)] overflow-x-clip max-md:block",
                   side === "right" && "md:grid-cols-[minmax(0,1fr)_var(--anaphor-sidebar-current-width)]",
