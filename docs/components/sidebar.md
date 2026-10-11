@@ -64,14 +64,17 @@ panel, retaining one focus trap and one dismissal path. Each desktop rail stores
 its own width in `both` mode. The
 right rail grows toward the page for pointer and arrow-key resizing.
 
-Pointer toggles use a coordinated position-only layout transition: 240ms to open
-and 160ms to close, with the shared ease-out curve. The inset and sidebar move
-together without scaling text. Wrap independently centered or aligned page
-content in `SidebarInsetContent` (and put its `max-width` / auto margins on that
-component) so its position is projected too. Width changes use the final layout;
-text may rewrap at narrower widths, but is never stretched by the animation.
-The position-only projection follows left, right, and both placements.
-Keyboard toggles and reduced-motion preferences settle positions immediately.
+Pointer toggles take 240ms to open and 160ms to close, with the shared ease-out
+curve. In a workspace, one progress value coordinates the rail, card boundary,
+and aligned content. Their gutter stays constant throughout the transition,
+including a reversal. Surface transforms avoid animating layout dimensions;
+card children counter-scale so text and controls keep their natural scale.
+Wrap independently centered or aligned page content in `SidebarInsetContent`
+(and put its `max-width` / auto margins on that component) to register its position.
+Content adopts its destination layout once and may rewrap at narrower widths.
+Standalone sidebars retain position-only layout projection. Keyboard toggles and
+reduced-motion preferences settle positions immediately. Closed desktop panels
+are inert immediately, including while their exit is still visible.
 Menu hover and selection continue to use the shared spring tiers.
 
 Desktop and mobile layout are controlled by Tailwind breakpoint and pointer

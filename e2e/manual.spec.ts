@@ -65,8 +65,8 @@ test("button demo exposes bounded experiments and resets to approved defaults", 
     page.getByRole("heading", { level: 2, name: "Button", exact: true }),
   ).toBeVisible();
   const demo = page.getByTestId("primary-button");
-  const variant = page.getByLabel("Variant");
-  const size = page.getByLabel("Size");
+  const variant = page.getByRole("button", { name: "Variant", exact: true });
+  const size = page.getByRole("button", { name: "Size", exact: true });
   await expect(variant).toHaveText("solid");
   await expect(size).toHaveText("md");
   await selectControl(page, "Tone", "danger");
