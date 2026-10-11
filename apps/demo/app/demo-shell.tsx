@@ -133,7 +133,7 @@ function DemoSidebar({ onSearch }: { onSearch: () => void }) {
     <Sidebar aria-label="Component manual navigation">
       <SidebarHeader className="border-0 px-3 pb-5 pt-3">
         <div className="flex min-h-11 items-center gap-2">
-          <Link href="/" onNavigate={closeMobile} aria-label="Anaphor home" className="flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-md px-2 text-foreground no-underline transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-ring">
+          <Link href="/" onNavigate={closeMobile} aria-label="Anaphor home" className="flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-md px-2 text-foreground no-underline motion-safe:transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-ring">
             <AnaphorMark className="size-9 shrink-0" />
             <Text as="span" variant="ui" className="min-w-0 font-semibold tracking-tight">Anaphor</Text>
           </Link>
@@ -224,7 +224,7 @@ export function DemoShell({ children }: { children: ReactNode }) {
               <ManualTopBar placement={sidebarSide} />
               <DemoSidebar onSearch={() => setSearchOpen(true)} />
               <SidebarInset>
-                <WorkspaceCard className="[--anaphor-shadow-card:var(--manual-panel-shadow)]">
+                <WorkspaceCard>
                   <WorkspaceCardHeader><ManualBreadcrumb /></WorkspaceCardHeader>
                   <WorkspaceCardBody ref={scrollContainerRef}>
                     <TabsPanel value="manual" className="block">{children}</TabsPanel>
