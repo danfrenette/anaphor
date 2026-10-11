@@ -7,7 +7,8 @@ import { CardCopyButton } from "./components/ui/card-copy-button";
 import { CommandPalette } from "./components/ui/command-palette";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./components/ui/collapsible";
 import { Checkbox } from "./components/ui/checkbox";
-import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel } from "./components/ui/field";
+import { Field, FieldContent, FieldDescription, FieldGroup, FieldItem, FieldLabel } from "./components/ui/field";
+import { Radio, RadioGroup } from "./components/ui/radio-group";
 import { FieldFeedback } from "./components/ui/field-feedback";
 import { Input } from "./components/ui/input";
 import { Kbd, KbdGroup } from "./components/ui/kbd";
@@ -27,6 +28,7 @@ function Consumer() {
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState(50);
+  const [frequency, setFrequency] = useState<string | null>(null);
   return <main className="mx-auto max-w-workspace px-page-inset py-6 font-sans">
     <div data-testid="editorial-layout" className="mx-auto max-w-editorial"><p className="max-w-reading">Shared layout in an independent consumer.</p></div>
     <ContentSections defaultScope>
@@ -42,6 +44,17 @@ function Consumer() {
         <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" onClick={() => setCount(count + 1)}><ButtonLabel>Count {count}</ButtonLabel></Button>
         <Field orientation="vertical"><FieldLabel>Email</FieldLabel><Input size="md" type="email" /><FieldFeedback hint="Your email address" error="Enter an email" invalid={false} /></Field>
         <FieldGroup><Field orientation="horizontal"><Checkbox /><FieldContent><FieldLabel>Accept updates</FieldLabel><FieldDescription>Occasional product news.</FieldDescription></FieldContent></Field></FieldGroup>
+        <form aria-label="Installed notification preferences" onSubmit={event => {
+          event.preventDefault();
+          const value = new FormData(event.currentTarget).get("frequency");
+          setFrequency(typeof value === "string" ? value : null);
+        }}>
+          <Field orientation="vertical" name="frequency"><FieldLabel>Notification frequency</FieldLabel><RadioGroup defaultValue="daily">
+            <FieldItem orientation="horizontal"><Radio value="daily" /><FieldContent><FieldLabel>Daily digest</FieldLabel><FieldDescription>A daily summary.</FieldDescription></FieldContent></FieldItem>
+            <FieldItem orientation="horizontal"><Radio value="weekly" /><FieldLabel>Weekly digest</FieldLabel></FieldItem>
+          </RadioGroup></Field>
+          <button type="submit">Save frequency</button><output aria-label="Saved frequency">{frequency}</output>
+        </form>
         <Skeleton variant="static" className="size-10 rounded-full" data-testid="skeleton-avatar" />
         <SkeletonRegion isLoading variant="pulse" label="Loading registry preview">
           <SkeletonBox><p>Media area</p></SkeletonBox>

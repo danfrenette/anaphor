@@ -5,6 +5,7 @@ import { BadgeDemo } from "./badge-demo";
 import { NodeEdgeDemo } from "./node-edge-demo";
 import { CardDemo } from "./card-demo";
 import { CheckboxDemo } from "./checkbox-demo";
+import { RadioGroupDemo } from "./radio-group-demo";
 import { InputDemo } from "./input-demo";
 import { CommandPaletteDemo } from "./command-palette-demo";
 import { DropdownMenuDemo } from "./dropdown-menu-demo";
@@ -258,6 +259,7 @@ export default function HomePage() {
           <InputDemo />
           <SliderDemo />
           <CheckboxDemo />
+          <RadioGroupDemo />
           <DropdownMenuDemo />
           <PopoverDemo />
           <TooltipDemo />

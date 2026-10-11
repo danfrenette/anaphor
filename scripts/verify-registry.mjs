@@ -109,6 +109,14 @@ async function checkBrowser(browser, directory, item) {
       await page.getByRole("textbox", { name: "Email" }).fill("reader@example.com");
       await page.getByRole("checkbox", { name: "Accept updates" }).check();
       await expect(page.getByRole("checkbox", { name: "Accept updates" })).toBeChecked();
+      const preferences = page.getByRole("form", { name: "Installed notification preferences" });
+      const frequency = preferences.getByRole("radiogroup", { name: "Notification frequency" });
+      await expect(frequency.getByRole("radio", { name: "Daily digest" })).toHaveAccessibleDescription("A daily summary.");
+      await frequency.getByText("Weekly digest", { exact: true }).click();
+      await expect(frequency.getByRole("radio", { name: "Weekly digest" })).toBeChecked();
+      await expect(frequency.getByRole("radio", { name: "Daily digest" })).not.toBeChecked();
+      await preferences.getByRole("button", { name: "Save frequency" }).click();
+      await expect(preferences.getByRole("status", { name: "Saved frequency" })).toHaveText("weekly");
       const slider = page.getByRole("slider", { name: "Amount" });
       await slider.focus();
       await slider.press("ArrowRight");

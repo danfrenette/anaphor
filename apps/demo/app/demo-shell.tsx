@@ -42,6 +42,7 @@ import {
 } from "@anaphor/system";
 import {
   CheckSquare,
+  RadioButton,
   CursorClick,
   House,
   Keyboard,
@@ -102,6 +103,7 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "input", label: "Input", href: "/#input", icon: Textbox },
       { id: "slider", label: "Slider", href: "/#slider", icon: SlidersHorizontal },
       { id: "checkbox", label: "Checkbox", href: "/#checkbox", icon: CheckSquare },
+      { id: "radio-group", label: "Radio group", href: "/#radio-group", icon: RadioButton },
       { id: "dropdown-menu", label: "Dropdown menu", href: "/#dropdown-menu", icon: ListDashes },
       { id: "popover", label: "Popover", href: "/#popover", icon: Rectangle },
       { id: "tooltip", label: "Tooltip", href: "/#tooltip", icon: Rectangle },
