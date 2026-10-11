@@ -27,7 +27,7 @@ test("right placement keeps the desktop sidebar and centered content coordinated
   const provider = page.locator('[data-slot="sidebar-provider"]');
   const panel = sidebar(page);
   const inset = page.locator('[data-slot="sidebar-inset"]');
-  const content = page.locator('[data-slot="sidebar-inset-content"]');
+  const content = page.locator('[data-slot="workspace-card-body"] [data-slot="sidebar-inset-content"]');
   await expect(provider).toHaveAttribute("data-side", "right");
   await expect.poll(async () => (await inset.boundingBox())?.x).toBeCloseTo(0, 0);
   const initialPanel = await panel.boundingBox();
@@ -94,16 +94,18 @@ test("desktop pointer toggles move the inset and centered content together and r
   await page.goto("/");
   const provider = page.locator('[data-slot="sidebar-provider"]');
   const inset = page.locator('[data-slot="sidebar-inset"]');
-  const content = page.locator('[data-slot="sidebar-inset-content"]');
+  const content = page.locator('[data-slot="workspace-card-body"] [data-slot="sidebar-inset-content"]');
   // Slow both participants so the test can inspect a committed intermediate frame.
   await provider.evaluate(element => {
     if (!(element instanceof HTMLElement)) throw new Error("Expected provider element");
     element.style.setProperty("--anaphor-sidebar-duration", "1000ms");
     element.style.setProperty("--anaphor-sidebar-exit-duration", "1000ms");
   });
+  const tab = page.getByRole("tab", { name: "Reference manual", exact: true });
+  const tabBefore = await tab.boundingBox();
   const before = await content.boundingBox();
   const insetBefore = await inset.boundingBox();
-  if (!before || !insetBefore) throw new Error("Expected desktop content");
+  if (!before || !insetBefore || !tabBefore) throw new Error("Expected desktop content");
   await page.getByRole("button", { name: "Collapse sidebar", exact: true }).click();
   await expect(provider).toHaveAttribute("data-desktop-open", "false");
   await page.waitForTimeout(100);
@@ -116,21 +118,30 @@ test("desktop pointer toggles move the inset and centered content together and r
   expect(during.x).toBeGreaterThan(before.x - insetBefore.x);
   expect(await content.evaluate(element => new DOMMatrix(getComputedStyle(element).transform).a)).toBeCloseTo(1, 2);
   expect(insetDuring.width).toBeGreaterThan(insetBefore.width);
+  const tabDuring = await tab.boundingBox();
+  if (!tabDuring) throw new Error("Expected manual tab during close");
+  expect(tabDuring.x).toBeLessThan(tabBefore.x);
+  expect(tabDuring.x).toBeGreaterThan(tabBefore.x - insetBefore.x + 40);
 
   // Wait for the commit and a painted frame; measuring in the click handler
   // itself only sees React's previous layout and misses the original regression.
   const reversal = await content.evaluate(async element => {
+    const tab = document.querySelector<HTMLElement>('[role="tab"]');
+    if (!tab) throw new Error("Missing manual tab");
+    const tabBefore = tab.getBoundingClientRect().x;
     const before = element.getBoundingClientRect().x;
     const trigger = [...document.querySelectorAll<HTMLButtonElement>('[data-slot="sidebar-trigger"][aria-expanded="false"]')].find(button => getComputedStyle(button).display !== "none");
     if (!trigger) throw new Error("Missing desktop trigger");
     trigger.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
     await new Promise(requestAnimationFrame);
     await new Promise(requestAnimationFrame);
-    return { before, after: element.getBoundingClientRect().x };
+    return { before, after: element.getBoundingClientRect().x, tabBefore, tabAfter: tab.getBoundingClientRect().x };
   });
   expect(Math.abs(reversal.after - reversal.before)).toBeLessThan(insetBefore.x / 2);
+  expect(Math.abs(reversal.tabAfter - reversal.tabBefore)).toBeLessThan(insetBefore.x / 2);
   await expect(provider).toHaveAttribute("data-desktop-open", "true");
   await expect.poll(async () => (await content.boundingBox())?.x).toBeCloseTo(before.x, 0);
+  await expect.poll(async () => (await tab.boundingBox())?.x).toBeCloseTo(tabBefore.x, 0);
   await expect(sidebar(page)).toBeVisible();
 });
 
@@ -167,7 +178,7 @@ test("desktop reduced motion settles the content immediately", async ({ page, is
   await expect(page.locator('[data-slot="sidebar-provider"]')).toHaveAttribute("data-desktop-open", "false");
   await inset.evaluate(() => new Promise(requestAnimationFrame));
   expect((await inset.boundingBox())?.x).toBe(0);
-  const content = page.locator('[data-slot="sidebar-inset-content"]');
+  const content = page.locator('[data-slot="workspace-card-body"] [data-slot="sidebar-inset-content"]');
   const rect = await content.boundingBox();
   const viewport = page.viewportSize();
   if (!rect || !viewport) throw new Error("Expected content and viewport");

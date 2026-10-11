@@ -1,12 +1,13 @@
 "use client";
 
-import { Section, Text } from "@anaphor/system";
+import { Section, SidebarTrigger, Text, useSidebar } from "@anaphor/system";
 import { useSidebarPlacement } from "./demo-shell";
 
 const placements = ["left", "right"] as const;
 
 export function SidebarDemo() {
   const { placement, setPlacement } = useSidebarPlacement();
+  const { desktopOpen, mobileOpen } = useSidebar();
   return <Section id="sidebar" className="border-t border-border py-12">
     <p className="text-label tracking-[0.08em] uppercase">02.00 / Layout</p>
     <Text as="h2" variant="heading" className="mt-3">Sidebar</Text>
@@ -25,7 +26,14 @@ export function SidebarDemo() {
           className="min-h-11 min-w-16 rounded-lg px-4 text-ui font-medium capitalize text-muted-foreground transition-[color,background-color,box-shadow,transform] duration-150 ease-[var(--anaphor-ease-out)] hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-[0.96] aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-[var(--anaphor-shadow-card)]"
         >{option}</button>)}
       </div>
-      <p className="text-small text-muted-foreground">This changes the page layout. Use the header button to open or close it.</p>
+      <div className="flex items-center gap-3">
+        <SidebarTrigger target="desktop" aria-label={`${desktopOpen ? "Collapse" : "Open"} sidebar in section`} className="hidden h-11 w-auto rounded-lg border border-border bg-background px-4 text-ui text-foreground md:inline-flex">
+          {desktopOpen ? "Collapse sidebar" : "Open sidebar"}
+        </SidebarTrigger>
+        <SidebarTrigger target="mobile" aria-label={`${mobileOpen ? "Collapse" : "Open"} sidebar in section`} className="inline-flex h-11 w-auto rounded-lg border border-border bg-background px-4 text-ui text-foreground md:hidden">
+          {mobileOpen ? "Collapse sidebar" : "Open sidebar"}
+        </SidebarTrigger>
+      </div>
     </div>
 
     <div className="mt-6 rounded-xl bg-muted p-2 shadow-[var(--anaphor-shadow-card)]">
