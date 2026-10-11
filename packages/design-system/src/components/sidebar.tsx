@@ -220,8 +220,8 @@ function Sidebar({ className, side: requestedSide, style, ...props }: SidebarPro
               placement === "both" && side === "left" && "md:col-start-1 md:row-start-1 md:w-[var(--anaphor-sidebar-left-current-width)]",
               placement === "both" && side === "right" && "md:hidden lg:col-start-3 lg:row-start-1 lg:flex lg:w-[var(--anaphor-sidebar-right-current-width)]",
               layout === "workspace" && "md:relative md:inset-auto md:row-start-2 lg:row-start-2 md:h-full md:border-0 md:bg-transparent",
-              layout === "workspace" && (side === "left" ? "md:col-start-1" : "md:col-start-3"),
-              layout === "workspace" && !desktopOpen && "md:w-0 lg:w-0",
+              // The grid track closes while the panel keeps its width, so labels do not wrap during exit.
+              layout === "workspace" && (side === "left" ? "md:col-start-1" : "md:col-start-3 md:justify-self-end"),
             )}
             style={style}
             {...props}
@@ -448,7 +448,8 @@ function SidebarFooter({ className, ...props }: ComponentProps<"footer">) {
 type SidebarTriggerProps = ComponentProps<"button"> & { target: "desktop" | "mobile" };
 
 function SidebarTrigger({ children, className, onClick, target, ...props }: SidebarTriggerProps) {
-  const { desktopOpen, mobileOpen, mobileTriggerRef, toggleDesktop, toggleMobile } = useSidebar();
+  const { desktopOpen, mobileOpen, mobileTriggerRef, side, toggleDesktop, toggleMobile } = useSidebar();
+  const triggerSide = useContext(SidebarPanelContext) ?? side;
   const expanded = target === "mobile" ? mobileOpen : desktopOpen;
   return (
     <button
@@ -479,7 +480,7 @@ function SidebarTrigger({ children, className, onClick, target, ...props }: Side
       }}
       {...props}
     >
-      {children ?? <SidebarSimple aria-hidden="true" />}
+      {children ?? <SidebarSimple aria-hidden="true" className={triggerSide === "right" ? "[transform:scaleX(-1)]" : undefined} />}
     </button>
   );
 }

@@ -30,6 +30,7 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
+  SidebarInsetContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -191,15 +192,18 @@ function ManualBreadcrumb() {
 function ManualTopBar({ placement }: { placement: SidebarPlacement }) {
   const { desktopOpen } = useSidebar();
   const triggerInRail = desktopOpen && placement !== "right";
-  return <WorkspaceTopBar>
+  return <WorkspaceTopBar className="relative">
     {triggerInRail && <div className="col-start-1 hidden items-center px-2 md:flex"><SidebarTrigger target="desktop" /></div>}
-    <div className="col-start-2 flex min-w-0 items-center gap-2 px-2">
+    <div className={`col-start-2 flex min-w-0 items-center gap-2 px-2 ${placement === "right" ? "md:pe-11" : ""}`}>
       <SidebarTrigger target="mobile" className="md:hidden" />
-      {!triggerInRail && <SidebarTrigger target="desktop" className="hidden md:grid" />}
-      <TabsList aria-label="Workspace views" className="min-w-0 bg-transparent p-0">
-        <TabsTab value="manual" className="min-w-0 max-w-64 px-4">Reference manual</TabsTab>
-      </TabsList>
+      {placement === "left" && !triggerInRail && <SidebarTrigger target="desktop" className="hidden md:grid" />}
+      <SidebarInsetContent>
+        <TabsList aria-label="Workspace views" className="min-w-0 bg-transparent p-0">
+          <TabsTab value="manual" className="min-w-0 max-w-64 px-4">Reference manual</TabsTab>
+        </TabsList>
+      </SidebarInsetContent>
     </div>
+    {placement === "right" && <div className="absolute inset-y-0 end-2 hidden items-center md:flex"><SidebarTrigger target="desktop" /></div>}
   </WorkspaceTopBar>;
 }
 
