@@ -12,6 +12,15 @@ export default defineConfig([
     },
   },
   {
+    files: ["packages/design-system/src/index.ts"],
+    rules: {
+      "no-restricted-syntax": ["error", {
+        selector: "ExportAllDeclaration",
+        message: "List public components and types explicitly; keep internal exports private (ARCHITECTURE.md).",
+      }],
+    },
+  },
+  {
     settings: {
       next: {
         rootDir: "apps/demo/",

@@ -43,6 +43,9 @@ can be committed with the project.
 
 ## Development
 
+Before changing or reviewing code, read [Coding standards](CODING_STANDARDS.md)
+for the applicable architecture, design, API, and verification rules.
+
 Feature-specific browser checks are indexed in
 [docs/verification/README.md](docs/verification/README.md).
 
