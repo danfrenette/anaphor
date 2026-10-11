@@ -1,7 +1,8 @@
 "use client";
 
 import { Button, ButtonLabel, Card, CardContent, Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldItem, FieldLabel, Radio, RadioGroup } from "@anaphor/system";
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { Check } from "./playground-fields";
 import { PlaygroundControls } from "./playground-host";
 
@@ -49,22 +50,24 @@ export function RadioGroupPlayground() {
 }
 
 export function RadioRequiredExample() {
+  const firstChoiceRef = useRef<HTMLSpanElement>(null);
+  const errorId = useId();
   const [value, setValue] = useState<Frequency | null>(null);
   const [invalid, setInvalid] = useState(false);
   const [saved, setSaved] = useState(false);
   return <form aria-label="Required notification preference" noValidate className="mt-4" onSubmit={event => {
     event.preventDefault();
     const missing = new FormData(event.currentTarget).get("requiredFrequency") === null;
-    setInvalid(missing);
-    setSaved(!missing);
+    flushSync(() => { setInvalid(missing); setSaved(!missing); });
+    if (missing) firstChoiceRef.current?.focus();
   }}>
     <Field orientation="vertical" name="requiredFrequency" invalid={invalid}>
       <FieldLabel>Choose a frequency</FieldLabel>
       <FieldDescription>A choice is required when saving this example.</FieldDescription>
       <RadioGroup<Frequency | null> value={value} required className="mt-2" onValueChange={next => { setValue(next); setInvalid(false); setSaved(false); }}>
-        {frequencies.map(frequency => <FieldItem key={frequency.value} orientation="horizontal"><Radio value={frequency.value} /><FieldLabel>{frequency.label}</FieldLabel></FieldItem>)}
+        {frequencies.map((frequency, index) => <FieldItem key={frequency.value} orientation="horizontal"><Radio value={frequency.value} ref={index === 0 ? firstChoiceRef : undefined} aria-describedby={invalid ? errorId : undefined} /><FieldLabel>{frequency.label}</FieldLabel></FieldItem>)}
       </RadioGroup>
-      <FieldError match={invalid}>Choose a notification frequency.</FieldError>
+      <FieldError id={errorId} match={invalid}>Choose a notification frequency.</FieldError>
     </Field>
     <div className="mt-4 flex flex-wrap items-center gap-4">
       <Button nativeButton type="submit" variant="outline" tone="neutral" size="md" shape="square" iconOnly={false} loading={false}><ButtonLabel>Save required preference</ButtonLabel></Button>

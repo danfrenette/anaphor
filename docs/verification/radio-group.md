@@ -27,15 +27,17 @@ selected in Notification preferences. Choose Weekly digest, ArrowUp to Daily
 digest, then save: status says "Saved: Daily digest." Submit the required example
 without a choice: the group becomes invalid and shows "Choose a notification
 frequency." Select and save: the error clears and the example confirms saving.
-In Digest availability, arrows skip Every update. Fixed frequency retains its
+In Digest availability, the disabled saved choice leaves an enabled keyboard entry
+point and arrows skip Every update. Fixed frequency retains its
 selection; Unavailable frequency is skipped by Tab.
 
 Open Radio group controls, select Invalid, and Reset controls: Daily digest and
 valid state return. Browser checks cover visible focus, 20px geometry, expanded
 44px minimum target, clickable label gap, light/dark axe scans, narrow reflow,
-and reduced motion. Review `radio-light.png` and `radio-dark.png` in test output
+and reduced motion, a 640px CSS viewport equivalent to 200% browser zoom at
+1280px, and forced colors. Review `radio-light.png` and `radio-dark.png` in test output
 for dot, boundary, focus, supporting-text alignment, and wrapping. Also check
-200% zoom and forced colors when changing geometry/palette. Physical-device
+browser-native 200% zoom when changing geometry/palette. Physical-device
 touch and assistive-technology announcements remain manual coverage.
 
 The registry gate installs fresh complete-UI source with real shadcn, builds an
