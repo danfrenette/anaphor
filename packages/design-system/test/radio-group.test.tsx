@@ -177,3 +177,16 @@ test("disabling the selected choice preserves keyboard entry when its rendered g
   await user.keyboard(" ");
   expect(screen.getByRole("radio", { name: "Weekly digest" })).toBeChecked();
 });
+
+test("keyboard entry skips hidden choices when the selected choice is disabled", async () => {
+  const user = userEvent.setup();
+  render(<RadioGroup aria-label="Frequency" defaultValue="daily">
+    <label><Radio value="daily" disabled />Daily digest</label>
+    <div hidden><label><Radio value="weekly" />Weekly digest</label></div>
+    <label><Radio value="monthly" />Monthly digest</label>
+  </RadioGroup>);
+  await user.tab();
+  expect(screen.getByRole("radio", { name: "Monthly digest" })).toHaveFocus();
+  await user.keyboard(" ");
+  expect(screen.getByRole("radio", { name: "Monthly digest" })).toBeChecked();
+});
