@@ -72,7 +72,7 @@ test("semantic overrides retain purpose styling and prose respects exclusions", 
   await page.evaluate(() => document.fonts.ready);
   // Reuse the real rendered variant classes on a heading to exercise the CSS cascade.
   for (const variant of ["ui", "caption"]) {
-    const source = page.locator(`[data-slot="text"][data-variant="${variant}"]`).first();
+    const source = page.locator(`#typography [data-slot="text"][data-variant="${variant}"]`).first();
     await source.evaluate(element => {
       const heading = document.createElement("h2");
       heading.className = element.className;
