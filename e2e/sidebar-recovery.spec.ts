@@ -164,3 +164,42 @@ for (const interrupt of ["reduced motion", "viewport resize", "text direction"] 
     }
   });
 }
+
+
+test("the left exit keeps text painted after a delayed commit at normal timing", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Desktop workspace exit");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/#sidebar");
+  await page.evaluate(() => document.fonts.ready);
+  const samples = await panel(page).evaluate(async rail => {
+    const provider = rail.closest<HTMLElement>('[data-slot="sidebar-provider"]')!;
+    const destination = rail.querySelector('[data-slot="sidebar-menu-button"]')!;
+    const text = document.createRange();
+    text.selectNodeContents(destination);
+    const initial = rail.getBoundingClientRect();
+    const delayedCommit = new MutationObserver(() => {
+      if (provider.dataset.desktopOpen !== "false") return;
+      delayedCommit.disconnect();
+      // Model work after the coordinator's layout effect and before paint.
+      const until = performance.now() + 80;
+      while (performance.now() < until) { /* Busy commit */ }
+    });
+    delayedCommit.observe(provider, { attributes: true, attributeFilter: ["data-desktop-open"] });
+    const frames: Array<{ distance: number; textRight: number; visibility: string }> = [];
+    const trigger = provider.querySelector<HTMLButtonElement>('[data-slot="workspace-top-bar"] [data-slot="sidebar-trigger"]')!;
+    trigger.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+    for (let frame = 0; frame < 30; frame += 1) {
+      await new Promise(requestAnimationFrame);
+      frames.push({ distance: initial.x - rail.getBoundingClientRect().x, textRight: text.getBoundingClientRect().right, visibility: getComputedStyle(destination).visibility });
+    }
+    delayedCommit.disconnect();
+    return { frames, width: initial.width };
+  });
+  const firstMoving = samples.frames.find(frame => frame.distance > 1);
+  expect(firstMoving).toBeDefined();
+  expect(firstMoving!.distance).toBeLessThan(samples.width / 2);
+  expect(firstMoving!.textRight).toBeGreaterThan(0);
+  expect(firstMoving!.visibility).toBe("visible");
+  expect(samples.frames.filter(frame => frame.distance > 1 && frame.textRight > 0).length).toBeGreaterThan(1);
+  await expect(panel(page)).toBeHidden();
+});

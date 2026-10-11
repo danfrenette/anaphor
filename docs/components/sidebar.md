@@ -64,9 +64,12 @@ panel, retaining one focus trap and one dismissal path. Each desktop rail stores
 its own width in `both` mode. The
 right rail grows toward the page for pointer and arrow-key resizing.
 
-Pointer toggles take 240ms to open and 160ms to close, with the shared ease-out
-curve. In a workspace, one progress value coordinates the rail, card boundary,
-and aligned content. Their gutter stays constant throughout the transition,
+Pointer toggles take 240ms to open with the shared ease-out curve. Workspace
+exits take 220ms with `cubic-bezier(0.32, 0.72, 0, 1)`, keeping the first moving
+frames readable; standalone and mobile exits retain 160ms. The workspace clock
+starts at the first paint after React commits, so rendering work cannot consume
+the visible exit. In a workspace, one progress value coordinates the rail,
+card boundary, and aligned content. Their gutter stays constant throughout the transition,
 including a reversal. Surface transforms avoid animating layout dimensions;
 card children counter-scale so text and controls keep their natural scale.
 Wrap independently centered or aligned page content in `SidebarInsetContent`

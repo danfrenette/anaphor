@@ -19,6 +19,7 @@ type Options = {
 function useWorkspaceSidebarMotion({ rootRef, enabled, open, side, duration, ease }: Options) {
   const previous = useRef<{ open: boolean; side: Options["side"]; geometry: Geometry } | null>(null);
   const animation = useRef<AnimationPlaybackControls | null>(null);
+  const pendingFrame = useRef<number | null>(null);
 
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -98,9 +99,14 @@ function useWorkspaceSidebarMotion({ rootRef, enabled, open, side, duration, eas
         previous.current = { open, side, geometry: { card: { ...target.card, x, width }, panels: panelFrames, content: contentFrames } };
       };
       render(0);
-      animation.current = animate(0, 1, {
-        duration, ease, onUpdate: render,
-        onComplete: () => { animation.current = null; restore(); remember(); },
+      // Start the clock at the next paint, after the rest of React's commit.
+      // Otherwise a busy commit can consume the exit before it is visible.
+      pendingFrame.current = requestAnimationFrame(() => {
+        pendingFrame.current = null;
+        animation.current = animate(0, 1, {
+          startTime: performance.now(), duration, ease, onUpdate: render,
+          onComplete: () => { animation.current = null; restore(); remember(); },
+        });
       });
     } else {
       remember();
@@ -109,7 +115,12 @@ function useWorkspaceSidebarMotion({ rootRef, enabled, open, side, duration, eas
     const observer = new ResizeObserver(() => { if (!animation.current) remember(); });
     observer.observe(card);
     for (const panel of panels) observer.observe(panel);
+    const cancelPending = () => {
+      if (pendingFrame.current !== null) cancelAnimationFrame(pendingFrame.current);
+      pendingFrame.current = null;
+    };
     const settle = () => {
+      cancelPending();
       animation.current?.stop();
       animation.current = null;
       restore();
@@ -123,6 +134,7 @@ function useWorkspaceSidebarMotion({ rootRef, enabled, open, side, duration, eas
     }
     window.addEventListener("resize", settle);
     return () => {
+      cancelPending();
       observer.disconnect();
       directionObserver.disconnect();
       window.removeEventListener("resize", settle);
