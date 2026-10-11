@@ -14,7 +14,7 @@ function RadioGroupElement({ elementProps, state, render }: {
   state: RadioGroupPrimitive.State;
   render: RadioGroupProps["render"];
 }) {
-  const [group, setGroup] = useState<HTMLElement | null>(null);
+  const [group, setGroup] = useState<Element | null>(null);
   useLayoutEffect(() => {
     if (!group) return;
     // Base UI 1.9 can leave its roving tab stop on a disabled selected radio.
