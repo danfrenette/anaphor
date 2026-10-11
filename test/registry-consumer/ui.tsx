@@ -5,6 +5,7 @@ import { Button, ButtonLabel } from "./components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
 import { CardCopyButton } from "./components/ui/card-copy-button";
 import { CommandPalette } from "./components/ui/command-palette";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./components/ui/collapsible";
 import { Checkbox } from "./components/ui/checkbox";
 import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel } from "./components/ui/field";
 import { FieldFeedback } from "./components/ui/field-feedback";
@@ -46,6 +47,7 @@ function Consumer() {
           <SkeletonBox><p>Media area</p></SkeletonBox>
           <SkeletonText>Installed skeleton</SkeletonText>
         </SkeletonRegion>
+        <Collapsible><CollapsibleTrigger>Registry disclosure</CollapsibleTrigger><CollapsibleContent><button>Installed section</button></CollapsibleContent></Collapsible>
         <Separator orientation="horizontal" />
         <Slider label="Amount" value={amount} onChange={setAmount} min={0} max={100} step={10} snap="magnetic" releaseThreshold={0.6} />
         <CardCopyButton value="Registry consumer" aria-label="Copy to clipboard" />

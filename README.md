@@ -413,3 +413,7 @@ Controls follow the section
 in view, stay pinned while a control has focus or a pointer is held, and become
 unavailable outside configurable sections. Code shows minimal installation and
 usage examples, with horizontally scrollable text and separate copy buttons.
+
+## Collapsible sections
+
+Compose reusable disclosures and a nested Sidebar outline with controlled or initial state. See [Collapsible](docs/components/collapsible.md) for examples, keyboard behavior, and the Pierre Trees evaluation.

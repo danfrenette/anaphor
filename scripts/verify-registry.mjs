@@ -99,6 +99,12 @@ async function checkBrowser(browser, directory, item) {
     const dark = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--anaphor-background"));
     assert.notEqual(light, dark, "Installed dark theme must change tokens");
     if (item === "ui") {
+      const disclosure = page.getByRole("button", { name: "Registry disclosure" });
+      await disclosure.click();
+      await expect(page.getByRole("button", { name: "Installed section" })).toBeVisible();
+      await disclosure.press("Space");
+      await expect(disclosure).toHaveAttribute("aria-expanded", "false");
+      await expect(page.getByRole("button", { name: "Installed section" })).toBeHidden();
       assert.ok(fonts.includes("Bell Gothic Black"), "Installed heading font must load");
       await page.getByRole("textbox", { name: "Email" }).fill("reader@example.com");
       await page.getByRole("checkbox", { name: "Accept updates" }).check();
