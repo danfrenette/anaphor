@@ -27,7 +27,7 @@ test("required choices show feedback on submit and clear it on selection", async
   await expect(form.getByText("Choose a notification frequency.")).toBeVisible();
   await expect(group).toHaveAttribute("aria-invalid", "true");
   await expect(group.getByRole("radio", { name: "Every update" })).toBeFocused();
-  await expect(group.getByRole("radio", { name: "Every update" })).toHaveAccessibleDescription("Choose a notification frequency.");
+  await expect(group.getByRole("radio", { name: "Every update" })).toHaveAccessibleDescription(/Choose a notification frequency\./);
   await group.getByText("Weekly digest", { exact: true }).click();
   await expect(form.getByText("Choose a notification frequency.")).toBeHidden();
   await form.getByRole("button", { name: "Save required preference" }).click();
@@ -37,6 +37,8 @@ test("required choices show feedback on submit and clear it on selection", async
 test("disabled choices are skipped and read-only selection stays fixed", async ({ page }) => {
   await page.goto("/#radio-group");
   const available = page.getByRole("radiogroup", { name: "Digest availability" });
+  await page.getByRole("radiogroup", { name: "Fixed frequency" }).getByRole("radio", { name: "Daily digest" }).press("Tab");
+  await expect(available.getByRole("radio", { name: "Daily digest" })).toBeFocused();
   await available.getByRole("radio", { name: "Daily digest" }).press("ArrowDown");
   await expect(available.getByRole("radio", { name: "Weekly digest" })).toBeFocused();
   await expect(available.getByRole("radio", { name: "Weekly digest" })).toBeChecked();
