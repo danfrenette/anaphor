@@ -3,7 +3,7 @@
 import { Radio as RadioPrimitive } from "@base-ui/react/radio";
 import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group";
 import { useRender } from "@base-ui/react/use-render";
-import { type ComponentProps, useLayoutEffect, useRef } from "react";
+import { type ComponentProps, useLayoutEffect, useState } from "react";
 import { cn } from "../lib/utils";
 
 type RadioGroupProps<Value = unknown> = RadioGroupPrimitive.Props<Value>;
@@ -14,9 +14,8 @@ function RadioGroupElement({ elementProps, state, render }: {
   state: RadioGroupPrimitive.State;
   render: RadioGroupProps["render"];
 }) {
-  const groupRef = useRef<HTMLElement | null>(null);
+  const [group, setGroup] = useState<HTMLElement | null>(null);
   useLayoutEffect(() => {
-    const group = groupRef.current;
     if (!group) return;
     // Base UI 1.9 can leave its roving tab stop on a disabled selected radio.
     // Repair only sequential focus through public roles/ARIA, keeping selection
@@ -38,8 +37,8 @@ function RadioGroupElement({ elementProps, state, render }: {
     const observer = new MutationObserver(repairEntryPoint);
     observer.observe(group, { subtree: true, childList: true, attributes: true, attributeFilter: ["aria-disabled", "aria-checked", "disabled", "tabindex"] });
     return () => observer.disconnect();
-  }, []);
-  return useRender({ defaultTagName: "div", ref: groupRef, props: { ...elementProps }, render: typeof render === "function" ? props => render(props, state) : render });
+  }, [group]);
+  return useRender({ defaultTagName: "div", ref: setGroup, props: { ...elementProps }, render: typeof render === "function" ? props => render(props, state) : render });
 }
 
 function RadioGroup<Value>({ className, render, ...props }: RadioGroupProps<Value>) {

@@ -158,17 +158,19 @@ test("a group with a disabled selected choice keeps an enabled keyboard entry po
   expect(screen.getByRole("button", { name: "Continue" })).toHaveFocus();
 });
 
-test("disabling the selected choice moves keyboard entry to an enabled sibling", async () => {
+test("disabling the selected choice preserves keyboard entry when its rendered group root changes", async () => {
   const user = userEvent.setup();
   function Preferences() {
     const [disabled, setDisabled] = useState(false);
-    return <><button onClick={() => setDisabled(current => !current)}>Toggle daily availability</button>
-      <RadioGroup aria-label="Frequency" defaultValue="daily">
+    const [section, setSection] = useState(false);
+    return <><button onClick={() => setSection(true)}>Switch group container</button><button onClick={() => setDisabled(current => !current)}>Toggle daily availability</button>
+      <RadioGroup aria-label="Frequency" defaultValue="daily" render={props => section ? <section {...props} /> : <div {...props} />}>
         <label><Radio value="daily" disabled={disabled} />Daily digest</label>
         <label><Radio value="weekly" />Weekly digest</label>
       </RadioGroup><button>Continue</button></>;
   }
   render(<Preferences />);
+  await user.click(screen.getByRole("button", { name: "Switch group container" }));
   await user.click(screen.getByRole("button", { name: "Toggle daily availability" }));
   await user.tab();
   expect(screen.getByRole("radio", { name: "Weekly digest" })).toHaveFocus();
