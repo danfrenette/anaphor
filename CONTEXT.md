@@ -18,3 +18,8 @@
 - **Connection direction**: the attachment sides and route linking two nodes.
 - **Reverse playback**: travel backward along an existing connection, without
   changing its attachment sides or route.
+- **Tour**: a private reading, for the owner, of one published account of a
+  change.
+- **Tour document**: the versioned text of a tour: its title, overview, the
+  pull requests and revisions it covers, and the sections a reader moves
+  through.

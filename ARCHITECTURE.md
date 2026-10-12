@@ -11,6 +11,15 @@ packages/design-system/ owned tokens, styles, primitives, and public API
 
 The demo behaves as an external consumer. It imports design-system code and
 styles through package exports, never through relative paths into the package.
+One existing foundations page still imports motion springs from package source.
+Private tours do not add another exception.
+
+## Private tours
+
+Tour hosting, authorization, persistence, content checks, and GitHub credentials
+stay in `apps/demo`. A tour document is stored outside participating product
+repositories. The public reference manual and a private tour use different
+route layouts; the manual does not require tour authentication.
 Root scripts run package and application checks explicitly; add orchestration
 only when parallel task dependencies become costly to maintain.
 

@@ -54,6 +54,13 @@ pnpm install
 pnpm dev
 ```
 
+Private tours need `DATABASE_URL`, `TOUR_AGENT_TOKEN`, and `TOUR_SESSION_SECRET`.
+`TOUR_OWNER_LOGIN` defaults to `danfrenette`. Set `TOUR_PUBLIC_ORIGIN` to the
+public origin, such as `https://anaphor.dev`. Browser sign-in on a deployed
+environment uses `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`. Do not set
+`TOUR_IDENTITY_ADAPTER=test` on Vercel. The isolated browser recipe is
+[Private tours](docs/verification/tours.md).
+
 Before merging, run:
 
 ```sh

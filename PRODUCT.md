@@ -32,8 +32,9 @@ design-system package and source registry.
 
 The owner maintains the system alongside personal software and technical writing.
 The reference manual consumes the shared package; registry consumers install and
-own copies of its source. Runtime CSS owns exact values, while DESIGN.md records
-design intent and constraints.
+own copies of its source. The same demo application serves private tours to the
+owner. The reference manual stays public. Runtime CSS owns exact values, while
+DESIGN.md records design intent and constraints.
 
 The owner's application references are [Vercel](https://vercel.com/geist/introduction)
 and [Resend](https://resend.com), including compact density. Editorial references
