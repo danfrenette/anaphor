@@ -4,7 +4,8 @@ import { Button, ButtonLabel, Text } from "@anaphor/system";
 import { useState } from "react";
 import { Check, Range, Select } from "../playground-fields";
 import { PlaygroundControls } from "../playground-host";
-import { phases, scenarios, type UploadSession } from "./use-upload";
+import { phases, scenarios } from "./upload-state";
+import type { UploadSession } from "./use-upload";
 
 export function Controls({ session, narrow, setNarrow, reducedMotion, setReducedMotion, duration, setDuration, mirrored, setMirrored, reset }: {
   session: UploadSession; narrow: boolean; setNarrow: (value: boolean) => void;
@@ -27,7 +28,7 @@ export function Controls({ session, narrow, setNarrow, reducedMotion, setReduced
         const phase = phases.find(phase => phase === value);
         if (phase) session.preview(phase);
       }} />
-      {target?.phase === "uploading" && !target.unknown && !session.playing && <Range label="Transferred" value={Math.round(target.fraction * 100)} min={0} max={100} step={1} unit="%" onChange={value => session.setFraction(value / 100)} />}
+      {target?.phase === "uploading" && !target.unknown && !session.isSimulating && <Range label="Transferred" value={Math.round(target.fraction * 100)} min={0} max={100} step={1} unit="%" onChange={value => session.setFraction(value / 100)} />}
       <Range label="Meter response" value={duration} min={80} max={400} step={10} unit="ms" onChange={setDuration} />
       <Check label="390px canvas" checked={narrow} onChange={setNarrow} />
       <Check label="Mirror layout (RTL)" checked={mirrored} onChange={setMirrored} />

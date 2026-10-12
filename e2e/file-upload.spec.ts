@@ -2,9 +2,25 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { selectControl } from "./playground-select";
 
+test("the manual index opens uploads with shared controls and code", async ({ page, isMobile }) => {
+  await page.goto("/");
+  if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
+  const link = page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "File upload", exact: true });
+  await expect(link).toHaveAttribute("href", "/#file-upload");
+  await link.click();
+  await expect(page).toHaveURL(/\/#file-upload$/);
+  await expect(page.getByRole("heading", { name: "File upload", level: 2, exact: true })).toBeVisible();
+  await expect(page.locator("#file-upload")).toHaveAttribute("data-active", "");
+  await page.getByRole("tab", { name: "Open File upload controls", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Scenario", exact: true })).toBeVisible();
+  await page.getByRole("tab", { name: "Code", exact: true }).click();
+  await expect(page.getByLabel("Install", { exact: true })).toContainText("danfrenette/anaphor/file-upload");
+  await expect(page.getByLabel("Usage", { exact: true })).toContainText("FileUpload");
+});
+
 test("multiple real files retain the batch initiator through completion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/uploads");
+  await page.goto("/#file-upload");
   await page.locator('input[type="file"]').setInputFiles([
     { name: "first.txt", mimeType: "text/plain", buffer: Buffer.from("First file") },
     { name: "second.md", mimeType: "text/markdown", buffer: Buffer.from("# Second file") },
@@ -21,15 +37,15 @@ test("multiple real files retain the batch initiator through completion", async 
   await page.getByRole("listitem", { name: "second.md" }).getByRole("button", { name: "Remove", exact: true }).click();
   await expect(page.getByRole("listitem", { name: "first.txt" }).getByRole("button", { name: "Uploaded", exact: true })).toBeFocused();
   await expect.poll(() => page.locator("html").evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
-  const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag22aa"]).disableRules(["color-contrast"]).analyze();
+  const accessibility = await new AxeBuilder({ page }).include("#file-upload").withTags(["wcag2a", "wcag2aa", "wcag22aa"]).disableRules(["color-contrast"]).analyze();
   expect(accessibility.violations).toEqual([]);
-  const contrast = await new AxeBuilder({ page }).withRules(["color-contrast"])
+  const contrast = await new AxeBuilder({ page }).include("#file-upload").withRules(["color-contrast"])
     .exclude('[data-tone="accent"][data-variant="solid"]').analyze();
   expect(contrast.violations).toEqual([]);
 });
 
 test("RTL activity traverses the complete track and reduces to a static indicator", async ({ page }) => {
-  await page.goto("/uploads");
+  await page.goto("/#file-upload");
   await page.getByRole("button", { name: "Use sample files", exact: true }).click();
   await page.getByRole("tab", { name: "Open File upload controls", exact: true }).click();
   await page.getByRole("checkbox", { name: "Mirror layout (RTL)", exact: true }).check();

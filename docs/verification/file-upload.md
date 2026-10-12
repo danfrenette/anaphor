@@ -1,6 +1,6 @@
 # File-upload selection and independent progress
 
-Open `/uploads` in the reference manual. Use the shared **File upload controls** tab for scenarios and state inspection. Transfers and processing are simulated; picker selection uses real File objects. The example policy permits nonempty PDF, Markdown, or plain-text files up to 10 MB each.
+Open `/#file-upload` in the reference manual. Use the shared **File upload controls** tab for scenarios and state inspection. Transfers and processing are simulated; picker selection uses real File objects. The example policy permits nonempty PDF, Markdown, or plain-text files up to 10 MB each.
 
 1. Choose two valid files together. Both names and metadata appear; the native chooser permits multiple selection. Add another batch; earlier files stay in place. Drop files over a nested child of the drop surface and verify the same validation and append behavior.
 2. Add a mixed valid/invalid batch. Valid siblings appear, rejected names have associated actionable feedback, and prior accepted files remain. Cancel the native picker and choose the same file again; dismissal preserves the list, and reselection reaches the callback.
@@ -50,3 +50,17 @@ Executed on the corrected source:
 - `scripts/verify-registry.mjs`: fresh independent Button and complete-UI installation, repeat installation, TypeScript/Vite build, and existing browser interaction/theme/font checks passed. File-upload source was included; standalone file-upload installation was not separately exercised.
 
 The full browser suite is left to PR CI. Earlier visual inspection remains working-preview evidence rather than a committed visual baseline. The manual OS/assistive-technology, actual zoom, forced-colors, translated-label, physical touch, and high-DPI checks listed above remain unverified. The draft PR does not claim merge readiness or production upload integration.
+
+## Manual integration and state refactor
+
+The example now lives in the main component list at `/#file-upload`, between Skeleton and Input; `/uploads` is removed. Verify the manual index link, active section, and shared Controls/Code tabs. The supporting files remain in `app/uploads/` as demo modules, not a route.
+
+`use-upload.ts` retains scenario/disabled settings and event handlers. The pure `upload-state.ts` reducer owns file lifecycle, feedback, IDs, and announcements. Each file carries its own optional simulation; inspected file and running status derive during rendering. The only effect subscribes to the external clock while simulations exist and cleans up the interval. Static state previews do not run; inspecting one file stops only that simulation. No state-synchronizing effect or mutable run map remains.
+
+Baseline: `66eeaf1e1c5a69cb23a7a0ef117024c29882743c`. Initial follow-up source review: `5af889fd97edebd5af12b5fa31697960ce4731e9`. Separate Standards, Spec/Execution/Concurrency, and Principles passes found no refactor defects. A pre-existing delayed-tick limitation was corrected afterward: transfer-failure thresholds are checked before later phases, so a throttled tick cannot skip the selected failure scenario. The final refactor commit is recorded in the PR description.
+
+Verification on the corrected source: **148 integration tests passed across 31 files**, including ten upload-consumer tests under Strict Mode. New regressions cover processing retry without reupload, static inspection while siblings run, reset/restart, and a delayed failure tick. Repository lint, strict types, and production Webpack build passed. The build no longer lists `/uploads`.
+
+**Ten production-browser checks passed** in Chromium and 320px WebKit: manual-index navigation, active upload section, shared Controls and Code installation/usage, real multi-file selection, batch focus through completion, removal focus, RTL traversal/reduced motion, section accessibility/contrast, and manual accessibility/skip-link smoke. Native preview inspection also confirmed `Components / File upload` and both shared tabs.
+
+No package component, stylesheet, export, registry item, or dependency changed in this follow-up; the previous successful registry-consumer evidence applies to the identical distributed source. The full browser suite remains a PR CI check. Existing manual accessibility/OS coverage limits above remain open.

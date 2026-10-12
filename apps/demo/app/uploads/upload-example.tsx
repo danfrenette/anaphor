@@ -4,7 +4,8 @@ import { Button, ButtonLabel, Card, Field, FieldFeedback, FileUpload, FileUpload
 import { ArrowClockwise, Check, FileText, UploadSimple, WarningCircle, X } from "@phosphor-icons/react";
 import { AnimatePresence, motion, useIsPresent, useReducedMotion } from "motion/react";
 import { useCallback, useId, useRef, type RefObject } from "react";
-import { isBusy, type UploadItem, type UploadSession } from "./use-upload";
+import { isBusy, type UploadItem } from "./upload-state";
+import type { UploadSession } from "./use-upload";
 
 export function fileSize(bytes: number) {
   return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : bytes >= 1024 ? `${Math.round(bytes / 1024)} KB` : `${bytes} B`;
@@ -115,7 +116,7 @@ export function UploadExample({ session, reducedMotion }: { session: UploadSessi
     className="[overflow-anchor:none] [--anaphor-button-press-scale:0.96] [--anaphor-focus:var(--anaphor-font-tertiary)]">
     <Card variant="default" className="@container/upload isolate bg-background p-6 shadow-upload forced-colors:border forced-colors:border-[CanvasText] forced-colors:shadow-none">
       <header className="mb-6 grid gap-2">
-        <Text as="h2" variant="heading">Upload files</Text>
+        <Text as="h3" variant="heading">Upload files</Text>
         <Text as="p" variant="ui" className="max-w-none text-muted-foreground">Choose files and follow their progress here.</Text>
       </header>
       <Field orientation="vertical" invalid={!!session.error} disabled={session.disabled}>

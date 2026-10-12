@@ -142,6 +142,6 @@ The decisive edge cases are an existing valid file followed by a rejected replac
 
 On October 11, 2026, Dan selected **Quiet** and retired Recessed instrument and Activity strip. The thin rail now uses Anaphor orange. Selection supports multiple files, each with independent progress, cancellation, retry, and removal. The title and footer are generic; application-specific AI-analysis copy is removed.
 
-The selected direction is available at [the file-upload example](http://127.0.0.1:3010/uploads). The temporary comparison route and direction picker have been removed. See [the shared contract](../components/file-upload.md) and [verification recipe](../verification/file-upload.md).
+The selected direction is available at [the file-upload example](http://127.0.0.1:3010/#file-upload). The temporary comparison route and direction picker have been removed. See [the shared contract](../components/file-upload.md) and [verification recipe](../verification/file-upload.md).
 
 The consumer keeps selected File objects in memory and appends new accepted candidates. Rejected candidates do not discard earlier files or valid siblings. Selection is real; transfer, acknowledgment, and processing remain simulated. The demo’s PDF/Markdown/plain-text and 10 MB policy is application code, not a design-system restriction.
