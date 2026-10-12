@@ -126,6 +126,13 @@ and correcting that contrast must not cause a test failure.
 - **Demo browser tests**: production build and the full Chromium/WebKit suite.
 - **Registry consumers**: fresh independent Button and complete-UI installations.
 
+**Private tour browser tests** additionally runs the tour suite against an isolated
+Postgres service, with supported Better Auth migrations and fictional identity
+sessions. It builds the application and exercises private publication, reading
+and device approval in Chromium/WebKit. It does not prove real OAuth-provider or
+deployed-domain acceptance; that separate gate is in
+[private tours](docs/verification/private-tours.md).
+
 The jobs use Node 24 and the pnpm version in `packageManager`. Dependencies install
 with the frozen workspace lockfile. Only the pnpm download store is cached;
 registry consumer installations and checks execute on every run. Superseded runs
