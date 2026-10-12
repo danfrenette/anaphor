@@ -98,7 +98,7 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "badge", label: "Badge", href: "/#badge", icon: Tag },
       { id: "node-edge-graphs", label: "Node-edge graphs", href: "/#node-edge-graphs", icon: ShareNetwork },
       { id: "skeleton", label: "Skeleton", href: "/#skeleton", icon: Rectangle },
-      { id: "file-upload", label: "File upload", href: "/uploads", icon: UploadSimple },
+      { id: "file-upload", label: "File upload", href: "/#file-upload", icon: UploadSimple },
       { id: "input", label: "Input", href: "/#input", icon: Textbox },
       { id: "slider", label: "Slider", href: "/#slider", icon: SlidersHorizontal },
       { id: "checkbox", label: "Checkbox", href: "/#checkbox", icon: CheckSquare },

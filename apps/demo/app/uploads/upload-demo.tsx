@@ -19,10 +19,11 @@ export function UploadDemo() {
     setControlsRevision(value => value + 1);
   }
   const canvasStyle: CSSProperties & { "--upload-duration": string } = { maxWidth: narrow ? 390 : 720, "--upload-duration": `${duration}ms` };
-  return <main id="content" tabIndex={-1} className="mx-auto max-w-4xl px-6 pt-8 pb-[max(6rem,env(safe-area-inset-bottom))] sm:px-8">
-    <Section id="file-upload" aria-labelledby="upload-page-title">
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div className="grid gap-2"><Text as="h1" variant="heading" id="upload-page-title">File upload</Text><Text as="p" variant="ui" className="text-muted-foreground">Select, upload, and recover in one place.</Text></div>
+  return <Section id="file-upload" aria-labelledby="upload-title" className="border-t border-border py-12">
+      <header className="mb-8">
+        <Text as="p" variant="label" className="text-muted-foreground">Component</Text>
+        <Text as="h2" variant="title" id="upload-title" className="mt-8">File upload</Text>
+        <Text as="p" variant="description" className="mt-3">Select, upload, and recover in one place.</Text>
       </header>
       <div className="mx-auto" dir={mirrored ? "rtl" : "ltr"} style={canvasStyle}>
         <UploadExample session={session} reducedMotion={reducedMotion} />
@@ -35,6 +36,5 @@ export function UploadDemo() {
         <Text as="p" variant="caption">Selection is real. Transfers and processing are simulated; nothing is sent or saved.</Text>
       </div>
       <Controls key={controlsRevision} session={session} narrow={narrow} setNarrow={setNarrow} reducedMotion={reducedMotion} setReducedMotion={setReducedMotion} duration={duration} setDuration={setDuration} mirrored={mirrored} setMirrored={setMirrored} reset={reset} />
-    </Section>
-  </main>;
+    </Section>;
 }

@@ -35,6 +35,10 @@ Known progress transitions use the existing motion tokens. Unknown work has a tr
 
 The demo [lifecycle owner](../../apps/demo/app/uploads/use-upload.ts) demonstrates multi-file append, partial rejection, independent runs, Cancel, Retry, and Remove. It is a simulator, not a transport adapter or storage service. Production consumers provide their own request cancellation, processing retries, persistence, deduplication, concurrency limits, and error handling according to their backend.
 
+The example is a regular section of the reference manual at `/#file-upload`, with the shared Controls and Code tabs. The standalone `/uploads` page has been removed.
+
+The hook delegates related file transitions to a [pure reducer](../../apps/demo/app/uploads/upload-state.ts). Simulation metadata lives with its file; there is no mutable run map or separately synchronized “playing” state. The inspected file and running flag are derived during rendering. Its only effect subscribes to the external simulation clock while runs exist and cleans it up afterward. IDs and lifecycle announcements update atomically with their files; clock readings and sample File construction happen outside the reducer, keeping Strict Mode replays safe. This applies Kent C. Dodds’ [derived-state](https://kentcdodds.com/blog/dont-sync-state-derive-it) and [reducer guidance](https://kentcdodds.com/blog/should-i-usestate-or-usereducer), alongside React’s [effect guidance](https://react.dev/learn/you-might-not-need-an-effect).
+
 ## Quiet composition and polish
 
 The example uses Card for its container, with the scoped `shadow-upload` token: stacked translucent black depth in Light and one low-opacity white ring in Carbon. Footer dividers use the density-aware `--anaphor-border-hairline` token (1px, or 0.5px at 2dppx). The drop surface keeps a real input boundary and uses an independent 8px radius, separated from the 12px card by at least 24px in the wider layout.

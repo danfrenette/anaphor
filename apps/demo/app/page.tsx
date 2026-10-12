@@ -14,6 +14,7 @@ import { PopoverDemo } from "./popover-demo";
 import { KbdDemo } from "./kbd-demo";
 import { SliderDemo } from "./slider-demo";
 import { SkeletonDemo } from "./skeleton-demo";
+import { UploadDemo } from "./uploads/upload-demo";
 import { TabsDemo } from "./tabs-demo";
 import { BottomBarDemo } from "./bottom-bar-demo";
 import { SidebarDemo } from "./sidebar-demo";
@@ -253,6 +254,7 @@ export default function HomePage() {
           <BadgeDemo />
           <NodeEdgeDemo />
           <SkeletonDemo />
+          <UploadDemo />
           <InputDemo />
           <SliderDemo />
           <CheckboxDemo />
