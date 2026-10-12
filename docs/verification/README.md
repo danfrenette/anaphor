@@ -4,6 +4,9 @@ Run the public behavior recipes after changing a feature. The repository's
 package scripts in [README.md](../../README.md#development) own setup and test
 commands. Each recipe names the browser actions and assertions that matter.
 
+- [Private text tours and device login](private-tours.md) — isolated Postgres and
+  real-provider preview acceptance are separate gates.
+
 - [Sidebar placement and motion](sidebar.md)
 - [Workspace shell composition](workspace-shell.md)
 - [File-upload selection and independent progress](file-upload.md)

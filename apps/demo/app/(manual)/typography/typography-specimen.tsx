@@ -2,7 +2,7 @@
 
 import { Button, ButtonLabel, Kbd, KbdGroup, Prose, Text } from "@anaphor/system";
 import { useState, type CSSProperties } from "react";
-import { Select } from "../playground-fields";
+import { Select } from "../../playground-fields";
 
 const defaults = {
   size: "16", weight: "400", measure: "65", leading: "1.6",

@@ -2,6 +2,7 @@
 
 @source "./**/*.{ts,tsx}";
 @source "../components/**/*.{ts,tsx}";
+@source "../features/**/*.{ts,tsx}";
 
 :root:has([data-app-shell] > [data-slot="sidebar-provider"] > [data-slot="bottom-bar"]) {
   --anaphor-bottom-bar-height: calc(2.75rem + env(safe-area-inset-bottom));

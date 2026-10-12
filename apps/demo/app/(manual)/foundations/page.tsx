@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { Text } from "@anaphor/system";
-import { spring } from "../../../../packages/design-system/src/lib/motion";
+import { spring } from "../../../../../packages/design-system/src/lib/motion";
 import { FoundationReference } from "./reference";
 import { extractInventory } from "./inventory";
 
