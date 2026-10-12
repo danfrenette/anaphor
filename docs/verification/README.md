@@ -6,6 +6,7 @@ commands. Each recipe names the browser actions and assertions that matter.
 
 - [Sidebar placement and motion](sidebar.md)
 - [Workspace shell composition](workspace-shell.md)
+- [File-upload selection and independent progress](file-upload.md)
 - [Rail and Deck carousels](carousels.md) — Chromium and 320px WebKit; trusted swipe coverage uses Chromium CDP. Physical touch and WebKit swipe movement remain outside the automated harness.
 
 For a browser run, build and start the Reference manual through the Playwright
