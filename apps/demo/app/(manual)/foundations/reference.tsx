@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { Text } from "@anaphor/system";
-import { Check, Range } from "../playground-fields";
+import { Check, Range } from "../../playground-fields";
 import { requireToken, type Tokens } from "./tokens";
 import { contrastRatio } from "./contrast";
 

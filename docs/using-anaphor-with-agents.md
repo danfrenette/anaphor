@@ -16,6 +16,25 @@ Example requests:
 
 ## Make it available across projects
 
+Check the installed skill's authorship before selecting its destination. The
+personal [software factory](https://github.com/danfrenette/skills/tree/main/skills/software-factory)
+also names its coordinator `anaphor`; it is a different skill from this
+repository's design-system guide. Install that nine-skill family together from
+`danfrenette/skills`. Do not replace its coordinator with this guide.
+
+When the factory already occupies `~/.agents/skills/anaphor`, read this guide
+directly from the checkout, including its adjacent references. Alternatively,
+choose an unused destination with `--destination` and confirm how your harness
+discovers skill names from frontmatter; a different folder name alone does not
+resolve two skills declaring `name: anaphor`. The installer deliberately reports
+the conflict and leaves the existing skill untouched.
+
+In the managed workspace, `/workspace/.agents/skills` is a harness-provided
+discovery location. Node's home directory can still be `/home/agent`, so the
+installer's default `~/.agents/skills` does not automatically target that workspace
+path. Use an explicit `--destination` for a different harness location and inspect
+the existing skill there first. A supplied archive/copy is not a live source link.
+
 From a local Anaphor checkout, run:
 
 ```sh

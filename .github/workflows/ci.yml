@@ -118,3 +118,45 @@ jobs:
             !/tmp/anaphor-registry-*/**/node_modules/**
           retention-days: 7
           if-no-files-found: ignore
+
+  tours:
+    name: Private tour browser tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --ipc=host
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: anaphor_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: fictional-ci-password
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TOUR_TEST_DATABASE_URL: postgres://postgres:fictional-ci-password@postgres:5432/anaphor_test
+      DATABASE_URL: postgres://postgres:fictional-ci-password@postgres:5432/anaphor_test
+      BETTER_AUTH_URL: http://127.0.0.1:3105
+      BETTER_AUTH_SECRET: fictional-local-test-secret-at-least-32-chars
+      ANAPHOR_GOOGLE_OWNER_ID: fixture-google
+      ANAPHOR_GITHUB_OWNER_ID: fixture-github
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @anaphor/demo tour:migrate
+      - run: pnpm test:tours
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: failure()
+        with:
+          name: private-tour-browser-failure
+          path: |
+            playwright-report/
+            test-results/

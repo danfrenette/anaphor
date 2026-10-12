@@ -1,24 +1,24 @@
-import { CollapsibleDemo } from "./collapsible-demo";
+import { CollapsibleDemo } from "../collapsible-demo";
 import { SidebarInsetContent, Section, Prose, Text, Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
-import { ButtonDemo } from "./button-demo";
-import { BadgeDemo } from "./badge-demo";
-import { NodeEdgeDemo } from "./node-edge-demo";
-import { CardDemo } from "./card-demo";
-import { CheckboxDemo } from "./checkbox-demo";
-import { InputDemo } from "./input-demo";
-import { CommandPaletteDemo } from "./command-palette-demo";
-import { DropdownMenuDemo } from "./dropdown-menu-demo";
-import { TooltipDemo } from "./tooltip-demo";
-import { DataTableDemo } from "./data-table-demo";
-import { PopoverDemo } from "./popover-demo";
-import { KbdDemo } from "./kbd-demo";
-import { SliderDemo } from "./slider-demo";
-import { SkeletonDemo } from "./skeleton-demo";
-import { UploadDemo } from "./uploads/upload-demo";
-import { TabsDemo } from "./tabs-demo";
-import { BottomBarDemo } from "./bottom-bar-demo";
-import { SidebarDemo } from "./sidebar-demo";
-import { WorkspaceShellDemo } from "./workspace-shell-demo";
+import { ButtonDemo } from "../button-demo";
+import { BadgeDemo } from "../badge-demo";
+import { NodeEdgeDemo } from "../node-edge-demo";
+import { CardDemo } from "../card-demo";
+import { CheckboxDemo } from "../checkbox-demo";
+import { InputDemo } from "../input-demo";
+import { CommandPaletteDemo } from "../command-palette-demo";
+import { DropdownMenuDemo } from "../dropdown-menu-demo";
+import { TooltipDemo } from "../tooltip-demo";
+import { DataTableDemo } from "../data-table-demo";
+import { PopoverDemo } from "../popover-demo";
+import { KbdDemo } from "../kbd-demo";
+import { SliderDemo } from "../slider-demo";
+import { SkeletonDemo } from "../skeleton-demo";
+import { UploadDemo } from "../uploads/upload-demo";
+import { TabsDemo } from "../tabs-demo";
+import { BottomBarDemo } from "../bottom-bar-demo";
+import { SidebarDemo } from "../sidebar-demo";
+import { WorkspaceShellDemo } from "../workspace-shell-demo";
 
 const neutralRoles = [
   ["Font / tertiary", "--anaphor-font-tertiary"],

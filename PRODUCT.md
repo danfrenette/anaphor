@@ -22,6 +22,11 @@ components, and interaction patterns used across personal work. The demo
 application proves the package in realistic compositions; it is not a marketing
 site or a comprehensive component catalog.
 
+The existing application also provides private PR tours for the owner: a concise
+explanation of participating pinned changes, with explicit navigation and refresh.
+The reference manual remains public. Tours are application content consumed
+through the existing design system, rather than a new component catalogue.
+
 ## Positioning
 
 An executable reference manual paired with a source-owned component system.

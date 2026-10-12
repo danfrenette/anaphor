@@ -65,6 +65,12 @@ pnpm test:registry
 pnpm build
 ```
 
+Private tour setup, the CLI, isolated acceptance tests and the separate
+real-provider preview gate are documented in
+[private tours](docs/verification/private-tours.md). Use the repository's pinned
+pnpm 10.33.0; if the shell supplies another version, invoke
+`npx --yes pnpm@10.33.0 <command>` explicitly.
+
 ## Installing from the private registry
 
 Start with a Tailwind v4 application initialized for shadcn, using the standard

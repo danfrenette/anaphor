@@ -14,6 +14,34 @@ styles through package exports, never through relative paths into the package.
 Root scripts run package and application checks explicitly; add orchestration
 only when parallel task dependencies become costly to maintain.
 
+## Private tours
+
+The same Next.js application hosts the public manual in `(manual)` and private
+tour routes under `/tour`. The root layout shares only global styles and theme;
+the manual retains its own shell and playground host. Tour modules and their
+tests live in `apps/demo/features/tours`. Environment-neutral Zod validation is
+shared with the CLI; auth, Postgres and publication modules are server-only.
+
+Better Auth owns provider and device protocols. Every private read/write checks
+the current stable provider-ID allowlist, canonical environment origin, and fixed
+24-hour session expiry. Browser-issued sessions alone may approve device grants;
+device credentials cannot grant themselves a new lifetime. Confirmed revocation
+uses the supported revoke-session API and verifies session absence before
+reporting success. Provider tokens and refresh-token flows are not retained.
+
+Initial authorized reading uses direct server persistence access. Axios owns
+application HTTP transport, with no transport retries. TanStack Query owns private
+browser server state and limited transient retries; it does not persist private
+data, renew authentication, poll tour revisions, or affect the public manual.
+Readers explicitly refresh. Expiry or denied authorization unmounts private
+content and clears its query cache.
+
+Neon Postgres persists complete validated documents and publication keys outside
+product source control. Creation is one atomic insert/upsert: identical retries
+return their original UUID; a reused key with different content conflicts.
+Private Vercel Blob media arrives in the later media slice. Tour interpretation,
+authentication and persistence never enter the design-system package.
+
 ## Package Boundary
 
 `@anaphor/system` is private while its contract develops. Its root
