@@ -7,6 +7,16 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@keyframes anaphor-upload-activity {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+
+@keyframes anaphor-upload-activity-rtl {
+  from { transform: translateX(100%); }
+  to { transform: translateX(-250%); }
+}
+
 @media (min-width: 48rem) {
   [data-slot="workspace-shell"]:has(> [data-slot="sidebar-provider"][data-desktop-open="false"][data-side="left"]) {
     grid-template-columns: 0 minmax(0, 1fr) auto;
@@ -21,6 +31,10 @@
 
 :root {
   color-scheme: light;
+  --anaphor-border-hairline: 1px;
+  --anaphor-shadow-upload: 0 0 0 1px rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06), 0 2px 4px rgb(0 0 0 / 0.04);
+  --anaphor-shadow-upload-action: 0 0 0 1px oklch(0 0 0 / 0.09), 0 1px 2px -1px oklch(0 0 0 / 0.08), 0 2px 4px oklch(0 0 0 / 0.04);
+  --anaphor-shadow-upload-action-hover: 0 0 0 1px oklch(0 0 0 / 0.14), 0 1px 2px -1px oklch(0 0 0 / 0.1), 0 2px 4px oklch(0 0 0 / 0.06);
   --anaphor-font-tertiary: oklch(0.46 0.014 65);
   --anaphor-font-secondary: oklch(0.2 0.01 50);
   --anaphor-input-disabled: oklch(0.86 0.015 85);
@@ -64,6 +78,10 @@
   --anaphor-z-a11y: 60;
 }
 
+@media (min-resolution: 2dppx) {
+  :root { --anaphor-border-hairline: 0.5px; }
+}
+
 @media (min-width: 40rem) {
   :root {
     --anaphor-page-gutter: calc(var(--spacing) * 12);
@@ -77,6 +95,9 @@
 }
 
 .dark {
+  --anaphor-shadow-upload: 0 0 0 1px rgb(255 255 255 / 0.09);
+  --anaphor-shadow-upload-action: 0 0 0 1px oklch(1 0 0 / 0.12);
+  --anaphor-shadow-upload-action-hover: 0 0 0 1px oklch(1 0 0 / 0.18);
   --anaphor-shadow-card-outline-color: oklch(0.33 0.008 275 / 0.75);
   --anaphor-shadow-card-low-color: oklch(0 0 0 / 0.18);
   --anaphor-shadow-card-high-color: oklch(0 0 0 / 0.24);
@@ -127,6 +148,9 @@
   --color-ring: var(--anaphor-focus);
 
   --shadow-card: var(--anaphor-shadow-card);
+  --shadow-upload: var(--anaphor-shadow-upload);
+  --shadow-upload-action: var(--anaphor-shadow-upload-action);
+  --shadow-upload-action-hover: var(--anaphor-shadow-upload-action-hover);
 
   --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-heading: "Bell Gothic Black", "Inter Variable", ui-sans-serif, system-ui, sans-serif;

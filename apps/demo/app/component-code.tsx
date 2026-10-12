@@ -3,6 +3,21 @@
 import { CardCopyButton } from "@anaphor/system";
 
 const examples: Record<string, { title: string; item: string; code: string }> = {
+  "file-upload": { title: "File upload", item: "file-upload", code: `import { FileUpload, FileUploadDropzone, FileUploadTrigger, FileUploadProgress } from "@/components/ui/file-upload";
+import { ButtonLabel } from "@/components/ui/button";
+
+<FileUpload multiple={true} onFilesSelected={handleCandidates}>
+  <FileUploadDropzone>
+    <FileUploadTrigger size="md" shape="square" tone="accent"
+      variant="solid" loading={false} iconOnly={false}>
+      <ButtonLabel>Choose files</ButtonLabel>
+    </FileUploadTrigger>
+  </FileUploadDropzone>
+  {/* Application-owned file rows, feedback, and actions. */}
+</FileUpload>
+
+<FileUploadProgress value={bytesTransferred} max={file.size}
+  label={\`Uploading \${file.name}\`} />` },
   skeleton: { title: "Skeleton", item: "skeleton", code: `import { SkeletonRegion, SkeletonText } from "@/components/ui/skeleton";
 
 <SkeletonRegion isLoading={isLoading} variant="pulse" label="Loading article">

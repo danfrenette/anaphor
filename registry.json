@@ -21,6 +21,7 @@
         "danfrenette/anaphor/command-palette",
         "danfrenette/anaphor/field",
         "danfrenette/anaphor/field-feedback",
+        "danfrenette/anaphor/file-upload",
         "danfrenette/anaphor/input",
         "danfrenette/anaphor/kbd",
         "danfrenette/anaphor/menu",
@@ -259,6 +260,20 @@
           "path": "packages/design-system/src/components/field-feedback.tsx",
           "type": "registry:ui",
           "target": "@ui/field-feedback.tsx"
+        }
+      ]
+    },
+    {
+      "name": "file-upload",
+      "type": "registry:ui",
+      "title": "File upload",
+      "description": "Native file selection, a quiet drop surface, and brand progress. The application owns file policy and upload jobs.",
+      "registryDependencies": ["danfrenette/anaphor/button", "danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/file-upload.tsx",
+          "type": "registry:ui",
+          "target": "@ui/file-upload.tsx"
         }
       ]
     },
