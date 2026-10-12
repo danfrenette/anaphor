@@ -15,3 +15,4 @@ output under `test-results/` until the result is recorded, then stop only the
 server started by that run.
 
 - [Collapsible sections and source outline](collapsible.md)
+- [Private tours](tours.md) — publication and reading use isolated Postgres. Real GitHub sign-in on a deployed preview is outside this recipe.

@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   typedRoutes: true,
   transpilePackages: ["@anaphor/system"],
+  serverExternalPackages: ["postgres"],
 };
 
 export default nextConfig;

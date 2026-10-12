@@ -2,9 +2,9 @@
 
 ## Current Deck: code observations
 
-The demo's `Deck` positions every card from its integer offset to the active index: each step adds `22%` horizontal translation, `10px` vertical translation, `2deg` rotation, and `5.5%` scale reduction. It shows two cards on either side, with the nearest card painted highest. A selection updates all transforms through one `260ms` ease-out CSS transition. The stack's `z-index` order changes immediately at selection (`apps/demo/app/carousels/deck.tsx`, `deck.css`).
+The demo's `Deck` positions every card from its integer offset to the active index: each step adds `22%` horizontal translation, `10px` vertical translation, `2deg` rotation, and `5.5%` scale reduction. It shows two cards on either side, with the nearest card painted highest. A selection updates all transforms through one `260ms` ease-out CSS transition. The stack's `z-index` order changes immediately at selection (`apps/demo/app/(manual)/carousels/deck.tsx`, `deck.css`).
 
-`useBrowse` records touch/pen pointer-down coordinates and changes the index only on pointer-up when horizontal displacement exceeds `48px` and dominates vertical displacement. It has no pointer-move visual update, velocity measure, drag resistance, or snap-back. It ignores mouse drag (`apps/demo/app/carousels/shared.tsx`).
+`useBrowse` records touch/pen pointer-down coordinates and changes the index only on pointer-up when horizontal displacement exceeds `48px` and dominates vertical displacement. It has no pointer-move visual update, velocity measure, drag resistance, or snap-back. It ignores mouse drag (`apps/demo/app/(manual)/carousels/shared.tsx`).
 
 ## Primary-source references
 

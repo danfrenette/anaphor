@@ -25,8 +25,8 @@ Conclusion: retain Embla and Anaphor materials, motion, focus and lifecycle poli
 
 Applied the same narrow changes to PR worktree and primary checkout so the existing development preview reflects them:
 
-- `apps/demo/app/carousels/rail.tsx`: named slide group on each note wrapper.
-- `apps/demo/app/carousels/deck.tsx`: named slide group outside inert preview contents.
+- `apps/demo/app/(manual)/carousels/rail.tsx`: named slide group on each note wrapper.
+- `apps/demo/app/(manual)/carousels/deck.tsx`: named slide group outside inert preview contents.
 - `e2e/carousel.spec.ts`: assertion that the first note is a named group with slide roledescription.
 - This comparison document.
 

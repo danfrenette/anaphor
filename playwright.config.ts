@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { tourTestEnv } from "./e2e/tour-env";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -28,9 +29,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm build && pnpm --filter @anaphor/demo exec next start --port 3105",
+    command: "node apps/demo/scripts/playwright-server.mjs",
     url: "http://127.0.0.1:3105",
     reuseExistingServer: false,
-    timeout: 120_000,
+    timeout: 180_000,
+    env: { ...process.env, ...tourTestEnv },
   },
 });
