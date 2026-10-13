@@ -5,7 +5,7 @@ import { chmod, copyFile, mkdtemp, readFile, rm, writeFile } from "node:fs/promi
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { createServer } from "node:http";
-import { fictionalIdentity } from "../apps/demo/features/tours/test/identity";
+import { fictionalIdentity, holdDeviceDecisions } from "../apps/demo/features/tours/test/identity";
 
 const document = {
   version: 1,
@@ -263,4 +263,46 @@ test("expiry hides the private reader and sign-out failure keeps a working recov
   await page.getByRole("button", { name: "Retry sign out" }).click();
   await expect(page.getByRole("button", { name: "Retry sign out" })).toHaveCount(0);
   expect((await request.get("/api/tours/session", { headers: { Authorization: `Bearer ${fresh.token}` } })).status()).toBe(401);
+});
+
+
+test("authored section IDs cannot collide with headings or the reader shell", async ({ request, page, context }) => {
+  const identity = await fictionalIdentity();
+  const sections = ["intro", "intro-title", "tour-content"].map((id, index) => ({ id, title: `Section ${index + 1}`, paragraphs: [`Content for section ${index + 1}.`] }));
+  const response = await request.post("/api/tours", { data: { ...document, sections }, headers: { Authorization: `Bearer ${identity.token}`, "Idempotency-Key": randomUUID() } });
+  expect(response.status()).toBe(201);
+  await context.addCookies([identity.cookie]);
+  await page.goto((await response.json()).url);
+  for (const section of sections) {
+    const link = page.getByRole("link", { name: section.title, exact: true });
+    await link.click();
+    const target = await link.getAttribute("href");
+    if (!target) throw new Error("Section navigation requires a destination.");
+    const destination = page.locator(`[id="${target.slice(1)}"]`);
+    await expect(destination).toHaveCount(1);
+    await expect(page.getByRole("region", { name: section.title, exact: true })).toHaveAttribute("id", target.slice(1));
+    await expect(destination.getByRole("heading", { name: section.title })).toBeVisible();
+  }
+});
+
+test("overlapping device decisions complete only once", async ({ request }) => {
+  const client_id = "anaphor-cli:http://127.0.0.1:3105";
+  const grant = await (await request.post("/api/auth/device/code", { data: { client_id, scope: "tours:read tours:write" } })).json();
+  const identity = await fictionalIdentity();
+  // A distinct fictional client address keeps this overlap independent of other tests' device-review rate limits.
+  const headers = { Cookie: `${identity.cookie.name}=${identity.cookie.value}`, Origin: "http://127.0.0.1:3105", "X-Forwarded-For": "192.0.2.246" };
+  expect((await request.get(`/api/auth/device?user_code=${grant.user_code}`, { headers })).status()).toBe(200);
+  const barrier = await holdDeviceDecisions(grant.user_code);
+  const decisions = Promise.all(["approve", "deny"].map((action) => request.post(`/api/auth/device/${action}`, { headers, data: { userCode: grant.user_code } })));
+  try {
+    await expect.poll(barrier.waiting, { timeout: 10_000 }).toBe(2);
+  } finally { await barrier.release(); }
+  const results = await decisions;
+  expect(results.map((response) => response.status()).sort()).toEqual([200, 400]);
+  const winner = results[0]!.status() === 200 ? "approved" : "denied";
+  const review = await request.get(`/api/auth/device?user_code=${grant.user_code}`, { headers });
+  expect((await review.json()).status).toBe(winner);
+  const token = await request.post("/api/auth/device/token", { data: { client_id, device_code: grant.device_code, grant_type: "urn:ietf:params:oauth:grant-type:device_code" } });
+  expect(token.status()).toBe(winner === "approved" ? 200 : 400);
+  if (winner === "denied") expect((await token.json()).error).toBe("access_denied");
 });

@@ -1,0 +1,62 @@
+diff --git a/dist/plugins/device-authorization/routes.mjs b/dist/plugins/device-authorization/routes.mjs
+index 615077ddc8b50e753a6dea7d2322e803e23c785d..9cfaa6d8ccc3190890b835df666b28e3dd611a69 100644
+--- a/dist/plugins/device-authorization/routes.mjs
++++ b/dist/plugins/device-authorization/routes.mjs
+@@ -613,16 +613,19 @@ const deviceApprove = createAuthEndpoint("/device/approve", {
+ 		error: "access_denied",
+ 		error_description: "You are not authorized to approve this device authorization"
+ 	});
+-	await ctx.context.adapter.update({
++	const decidedDeviceCode = await ctx.context.adapter.incrementOne({
+ 		model: "deviceCode",
+-		where: [{
+-			field: "id",
+-			value: deviceCodeRecord.id
+-		}],
+-		update: {
+-			status: "approved",
+-			userId: session.user.id
+-		}
++		where: [
++			{ field: "id", value: deviceCodeRecord.id },
++			{ field: "status", value: "pending" },
++			{ field: "userId", value: session.user.id }
++		],
++		increment: {},
++		set: { status: "approved" }
++	});
++	if (!decidedDeviceCode) throw new APIError("BAD_REQUEST", {
++		error: "invalid_request",
++		error_description: DEVICE_AUTHORIZATION_ERROR_CODES.DEVICE_CODE_ALREADY_PROCESSED.message
+ 	});
+ 	return ctx.json({ success: true });
+ });
+@@ -677,16 +680,19 @@ const deviceDeny = createAuthEndpoint("/device/deny", {
+ 		error: "access_denied",
+ 		error_description: "You are not authorized to deny this device authorization"
+ 	});
+-	await ctx.context.adapter.update({
++	const decidedDeviceCode = await ctx.context.adapter.incrementOne({
+ 		model: "deviceCode",
+-		where: [{
+-			field: "id",
+-			value: deviceCodeRecord.id
+-		}],
+-		update: {
+-			status: "denied",
+-			userId: session.user.id
+-		}
++		where: [
++			{ field: "id", value: deviceCodeRecord.id },
++			{ field: "status", value: "pending" },
++			{ field: "userId", value: session.user.id }
++		],
++		increment: {},
++		set: { status: "denied" }
++	});
++	if (!decidedDeviceCode) throw new APIError("BAD_REQUEST", {
++		error: "invalid_request",
++		error_description: DEVICE_AUTHORIZATION_ERROR_CODES.DEVICE_CODE_ALREADY_PROCESSED.message
+ 	});
+ 	return ctx.json({ success: true });
+ });

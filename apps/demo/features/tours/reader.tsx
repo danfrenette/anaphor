@@ -19,11 +19,11 @@ export function TourReader({ document, revision }: { document: TourDocument; rev
     </header>
     <nav aria-label="Tour sections" className="border-y border-input-border py-6">
       <ul className="flex flex-wrap gap-x-6 gap-y-3">
-        {document.sections.map((section) => <li key={section.id} className="min-w-0 max-w-full"><a href={`#${section.id}`} className="underline underline-offset-4 [overflow-wrap:anywhere]">{section.title}</a></li>)}
+        {document.sections.map((section) => <li key={section.id} className="min-w-0 max-w-full"><a href={`#tour-section:${section.id}`} className="underline underline-offset-4 [overflow-wrap:anywhere]">{section.title}</a></li>)}
       </ul>
     </nav>
-    {document.sections.map((section) => <Section key={section.id} id={section.id} aria-labelledby={`${section.id}-title`} className="space-y-6 scroll-mt-6">
-      <Text as="h2" variant="heading" id={`${section.id}-title`} className="break-words">{section.title}</Text>
+    {document.sections.map((section) => <Section key={section.id} id={`tour-section:${section.id}`} aria-labelledby={`tour-heading:${section.id}`} className="space-y-6 scroll-mt-6">
+      <Text as="h2" variant="heading" id={`tour-heading:${section.id}`} className="break-words">{section.title}</Text>
       <Prose as="div">{section.paragraphs.map((paragraph, index) => <p key={index} className="whitespace-pre-wrap break-words">{paragraph}</p>)}</Prose>
     </Section>)}
   </ContentSections>;
