@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { PrivateQueries } from "@/features/tours/browser";
+import { PrivateQueries } from "@/features/tours/private-access";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Private tour · Anaphor", robots: { index: false, follow: false } };

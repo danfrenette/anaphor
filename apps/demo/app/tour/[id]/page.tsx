@@ -2,7 +2,8 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { PrivateAccessError, requireTourOwner } from "@/features/tours/auth";
 import { readTour } from "@/features/tours/publication";
-import { PrivateTour, SignIn } from "@/features/tours/browser";
+import { PrivateTour } from "@/features/tours/private-tour";
+import { SignIn } from "@/features/tours/sign-in";
 
 export default async function TourPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
