@@ -34,11 +34,21 @@ application HTTP transport, with no transport retries. TanStack Query owns priva
 browser server state and limited transient retries; it does not persist private
 data, renew authentication, poll tour revisions, or affect the public manual.
 Readers explicitly refresh. Expiry or denied authorization unmounts private
-content and clears its query cache.
+content and clears its query cache. The private-access module owns that terminal
+state and cleanup; its hook owns the deadline and focus revalidation. A separate
+logout hook owns revocation outcome and recovery. The device-review hook owns
+reviewed code and the decision lifecycle. Named views compose these hooks through
+direct imports; browser transport retains one Axios instance and retry policy.
 
 Neon Postgres persists complete validated documents and publication keys outside
 product source control. Creation is one atomic insert/upsert: identical retries
 return their original UUID; a reused key with different content conflicts.
+
+CLI credential storage owns platform selection and protected persistence;
+credential validation and server revocation stay in the CLI workflow. An explicit
+helper overrides platform defaults. macOS loads the pinned native Keychain adapter
+only when selected; Linux retains Secret Service through `secret-tool`.
+
 Private Vercel Blob media arrives in the later media slice. Tour interpretation,
 authentication and persistence never enter the design-system package.
 
