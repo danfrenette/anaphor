@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { PrivateAccessError, requireTourOwner } from "@/features/tours/auth";
-import { PrivateDevice, SignIn } from "@/features/tours/browser";
+import { PrivateDevice } from "@/features/tours/device-approval";
+import { SignIn } from "@/features/tours/sign-in";
 
 export default async function DevicePage({ searchParams }: { searchParams: Promise<{ user_code?: string }> }) {
   const { user_code = "" } = await searchParams;
