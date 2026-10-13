@@ -17,3 +17,24 @@ export async function fictionalIdentity({ provider = "google", accountId = "fixt
   const signature = createHmac("sha256", "fictional-local-test-secret-at-least-32-chars").update(token).digest("base64");
   return { token, cookie: { name: "better-auth.session_token", value: encodeURIComponent(`${token}.${signature}`), url: "http://127.0.0.1:3105", httpOnly: true, sameSite: "Lax" } satisfies { name: string; value: string; url: string; httpOnly: boolean; sameSite: "Lax" } };
 }
+
+
+// Hold only the write boundary so both real HTTP decisions have read the same pending grant.
+// Assertions remain on public responses; this lock makes the overlap deterministic.
+export async function holdDeviceDecisions(userCode: string) {
+  if (!process.env.TOUR_TEST_DATABASE_URL) throw new Error("An isolated TOUR_TEST_DATABASE_URL is required.");
+  const db = new Pool({ connectionString: process.env.TOUR_TEST_DATABASE_URL });
+  const locked = await db.connect();
+  try {
+    await locked.query("BEGIN");
+    await locked.query('SELECT id FROM "deviceCode" WHERE "userCode" = $1 FOR UPDATE', [userCode]);
+    return {
+      waiting: async () => {
+        const result = await db.query<{ count: number }>(`SELECT count(*)::int AS count FROM pg_stat_activity
+          WHERE datname = current_database() AND wait_event_type = 'Lock' AND query LIKE '%deviceCode%'`);
+        return result.rows[0]!.count;
+      },
+      release: async () => { try { await locked.query("ROLLBACK"); } finally { locked.release(); await db.end(); } },
+    };
+  } catch (error) { locked.release(); await db.end(); throw error; }
+}

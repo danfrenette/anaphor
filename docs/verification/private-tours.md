@@ -35,7 +35,12 @@ Never enable implicit linking to resolve an email collision.
 
 Run `pnpm --filter @anaphor/demo tour:migrate` in the configured environment.
 This uses the pinned Better Auth 1.7.7 supported migration API and creates the tour
-table. Inspect migration plans and back up an existing database before applying
+table. The workspace pins a narrow Better Auth 1.7.7 patch in
+`patches/better-auth@1.7.7.patch`: device approval and denial use the existing
+atomic adapter operation with pending-status and owner predicates. Concurrent
+decisions must produce one success and one rejection. Remove the patch only when
+an upstream version passes the same public HTTP concurrency regression.
+Inspect migration plans and back up an existing database before applying
 schema changes there. The first migration is additive; publication does not run
 migrations inside requests.
 
@@ -88,7 +93,11 @@ Check publication → authenticated reading → reload/navigation → sign-out, 
 reads/writes, invalid-document diagnostics, safe creation retries, device approval
 and denial, fixed expiry, revocation, environment binding, and both provider IDs.
 Inspect light/dark reading, keyboard focus, narrow reflow, and expiry hiding private
-content. Run the public manual browser suite and existing release gates too.
+content. The section-navigation regression publishes authored IDs that previously
+collided with generated headings and the reader shell. The decision-overlap test
+holds a disposable database row lock so both real HTTP requests reach their write
+boundary; it asserts outcomes through HTTP, not stored implementation details.
+Run the public manual browser suite and existing release gates too.
 
 ## Real-provider launch acceptance
 

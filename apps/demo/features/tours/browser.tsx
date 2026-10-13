@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import axios from "axios";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, ButtonLabel, ThemeToggle, Text } from "@anaphor/system";
+import { Button, ButtonLabel, Input, ThemeToggle, Text } from "@anaphor/system";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { storedTour } from "./document";
@@ -116,7 +116,7 @@ export function DeviceApproval({ code }: { code: string }) {
     <Text as="h1" variant="title">Approve a device</Text>
     <Text as="p" variant="body">Only approve a code displayed by the Anaphor CLI you started. Approval grants private tour reading and publication for 24 hours.</Text>
     <form className="flex flex-wrap items-end gap-3" onSubmit={(event) => { event.preventDefault(); void review.refetch(); }}>
-      <label className="grid gap-2">Device code<input className="rounded-control border border-input-border bg-background p-3" value={userCode} disabled={decide.isPending} onChange={(event) => { setUserCode(event.target.value); setDecision(""); }} required autoComplete="off" /></label>
+      <label className="grid gap-2">Device code<Input size="md" value={userCode} disabled={decide.isPending} onChange={(event) => { setUserCode(event.target.value); setDecision(""); }} required autoComplete="off" /></label>
       <Button iconOnly={false} nativeButton={true} type="submit" shape="square" size="md" variant="outline" tone="neutral" loading={review.isFetching}><ButtonLabel>Review request</ButtonLabel></Button>
     </form>
     {review.data && <div className="space-y-4">
