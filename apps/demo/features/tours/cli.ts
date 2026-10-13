@@ -1,39 +1,13 @@
-import { spawn } from "node:child_process";
 import { readFile, stat } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import axios from "axios";
+import { secureStore } from "./secure-store";
 import { z } from "zod";
 import { deviceClient, deviceScope, publicationResult, sessionLifetime, tourDocument } from "./document";
 
 const credentials = z.object({ origin: z.url(), token: z.string().min(1), issuedAt: z.number(), expiresAt: z.number() }).strict();
 const tokenResponse = z.object({ access_token: z.string().min(1), token_type: z.literal("Bearer"), expires_in: z.number().positive().max(sessionLifetime), scope: z.literal(deviceScope) });
 const codeResponse = z.object({ device_code: z.string(), user_code: z.string(), verification_uri_complete: z.url(), expires_in: z.number().positive().max(600), interval: z.number().positive() });
-
-async function execute(file: string, args: string[], input = "") {
-  return new Promise<string>((accept, reject) => {
-    const child = spawn(file, args, { stdio: ["pipe", "pipe", "pipe"] });
-    let output = "";
-    child.stdout.on("data", (chunk) => { output += chunk; if (output.length > 65_536) child.kill(); });
-    child.stderr.resume();
-    child.on("error", () => reject(new Error("Secure credential storage is unavailable. Configure ANAPHOR_SECURE_STORE or an unlocked OS Secret Service with secret-tool. No plaintext fallback is used.")));
-    child.on("close", (code) => code === 0 ? accept(output.trim()) : reject(new Error("Secure credential storage failed. Check the helper and unlocked keyring. No plaintext fallback is used.")));
-    child.stdin.on("error", () => {});
-    child.stdin.end(input);
-  });
-}
-
-async function secureStore(action: "check" | "read" | "write" | "delete", origin: string, value = "") {
-  const helper = process.env.ANAPHOR_SECURE_STORE;
-  if (helper) {
-    if (!helper.startsWith("/")) throw new Error("ANAPHOR_SECURE_STORE must be an absolute executable path.");
-    return execute(helper, [action, origin], value);
-  }
-  if (process.platform !== "linux") throw new Error("Configure ANAPHOR_SECURE_STORE for this OS keyring or remote secret store. No plaintext fallback is used.");
-  if (action === "check") return execute("secret-tool", ["store", "--help"]);
-  const attributes = ["application", "anaphor", "origin", origin];
-  if (action === "write") return execute("secret-tool", ["store", "--label=Anaphor private tours", ...attributes], value);
-  return execute("secret-tool", [action === "read" ? "lookup" : "clear", ...attributes]);
-}
 
 function argument(args: string[], flag: string) {
   const index = args.indexOf(flag);

@@ -18,3 +18,10 @@
 - **Connection direction**: the attachment sides and route linking two nodes.
 - **Reverse playback**: travel backward along an existing connection, without
   changing its attachment sides or route.
+
+- **Private tour**: an owner-only explanation of a change, with pinned pull-request
+  provenance and authored reader sections at a stable URL.
+- **Device request**: a pending request from an authoring CLI for the owner to
+  review and explicitly approve or deny in the browser.
+- **Private access**: the owner's permission to read or publish a private tour
+  during an authenticated session for a selected environment.

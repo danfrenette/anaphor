@@ -57,9 +57,17 @@ approve or deny. Device grants expire in ten minutes; polling honors Better Auth
 interval and slow-down responses. Credentials and browser sessions expire after
 a fixed maximum of 24 hours, without renewal. Run login again after expiry.
 
-Linux uses an unlocked OS Secret Service through `secret-tool`. Other systems and
-remote environments configure `ANAPHOR_SECURE_STORE` as an absolute executable
-path for their OS keyring or secure secret store. The helper receives arguments
+macOS uses its login Keychain through the pinned native `@napi-rs/keyring`
+adapter installed with workspace dependencies. No custom helper or local Swift
+compiler is required. Keep optional native dependencies enabled during installation.
+If macOS requests Keychain access, allow the CLI's Node process after reviewing
+the prompt; denied access fails with recovery guidance and no plaintext fallback.
+Entries use service `dev.anaphor.private-tours` and the exact selected origin.
+
+Linux continues to use an unlocked OS Secret Service through `secret-tool`.
+Other systems and remote environments configure `ANAPHOR_SECURE_STORE` as an
+absolute executable path for their OS keyring or secure secret store. An explicit
+helper overrides the built-in adapter on every platform. The helper receives arguments
 `check|read|write|delete <origin>`; `write` reads JSON from stdin, and `read` emits
 the stored JSON only to the CLI. All actions must return zero on success. The
 entry contains `origin`, `token`, `issuedAt`, and `expiresAt` (milliseconds).
@@ -112,5 +120,30 @@ public. Check the existing domain's actual routing and provider callback origins
 
 Record the preview URL, deployed revision, actual actions, observations and limits
 outside product repositories. Deterministic fixture success does not establish
-real-provider or production-domain acceptance. Keep ANAPHOR-246 and its dependent
-slices open until required integrated acceptance passes.
+real-provider or production-domain acceptance. The local-development review scope
+is separate from the Terraform environment (ANAPHOR-255), remote publication
+acceptance (ANAPHOR-256), and explicitly authorized production launch (ANAPHOR-257).
+Local success does not certify those later gates.
+
+## Credential storage verification
+
+Run `pnpm exec vitest run apps/demo/features/tours/secure-store.test.ts` for the
+storage interface's origin isolation, replacement, missing-entry, helper-override,
+and sanitized-denial behavior. Native calls are substituted in that deterministic
+check; it does not establish real OS access.
+
+On a Mac with its login Keychain available, explicitly opt in to the real adapter
+check:
+
+```sh
+ANAPHOR_TEST_KEYCHAIN=1 pnpm exec vitest run apps/demo/features/tours/macos-keychain.native.test.ts
+```
+
+This creates only fictional credentials under unique `.keychain-test.invalid`
+origins and removes both entries in cleanup. It checks write/read/replacement,
+origin isolation and idempotent deletion. It may display an OS access prompt.
+The test is skipped by default and on non-macOS systems; a Linux CI pass does not
+prove native Keychain behavior. Also exercise actual CLI login → publish → logout
+without `ANAPHOR_SECURE_STORE`, using an isolated configured application, and
+verify that logout leaves no credential for that origin. Real-provider acceptance
+still uses the separate deployed-preview recipe above.
