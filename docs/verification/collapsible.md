@@ -1,10 +1,10 @@
-# Collapsible sections and source outline
+# Collapsible sections
 
-Outcome: a reader can collapse irrelevant chapters without changing the selected
-section, and native browser Find reveals matching content inside closed panels. Requirements: [ANAPHOR-227](https://linear.app/anaphor/issue/ANAPHOR-227/keep-long-source-outlines-navigable-with-collapsible-sections).
+Outcome: a reader can open and close independent and nested sections, and native
+browser Find reveals matching content inside closed panels. Requirements: [ANAPHOR-227](https://linear.app/anaphor/issue/ANAPHOR-227/keep-long-source-outlines-navigable-with-collapsible-sections).
 
-Entry points: `/#collapsible`, the Source outline at `/collapsible-playground`, exported Collapsible parts, and the source registry's `collapsible`/`ui` items.
-No account or external data is needed. Initial state comes from the supplied wireframe.
+Entry points: `/#collapsible`, exported Collapsible parts, and the source registry's `collapsible`/`ui` items.
+No account or external data is needed.
 
 Use [repository setup](../../README.md#development) and the
 [shared browser procedure](README.md). Record `git rev-parse HEAD` and local changes
@@ -19,24 +19,18 @@ pnpm exec playwright test e2e/collapsible.spec.ts --workers=2
 pnpm test:registry
 ```
 
-The browser recipe drives both Chromium and 320px WebKit. Visit `/collapsible-playground`. Within Source outline, check chapter 1 expanded, 1.1 selected,
-and other chapters collapsed. Open chapter 2 and its nested 2.1 disclosure;
-chapter 1 stays open. Close/reopen chapter 1, select 1.2, and repeat: selection is
-preserved. Enter and Space toggle; Tab skips hidden sections. In the standalone
-example, “Close from inside” restores visible focus to “Controlled section.”
-Disabled and canceled changes are covered through the exported public API.
-
-Theme runs constrain the outline to 200px, check wrapping, reduced-motion timing,
-and axe results, and capture `outline-light.png` / `outline-dark.png` under the
-Playwright test output directory. Review those images for indentation, chevrons,
-and selected treatment. Registry verification installs real source into a fresh
-consumer, builds it, and exercises the disclosure by click and keyboard.
+The browser recipe drives both Chromium and 320px WebKit at `/#collapsible`.
+Reading notes starts open. Open Controlled section with Enter or Space, then use
+“Close from inside” to restore visible focus to its trigger. Disabled and
+canceled changes are covered through the exported public API. Rapid reversals
+must settle without clipping visible content. Registry verification installs
+real source into a fresh consumer, builds it, and exercises click and keyboard.
 
 Keep per-run results and tested revisions in the verification receipt. Playwright
 retains failure traces/screenshots in `test-results/`; capture evidence before a
 subsequent run overwrites that directory. The harness stops its own server.
 Registry success removes its temporary consumers; failure retains their path.
-Reload resets this example; persistent selection and tree navigation are not claims.
+Reload resets these examples; persistence and tree navigation are not claims.
 
 
 For nested content, use the “Nested reading notes” group in the main example.

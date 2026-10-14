@@ -74,23 +74,18 @@ Nest a complete root/trigger/content composition inside a panel:
 The manual's “Nested reading notes” example shows three levels, independent
 siblings, and a deeply nested phrase, “orchard notebook,” to try with Find.
 
-The manual's `/#collapsible` section demonstrates standalone state and a close
-control inside the panel. The dedicated `/collapsible-playground` route contains
-the nested Source outline. It uses lists and buttons, with `aria-current` on the
-selected section. Each chapter owns expansion; the outline owns selection above
-all panels. This separation preserves selection even when a consumer opts into unmounting. Tab visits
-visible controls; arrow keys have ordinary browser behavior. This is not an ARIA
-tree. Chapter 2 includes an illustrative nested branch beyond the initial wireframe.
+The manual's `/#collapsible` section demonstrates standalone state, a close
+control inside the panel, and nested reading notes. Tab visits visible controls;
+Enter and Space toggle disclosures. Closing content from inside returns focus
+to its trigger.
 
 ## Resource evaluation
 
 [ANAPHOR-227](https://linear.app/anaphor/issue/ANAPHOR-227/keep-long-source-outlines-navigable-with-collapsible-sections)
-provided the Autodidact wireframe: chapter 1 and sections 1.1–1.3, Knowledge
-crunching selected, chapters 2/3 closed. The example follows those initial states
-and the inset selected row, using Anaphor tokens. ANAPHOR-258 moves this
-composition to `/collapsible-playground` and removes the leading accent rule;
-selection remains visible through background, weight and `aria-current`.
-Search, chapter loading, and the center/right workspaces remain outside scope.
+provided the Autodidact wireframe used for the original Source outline demo.
+That composition was retired under ANAPHOR-258 after review because the manual
+already demonstrates the supported disclosure behavior. The package component
+and its public contract remain available to consumers.
 
 [Pierre Trees](https://trees.software/docs) `1.0.0-beta.6` was prototyped in a real
 Chromium browser before choosing the implementation. Canonical chapter/section

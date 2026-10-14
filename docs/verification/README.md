@@ -18,5 +18,5 @@ configuration in `playwright.config.ts`. Check that the target responds at
 output under `test-results/` until the result is recorded, then stop only the
 server started by that run.
 
-- [Collapsible sections and source outline](collapsible.md)
+- [Collapsible sections](collapsible.md)
 - [Agent-built consumer interfaces](agent-consumer.md) — fresh-agent evaluation of the reusable design skill; local registry transport does not cover GitHub authentication or the published branch.
