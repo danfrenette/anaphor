@@ -1,6 +1,6 @@
 "use client";
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger, Prose, Section, SidebarTrigger, Text } from "@anaphor/system";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger, Prose, Section, Text } from "@anaphor/system";
 import { CaretRight } from "@phosphor-icons/react";
 import { useState } from "react";
 
@@ -51,8 +51,7 @@ export function CollapsibleDemo() {
         </div></CollapsibleContent>
       </Collapsible>
     </div>
-    <Text as="h3" variant="heading" className="mt-8">A source outline inside Sidebar</Text>
-    <Prose as="div" className="mt-3"><p>The Source outline below the manual index recreates the supplied chapter hierarchy. Chapter 1 starts open with Knowledge crunching selected. Chapters expand independently; selecting a section keeps it selected through collapse and reopening. Chapter 2 includes a nested disclosure.</p><p>Tab visits visible controls; Enter or Space toggles a disclosure. This is a list of disclosure buttons, with no tree arrow-key model. Closing a section from inside returns focus to its trigger.</p></Prose>
-    <SidebarTrigger target="mobile" aria-label="Open source outline sidebar" className="mt-4 min-h-11 rounded-md border border-border px-3 md:hidden">Open source outline sidebar</SidebarTrigger>
+    <Text as="h3" variant="heading" className="mt-8">Source outline playground</Text>
+    <Prose as="div" className="mt-3"><p>The dedicated playground recreates the supplied chapter hierarchy. Chapter 1 starts open with Knowledge crunching selected. Chapters expand independently; selecting a section keeps it selected through collapse and reopening. Chapter 2 includes a nested disclosure.</p><p>Tab visits visible controls; Enter or Space toggles a disclosure. This is a list of disclosure buttons, with no tree arrow-key model. Closing a section from inside returns focus to its trigger.</p><p><a href="/collapsible-playground">Open the Collapsible playground</a></p></Prose>
   </Section>;
 }

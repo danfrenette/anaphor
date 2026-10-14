@@ -401,11 +401,11 @@ test("card copy confirms a write", async ({ page }) => {
   await expect(status).toHaveText("Copied to clipboard.");
 });
 
-test("editorial card links to its article", async ({ page }) => {
+test("reference card links to its documentation", async ({ page }) => {
   await page.goto("/#card");
-  await page.getByRole("link", { name: "Read the essay", exact: true }).click();
-  await expect(page).toHaveURL(/\/studies\/field-notes$/);
-  await expect(page.getByRole("heading", { name: "Not everything needs to move." })).toBeVisible();
+  await page.getByRole("link", { name: "Read the reference", exact: true }).click();
+  await expect(page).toHaveURL(/\/foundations#layout-reference$/);
+  await expect(page.getByRole("heading", { name: "Layout", exact: true })).toBeVisible();
 });
 
 test("showcase previews reflow in both themes", async ({ page }) => {
