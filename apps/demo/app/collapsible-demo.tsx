@@ -1,6 +1,6 @@
 "use client";
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger, Prose, Section, Text } from "@anaphor/system";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger, Section, Text } from "@anaphor/system";
 import { CaretRight } from "@phosphor-icons/react";
 import { useState } from "react";
 
@@ -9,7 +9,7 @@ export function CollapsibleDemo() {
   return <Section id="collapsible" className="border-t border-border py-12">
     <Text as="p" variant="label" className="text-muted-foreground">02 / Disclosure</Text>
     <Text as="h2" variant="title" className="mt-8">Collapsible</Text>
-    <Text as="p" variant="description" className="mt-3">Keep a long outline navigable. Reveal the section you need without changing your selection.</Text>
+    <Text as="p" variant="description" className="mt-3">Reveal supporting content without leaving the page.</Text>
     <div className="mt-8 space-y-4">
       <Collapsible defaultOpen>
         <CollapsibleTrigger><CaretRight aria-hidden="true" />Reading notes</CollapsibleTrigger>
@@ -51,7 +51,5 @@ export function CollapsibleDemo() {
         </div></CollapsibleContent>
       </Collapsible>
     </div>
-    <Text as="h3" variant="heading" className="mt-8">Source outline playground</Text>
-    <Prose as="div" className="mt-3"><p>The dedicated playground recreates the supplied chapter hierarchy. Chapter 1 starts open with Knowledge crunching selected. Chapters expand independently; selecting a section keeps it selected through collapse and reopening. Chapter 2 includes a nested disclosure.</p><p>Tab visits visible controls; Enter or Space toggles a disclosure. This is a list of disclosure buttons, with no tree arrow-key model. Closing a section from inside returns focus to its trigger.</p><p><a href="/collapsible-playground">Open the Collapsible playground</a></p></Prose>
   </Section>;
 }

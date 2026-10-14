@@ -327,10 +327,9 @@ consumer concerns.
 ## Demonstration scope
 
 The former Signal and Field Notes studies were removed under ANAPHOR-258.
-The reference manual, Foundations layout examples, Carousels, and dedicated
-Collapsible playground remain the demonstration surfaces. The global sidebar
-contains navigation only. The Source outline lives in the playground, with
-background and font weight signaling selection rather than an orange leading rule.
+The reference manual, Foundations layout examples, and Carousels remain the
+demonstration surfaces. The global sidebar contains navigation only. Collapsible
+examples live in the manual; the separate Source outline playground was removed.
 
 Everyday control feedback is immediate: checkbox marks and command palette
 opening/closing do not animate. Desktop sidebar geometry changes immediately;
