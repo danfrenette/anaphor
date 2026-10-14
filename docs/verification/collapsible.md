@@ -32,7 +32,7 @@ Playwright test output directory. Review those images for indentation, chevrons,
 and selected treatment. Registry verification installs real source into a fresh
 consumer, builds it, and exercises the disclosure by click and keyboard.
 
-Keep per-run results and tested revisions in the delivery walkthrough. Playwright
+Keep per-run results and tested revisions in the verification receipt. Playwright
 retains failure traces/screenshots in `test-results/`; capture evidence before a
 subsequent run overwrites that directory. The harness stops its own server.
 Registry success removes its temporary consumers; failure retains their path.
