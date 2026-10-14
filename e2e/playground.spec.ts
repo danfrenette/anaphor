@@ -76,7 +76,7 @@ test("theme follows the system, persists across routes and reloads, and respects
   await page.getByRole("button", { name: "Switch to light theme" }).click();
   await expect(page.locator("html")).not.toHaveClass(/dark/);
   await expect(page.locator("html")).not.toHaveAttribute("data-theme-transition");
-  await page.goto("/studies/signal");
+  await page.goto("/collapsible-playground");
   await expect(page.locator("html")).not.toHaveClass(/dark/);
   await expect(page.getByRole("group", { name: "Manual tools" })).toBeVisible();
   await page.getByRole("button", { name: "Switch to dark theme" }).click();

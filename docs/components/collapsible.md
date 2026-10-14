@@ -75,8 +75,8 @@ The manual's “Nested reading notes” example shows three levels, independent
 siblings, and a deeply nested phrase, “orchard notebook,” to try with Find.
 
 The manual's `/#collapsible` section demonstrates standalone state and a close
-control inside the panel. The existing Sidebar contains a nested Source outline
-after the manual index. It uses lists and buttons, with `aria-current` on the
+control inside the panel. The dedicated `/collapsible-playground` route contains
+the nested Source outline. It uses lists and buttons, with `aria-current` on the
 selected section. Each chapter owns expansion; the outline owns selection above
 all panels. This separation preserves selection even when a consumer opts into unmounting. Tab visits
 visible controls; arrow keys have ordinary browser behavior. This is not an ARIA
@@ -87,7 +87,9 @@ tree. Chapter 2 includes an illustrative nested branch beyond the initial wirefr
 [ANAPHOR-227](https://linear.app/anaphor/issue/ANAPHOR-227/keep-long-source-outlines-navigable-with-collapsible-sections)
 provided the Autodidact wireframe: chapter 1 and sections 1.1–1.3, Knowledge
 crunching selected, chapters 2/3 closed. The example follows those initial states
-and the inset selected row with a leading selection rule, using Anaphor tokens.
+and the inset selected row, using Anaphor tokens. ANAPHOR-258 moves this
+composition to `/collapsible-playground` and removes the leading accent rule;
+selection remains visible through background, weight and `aria-current`.
 Search, chapter loading, and the center/right workspaces remain outside scope.
 
 [Pierre Trees](https://trees.software/docs) `1.0.0-beta.6` was prototyped in a real

@@ -1,9 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-test("source outline keeps selection while sibling and nested disclosures toggle", async ({ page }, testInfo) => {
-  await page.goto("/#collapsible");
-  if (testInfo.project.name === "mobile-webkit") await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
+test("source outline keeps selection while sibling and nested disclosures toggle", async ({ page }) => {
+  await page.goto("/collapsible-playground");
   const outline = page.getByRole("navigation", { name: "Source outline" });
   const first = outline.getByRole("button", { name: "1 Putting the domain model to work", exact: true });
   const selected = outline.getByRole("button", { name: "1.1 Knowledge crunching", exact: true });
@@ -54,14 +53,13 @@ test("standalone controls expose state, hide descendants and return focus", asyn
 });
 
 for (const theme of ["light", "dark"]) {
-  test(`outline wraps in narrow sidebars with ${theme} tokens and reduced motion`, async ({ page }, testInfo) => {
+  test(`outline wraps at narrow widths with ${theme} tokens and reduced motion`, async ({ page }, testInfo) => {
     await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "light" });
-    await page.goto("/#collapsible");
+    await page.goto("/collapsible-playground");
     const themeControl = page.getByRole("button", { name: "Switch to dark theme", exact: true });
     await expect(themeControl).toBeEnabled();
     if (theme === "dark") await themeControl.click();
     await expect(page.locator("html")).toHaveCSS("color-scheme", theme);
-    if (testInfo.project.name === "mobile-webkit") await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
     const outline = page.getByRole("navigation", { name: "Source outline" });
     await outline.evaluate(element => { if (element instanceof HTMLElement) element.style.width = "200px"; });
     const chapter = outline.getByRole("button", { name: "1 Putting the domain model to work", exact: true });

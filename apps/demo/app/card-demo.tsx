@@ -40,12 +40,12 @@ export function CardDemo() {
         </Card>
         <Card variant="default" role="group" aria-labelledby="card-article-title">
           <CardHeader>
-            <CardTitle as="h3" variant="heading" id="card-article-title">Not everything needs to move</CardTitle>
-            <CardDescription>A note on attention, interfaces, and the value of leaving things alone.</CardDescription>
+            <CardTitle as="h3" variant="heading" id="card-article-title">Layout reference</CardTitle>
+            <CardDescription>Shared width bounds, reading measures, and responsive page insets.</CardDescription>
           </CardHeader>
           <CardFooter className="justify-between">
-            <Text as="span" variant="caption">Field Notes · 5 min read</Text>
-            <a href="/studies/field-notes" className="inline-flex min-h-11 items-center text-ui underline underline-offset-4">Read the essay</a>
+            <Text as="span" variant="caption">Foundations · Layout</Text>
+            <a href="/foundations#layout-reference" className="inline-flex min-h-11 items-center text-ui underline underline-offset-4">Read the reference</a>
           </CardFooter>
         </Card>
       </div>

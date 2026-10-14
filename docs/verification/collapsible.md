@@ -3,8 +3,7 @@
 Outcome: a reader can collapse irrelevant chapters without changing the selected
 section, and native browser Find reveals matching content inside closed panels. Requirements: [ANAPHOR-227](https://linear.app/anaphor/issue/ANAPHOR-227/keep-long-source-outlines-navigable-with-collapsible-sections).
 
-Entry points: `/#collapsible`, the Source outline after the Sidebar's manual
-index, exported Collapsible parts, and the source registry's `collapsible`/`ui` items.
+Entry points: `/#collapsible`, the Source outline at `/collapsible-playground`, exported Collapsible parts, and the source registry's `collapsible`/`ui` items.
 No account or external data is needed. Initial state comes from the supplied wireframe.
 
 Use [repository setup](../../README.md#development) and the
@@ -20,8 +19,7 @@ pnpm exec playwright test e2e/collapsible.spec.ts --workers=2
 pnpm test:registry
 ```
 
-The browser recipe drives both Chromium and 320px WebKit. Open the mobile Sidebar
-with “Open sidebar.” Within Source outline, check chapter 1 expanded, 1.1 selected,
+The browser recipe drives both Chromium and 320px WebKit. Visit `/collapsible-playground`. Within Source outline, check chapter 1 expanded, 1.1 selected,
 and other chapters collapsed. Open chapter 2 and its nested 2.1 disclosure;
 chapter 1 stays open. Close/reopen chapter 1, select 1.2, and repeat: selection is
 preserved. Enter and Space toggle; Tab skips hidden sections. In the standalone

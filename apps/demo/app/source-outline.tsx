@@ -15,7 +15,7 @@ export function SourceOutline() {
   const [selected, setSelected] = useState("1.1 Knowledge crunching");
   function section(label: string) {
     return <li><button type="button" aria-current={selected === label ? "true" : undefined} onClick={() => setSelected(label)}
-      className="min-h-9 w-full rounded-md border-s-2 border-transparent px-2 py-2 text-start text-ui text-foreground [overflow-wrap:anywhere] hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-current:border-primary aria-current:bg-background aria-current:font-medium pointer-coarse:min-h-11">{label}</button></li>;
+      className="min-h-9 w-full rounded-md px-2 py-2 text-start text-ui text-foreground [overflow-wrap:anywhere] hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-current:bg-background aria-current:font-medium pointer-coarse:min-h-11">{label}</button></li>;
   }
   return <nav aria-label="Source outline" className="min-w-0 px-2 pb-6">
     <Text as="h2" variant="label" className="px-2 text-muted-foreground">Source outline</Text>

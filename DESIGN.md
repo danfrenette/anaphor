@@ -324,18 +324,13 @@ restrained bottom edge. `KbdGroup` composes keys without interpreting whether
 they form a chord or sequence. Platform formatting and shortcut behavior remain
 consumer concerns.
 
-## Studies
+## Demonstration scope
 
-Studies are complete application contexts, not additional themes or registry
-components. `/studies/signal` uses the existing palette, typography, controls,
-and radii for a dense compute dashboard. `/studies/field-notes` uses those same
-foundations for a quiet, narrow-column article. Study-specific charts and layouts
-remain in the demo until more than one consumer establishes a shared contract.
-
-Signal's data is explicitly fictional. Its bounded shader is decorative, never
-an encoding of telemetry, and stops when paused, offscreen, the document is hidden,
-or reduced motion is requested. A static field remains when WebGL is unavailable.
-The article's interactive figure is immediate and works with a keyboard.
+The former Signal and Field Notes studies were removed under ANAPHOR-258.
+The reference manual, Foundations layout examples, Carousels, and dedicated
+Collapsible playground remain the demonstration surfaces. The global sidebar
+contains navigation only. The Source outline lives in the playground, with
+background and font weight signaling selection rather than an orange leading rule.
 
 Everyday control feedback is immediate: checkbox marks and command palette
 opening/closing do not animate. Desktop sidebar geometry changes immediately;

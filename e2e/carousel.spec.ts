@@ -96,7 +96,7 @@ test("Rail mouse dragging moves the collection without opening a dragged link", 
   await rail.press("Home");
   await expect(rail.getByRole("button", { name: "Previous card" })).toBeDisabled();
   await rail.getByRole("link", { name: "Read the note" }).first().click();
-  await expect(page).toHaveURL(/\/studies\/field-notes#useful-motion$/);
+  await expect(page).toHaveURL(/\/#motion$/);
 });
 
 test("Rail accepts horizontal wheel gestures while vertical wheel input scrolls the page", async ({ page, isMobile }) => {

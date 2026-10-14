@@ -1,8 +1,8 @@
 # Layout recipes
 
 Status: first-pass shared defaults, inspectable at `/foundations#layout-reference`.
-Package CSS owns the exported variables. Deprecated studies are consumers, not
-the documentation home. These defaults are reviewable, not a universal grid.
+Package CSS owns the exported variables. The former Studies pages are retired; `/foundations#layout-reference`
+is the executable documentation home. These defaults are reviewable, not a universal grid.
 
 ## Reuse in another project
 
@@ -58,7 +58,7 @@ Anaphor proposals, not values prescribed by the book.
 
 ## Application: scan, inspect, act
 
-Signal consumes `max-w-workspace` and `px-page-inset` rather than owning copies
+A data workspace can consume `max-w-workspace` and `px-page-inset` rather than owning copies
 of their values. The default canvas is capped at 96rem, including its inline inset.
 The inset follows the existing page-gutter token but caps it at 3rem: 24px on
 small viewports, 48px from 40rem. Dense applications need not inherit the manual's
@@ -82,7 +82,7 @@ small dialogs. Let those tasks occupy less space.
 
 ## Editorial: read, pause, continue
 
-Field Notes consumes `max-w-editorial` with `px-page-inset`. The default canvas
+An editorial composition can consume `max-w-editorial` with `px-page-inset`. The default canvas
 is capped at 70rem with the same 24–48px inset. The text
 track uses the existing 65ch reading token. Header, paragraphs, quotes and footer
 share that track; the interactive figure spans the wider canvas through subgrid.
