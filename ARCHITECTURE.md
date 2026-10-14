@@ -35,7 +35,11 @@ browser server state and limited transient retries; it does not persist private
 data, renew authentication, poll tour revisions, or affect the public manual.
 Readers explicitly refresh. Expiry or denied authorization unmounts private
 content and clears its query cache. The private-access module owns that terminal
-state and cleanup; its hook owns the deadline and focus revalidation. A separate
+state and cleanup across tour navigation. Its access hook composes a session
+query, which opts into TanStack Query visibility revalidation, with a deadline
+hook, which owns the timer and foreground expiry check. The deadline
+hook captures the clock on mount so already-expired access never mounts private
+content. A separate
 logout hook owns revocation outcome and recovery. The device-review hook owns
 reviewed code and the decision lifecycle. Named views compose these hooks through
 direct imports; browser transport retains one Axios instance and retry policy.
