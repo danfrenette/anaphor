@@ -1,4 +1,45 @@
-# Collapsible playground verification — 2026-10-14
+# Manual demo cleanup verification — 2026-10-14
+
+## Final removal revision
+
+Direct owner review supersedes the initial relocation: remove the separate
+Collapsible playground because the existing manual example is sufficient.
+The change walkthrough requirement is retired by the owner.
+
+Executable revision: `e53073b6b983661bb5ad73605677ab8e6b3c3120`.
+Fetched target and merge-base: `14d85d9223072aca20c8ba2cf5ce2d15fd508d8a`.
+
+- Deleted the playground route, SourceOutline implementation, sidebar/search
+  entry and manual link. The manual Collapsible, nested reading notes and native
+  Find examples remain. Package implementation and registry files are unchanged.
+- `pnpm lint`: passed.
+- `pnpm typecheck`: root, package and demo passed after production build.
+- `pnpm exec vitest run --maxWorkers=2`: 164 passed, one native-only skip.
+- `pnpm exec playwright test e2e/collapsible.spec.ts e2e/command-palette.spec.ts e2e/playground.spec.ts e2e/retired-pages.spec.ts e2e/layout-recipes.spec.ts --workers=2`:
+  production build passed; 60 browser checks passed, four documented engine/device
+  skips. Covers retained disclosures/Find/focus, sidebar search, theme persistence,
+  Foundations layout and HTTP 404 for all four retired routes.
+- Local preview at `http://127.0.0.1:3010/#collapsible` visibly shows the retained
+  example and navigation with no separate playground entry.
+- Fresh independent Standards, Spec, Principles and Execution reviews of the
+  full target-to-head diff found no actionable findings. Security, concurrency
+  and performance changes are inapplicable; retired-route 404s are intentional.
+- `git diff --check`: passed.
+
+Earlier registry verification remains applicable: the package, registry and
+registry consumer sources are unchanged. The full public suite was not repeated
+locally after this removal; the affected production checks above were executed.
+Prior remote run `38651175348` at `a95a44c` passed Code quality, Registry consumers,
+Private tour browser tests and Vercel preview, but failed Demo browser tests:
+Linux Badge/Showcase one-pixel snapshot crop differences and a sidebar animation
+expectation. A slider pixel comparison passed on retry. Those prior results do
+not establish final-revision CI success; the pushed revision requires fresh CI.
+No Linux baseline regeneration, physical touch test, merge or production rollout.
+
+## Historical relocation evidence — superseded scope
+
+The following records the earlier playground revision only. Its route and outline
+were subsequently removed; it does not establish final-removal behavior.
 
 Spec: [ANAPHOR-258](https://linear.app/anaphor/issue/ANAPHOR-258/remove-out-of-place-dropdown-example).
 Base/fetched main: `14d85d9223072aca20c8ba2cf5ce2d15fd508d8a`.
@@ -46,4 +87,4 @@ retirement. Compatibility accounts for intentionally retired Study URLs returnin
 No physical-device touch, local Linux image execution, merge or deployment claim.
 The native browser Find distinction remains in the Collapsible recipe. Owned browser
 servers were stopped by the test harness. Documentation/snapshot-only commits retain
-application evidence above; executable behavior is pinned at `1eed1db`.
+historical application evidence above; that earlier executable behavior was pinned at `1eed1db`.
