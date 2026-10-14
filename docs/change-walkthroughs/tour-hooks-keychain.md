@@ -14,8 +14,14 @@ only for the authenticated session in its selected environment.
 
 The tour route passes its authorized initial document and expiry to the private
 reader. The [private-access module](../../apps/demo/features/tours/private-access.tsx)
-creates the scoped query client and owns the terminal access state. Its hook
-checks the session, uses the earlier initial/server expiry, and rechecks on focus.
+creates the scoped query client in the tour layout and retains terminal access
+across navigation. The expiry hook captures the clock on mount so already-expired
+access never mounts private content. Its access hook composes the
+[session query](../../apps/demo/features/tours/use-private-session.ts), which opts
+into TanStack Query revalidation when the page becomes visible, and the
+[expiry hook](../../apps/demo/features/tours/use-session-expiry.ts), which schedules
+the earlier initial/server deadline and checks it on foreground return. The latter
+works without a network response, including when background timers were suspended.
 An expired session or a denied query/mutation ends access; the view unmounts
 private content and the provider clears the query cache. There is one cleanup
 owner instead of separate timer, logout and provider clearing paths.
@@ -80,9 +86,9 @@ The diagram maps ownership; it is not execution evidence.
 
 ## Verification and limits
 
-Implementation revision: `9e2023354d66252b77a614096b99dd2a60ba1aa6`, based on
+Original implementation revision: `9e2023354d66252b77a614096b99dd2a60ba1aa6`, based on
 `9942e7ed64dfbeb7dfd97b4a8962f9ab789d2ff6`. The following checks were executed on
-2026-10-13; documentation-only follow-up retains that source provenance.
+2026-10-13 at that revision; the PR records checks for subsequent commits.
 
 - Lint, strict TypeScript and 161 tests passed. The real Keychain check is opt-in
   and skipped in the ordinary suite.
@@ -106,7 +112,11 @@ Implementation revision: `9e2023354d66252b77a614096b99dd2a60ba1aa6`, based on
 - Independent Button and full-UI registry consumers installed, built and passed
   interaction/theme/font checks. No visual baselines were updated.
 
-The PR records the full public-browser and CI results separately from the focused checks above. Standards,
+The Query follow-up adds regression coverage for already-expired initial access,
+returning after a deadline with an unresponsive network, and a shorter server
+deadline remaining terminal after cache cleanup. The existing focus regression
+now uses Query’s visibility event. The PR records follow-up checks and the full
+public-browser and CI results separately from the original checks above. Standards,
 Spec, Principles, Execution, Security and applicable concurrency/migration reviews
 found no blocking implementation issue. Review is separate from runtime proof.
 

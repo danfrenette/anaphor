@@ -101,7 +101,10 @@ Check publication → authenticated reading → reload/navigation → sign-out, 
 reads/writes, invalid-document diagnostics, safe creation retries, device approval
 and denial, fixed expiry, revocation, environment binding, and both provider IDs.
 Inspect light/dark reading, keyboard focus, narrow reflow, and expiry hiding private
-content. The section-navigation regression publishes authored IDs that previously
+content. Return to a hidden tab before expiry to check session revalidation;
+return after expiry while offline to check immediate local hiding. A session check
+must not refresh the displayed tour revision. Already-expired access must not mount
+private content. The section-navigation regression publishes authored IDs that previously
 collided with generated headings and the reader shell. The decision-overlap test
 holds a disposable database row lock so both real HTTP requests reach their write
 boundary; it asserts outcomes through HTTP, not stored implementation details.
