@@ -11,6 +11,11 @@ for (const theme of ["light", "dark"] as const) {
     await region.click();
     await expect(page.getByText("Reader selection: none", { exact: true })).toBeVisible();
     await expect(page.getByRole("note", { name: "Write before returning · After lines 2–2", exact: true })).toBeFocused();
+    await code.locator('[data-column-number="2"]').last().click();
+    await expect(page.getByText("Reader selection: after lines 2–2", { exact: true })).toBeVisible();
+    await region.click();
+    await expect(page.getByText("Reader selection: after lines 2–2", { exact: true })).toBeVisible();
+    await expect(code.locator('[data-code] [data-line="2"][data-authored-range]')).toContainText("storage.write(draft)");
     const image = page.getByRole("img", { name: "Synthetic local reader showing tour revision 2 and a restored draft", exact: true });
     const enlarge = page.getByRole("button", { name: "Enlarge example screenshot", exact: true });
     await enlarge.focus();

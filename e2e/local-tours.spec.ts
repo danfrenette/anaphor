@@ -43,7 +43,7 @@ test("a local author imports managed evidence, reads slices and explicitly refre
   await page.goto(`/local-tour/${imported.id}`);
   await expect(page.getByRole("heading", { name: "Reliable saved drafts" })).toBeVisible();
   await expect(page.getByText("Local preview", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Saved draft criterion" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Saved draft criterion", exact: true })).toBeVisible();
   await page.evaluate(() => window.scrollTo(0, globalThis.document.body.scrollHeight));
   await expect(page.getByText(/Required evidence asset screenshot is unavailable/)).toBeVisible();
   await expect(page.getByText(/Required evidence asset receipt is unavailable/)).toBeVisible();
