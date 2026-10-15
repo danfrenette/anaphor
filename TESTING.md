@@ -100,6 +100,13 @@ machines. Package-registry access is required; dependencies declared by registry
 items intentionally resolve as in a new consumer. Failed temporary consumers
 retain their resolved lockfile and build output for diagnosis.
 
+Registry runtime dependencies must preserve the supported ranges declared by the
+workspace package when installed source relies on those versions' public types.
+The shortcut item uses `@tanstack/react-hotkeys@^0.10.0`, matching the package:
+newer pre-1.0 minor releases can change the `Hotkey` contract and require a
+separate compatibility review. Keep this bound in the registry rather than
+pinning the consumer fixture, so fresh installation verifies the shipped contract.
+
 ## Accessibility
 
 The release bar is WCAG 2.2 AA: semantic names and roles, complete keyboard
