@@ -1,3 +1,6 @@
+import { CodeReview } from "./components/ui/code-review";
+import { AnnotatedScreenshot, VideoEvidence } from "./components/ui/annotated-media";
+import { RequirementSummary, VerificationSummary } from "./components/ui/review-summary";
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Badge } from "./components/ui/badge";
@@ -85,6 +88,13 @@ function Consumer() {
     </Card>
     </Section>
     </ContentSections>
+    <section aria-label="Installed review elements" className="space-y-6 py-6">
+      <RequirementSummary problem="Review evidence is scattered." outcome="Read one explanation." acceptance={["Keep source pinned."]} />
+      <CodeReview before={null} after={{path:"example.ts",revision:"b".repeat(40),content:"export const saved = true;"}} regions={[]} notes={[]} theme="light" />
+      <AnnotatedScreenshot src={null} alt="Unavailable synthetic capture" width={640} height={400} title="Installed screenshot" description="Synthetic example, not execution evidence." callouts={[{id:"state",label:"The saved state",x:0.5,y:0.5}]} enlargeLabel="Enlarge installed screenshot" closeLabel="Close screenshot" unavailableLabel="Installed capture unavailable" />
+      <VideoEvidence src={null} title="Installed recording" description="Synthetic example, not execution evidence." moments={[{id:"after",seconds:1,label:"After saving"}]} unavailableLabel="Installed recording unavailable" />
+      <VerificationSummary criterion="Installed check" result="pass" applicability="current" superseded={false} required={true} observed="Installed presentation renders." detailsLabel="Installed execution details"><p>Consumer-owned receipt.</p></VerificationSummary>
+    </section>
     <div className="fixed bottom-4 right-4">
       <MorphSurface open={open} onOpenChange={setOpen} title="Registry controls" icon={<span>+</span>}>
         <p>Installed surface</p>

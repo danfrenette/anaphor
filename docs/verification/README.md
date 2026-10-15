@@ -22,3 +22,6 @@ server started by that run.
 
 - [Collapsible sections and source outline](collapsible.md)
 - [Agent-built consumer interfaces](agent-consumer.md) — fresh-agent evaluation of the reusable design skill; local registry transport does not cover GitHub authentication or the published branch.
+
+- [Review elements](review-elements.md): pinned code, annotations, media, summaries,
+  and local narrative composition.

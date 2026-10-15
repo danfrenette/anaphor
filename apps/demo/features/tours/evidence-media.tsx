@@ -1,11 +1,14 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useEffectEvent, useId, useState } from "react";
-import type { TourAsset } from "./document";
+import { AnnotatedScreenshot, VideoEvidence } from "@anaphor/system";
+import { useEffect, useEffectEvent, useState } from "react";
+import type { TourAsset, TourDocumentV2 } from "./document";
 
-export function EvidenceMedia({ asset, url, onUnavailable }: { asset: TourAsset; url: string | undefined; onUnavailable?: () => void }) {
-  const descriptionId = useId();
+type MediaAnnotations = NonNullable<TourDocumentV2["sections"][number]["review"]>["steps"][number]["media"][number];
+
+export function EvidenceMedia({ asset, url, annotations, onUnavailable }: {
+  asset: TourAsset; url: string | undefined; annotations?: MediaAnnotations; onUnavailable?: () => void;
+}) {
   const [failed, setFailed] = useState(false);
   const reportUnavailable = useEffectEvent(() => { setFailed(true); onUnavailable?.(); });
   useEffect(() => {
@@ -16,21 +19,16 @@ export function EvidenceMedia({ asset, url, onUnavailable }: { asset: TourAsset;
       .catch(() => { if (!controller.signal.aborted) reportUnavailable(); });
     return () => controller.abort();
   }, [url, asset.mediaType]);
-  if (!url || failed) return <p role="alert">Evidence unavailable: {asset.caption}. Restore the asset and refresh the tour.</p>;
-  return <figure className="space-y-3">
-    {asset.mediaType.startsWith("image/") ? (
-      <Image src={url} alt={asset.description} width={1600} height={1000} unoptimized
-        className="h-auto w-full border border-input-border" onError={() => { setFailed(true); onUnavailable?.(); }} />
-    ) : asset.mediaType.startsWith("video/") ? (
-      <>
-        <video src={url} controls preload="metadata" aria-label={asset.caption}
-          aria-describedby={descriptionId} className="w-full border border-input-border"
-          onError={() => { setFailed(true); onUnavailable?.(); }} />
-        <p id={descriptionId} className="text-ui">{asset.description}</p>
-      </>
-    ) : <a href={url} className="underline underline-offset-4">Open {asset.caption}</a>}
-    <figcaption className="space-y-1 text-small text-muted-foreground">
-      <p>{asset.caption}</p><p>{asset.provenance}</p>
-    </figcaption>
-  </figure>;
+  const unavailableLabel = `Evidence unavailable: ${asset.caption}. Restore the asset and refresh the tour.`;
+  const description = <>{asset.description}<span className="mt-2 block text-small text-muted-foreground">{asset.provenance}</span></>;
+  const onMediaError = () => { setFailed(true); onUnavailable?.(); };
+  if (asset.mediaType.startsWith("image/")) return <AnnotatedScreenshot
+    src={failed ? null : url ?? null} alt={asset.description} width={annotations?.width ?? 1600} height={annotations?.height ?? 1000}
+    title={asset.caption} description={description} callouts={annotations?.callouts ?? []}
+    enlargeLabel={`Enlarge ${asset.caption}`} closeLabel="Close enlarged screenshot" unavailableLabel={unavailableLabel} onMediaError={onMediaError} />;
+  if (asset.mediaType.startsWith("video/")) return <VideoEvidence src={failed ? null : url ?? null} title={asset.caption}
+    description={description} moments={annotations?.moments ?? []} unavailableLabel={unavailableLabel} onMediaError={onMediaError} />;
+  return <div className="space-y-2 text-ui">{!url || failed ? <p role="alert">{unavailableLabel}</p> : <a href={url} className="inline-block min-h-11 py-3 underline underline-offset-4">Open {asset.caption}</a>}
+    <p>{description}</p>
+  </div>;
 }

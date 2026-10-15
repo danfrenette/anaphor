@@ -34,11 +34,41 @@ export const tourEvidence = z.object({
   supersedes: id.optional(),
   assessments: z.array(z.object({ pr: pr.shape.url, head: revision, rationale: text, assessedAt: z.iso.datetime(), retainedChangesIncluded: z.boolean().optional() }).strict()).max(100).default([]),
 }).strict();
+const range = z.object({ id, label: text.max(500), side: z.enum(["before", "after"]), startLine: z.number().int().positive(), endLine: z.number().int().positive() }).strict();
+const codeSource = z.object({ path: text.max(500), revision, content: z.string().max(200_000), href: z.url().refine((value) => new URL(value).protocol === "https:") }).strict();
+const codeReview = z.object({
+  before: codeSource.nullable(), after: codeSource.nullable(),
+  regions: z.array(range).max(100), notes: z.array(range.extend({ explanation: text })).max(100),
+}).strict().superRefine((value, context) => {
+  const issue = (message: string) => context.addIssue({ code: "custom", message });
+  if (!value.before && !value.after) issue("A code review needs a captured source.");
+  for (const source of [value.before, value.after]) if (source) {
+    const url = new URL(source.href);
+    if (url.hostname !== "github.com" || !url.pathname.endsWith(`/blob/${source.revision}/${source.path}`)) issue("Code source links must match the pinned revision and path.");
+  }
+  for (const entry of [...value.regions, ...value.notes]) {
+    const source = value[entry.side];
+    if (!source || entry.endLine < entry.startLine || entry.endLine > source.content.split("\n").length) issue(`Code range ${entry.id} is outside its captured source.`);
+  }
+});
+const reviewMedia = z.object({
+  assetId: id, sha256: z.string().regex(/^[a-f0-9]{64}$/),
+  width: z.number().int().positive().max(20_000).optional(), height: z.number().int().positive().max(20_000).optional(),
+  callouts: z.array(z.object({ id, label: text, x: z.number().min(0).max(1), y: z.number().min(0).max(1) }).strict()).max(50).default([]),
+  moments: z.array(z.object({ id, label: text, seconds: z.number().finite().nonnegative().max(86_400) }).strict()).max(100).default([]),
+}).strict();
+const sectionReview = z.object({
+  problem: text, outcome: text, acceptance: z.array(text).min(1).max(30),
+  steps: z.array(z.object({ id, title: text.max(200), explanation: text,
+    criterionIds: z.array(id).max(30).default([]), evidenceIds: z.array(id).max(100).default([]),
+    code: codeReview.optional(), media: z.array(reviewMedia).max(30).default([]),
+  }).strict()).min(1).max(30),
+}).strict();
 export const tourDocumentV2 = z.object({
   version: z.literal(2), title: text.max(200), overview: text, prs: z.array(pr).min(1).max(30),
   sections: z.array(z.object({ id, title: text.max(200), paragraphs: z.array(text).min(1).max(50),
     specs: z.array(link).max(100).default([]), sources: z.array(link).max(100).default([]),
-    decisions: z.array(text).max(50).default([]), evidenceIds: z.array(id).max(100).default([]),
+    review: sectionReview.optional(), decisions: z.array(text).max(50).default([]), evidenceIds: z.array(id).max(100).default([]),
   }).strict()).min(1).max(50),
   evidence: z.array(tourEvidence).max(1000).default([]), assets: z.array(tourAsset).max(300).default([]),
 }).strict();
@@ -56,6 +86,22 @@ export const tourDocument = z.discriminatedUnion("version", [versionOne, tourDoc
   const evidence = new Set(document.evidence.map((item) => item.id));
   const prs = new Set(document.prs.map((item) => item.url));
   for (const section of document.sections) for (const ref of section.evidenceIds) if (!evidence.has(ref)) issue(`Section ${section.id} references missing evidence ${ref}.`);
+  for (const section of document.sections) if (section.review) {
+    const steps = section.review.steps;
+    if (new Set(steps.map((step) => step.id)).size !== steps.length) issue(`Review step IDs in ${section.id} must be unique.`);
+    for (const step of steps) {
+      for (const ref of step.evidenceIds) if (!evidence.has(ref)) issue(`Review step ${step.id} references missing evidence ${ref}.`);
+      for (const ref of step.criterionIds) if (!section.specs.some((spec) => spec.id === ref)) issue(`Review step ${step.id} references missing criterion ${ref}.`);
+      for (const media of step.media) {
+        const asset = document.assets.find((asset) => asset.id === media.assetId);
+        if (!asset || asset.sha256 !== media.sha256) issue(`Media annotations must match the exact asset ${media.assetId}.`);
+        else if (asset.mediaType.startsWith("image/") && (!media.width || !media.height || media.moments.length)) issue("Screenshot annotations need dimensions and cannot contain video moments.");
+        else if (asset.mediaType.startsWith("video/") && media.callouts.length) issue("Video annotations use moments rather than screenshot callouts.");
+        else if (asset.mediaType === "text/plain") issue("Media annotations require an image or video.");
+        for (const entries of [media.callouts, media.moments]) if (new Set(entries.map((entry) => entry.id)).size !== entries.length) issue("Media annotation IDs must be unique.");
+      }
+    }
+  }
   for (const record of document.evidence) {
     for (const source of record.sources) {
       if (!prs.has(source.pr)) issue(`Evidence ${record.id} references an unknown PR.`);

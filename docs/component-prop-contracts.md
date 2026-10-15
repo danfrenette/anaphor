@@ -42,3 +42,11 @@ of invalid ones. `text.types.tsx` checks native element refs and events.
 and Radio preserve Base UI's generic value/state and rendering props; the
 indicator uses Checkbox's fixed geometry rather than adding visual configuration.
 `radio-group.types.tsx` checks value inference and public refs/composition.
+
+Review components require their presentation configuration explicitly. CodeReview
+requires both source sides (one may be null), regions, notes, and theme.
+AnnotatedScreenshot requires source (nullable), dimensions, alternative text,
+title, description, callouts, and action/failure labels. VideoEvidence requires
+source (nullable), title, description, moments, and failure label; caption tracks
+are optional content. Review summaries require their content and all status facts.
+Native attributes and refs remain available; app adapters own provenance validation.

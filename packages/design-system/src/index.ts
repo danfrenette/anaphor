@@ -37,3 +37,6 @@ export { Tooltip, TooltipGroup, TooltipProvider, TooltipTrigger, TooltipPopup, t
 export { Skeleton, SkeletonRegion, SkeletonText, SkeletonBox, type SkeletonProps, type SkeletonRegionProps, type SkeletonTextProps, type SkeletonVariant } from "./components/skeleton";
 
 export { Collapsible, CollapsibleTrigger, CollapsibleContent, CollapsiblePanel, type CollapsibleProps, type CollapsibleTriggerProps, type CollapsibleContentProps } from "./components/collapsible";
+export { AnnotatedScreenshot, VideoEvidence, type AnnotatedScreenshotProps, type ScreenshotCallout, type VideoEvidenceProps, type VideoMoment } from "./components/annotated-media";
+export { CodeReview, type CodeReviewProps, type CodeReviewSource, type CodeReviewRegion, type CodeReviewNote, type CodeReviewRange } from "./components/code-review";
+export { RequirementSummary, VerificationSummary, type RequirementSummaryProps, type VerificationSummaryProps } from "./components/review-summary";

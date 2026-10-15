@@ -96,6 +96,7 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "collapsible", label: "Collapsible", href: "/#collapsible", icon: ListDashes },
       { id: "sidebar", label: "Sidebar", href: "/#sidebar", icon: ListDashes },
       { id: "card", label: "Card", href: "/#card", icon: SlidersHorizontal },
+      { id: "review-elements", label: "Review elements", href: "/review-elements", icon: ListDashes },
       { id: "badge", label: "Badge", href: "/#badge", icon: Tag },
       { id: "node-edge-graphs", label: "Node-edge graphs", href: "/#node-edge-graphs", icon: ShareNetwork },
       { id: "skeleton", label: "Skeleton", href: "/#skeleton", icon: Rectangle },

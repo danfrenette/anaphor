@@ -429,3 +429,13 @@ usage examples, with horizontally scrollable text and separate copy buttons.
 ## Collapsible sections
 
 Compose reusable disclosures and a nested Sidebar outline with controlled or initial state. See [Collapsible](docs/components/collapsible.md) for examples, keyboard behavior, and the Pierre Trees evaluation.
+
+## Review elements
+
+`CodeReview`, `RequirementSummary`, `VerificationSummary`, `AnnotatedScreenshot`,
+and `VideoEvidence` compose review narratives from consumer-owned content.
+See the synthetic reference examples at `/review-elements`,
+[code review](docs/components/code-review.md),
+[annotated media](docs/components/annotated-media.md), and
+[review summaries](docs/components/review-summary.md).
+Tour adapters own pinned provenance, evidence applicability, and asset URLs.

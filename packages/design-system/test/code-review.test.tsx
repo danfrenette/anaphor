@@ -1,0 +1,61 @@
+import { render, screen } from "@testing-library/react";
+import { expect, test } from "vitest";
+import { CodeReview } from "@anaphor/system";
+
+const before = { path: "local.ts", revision: "abc123", content: "const refresh = false;\n", href: "https://example.com/abc123/local.ts" };
+const after = { path: "local.ts", revision: "def456", content: "const refresh = true;\n", href: "https://example.com/def456/local.ts" };
+
+test("identifies both captured revisions and their pinned source links", () => {
+  render(<CodeReview before={before} after={after} regions={[]} notes={[]} theme="light" aria-label="Explicit refresh" />);
+  expect(screen.getByRole("figure", { name: "Explicit refresh" })).toBeVisible();
+  expect(screen.getByRole("link", { name: "Before: local.ts at abc123" })).toHaveAttribute("href", before.href);
+  expect(screen.getByRole("link", { name: "After: local.ts at def456" })).toHaveAttribute("href", after.href);
+  expect(screen.getByText("Captured source; omitted context can be expanded. This view does not establish complete PR coverage.")).toBeVisible();
+});
+
+test("discloses the complete captured sources without requiring remote access", async () => {
+  const user = (await import("@testing-library/user-event")).default.setup();
+  render(<CodeReview before={before} after={after} regions={[]} notes={[]} theme="light" />);
+  await user.click(screen.getByText("Show full captured context"));
+  expect(screen.getByRole("region", { name: "Before captured source" })).toHaveTextContent("const refresh = false;");
+  expect(screen.getByRole("region", { name: "After captured source" })).toHaveTextContent("const refresh = true;");
+});
+
+test("keeps authored ranges and explanations separate from the reader selection", () => {
+  render(<CodeReview before={before} after={after} theme="light"
+    regions={[{ id: "refresh", label: "Explicit refresh", side: "after", startLine: 1, endLine: 1 }]}
+    notes={[{ id: "refresh-note", side: "after", startLine: 1, endLine: 1, children: "Refresh is an explicit action." }]} />);
+  expect(screen.getByRole("navigation", { name: "Authored code regions" })).toHaveTextContent("Explicit refresh");
+  expect(screen.getByRole("note", { name: "After lines 1–1" })).toHaveTextContent("Refresh is an explicit action.");
+  expect(screen.getByRole("status")).toHaveTextContent("Reader selection: none");
+});
+
+
+test("retains an unchanged excerpt with its authored range and complete source", async () => {
+  const user = (await import("@testing-library/user-event")).default.setup();
+  render(<CodeReview before={before} after={{ ...before, revision: "def456" }} regions={[]}
+    notes={[{ id: "kept", side: "before", startLine: 1, endLine: 1, children: "The refresh flag was retained." }]} theme="dark" />);
+  expect(screen.getByText("Unchanged source excerpt.")).toBeVisible();
+  expect(screen.getByRole("note", { name: "Before lines 1–1" })).toHaveTextContent("The refresh flag was retained.");
+  await user.click(screen.getByText("Show full captured context"));
+  expect(screen.getByRole("region", { name: "After captured source" })).toHaveTextContent("const refresh = false;");
+});
+
+test.each(["added", "deleted"] as const)("reads the captured side of a %s empty file", async kind => {
+  const user = (await import("@testing-library/user-event")).default.setup();
+  const empty = { path: "empty.ts", revision: "def456", content: "" };
+  render(<CodeReview {...(kind === "added" ? { before: null, after: empty } : { before: empty, after: null })} regions={[]} notes={[]} theme="light" />);
+  await user.click(screen.getByText("Show full captured context"));
+  expect(screen.getByRole("region", { name: `${kind === "added" ? "After" : "Before"} captured source` })).toBeVisible();
+  expect(screen.queryByRole("region", { name: `${kind === "added" ? "Before" : "After"} captured source` })).not.toBeInTheDocument();
+});
+
+test("a region jump expands source context and focuses its authored explanation without changing reader selection", async () => {
+  const user = (await import("@testing-library/user-event")).default.setup();
+  render(<CodeReview before={before} after={after} theme="light" notes={[]}
+    regions={[{ id: "refresh", label: "Refresh policy", side: "after", startLine: 1, endLine: 1 }]} />);
+  await user.click(screen.getByRole("button", { name: "Refresh policy" }));
+  expect(screen.getByText("Refresh policy · After lines 1–1").parentElement).toHaveFocus();
+  expect(screen.getByRole("region", { name: "After captured source" })).toBeVisible();
+  expect(screen.getByRole("status")).toHaveTextContent("Reader selection: none");
+});

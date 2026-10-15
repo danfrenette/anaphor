@@ -99,6 +99,11 @@ async function checkBrowser(browser, directory, item) {
     const dark = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--anaphor-background"));
     assert.notEqual(light, dark, "Installed dark theme must change tokens");
     if (item === "ui") {
+      await expect(page.getByRole("heading", { name: "The problem", exact: true })).toBeVisible();
+      await expect(page.getByText("Installed capture unavailable", { exact: true })).toBeVisible();
+      await page.getByText("Installed execution details", { exact: true }).click();
+      await expect(page.getByText("Consumer-owned receipt.", { exact: true })).toBeVisible();
+      await expect(page.locator("diffs-container")).toBeVisible();
       const disclosure = page.getByRole("button", { name: "Registry disclosure" });
       await disclosure.click();
       await expect(page.getByRole("button", { name: "Installed section" })).toBeVisible();

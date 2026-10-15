@@ -32,6 +32,8 @@
 :root {
   color-scheme: light;
   --anaphor-border-hairline: 1px;
+  --anaphor-image-outline: rgb(0 0 0 / 0.1);
+  --anaphor-shadow-review: 0 0 0 1px rgb(0 0 0 / 0.05), 0 1px 3px rgb(0 0 0 / 0.05), 0 4px 10px -4px rgb(0 0 0 / 0.05);
   --anaphor-shadow-upload: 0 0 0 1px rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06), 0 2px 4px rgb(0 0 0 / 0.04);
   --anaphor-shadow-upload-action: 0 0 0 1px oklch(0 0 0 / 0.09), 0 1px 2px -1px oklch(0 0 0 / 0.08), 0 2px 4px oklch(0 0 0 / 0.04);
   --anaphor-shadow-upload-action-hover: 0 0 0 1px oklch(0 0 0 / 0.14), 0 1px 2px -1px oklch(0 0 0 / 0.1), 0 2px 4px oklch(0 0 0 / 0.06);
@@ -95,6 +97,8 @@
 }
 
 .dark {
+  --anaphor-image-outline: rgb(255 255 255 / 0.1);
+  --anaphor-shadow-review: 0 0 0 1px rgb(255 255 255 / 0.1);
   --anaphor-shadow-upload: 0 0 0 1px rgb(255 255 255 / 0.09);
   --anaphor-shadow-upload-action: 0 0 0 1px oklch(1 0 0 / 0.12);
   --anaphor-shadow-upload-action-hover: 0 0 0 1px oklch(1 0 0 / 0.18);

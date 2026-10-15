@@ -39,7 +39,10 @@
         "danfrenette/anaphor/skeleton",
         "danfrenette/anaphor/text",
         "danfrenette/anaphor/prose",
-        "danfrenette/anaphor/sections"
+        "danfrenette/anaphor/sections",
+        "danfrenette/anaphor/code-review",
+        "danfrenette/anaphor/annotated-media",
+        "danfrenette/anaphor/review-summary"
       ]
     },
     {
@@ -562,6 +565,67 @@
           "target": "@ui/collapsible.tsx"
         }
       ]
+    },
+{
+  "name": "code-review",
+  "type": "registry:ui",
+  "title": "Code Review",
+  "description": "Reusable review presentation with consumer-owned content and provenance.",
+  "registryDependencies": [
+    "danfrenette/anaphor/style",
+    "danfrenette/anaphor/utils"
+  ],
+  "dependencies": [
+    "@pierre/diffs@1.5.2"
+  ],
+  "files": [
+    {
+      "path": "packages/design-system/src/components/code-review.tsx",
+      "type": "registry:ui",
+      "target": "@components/ui/code-review.tsx"
     }
+  ]
+},
+{
+  "name": "annotated-media",
+  "type": "registry:ui",
+  "title": "Annotated Media",
+  "description": "Reusable review presentation with consumer-owned content and provenance.",
+  "registryDependencies": [
+    "danfrenette/anaphor/style",
+    "danfrenette/anaphor/utils",
+    "danfrenette/anaphor/button",
+    "danfrenette/anaphor/text"
+  ],
+  "dependencies": [
+    "@base-ui/react@^1.9.0"
+  ],
+  "files": [
+    {
+      "path": "packages/design-system/src/components/annotated-media.tsx",
+      "type": "registry:ui",
+      "target": "@components/ui/annotated-media.tsx"
+    }
+  ]
+},
+{
+  "name": "review-summary",
+  "type": "registry:ui",
+  "title": "Review Summary",
+  "description": "Reusable review presentation with consumer-owned content and provenance.",
+  "registryDependencies": [
+    "danfrenette/anaphor/style",
+    "danfrenette/anaphor/utils",
+    "danfrenette/anaphor/text"
+  ],
+  "dependencies": [],
+  "files": [
+    {
+      "path": "packages/design-system/src/components/review-summary.tsx",
+      "type": "registry:ui",
+      "target": "@components/ui/review-summary.tsx"
+    }
+  ]
+}
   ]
 }

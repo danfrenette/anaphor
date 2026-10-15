@@ -55,3 +55,10 @@ it("shows one concern when separate checks for the same criterion both become st
   const concerns = screen.getByRole("complementary", { name: "Merge concerns" });
   expect(within(concerns).getAllByText("save: stale evidence.", { exact: true })).toHaveLength(1);
 });
+
+it("shows a shared execution once and links each slice to its canonical record", () => {
+  const repeated = tourDocument.parse({ ...document, sections: [document.sections[0], { ...document.sections[0], id: "reopen", title: "Reopen" }] });
+  render(<TourReader document={repeated} revision={2} assetBaseUrl="/api/assets" />);
+  expect(screen.getAllByRole("article", { name: "Verification: save" })).toHaveLength(1);
+  expect(screen.getAllByRole("link", { name: "Draft persistence criterion · pass · stale" })).toHaveLength(2);
+});
