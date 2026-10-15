@@ -61,7 +61,9 @@ from replacing readable content. The unauthenticated local entry point is
 explicitly enabled only in a loopback development instance.
 
 The shared reader receives document data and revision-bound asset URLs. Local
-loading stays independent of auth and database modules. Hosted publication stages
+loading stays independent of auth and database modules. Runtime workspace
+paths carry Turbopack tracing exclusions so user data and CLI ancestry scans
+are never copied into a deployment. Hosted publication stages
 private Vercel Blob assets, then commits a document revision and retry result
 atomically in Postgres. Hosted asset reads authorize the owner and resolve only
 assets registered in that tour revision. Tour interpretation, authentication and

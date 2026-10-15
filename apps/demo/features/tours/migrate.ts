@@ -24,6 +24,8 @@ async function migrate() {
     owner text NOT NULL, sha256 text NOT NULL, bytes bigint NOT NULL,
     media_type text NOT NULL, storage_key text NOT NULL, PRIMARY KEY (owner, sha256)
   )`);
+  await db.query(`INSERT INTO anaphor_tour_revision (tour_id, revision, document)
+    SELECT id, revision, document FROM anaphor_tour ON CONFLICT DO NOTHING`);
   console.log("Anaphor auth and tour schema ready.");
  } finally { await db.end(); }
 }

@@ -32,7 +32,7 @@ export const tourEvidence = z.object({
   testedAt: z.iso.datetime(), required: z.boolean(), assetIds: z.array(id).max(100).default([]),
   sources: z.array(z.object({ pr: pr.shape.url, head: revision, patchAssetId: id.optional(), untrackedAssetIds: z.array(id).max(100).optional() }).strict()).min(1).max(30),
   supersedes: id.optional(),
-  assessments: z.array(z.object({ pr: pr.shape.url, head: revision, rationale: text, assessedAt: z.iso.datetime() }).strict()).max(100).default([]),
+  assessments: z.array(z.object({ pr: pr.shape.url, head: revision, rationale: text, assessedAt: z.iso.datetime(), retainedChangesIncluded: z.boolean().optional() }).strict()).max(100).default([]),
 }).strict();
 export const tourDocumentV2 = z.object({
   version: z.literal(2), title: text.max(200), overview: text, prs: z.array(pr).min(1).max(30),

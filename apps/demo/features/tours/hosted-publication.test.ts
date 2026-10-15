@@ -3,8 +3,9 @@ import { createHash, randomUUID } from "node:crypto";
 import { beforeAll, describe, expect, test, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
-const provider = vi.hoisted(() => ({ put: vi.fn(), get: vi.fn() }));
+const provider = vi.hoisted(() => ({ put: vi.fn(), get: vi.fn(), token: vi.fn() }));
 vi.mock("@vercel/blob", () => provider);
+vi.mock("@vercel/blob/client", () => ({ generateClientTokenFromReadWriteToken: provider.token }));
 
 const origin = "http://127.0.0.1:3105";
 const document = {
@@ -93,6 +94,51 @@ test("publication waits for private media, preserves old revisions after upload 
   const headChanged = { ...next, prs: next.prs.map((pr) => ({ ...pr, head: "c".repeat(40) })) };
   expect((await updateTour(request(`/api/tours/${initial.id}`, { expectedRevision: 2, document: headChanged }, randomUUID(), true, "PATCH"), initial.id)).status).toBe(200);
   expect((await readHostedAsset(readRequest(), initial.id, "receipt", "2")).status).toBe(206);
+});
+
+test("a pre-migration creation key retains its original response after a later update", async () => {
+  const { tourDatabase } = await import("./database");
+  const { createTour, updateTour } = await import("./publication");
+  const id = randomUUID(); const key = randomUUID();
+  // Seed the original version 1 persistence boundary, before operation history existed.
+  const original = JSON.stringify(document);
+  await tourDatabase().query("INSERT INTO anaphor_tour (id,owner,operation_key,content_hash,document) VALUES ($1,$2,$3,$4,$5::jsonb)",
+    [id,"dan",key,createHash("sha256").update(original).digest("hex"),original]);
+  const result = { id, revision: 1, url: `${origin}/tour/${id}` };
+  const firstRetry = await createTour(request("/api/tours", document, key));
+  expect(firstRetry.status).toBe(201); expect(await firstRetry.json()).toEqual(result);
+  const updated = { ...document, overview: "The new mutable document must not redefine the original operation." };
+  expect((await updateTour(request(`/api/tours/${id}`, { document: updated, expectedRevision: 1 }, key, true, "PATCH"), id)).status).toBe(409);
+  expect((await updateTour(request(`/api/tours/${id}`, { document: updated, expectedRevision: 1 }, randomUUID(), true, "PATCH"), id)).status).toBe(200);
+  const retry = await createTour(request("/api/tours", document, key));
+  expect(retry.status).toBe(201); expect(await retry.json()).toEqual(result);
+  expect((await createTour(request("/api/tours", updated, key))).status).toBe(409);
+});
+
+test("large private uploads use scoped short-lived grants and verify completion before publication", async () => {
+  const { prepareHostedUpload, completeHostedUpload } = await import("./hosted-assets");
+  const bytes = Buffer.from(`capture-${randomUUID()}`.padEnd(4 * 1024 * 1024 + 1, "x"));
+  const hash = createHash("sha256").update(bytes).digest("hex");
+  const description = { mediaType: "text/plain", bytes: bytes.length };
+  provider.token.mockResolvedValue("fictional-scoped-upload-token");
+  const path = `/api/tours/assets/${hash}`;
+  expect((await prepareHostedUpload(request(`${path}/prepare`, description, randomUUID(), false), hash)).status).toBe(401);
+  const grant = await prepareHostedUpload(request(`${path}/prepare`, description), hash);
+  expect(grant.status).toBe(200);
+  expect(await grant.json()).toEqual({ pathname: `tours/dan/${hash}`, token: "fictional-scoped-upload-token" });
+  const options = provider.token.mock.calls.at(-1)![0];
+  expect(options).toMatchObject({ pathname: `tours/dan/${hash}`, allowedContentTypes: ["text/plain"], maximumSizeInBytes: bytes.length, addRandomSuffix: false, allowOverwrite: false });
+  expect(options.validUntil).toBeGreaterThan(Date.now());
+  expect(options.validUntil).toBeLessThanOrEqual(Date.now() + 600_000);
+  provider.get.mockResolvedValueOnce(null);
+  expect((await completeHostedUpload(request(`${path}/complete`, description), hash)).status).toBe(404);
+  const stream = (value: Buffer) => new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(value); controller.close(); } });
+  provider.get.mockResolvedValueOnce({ stream: stream(Buffer.from("corrupt")) });
+  expect((await completeHostedUpload(request(`${path}/complete`, description), hash)).status).toBe(422);
+  provider.get.mockResolvedValueOnce({ stream: stream(bytes) });
+  expect((await completeHostedUpload(request(`${path}/complete`, description), hash)).status).toBe(201);
+  expect((await completeHostedUpload(request(`${path}/complete`, description), hash)).status).toBe(201);
+  expect((await prepareHostedUpload(request(`${path}/prepare`, { ...description, bytes: 100 * 1024 * 1024 + 1 }), hash)).status).toBe(422);
 });
 
 });

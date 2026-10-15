@@ -63,6 +63,8 @@ function publishTour(request: Request, id?: string) {
       let revision = 1;
       let tourId = id;
       if (id) {
+        const legacyKey = (await client.query("SELECT id FROM anaphor_tour WHERE owner=$1 AND operation_key=$2", [owner,key])).rows[0];
+        if (legacyKey) { await client.query("ROLLBACK"); return privateJson({ error: "This operation key belongs to the original creation. Use a new key for an update." }, 409); }
         const previous = (await client.query("SELECT revision, document FROM anaphor_tour WHERE id=$1 AND owner=$2 FOR UPDATE", [id, owner])).rows[0];
         if (!previous) { await client.query("ROLLBACK"); return privateJson({ error: "Tour not found." }, 404); }
         if (previous.revision !== expectedRevision) { await client.query("ROLLBACK"); return privateJson({ error: "Tour revision changed. Read the latest revision before updating.", revision: previous.revision }, 409); }
@@ -82,10 +84,10 @@ function publishTour(request: Request, id?: string) {
         await client.query("UPDATE anaphor_tour SET document=$3::jsonb, revision=$4 WHERE id=$1 AND owner=$2", [id, owner, document, revision]);
       } else {
         // Preserve keys created by the original version 1 publication contract.
-        const legacy = (await client.query("SELECT id, revision, document FROM anaphor_tour WHERE owner=$1 AND operation_key=$2", [owner, key])).rows[0];
+        const legacy = (await client.query("SELECT id, content_hash FROM anaphor_tour WHERE owner=$1 AND operation_key=$2", [owner, key])).rows[0];
         if (legacy) {
           await client.query("ROLLBACK");
-          return JSON.stringify(tourDocument.parse(legacy.document)) === document ? privateJson({ id: legacy.id, revision: legacy.revision, url: `${tourOrigin()}/tour/${legacy.id}` }, 201) : privateJson({ error: "This operation key belongs to another publication." }, 409);
+          return createHash("sha256").update(document).digest("hex") === legacy.content_hash ? privateJson({ id: legacy.id, revision: 1, url: `${tourOrigin()}/tour/${legacy.id}` }, 201) : privateJson({ error: "This operation key belongs to another publication." }, 409);
         }
         tourId = randomUUID();
         await client.query("INSERT INTO anaphor_tour (id,owner,operation_key,content_hash,document) VALUES ($1,$2,$3,$4,$5::jsonb)", [tourId,owner,key,hash,document]);
@@ -100,7 +102,7 @@ function publishTour(request: Request, id?: string) {
   });
 }
 
-async function boundedBody(request: Request) {
+export async function boundedBody(request: Request) {
   if (Number(request.headers.get("content-length")) > maxDocumentBytes) return null;
   const reader = request.body?.getReader();
   if (!reader) return "";

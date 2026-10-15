@@ -5,7 +5,10 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
+
+const directProvider = vi.hoisted(() => ({ put: vi.fn() }));
+vi.mock("@vercel/blob/client", () => directProvider);
 
 test("the publish CLI uploads local bundle media before authenticated same-tour updates", async () => {
   const directory = await mkdtemp(join(tmpdir(), "anaphor-hosted-cli-"));
@@ -51,5 +54,44 @@ test("the publish CLI uploads local bundle media before authenticated same-tour 
     expect(requests[0]!.body).toEqual(bytes);
     expect(requests[1]!.key).toBe("same-operation");
     expect(JSON.parse(requests[1]!.body.toString())).toMatchObject({ expectedRevision: 2,document: { title: document.title } });
+  } finally { await new Promise<void>((accept) => server.close(() => accept())); await rm(directory,{ recursive:true,force:true }); }
+});
+
+test("large bundle publication bypasses application ingress and retries verified completion before upload", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "anaphor-large-cli-"));
+  const actions: string[] = [];
+  let completed = false;
+  const id = randomUUID();
+  const server = createServer(async (request,response) => {
+    for await (const chunk of request) void chunk;
+    const path = request.url!; actions.push(path);
+    response.setHeader("Content-Type","application/json");
+    if (path.endsWith("/complete") && !completed) { response.statusCode = 404; response.end("{}"); }
+    else if (path.endsWith("/prepare")) response.end(JSON.stringify({ pathname: "tours/dan/large-hash",token: "scoped-token" }));
+    else if (path.endsWith("/complete")) response.end("{}");
+    else response.end(JSON.stringify({ id,revision: 1,url: `${origin}/tour/${id}` }));
+  });
+  await new Promise<void>((accept) => server.listen(0,"127.0.0.1",accept));
+  const address = server.address(); if (!address || typeof address === "string") throw new Error("No test server.");
+  const origin = `http://127.0.0.1:${address.port}`;
+  try {
+    const bytes = Buffer.from("x".repeat(4 * 1024 * 1024 + 1));
+    const hash = createHash("sha256").update(bytes).digest("hex");
+    const asset = { id: "capture",mediaType: "text/plain",sha256: hash,bytes: bytes.length,description: "Capture",caption: "Large capture",provenance: "Fictional transport test" };
+    const document = { version: 2,title: "Large evidence",overview: "Keep original captures.",prs: [{ url: "https://github.com/example/demo/pull/1",base: "a".repeat(40),head: "b".repeat(40) }],sections: [{ id: "slice",title: "Slice",paragraphs: ["Large evidence works."] }],assets: [asset],evidence: [] };
+    const file = join(directory,"bundle.json");
+    await writeFile(join(directory,"capture.txt"),bytes);
+    await writeFile(file,JSON.stringify({ document,files: { capture: "capture.txt" } }));
+    directProvider.put.mockImplementation(async () => { actions.push("DIRECT_PRIVATE_UPLOAD"); completed = true; });
+    const { publishHostedTour } = await import("./hosted-cli");
+    const http = (await import("axios")).default.create({ baseURL: origin });
+    await publishHostedTour(http,file,"large-key");
+    expect(actions).toEqual([`/api/tours/assets/${hash}/complete`,`/api/tours/assets/${hash}/prepare`,"DIRECT_PRIVATE_UPLOAD",`/api/tours/assets/${hash}/complete`,"/api/tours"]);
+    expect(directProvider.put).toHaveBeenCalledWith("tours/dan/large-hash",expect.any(Uint8Array),{ access:"private",token:"scoped-token",contentType:"text/plain",multipart:true });
+    expect(createHash("sha256").update(directProvider.put.mock.calls[0]![1]).digest("hex")).toBe(hash);
+    actions.length = 0; directProvider.put.mockClear();
+    await publishHostedTour(http,file,"large-key");
+    expect(actions).toEqual([`/api/tours/assets/${hash}/complete`,"/api/tours"]);
+    expect(directProvider.put).not.toHaveBeenCalled();
   } finally { await new Promise<void>((accept) => server.close(() => accept())); await rm(directory,{ recursive:true,force:true }); }
 });

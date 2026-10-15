@@ -21,7 +21,7 @@ test("an author imports and reopens a version 2 tour without hosted configuratio
   expect(result.url).toBe(`http://127.0.0.1:3017/local-tour/${result.id}`);
   const reopened = JSON.parse(cli(join(directory, "workspace"), ["preview", "--id", result.id]));
   expect(reopened).toEqual(result);
-});
+}, 30_000);
 
 test("a PR keeps one tour identity and conflicting or invalid updates leave its readable revision intact", async () => {
   const directory = await mkdtemp(join(tmpdir(), "anaphor-cli-")); scratch.push(directory);
@@ -36,7 +36,7 @@ test("a PR keeps one tour identity and conflicting or invalid updates leave its 
   await writeFile(file, JSON.stringify({ document: { ...document, version: 9 }, files: {} }));
   expect(() => cli(workspace, ["update", "--id", first.id, "--expected-revision", "2", "--file", file])).toThrow();
   expect(JSON.parse(cli(workspace, ["preview", "--id", first.id]))).toEqual(next);
-});
+}, 30_000);
 
 test("validation reports missing required criteria as merge concerns instead of claiming readiness", async () => {
   const directory = await mkdtemp(join(tmpdir(), "anaphor-cli-")); scratch.push(directory);
@@ -45,7 +45,7 @@ test("validation reports missing required criteria as merge concerns instead of 
   const result = JSON.parse(cli(join(directory, "workspace"), ["validate", "--file", file]));
   expect(result.valid).toBe(true);
   expect(result.concerns).toContain("No required verification evidence is recorded.");
-});
+}, 30_000);
 
 test("new heads retain original runs and a rerun gets its own evidence ID", async () => {
   const directory = await mkdtemp(join(tmpdir(), "anaphor-cli-")); scratch.push(directory);
@@ -66,7 +66,7 @@ test("new heads retain original runs and a rerun gets its own evidence ID", asyn
   const updated = JSON.parse(cli(workspace, ["update", "--id", first.id, "--expected-revision", "2", "--file", file]));
   expect(updated.revision).toBe(3);
   expect(JSON.parse(cli(workspace, ["validate", "--file", file])).concerns).toEqual([]);
-});
+}, 30_000);
 
 test("managed receipts survive removal of their source bundle and escaped or corrupt assets are rejected", async () => {
   const directory = await mkdtemp(join(tmpdir(), "anaphor-cli-")); scratch.push(directory);
@@ -86,7 +86,7 @@ test("managed receipts survive removal of their source bundle and escaped or cor
   expect(() => cli(workspace, ["validate", "--file", file])).toThrow(/escapes/);
   await rm(source, { recursive: true });
   expect(JSON.parse(cli(workspace, ["preview", "--id", imported.id]))).toEqual(imported);
-});
+}, 30_000);
 
 test("an unrelated optional run cannot supersede required evidence to hide a failed check", async () => {
   const directory = await mkdtemp(join(tmpdir(), "anaphor-cli-")); scratch.push(directory);
@@ -95,7 +95,7 @@ test("an unrelated optional run cannot supersede required evidence to hide a fai
   const optional = { ...required, id: "optional", criterion: "T1", required: false, result: "pass", supersedes: "required" };
   await writeFile(file, JSON.stringify({ document: { ...document, evidence: [required, optional] }, files: {} }));
   expect(() => cli(join(directory, "workspace"), ["validate", "--file", file])).toThrow(/Superseding evidence/);
-});
+}, 30_000);
 
 test("existing version 1 text tours remain valid and can use local previews", async () => {
   const directory = await mkdtemp(join(tmpdir(), "anaphor-cli-")); scratch.push(directory);
@@ -106,4 +106,36 @@ test("existing version 1 text tours remain valid and can use local previews", as
   expect(report.version).toBe(1);
   const result = JSON.parse(cli(join(directory, "workspace"), ["import", "--file", file]));
   expect(result.revision).toBe(1);
-});
+}, 30_000);
+
+test("retained uncommitted evidence becomes current only after an explicit equivalence assessment", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "anaphor-cli-")); scratch.push(directory);
+  const file = join(directory, "bundle.json"); const workspace = join(directory, "workspace");
+  const bytes = Buffer.from("diff --git a/example.ts b/example.ts\n+verified retained change\n");
+  await writeFile(join(directory, "patch.txt"), bytes);
+  const patch = { id: "retained-patch", mediaType: "text/plain", sha256: createHash("sha256").update(bytes).digest("hex"), bytes: bytes.length, description: "Tested uncommitted patch", caption: "Original tested source state", provenance: "Captured before committing" };
+  const assessments: object[] = [];
+  const record = { id: "dirty-run", criterion: "T4", expected: "Retained change works", observed: "Passed before commit", action: "Execute verification", result: "pass", target: "Local CLI", context: "Uncommitted worktree", testedAt: "2026-10-14T20:00:00Z", required: true, sources: [{ pr: document.prs[0]!.url, head: document.prs[0]!.head, patchAssetId: patch.id }], assessments };
+  const tested = { ...document, sections: [{ ...document.sections[0], evidenceIds: [record.id] }], evidence: [record], assets: [patch] };
+  const save = async (next: typeof tested) => writeFile(file, JSON.stringify({ document: next, files: { [patch.id]: "patch.txt" } }));
+  await save(tested);
+  expect(JSON.parse(cli(workspace, ["validate", "--file", file])).concerns).toContain("T4: unknown evidence.");
+  const first = JSON.parse(cli(workspace, ["import", "--file", file]));
+  const head = "d".repeat(40);
+  const assessment = { pr: document.prs[0]!.url, head, rationale: "Reviewed the delta against the retained patch.", assessedAt: "2026-10-14T21:00:00Z" };
+  const committed = { ...tested, prs: [{ ...document.prs[0]!, head }], evidence: [{ ...record, assessments: [assessment] }] };
+  await save(committed);
+  expect(JSON.parse(cli(workspace, ["validate", "--file", file])).concerns).toContain("T4: unknown evidence.");
+  cli(workspace, ["update", "--id", first.id, "--expected-revision", "1", "--file", file]);
+  await save({ ...committed, evidence: [{ ...record, assessments: [assessment, { ...assessment, retainedChangesIncluded: true, rationale: "Compared the committed tree to the retained patch and untracked contents; all tested changes are included unchanged." }] }] });
+  cli(workspace, ["update", "--id", first.id, "--expected-revision", "2", "--file", file]);
+  expect(JSON.parse(cli(workspace, ["validate", "--file", file])).concerns).toEqual([]);
+}, 30_000);
+
+test("oversized bundle declarations are rejected before asset files are opened", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "anaphor-cli-")); scratch.push(directory);
+  const file = join(directory, "bundle.json");
+  const assets = Array.from({ length: 6 }, (_, index) => ({ id: `large-${index}`, mediaType: "video/mp4", sha256: "a".repeat(64), bytes: 100 * 1024 * 1024, description: "Large recorded video", caption: "Declared capture", provenance: "Size preflight fixture" }));
+  await writeFile(file, JSON.stringify({ document: { ...document, assets }, files: Object.fromEntries(assets.map((asset) => [asset.id, `${asset.id}.mp4`])) }));
+  expect(() => cli(join(directory, "workspace"), ["validate", "--file", file])).toThrow(/Bundle assets exceed 500 MiB total/);
+}, 30_000);

@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 process.env.ANAPHOR_TOUR_WORKSPACE ??= join(tmpdir(), `anaphor-local-tours-${process.pid}`);
 export default defineConfig({
   ...base,
+  outputDir: "test-results/local-tours",
   testMatch: "local-tours.spec.ts",
   testIgnore: [],
   fullyParallel: false,

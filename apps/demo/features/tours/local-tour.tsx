@@ -9,12 +9,16 @@ import { TourReader } from "./reader";
 
 export function LocalTour({ initial }: { initial: LocalTourDocument }) {
   const [tour, setTour] = useState(initial);
+  const [refreshGeneration, setRefreshGeneration] = useState(0);
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
   async function refresh() {
     setPending(true);
     setFailed(false);
-    try { setTour(storedTour.omit({ url: true }).parse((await axios.get(`/api/local-tours/${initial.id}`, { timeout: 15000 })).data)); }
+    try {
+      setTour(storedTour.omit({ url: true }).parse((await axios.get(`/api/local-tours/${initial.id}`, { timeout: 15000 })).data));
+      setRefreshGeneration((value) => value + 1);
+    }
     catch { setFailed(true); }
     finally { setPending(false); }
   }
@@ -29,7 +33,7 @@ export function LocalTour({ initial }: { initial: LocalTourDocument }) {
       </div>
       {failed && <p role="alert">The tour could not refresh. Your current revision is still shown. Check the local workspace and try again.</p>}
     </div>
-    <TourReader document={tour.document} revision={tour.revision}
+    <TourReader key={refreshGeneration} document={tour.document} revision={tour.revision}
       assetBaseUrl={`/api/local-tours/${tour.id}/revisions/${tour.revision}/assets`} />
   </>;
 }

@@ -11,7 +11,8 @@ export function localWorkspace() {
   const applicationData = process.platform === "darwin" ? join(homedir(), "Library", "Application Support")
     : process.platform === "win32" ? process.env.LOCALAPPDATA ?? join(homedir(), "AppData", "Local")
     : process.env.XDG_DATA_HOME ?? join(homedir(), ".local", "share");
-  return resolve(process.env.ANAPHOR_TOUR_WORKSPACE ?? process.env.ANAPHOR_WORKSPACE ?? join(applicationData, "Anaphor", "tours"));
+  // The user workspace is runtime data outside the application deployment.
+  return resolve(/* turbopackIgnore: true */ process.env.ANAPHOR_TOUR_WORKSPACE ?? process.env.ANAPHOR_WORKSPACE ?? join(applicationData, "Anaphor", "tours"));
 }
 const uuid = z.uuid();
 const stored = z.object({ id: uuid, revision: z.number().int().positive(), document: tourDocument }).strict();
@@ -29,17 +30,23 @@ export async function validatePreparedBundle(file: string) {
   if ((await stat(path)).size > 1_100_000) throw new Error("Prepared bundle exceeds 1 MiB. Keep media outside JSON.");
   const bundle = preparedBundle.parse(JSON.parse(await readFile(path, "utf8")));
   const assets = new Map<string, Buffer>();
+  const declaredAssets = bundle.document.version === 2 ? bundle.document.assets : [];
+  if (declaredAssets.reduce((total, asset) => total + asset.bytes, 0) > 500 * 1024 * 1024) throw new Error("Bundle assets exceed 500 MiB total.");
+  let actualBytes = 0;
   if (bundle.document.version === 2) for (const asset of bundle.document.assets) {
     const source = bundle.files[asset.id];
     if (!source || isAbsolute(source)) throw new Error(`Asset ${asset.id}: supply a relative file in the bundle files manifest.`);
     const target = await contained(dirname(path), resolve(dirname(path), source));
-    if ((await stat(target)).size > 100 * 1024 * 1024) throw new Error(`Asset ${asset.id} exceeds 100 MiB.`);
+    const size = (await stat(target)).size;
+    if (size > 100 * 1024 * 1024) throw new Error(`Asset ${asset.id} exceeds 100 MiB.`);
+    if (size !== asset.bytes) throw new Error(`Asset ${asset.id}: byte count or SHA-256 does not match.`);
+    actualBytes += size;
+    if (actualBytes > 500 * 1024 * 1024) throw new Error("Bundle assets exceed 500 MiB total.");
     const bytes = await readFile(target);
     validateAssetBytes(asset, bytes);
     assets.set(asset.id, bytes);
   }
   if (Object.keys(bundle.files).some((id) => !assets.has(id))) throw new Error("Bundle files contains an unregistered asset ID.");
-  if ([...assets.values()].reduce((total, bytes) => total + bytes.length, 0) > 500 * 1024 * 1024) throw new Error("Bundle assets exceed 500 MiB total.");
   return { document: bundle.document, assets };
 }
 async function tourDirectory(id: string) {
@@ -66,7 +73,7 @@ export async function writeLocalTour(file: string, options: { id?: string; expec
   const bundle = await validatePreparedBundle(file);
   const root = localWorkspace();
   await mkdir(root, { recursive: true, mode: 0o700 });
-  for (let parent = await realpath(root); ; parent = dirname(parent)) {
+  for (let parent = await realpath(/* turbopackIgnore: true */ root); ; parent = dirname(parent)) {
     if (await stat(join(parent, ".git")).catch(() => null)) throw new Error("Keep the Anaphor workspace outside product repositories.");
     if (parent === dirname(parent)) break;
   }
@@ -74,7 +81,7 @@ export async function writeLocalTour(file: string, options: { id?: string; expec
   try { await mkdir(lock, { mode: 0o700 }); } catch { throw new Error("Workspace is being updated. Retry after the other writer completes; inspect .write-lock if its process was interrupted."); }
   try {
     const tours: LocalTour[] = [];
-    for (const item of await readdir(root)) if (uuid.safeParse(item).success) {
+    for (const item of await readdir(/* turbopackIgnore: true */ root)) if (uuid.safeParse(item).success) {
       try { tours.push(await readLocalTour(item)); }
       catch (error) {
         // A process can stop before publishing a newly created tour's first pointer.

@@ -5,8 +5,9 @@ export function evidenceApplicability(document: TourDocumentV2, evidence: TourEv
   for (const source of evidence.sources) {
     const current = document.prs.find((pr) => pr.url === source.pr);
     if (!current) { unknown = true; continue; }
-    if (source.patchAssetId || source.untrackedAssetIds?.length) unknown = true;
-    if (current.head !== source.head && !evidence.assessments.some((assessment) => assessment.pr === source.pr && assessment.head === current.head)) return "stale";
+    const assessments = evidence.assessments.filter((assessment) => assessment.pr === source.pr && assessment.head === current.head);
+    if ((source.patchAssetId || source.untrackedAssetIds?.length) && !assessments.some((assessment) => assessment.retainedChangesIncluded === true)) unknown = true;
+    if (current.head !== source.head && !assessments.length) return "stale";
   }
   return unknown ? "unknown" : "current";
 }

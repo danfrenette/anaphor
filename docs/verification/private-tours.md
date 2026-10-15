@@ -167,8 +167,11 @@ content, key, ID, and expected revision after an uncertain response. Hosted
 revision numbers are independent of local revision numbers. Files remain
 owner-only and outside product repositories under the existing CLI rules.
 
-Hosted uploads are limited to 4 MiB per asset to fit server ingress. Compress
-captures before publishing; preserve the larger originals locally. Check
+Assets up to 4 MiB use the server upload path. Larger assets, up to the same
+100 MiB local limit, upload directly to private Blob storage using a short-lived
+token scoped to that owner, hash, media type, and byte limit. Authenticated
+completion verifies the stored content before it can enter a published revision.
+The CLI retries completion first after an uncertain upload response. Check
 unauthorized document and asset reads, revision-bound media, range/HEAD
 requests, conflicting writers, unchanged retries, and failed uploads preserving
 the prior readable revision.

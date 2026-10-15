@@ -51,7 +51,10 @@ The import result returns a stable ID, revision, and local URL. A participating
 PR already associated with a tour requires its current expected revision. Keep
 prior evidence and assets unchanged in updates; add a new record for a rerun,
 using `supersedes` where appropriate. Append applicability assessments only after
-inspecting the source delta. Required unrun checks need explicit records. A
+inspecting the source delta. For retained uncommitted changes, an assessment
+against the delivered head must explicitly set `retainedChangesIncluded: true`
+only when that committed state includes the tested patch and untracked content.
+Required unrun checks need explicit records. A
 record's result and applicability are different facts.
 
 The workspace retains revisions and imports asset bytes. After a successful

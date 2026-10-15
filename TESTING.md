@@ -126,9 +126,12 @@ and correcting that contrast must not cause a test failure.
 - **Demo browser tests**: production build and the full Chromium/WebKit suite.
 - **Registry consumers**: fresh independent Button and complete-UI installations.
 
-**Private tour browser tests** additionally runs the tour suite against an isolated
+**Local tour browser tests** exercises the loopback development reader without
+hosted services. It covers managed evidence, refresh, media recovery, and
+Chromium/WebKit reflow. **Private tour browser tests** additionally runs the tour suite against an isolated
 Postgres service, with supported Better Auth migrations and fictional identity
-sessions. It builds the application and exercises private publication, reading
+sessions. The same job runs hosted publication/CLI integration against real
+authentication and Postgres while substituting the external Blob provider. It builds the application and exercises private publication, reading
 and device approval in Chromium/WebKit. It does not prove real OAuth-provider or
 deployed-domain acceptance; that separate gate is in
 [private tours](docs/verification/private-tours.md).

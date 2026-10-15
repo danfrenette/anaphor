@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { ContentSections, Prose, Section, Text } from "@anaphor/system";
 import type { TourDocument, TourDocumentV2, TourEvidence } from "./document";
 import { evidenceApplicability, mergeConcerns } from "./evidence";
@@ -6,7 +9,9 @@ import { EvidenceMedia } from "./evidence-media";
 export function TourReader({ document, revision, assetBaseUrl }: {
   document: TourDocument; revision: number; assetBaseUrl?: string;
 }) {
-  const concerns = mergeConcerns(document);
+  const [unavailable, setUnavailable] = useState<string[]>([]);
+  const concerns = [...mergeConcerns(document), ...unavailable.map((id) => `Required evidence asset ${id} is unavailable. Restore it and refresh the tour.`)];
+  function assetUnavailable(id: string) { setUnavailable((previous) => previous.includes(id) ? previous : [...previous, id]); }
   return <ContentSections className="space-y-12">
     <header className="space-y-6">
       <Text as="h1" variant="display" className="break-words">{document.title}</Text>
@@ -43,7 +48,7 @@ export function TourReader({ document, revision, assetBaseUrl }: {
           <ul className="list-disc space-y-2 pl-5 text-body">{section.decisions.map((decision) => <li key={decision}>{decision}</li>)}</ul></div>}
         {document.version === 2 && section.evidenceIds.map((id) => {
           const record = document.evidence.find((item) => item.id === id);
-          return record ? <EvidenceRecord key={record.id} record={record} document={document} assetBaseUrl={assetBaseUrl} /> : null;
+          return record ? <EvidenceRecord key={record.id} record={record} document={document} assetBaseUrl={assetBaseUrl} onUnavailable={assetUnavailable} /> : null;
         })}
       </>}
     </Section>)}
@@ -56,7 +61,7 @@ function ReferenceLinks({ title, links }: { title: string; links: { id: string; 
   </div>;
 }
 
-function EvidenceRecord({ record, document, assetBaseUrl }: { record: TourEvidence; document: TourDocumentV2; assetBaseUrl?: string }) {
+function EvidenceRecord({ record, document, assetBaseUrl, onUnavailable }: { record: TourEvidence; document: TourDocumentV2; assetBaseUrl?: string; onUnavailable: (id: string) => void }) {
   const applicability = evidenceApplicability(document, record);
   const successor = document.evidence.find((item) => item.supersedes === record.id);
   return <article aria-label={`Verification: ${record.criterion}`} className="space-y-4 border-t border-input-border pt-6">
@@ -68,9 +73,9 @@ function EvidenceRecord({ record, document, assetBaseUrl }: { record: TourEviden
       <div><dt className="font-medium">Tested source</dt><dd className="space-y-2">{record.sources.map((source) => <p key={source.pr} className="break-all"><a className="underline underline-offset-4" href={source.pr}>{source.pr}</a><br /><code>{source.head}</code>{source.patchAssetId || source.untrackedAssetIds?.length ? " with retained uncommitted changes" : ""}</p>)}</dd></div>
     </dl>
     {record.assessments.map((assessment) => <p key={`${assessment.pr}:${assessment.head}`} className="break-words text-ui">Applicability reviewed at <code>{assessment.head}</code> on {assessment.assessedAt}: {assessment.rationale}</p>)}
-    {record.assetIds.map((id) => {
+    {[...new Set([...record.assetIds, ...record.sources.flatMap((source) => [source.patchAssetId, ...(source.untrackedAssetIds ?? [])].filter((id): id is string => !!id))])].map((id) => {
       const asset = document.assets.find((item) => item.id === id);
-      return asset ? <EvidenceMedia key={asset.sha256} asset={asset} url={assetBaseUrl ? `${assetBaseUrl}/${asset.id}` : undefined} /> : null;
+      return asset ? <EvidenceMedia key={asset.sha256} onUnavailable={() => { if (record.required && !successor) onUnavailable(asset.id); }} asset={asset} url={assetBaseUrl ? `${assetBaseUrl}/${asset.id}` : undefined} /> : null;
     })}
   </article>;
 }

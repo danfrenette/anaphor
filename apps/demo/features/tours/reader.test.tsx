@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { tourDocument } from "./document";
 import { TourReader } from "./reader";
@@ -37,4 +37,10 @@ describe("tour review", () => {
     expect(screen.getByRole("img", { name: "Saved draft after reload" })).toBeVisible();
     expect(screen.getByText("Saving and reopening the draft restores the same text.")).toBeVisible();
   });
+});
+
+it("keeps an unavailable required capture visible as a merge concern", () => {
+  render(<TourReader document={document} revision={2} assetBaseUrl="/api/assets" />);
+  fireEvent.error(screen.getByRole("img", { name: "Saved draft after reload" }));
+  expect(screen.getByText(/Required evidence asset screenshot is unavailable/)).toBeVisible();
 });
