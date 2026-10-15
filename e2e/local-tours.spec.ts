@@ -43,6 +43,7 @@ test("a local author imports managed evidence, reads slices and explicitly refre
   await page.goto(`/local-tour/${imported.id}`);
   await expect(page.getByRole("heading", { name: "Reliable saved drafts" })).toBeVisible();
   await expect(page.getByText("Local preview", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: /Sources and decisions for/ }).first().click();
   await expect(page.getByRole("link", { name: "Saved draft criterion", exact: true })).toBeVisible();
   await page.evaluate(() => window.scrollTo(0, globalThis.document.body.scrollHeight));
   await expect(page.getByText(/Required evidence asset screenshot is unavailable/)).toBeVisible();
@@ -50,6 +51,8 @@ test("a local author imports managed evidence, reads slices and explicitly refre
   await page.unroute("**/assets/screenshot");
   await page.unroute("**/assets/receipt");
   await page.getByRole("button", { name: "Refresh tour" }).click();
+  await expect(page.getByText(/Required evidence asset screenshot is unavailable/)).toHaveCount(0);
+  await page.getByRole("button", { name: "Current checks and receipts" }).click();
   await expect(page.getByRole("img", { name: "Fictional saved draft state" })).toBeVisible();
   await page.evaluate(() => window.scrollTo(0, globalThis.document.body.scrollHeight));
   await expect.poll(() => page.getByRole("img").evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
@@ -57,6 +60,16 @@ test("a local author imports managed evidence, reads slices and explicitly refre
   await page.getByText("Execution details, source, and receipts", { exact: true }).first().click();
   await expect(page.getByRole("link", { name: "Open Test receipt" })).toBeVisible();
   await expect(page.getByText(/Required evidence asset receipt is unavailable/)).toHaveCount(0);
+  await page.getByRole("button", { name: "Current checks and receipts" }).click();
+  await page.getByRole("button", { name: /Sources and decisions for/ }).first().click();
+  await page.getByRole("link", { name: "Saved draft criterion · pass · current", exact: true }).click();
+  const execution = page.locator('[id="tour-evidence:reload"]');
+  await expect(execution).toBeFocused();
+  await expect.poll(async () => {
+    const frame = await execution.boundingBox();
+    return !!frame && frame.y >= 0 && frame.y <= 128;
+  }).toBe(true);
+  await page.getByRole("button", { name: "Contents and pull requests" }).click();
   await page.getByRole("link", { name: "Save and reopen", exact: true }).click();
   await expect.poll(() => page.locator("video").evaluate((element: HTMLVideoElement) => element.readyState)).toBeGreaterThanOrEqual(1);
   await page.locator("video").evaluate((element: HTMLVideoElement) => element.play());

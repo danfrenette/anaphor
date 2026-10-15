@@ -1,5 +1,7 @@
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "../lib/utils";
+import { CaretRightIcon } from "@phosphor-icons/react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsible";
 import { Text } from "./text";
 
 export type RequirementSummaryProps = Omit<ComponentProps<"section">, "children"> & {
@@ -14,9 +16,9 @@ export function RequirementSummary({ problem, outcome, acceptance, className, ..
     <Text as="p" variant="body">{problem}</Text>
     <Text as="h3" variant="subheading">Required outcome</Text>
     <Text as="p" variant="body">{outcome}</Text>
-    <details><summary className="min-h-11 cursor-pointer py-3 text-ui">Acceptance conditions</summary>
+    <Collapsible><CollapsibleTrigger><CaretRightIcon aria-hidden="true" />Acceptance conditions</CollapsibleTrigger><CollapsibleContent keepMounted>
       <ul className="list-disc space-y-2 pl-5 text-body">{acceptance.map((condition, index) => <li key={index}>{condition}</li>)}</ul>
-    </details>
+    </CollapsibleContent></Collapsible>
   </section>;
 }
 
@@ -36,6 +38,6 @@ export function VerificationSummary({ criterion, result, applicability, supersed
     <Text as="h3" variant="subheading">{criterion}</Text>
     <p className="text-ui">Recorded result: <strong>{result}</strong> · {applicability} evidence{required ? " · required" : ""}{superseded ? " · superseded" : ""}</p>
     <Text as="p" variant="body" className="whitespace-pre-wrap break-words">{observed}</Text>
-    <details><summary className="min-h-11 cursor-pointer py-3 text-ui">{detailsLabel}</summary><div className="space-y-4 pt-3">{children}</div></details>
+    <Collapsible><CollapsibleTrigger><CaretRightIcon aria-hidden="true" />{detailsLabel}</CollapsibleTrigger><CollapsibleContent keepMounted><div className="space-y-4 pt-3">{children}</div></CollapsibleContent></Collapsible>
   </article>;
 }

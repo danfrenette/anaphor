@@ -27,8 +27,10 @@ vertical slices and revision-bound verification evidence. Local previews run
 without hosted authentication or publication; explicitly published tours and
 media remain private to the owner. Both use the same navigable reader and
 explicit refresh.
-A review narrative starts with the problem, follows pinned code with authored
-annotations, and connects claims to media and verification records. The owner
+A review narrative starts with a short business case, then follows a linear
+sequence of code-led vertical slices. Short annotations explain the important
+behavior in simplified technical English. Links, source metadata and receipts
+stay behind shared animated disclosures; consequential concerns remain visible. The owner
 retains the merge decision.
 The reference manual remains public. Tours are application content consumed
 through the existing design system, rather than a new component catalogue.

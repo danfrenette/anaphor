@@ -3,7 +3,7 @@
 `RequirementSummary` presents the problem and required outcome before disclosing
 acceptance conditions. `VerificationSummary` presents a criterion, recorded
 result, source applicability, supersession, and observed outcome. Its children
-hold execution details, receipts, or history behind a labelled native disclosure.
+hold execution details, receipts, or history behind a labelled design-system Collapsible. Its height transition respects reduced motion; receipt children stay mounted for availability checks.
 Both are available from `@anaphor/system` and the `review-summary` registry item.
 
 The application supplies every status. These components neither infer source

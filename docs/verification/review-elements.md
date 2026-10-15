@@ -33,9 +33,12 @@ Repeat at 320px, at 200% zoom, and in both themes. Check normalized callouts sta
 on the same image location. Image outlines must be inset 1px black at 10% in light
 mode and white at 10% in dark mode. Check focus and automated accessibility.
 
-Open the real local-import section. Follow the six-step map, section anchors,
-active location, and previous/next links. Open a supporting check: it must reach
-one canonical execution record. Historical runs remain reachable through history.
+Open the real local-import section. Follow the six numbered code-led steps in document order. The main flow has no
+per-step criterion links or repeated explanation paragraphs. Expand the contents
+control to use section anchors. Expand supporting checks: each must reach
+one canonical execution record. Historical runs remain reachable through history. All disclosures use the shared
+animated Collapsible, work by keyboard, and settle without motion when reduced
+motion is requested. Closed receipts must still report unavailable required assets.
 Recorded result, applicability, and supersession remain separate. Inspect missing
 assets and stale required checks using the local browser suite; their explanation
 and merge concern stay readable. Update the bundle and confirm the open revision

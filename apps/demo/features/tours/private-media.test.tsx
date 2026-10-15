@@ -48,7 +48,8 @@ test("refreshing a private tour retains a pending shared evidence check", async 
   await screen.findByRole("heading", { name: "Refreshed review" });
   expect(network.head.mock.calls[0]![1].signal.aborted).toBe(false);
   for (const complete of completions) complete();
-  await user.click(screen.getByText("Execution details, source, and receipts", { exact: true }));
+  await user.click(screen.getByRole("button", { name: "Current checks and receipts" }));
+  await user.click(screen.getByRole("button", { name: "Execution details, source, and receipts" }));
   expect(screen.getByRole("link", { name: "Open Private receipt" })).toBeVisible();
   expect(screen.queryByText(/Required evidence asset receipt is unavailable/)).not.toBeInTheDocument();
 });

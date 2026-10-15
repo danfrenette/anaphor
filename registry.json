@@ -573,10 +573,12 @@
   "description": "Reusable review presentation with consumer-owned content and provenance.",
   "registryDependencies": [
     "danfrenette/anaphor/style",
-    "danfrenette/anaphor/utils"
+    "danfrenette/anaphor/utils",
+    "danfrenette/anaphor/collapsible"
   ],
   "dependencies": [
-    "@pierre/diffs@1.5.2"
+    "@pierre/diffs@1.5.2",
+    "@phosphor-icons/react@^2.1.10"
   ],
   "files": [
     {
@@ -616,9 +618,10 @@
   "registryDependencies": [
     "danfrenette/anaphor/style",
     "danfrenette/anaphor/utils",
+    "danfrenette/anaphor/collapsible",
     "danfrenette/anaphor/text"
   ],
-  "dependencies": [],
+  "dependencies": ["@phosphor-icons/react@^2.1.10"],
   "files": [
     {
       "path": "packages/design-system/src/components/review-summary.tsx",

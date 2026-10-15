@@ -4,6 +4,8 @@ import type { FileDiff as DiffInstance } from "@pierre/diffs";
 import { flushSync } from "react-dom";
 import { File, MultiFileDiff, type SelectedLineRange } from "@pierre/diffs/react";
 import { useEffect, useId, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
+import { CaretRightIcon } from "@phosphor-icons/react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsible";
 import { cn } from "../lib/utils";
 
 type CodeReviewSource = { path: string; revision: string; content: string; href?: string };
@@ -29,6 +31,7 @@ function rangeLabel(range: CodeReviewRange) {
 function CodeReview({ before, after, regions, notes, theme, className, ref, ...props }: CodeReviewProps) {
   const prefix = useId();
   const container = useRef<HTMLDivElement>(null);
+  const positionedSource = useRef("");
   const annotationElements = useRef(new Map<string, HTMLDivElement>());
   const [wide, setWide] = useState(false);
   const [selection, setSelection] = useState<SelectedLineRange | null>(null);
@@ -72,6 +75,13 @@ function CodeReview({ before, after, regions, notes, theme, className, ref, ...p
         }
       }
     }
+    const first = root.querySelector<HTMLElement>("[data-authored-range]");
+    const viewport = container.current;
+    const sourceKey = `${before?.path}:${before?.revision}:${after?.path}:${after?.revision}`;
+    if (first && viewport && positionedSource.current !== sourceKey) {
+      viewport.scrollTop += first.getBoundingClientRect().top - viewport.getBoundingClientRect().top - 80;
+      positionedSource.current = sourceKey;
+    }
   }
   function jumpToRegion(region: CodeReviewRegion) {
     flushSync(() => setExpanded(true));
@@ -90,21 +100,14 @@ function CodeReview({ before, after, regions, notes, theme, className, ref, ...p
     onLineSelectionEnd: setSelection,
     unsafeCSS: surfaceCSS,
   };
-  const renderAnnotation = ({ metadata }: { metadata: { id: string; label: string; children: ReactNode } }) => <div id={metadata.id} tabIndex={-1} ref={element => { if (element) annotationElements.current.set(metadata.id, element); else annotationElements.current.delete(metadata.id); }} role="note" aria-label={metadata.label} className="border-l-2 border-primary bg-muted px-3 py-2 text-ui text-foreground focus-visible:outline-2 focus-visible:outline-ring">
+  const renderAnnotation = ({ metadata }: { metadata: { id: string; label: string; children: ReactNode } }) => <div id={metadata.id} tabIndex={-1} ref={element => { if (element) annotationElements.current.set(metadata.id, element); else annotationElements.current.delete(metadata.id); }} role="note" aria-label={metadata.label} className="border-l-2 border-primary bg-muted px-3 py-2 font-sans text-ui text-foreground focus-visible:outline-2 focus-visible:outline-ring">
     <p className="text-small text-muted-foreground">{metadata.label}</p>{metadata.children}
   </div>;
 
   return <figure {...props} ref={ref} className={cn("min-w-0 space-y-3", className)}>
-    <figcaption className="space-y-2 text-small text-muted-foreground">
-      {sources.map(({ label, source }) => <div key={label} className="break-words">
-        {source.href ? <a href={source.href} className="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring">{label}: {source.path} at {source.revision}</a>
-          : <span>{label}: {source.path} at {source.revision}</span>}
-      </div>)}
-      <p>Captured source; omitted context can be expanded. This view does not establish complete PR coverage.</p>
-      {unchanged && <p>Unchanged source excerpt.</p>}
-    </figcaption>
+    <figcaption className="break-words font-mono text-small text-muted-foreground">{after?.path ?? before?.path}{unchanged ? " · unchanged" : ""}</figcaption>
     {regions.length > 0 && <div role="group" aria-label="Authored code regions" className="flex flex-wrap gap-x-4 gap-y-2 text-ui">
-      {regions.map(region => <button type="button" key={region.id} onClick={() => jumpToRegion(region)} className="inline-flex min-h-11 items-center underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring">{region.label}</button>)}
+      {regions.map(region => <button type="button" key={region.id} onClick={() => jumpToRegion(region)} className="inline-flex min-h-11 items-center rounded-md px-2 hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">{region.label}</button>)}
     </div>}
     <div ref={container} tabIndex={0} role="group" aria-label="Scrollable captured source" className={cn("min-w-0 overflow-auto focus-visible:outline-2 focus-visible:outline-ring border-y-[length:var(--anaphor-border-hairline)] border-border", !expanded && "max-h-96")}>
       {unchanged && newFile ? <File file={newFile} options={{ ...options, onPostRender: node => markAuthoredRanges(node) }} selectedLines={selection}
@@ -117,15 +120,17 @@ function CodeReview({ before, after, regions, notes, theme, className, ref, ...p
       <span role="status">Reader selection: {selection ? `${selection.side === "deletions" ? "before" : "after"} lines ${selection.start}–${selection.end}` : "none"}</span>
       {selection && <button type="button" onClick={() => setSelection(null)} className="min-h-11 px-2 text-ui underline focus-visible:outline-2 focus-visible:outline-ring">Clear reader selection</button>}
     </div>
-    <details open={expanded} onToggle={event => setExpanded(event.currentTarget.open)}>
-      <summary className="min-h-11 cursor-pointer py-3 text-ui focus-visible:outline-2 focus-visible:outline-ring">Show full captured context</summary>
+    <Collapsible open={expanded} onOpenChange={setExpanded}>
+      <CollapsibleTrigger><CaretRightIcon aria-hidden="true" />Source and full context</CollapsibleTrigger>
+      <CollapsibleContent keepMounted>
       <div className="space-y-4">
         {sources.map(({ label, source }) => <section key={label} aria-label={`${label} captured source`} className="min-w-0">
-          <p className="mb-2 text-small text-muted-foreground">{label}: {source.path} at {source.revision}</p>
+          <p className="mb-2 break-words text-small text-muted-foreground">{source.href ? <a href={source.href} className="underline underline-offset-4">{label}: {source.path} at {source.revision}</a> : <span>{label}: {source.path} at {source.revision}</span>}</p>
           <pre tabIndex={0} aria-label={`${label} full source`} className="overflow-x-auto bg-muted p-3 font-mono text-small">{source.content}</pre>
         </section>)}
       </div>
-    </details>
+      </CollapsibleContent>
+    </Collapsible>
   </figure>;
 }
 

@@ -1,3 +1,4 @@
+import userEvent from "@testing-library/user-event";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { tourDocument } from "./document";
@@ -21,14 +22,18 @@ const document = tourDocument.parse({
 });
 
 beforeEach(() => {
-  vi.stubGlobal("ResizeObserver", class { observe() {} disconnect() {} });
+  vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} });
   vi.stubGlobal("matchMedia", () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
 });
 afterEach(() => vi.unstubAllGlobals());
 
 describe("tour review", () => {
-  it("connects a slice to its spec, code and stale evidence without calling an old pass current", () => {
-    render(<TourReader document={document} revision={2} assetBaseUrl="/api/assets" />);
+  it("keeps the journey readable and reveals supporting sources and stale evidence on request", async () => {
+    render(<TourReader document={document} revision={2} assetBaseUrl="/api/assets" checkAsset={async () => {}} />);
+    const user = userEvent.setup();
+    expect(screen.queryByRole("link", { name: "Draft persistence criterion" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Sources and decisions for saving a draft" }));
+    await user.click(screen.getByRole("button", { name: "Current checks and receipts" }));
     expect(screen.getByRole("link", { name: "Draft persistence criterion" })).toHaveAttribute("href", "https://example.com/spec#save");
     expect(screen.getByRole("link", { name: "Editor save boundary" })).toBeVisible();
     expect(screen.getByText("Saved text returned after reload.")).toBeVisible();
@@ -41,7 +46,7 @@ describe("tour review", () => {
 
 it("keeps an unavailable required capture visible as a merge concern", () => {
   render(<TourReader document={document} revision={2} assetBaseUrl="/api/assets" />);
-  fireEvent.error(screen.getByRole("img", { name: "Saved draft after reload" }));
+  fireEvent.error(screen.getByRole("img", { name: "Saved draft after reload", hidden: true }));
   expect(screen.getByText(/Required evidence asset screenshot is unavailable/)).toBeVisible();
 });
 
@@ -56,9 +61,13 @@ it("shows one concern when separate checks for the same criterion both become st
   expect(within(concerns).getAllByText("save: stale evidence.", { exact: true })).toHaveLength(1);
 });
 
-it("shows a shared execution once and links each slice to its canonical record", () => {
+it("reveals a shared execution from each slice without duplicating its record", async () => {
   const repeated = tourDocument.parse({ ...document, sections: [document.sections[0], { ...document.sections[0], id: "reopen", title: "Reopen" }] });
   render(<TourReader document={repeated} revision={2} assetBaseUrl="/api/assets" />);
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("button", { name: "Sources and decisions for saving a draft" }));
+  await user.click(screen.getByRole("button", { name: "Sources and decisions for reopen" }));
+  await user.click(screen.getAllByRole("link", { name: "Draft persistence criterion · pass · stale" })[0]!);
   expect(screen.getAllByRole("article", { name: "Verification: save" })).toHaveLength(1);
   expect(screen.getAllByRole("link", { name: "Draft persistence criterion · pass · stale" })).toHaveLength(2);
 });
@@ -83,9 +92,24 @@ it("keeps annotated historical captures in history after a rerun supersedes thei
     } }], evidence: [...document.evidence, { ...document.evidence[0], id: "rerun", supersedes: "reload", assetIds: [], sources: [{ pr, head: "c".repeat(40) }] }],
   });
   render(<TourReader document={reviewed} revision={3} assetBaseUrl="/api/assets" checkAsset={async () => {}} />);
-  expect(screen.getByRole("img", { name: "Saved draft after reload" })).not.toBeVisible();
+  expect(screen.getByRole("img", { name: "Saved draft after reload", hidden: true })).not.toBeVisible();
   const user = (await import("@testing-library/user-event")).default.setup();
-  await user.click(screen.getByText("Full verification history", { exact: true }));
+  await user.click(screen.getByRole("button", { name: "Current checks and receipts" }));
+  await user.click(screen.getByRole("button", { name: "Full verification history" }));
   expect(screen.getByRole("img", { name: "Saved draft after reload" })).toBeVisible();
   expect(screen.getByText("The original restored draft.", { exact: true })).toBeVisible();
+});
+
+it("keeps an unannotated code step understandable and retains older section context on request", async () => {
+  const reviewed = tourDocument.parse({ ...document, sections: [{ ...document.sections[0], review: {
+    problem: "A draft may disappear.", outcome: "Keep it.", acceptance: ["Save before closing."], steps: [{
+      id: "save", title: "Save", explanation: "Write the draft before closing.", evidenceIds: ["reload"],
+      code: { before: null, after: { path: "editor.ts", revision: "c".repeat(40), href: `https://github.com/example/project/blob/${"c".repeat(40)}/editor.ts`, content: "save();" }, regions: [], notes: [] },
+    }],
+  } }] });
+  render(<TourReader document={reviewed} revision={3} checkAsset={async () => {}} />);
+  expect(screen.getByText("Write the draft before closing.")).toBeVisible();
+  expect(screen.getByText("The editor writes before closing.")).not.toBeVisible();
+  await userEvent.setup().click(screen.getByRole("button", { name: "Sources and decisions for saving a draft" }));
+  expect(screen.getByText("The editor writes before closing.")).toBeVisible();
 });

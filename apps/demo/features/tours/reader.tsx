@@ -1,16 +1,35 @@
 "use client";
 
-import { useState } from "react";
-import { CodeReview, ContentSections, Prose, RequirementSummary, Section, Text, VerificationSummary, useContentSections, useTheme } from "@anaphor/system";
+import { flushSync } from "react-dom";
+import { CaretRightIcon } from "@phosphor-icons/react";
+import { useRef, useState, type ReactNode } from "react";
+import { CodeReview, Collapsible, CollapsibleContent, CollapsibleTrigger, ContentSections, Prose, RequirementSummary, Section, Text, VerificationSummary, useTheme } from "@anaphor/system";
 import type { TourDocument, TourDocumentV2, TourEvidence } from "./document";
 import { evidenceApplicability, mergeConcerns } from "./evidence";
 import { EvidenceMedia, type CheckEvidenceAsset } from "./evidence-media";
-import { SliceMap } from "./slice-map";
 
 export function TourReader({ document, revision, assetBaseUrl, checkAsset }: {
   document: TourDocument; revision: number; assetBaseUrl?: string; checkAsset?: CheckEvidenceAsset;
 }) {
   const { resolvedTheme } = useTheme();
+  const [recordsOpen, setRecordsOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const evidenceTarget = useRef<string | null>(null);
+  function positionEvidence() {
+    if (!evidenceTarget.current) return;
+    const target = globalThis.document.getElementById(`tour-evidence:${evidenceTarget.current}`);
+    target?.scrollIntoView?.({ block: "start" });
+    target?.focus({ preventScroll: true });
+  }
+  function revealEvidence(history: boolean, id: string) {
+    evidenceTarget.current = id;
+    setRecordsOpen(true);
+    if (history) setHistoryOpen(true);
+    requestAnimationFrame(positionEvidence);
+  }
+  function evidenceSettled() {
+    requestAnimationFrame(() => { positionEvidence(); evidenceTarget.current = null; });
+  }
   const [unavailable, setUnavailable] = useState<string[]>([]);
   const concerns = [...new Set([...mergeConcerns(document), ...unavailable.map((id) => `Required evidence asset ${id} is unavailable. Restore it and refresh the tour.`)])];
   function assetUnavailable(id: string) { setUnavailable((previous) => previous.includes(id) ? previous : [...previous, id]); }
@@ -19,44 +38,44 @@ export function TourReader({ document, revision, assetBaseUrl, checkAsset }: {
       <Text as="h1" variant="display" className="break-words">{document.title}</Text>
       <Text as="p" variant="caption">Tour revision {revision}</Text>
       <Text as="p" variant="body">{document.overview}</Text>
-      <details>
-        <summary className="cursor-pointer text-ui">Participating pull requests</summary>
+      <SupportingDetails label="Contents and pull requests">
+        <TourNavigation sections={document.sections} />
         <ul className="mt-4 space-y-4">
           {document.prs.map((pr) => <li key={pr.url} className="break-all">
             <a href={pr.url} target="_blank" rel="noreferrer" className="underline underline-offset-4">{pr.url}</a>
             <Text as="p" variant="caption">Base <code>{pr.base}</code><br />Head <code>{pr.head}</code></Text>
           </li>)}
         </ul>
-      </details>
+      </SupportingDetails>
     </header>
-    <TourNavigation sections={document.sections} />
     {document.sections.map((section) => <Section key={section.id} id={`tour-section:${section.id}`} aria-labelledby={`tour-heading:${section.id}`} className="space-y-6 scroll-mt-6">
       <Text as="h2" variant="heading" id={`tour-heading:${section.id}`} className="break-words">{section.title}</Text>
-      <Prose as="div">{section.paragraphs.map((paragraph, index) => <p key={index} className="whitespace-pre-wrap break-words">{paragraph}</p>)}</Prose>
+      {!("review" in section && section.review) && <Prose as="div">{section.paragraphs.map((paragraph, index) => <p key={index} className="whitespace-pre-wrap break-words">{paragraph}</p>)}</Prose>}
       {"review" in section && section.review && document.version === 2 && <>
         <RequirementSummary problem={section.review.problem} outcome={section.review.outcome} acceptance={section.review.acceptance} />
-        <SliceMap sectionId={section.id} steps={section.review.steps} />
-        {section.review.steps.map((step) => <article key={step.id} id={`tour-step:${section.id}:${step.id}`} className="min-w-0 space-y-5 scroll-mt-24 border-t-[length:var(--anaphor-border-hairline)] border-input-border pt-8">
-          <Text as="h3" variant="heading">{step.title}</Text>
-          <Text as="p" variant="body">{step.explanation}</Text>
-          {!!step.criterionIds.length && <p className="text-ui">Criteria: {step.criterionIds.map((id, index) => <span key={id}>{index > 0 && " · "}<a className="underline underline-offset-4" href={section.specs.find((spec) => spec.id === id)?.url}>{section.specs.find((spec) => spec.id === id)?.label}</a></span>)}</p>}
+        {section.review.steps.map((step, index) => <article key={step.id} id={`tour-step:${section.id}:${step.id}`} className="min-w-0 space-y-5 scroll-mt-24 border-t-[length:var(--anaphor-border-hairline)] border-input-border pt-8">
+          <Text as="h3" variant="heading">{index + 1}. {step.title}</Text>
           {step.code && <ReviewCode code={step.code} theme={resolvedTheme === "dark" ? "dark" : "light"} />}
           {step.media.filter((media) => !historicalAsset(document, media.assetId)).map((media) => {
             const asset = document.assets.find((asset) => asset.id === media.assetId);
             return asset ? <EvidenceMedia checkAsset={checkAsset} key={asset.sha256} asset={asset} annotations={media} url={assetBaseUrl ? `${assetBaseUrl}/${asset.id}` : undefined}
               onUnavailable={() => { if (document.evidence.some((record) => record.required && record.assetIds.includes(asset.id) && !document.evidence.some((next) => next.supersedes === record.id))) assetUnavailable(asset.id); }} /> : null;
           })}
-          <EvidenceReferences ids={step.evidenceIds} document={document} />
+          {(!step.code || !step.code.notes.length) && <Text as="p" variant="body">{step.explanation}</Text>}
+          <SupportingDetails label="Supporting checks" name={`Supporting checks for ${step.title.toLowerCase()}`}>
+            {step.code && step.code.notes.length > 0 && <Text as="p" variant="body">{step.explanation}</Text>}
+            <EvidenceReferences ids={step.evidenceIds} document={document} onReveal={revealEvidence} />
+          </SupportingDetails>
         </article>)}
       </>}
-      {"specs" in section && <>
+      {"specs" in section && <SupportingDetails label="Sources and decisions" name={`Sources and decisions for ${section.title.toLowerCase()}`}>
+        {"review" in section && section.review && <Prose as="div">{section.paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}</Prose>}
         {!!section.specs.length && <ReferenceLinks title="Specification" links={section.specs} />}
         {!!section.sources.length && <ReferenceLinks title="Implementation" links={section.sources} />}
         {!!section.decisions.length && <div className="space-y-3"><Text as="h3" variant="subheading">Decisions and risks</Text>
           <ul className="list-disc space-y-2 pl-5 text-body">{section.decisions.map((decision) => <li key={decision}>{decision}</li>)}</ul></div>}
-        {document.version === 2 && <EvidenceReferences ids={section.evidenceIds} document={document} />}
-      </>}
-      <SectionMovement sections={document.sections} id={section.id} />
+        {document.version === 2 && <EvidenceReferences ids={section.evidenceIds} document={document} onReveal={revealEvidence} />}
+      </SupportingDetails>}
     </Section>)}
     <aside id="merge-concerns" aria-label="Merge concerns" className="space-y-3 border-y-[length:var(--anaphor-border-hairline)] border-input-border py-6">
       <Text as="h2" variant="heading">Merge concerns</Text>
@@ -65,11 +84,12 @@ export function TourReader({ document, revision, assetBaseUrl, checkAsset }: {
     </aside>
     {document.version === 2 && <section aria-label="Verification records" className="min-w-0 space-y-4">
       <Text as="h2" variant="heading">Verification records</Text>
-      <p className="text-ui">Each run appears once. Recorded results, source applicability, and supersession describe separate facts.</p>
+      <SupportingDetails label="Current checks and receipts" open={recordsOpen} onOpenChange={open => { evidenceTarget.current = null; setRecordsOpen(open); }} onSettled={evidenceSettled}>
       {document.evidence.filter((record) => !document.evidence.some((next) => next.supersedes === record.id)).map((record) => <EvidenceRecord key={record.id} record={record} document={document} assetBaseUrl={assetBaseUrl} checkAsset={checkAsset} onUnavailable={assetUnavailable} />)}
-      <details><summary className="min-h-11 cursor-pointer py-3 text-ui">Full verification history</summary>
+      <SupportingDetails label="Full verification history" open={historyOpen} onOpenChange={open => { evidenceTarget.current = null; setHistoryOpen(open); }} onSettled={evidenceSettled}>
         {document.evidence.filter((record) => document.evidence.some((next) => next.supersedes === record.id)).map((record) => <EvidenceRecord key={record.id} record={record} document={document} assetBaseUrl={assetBaseUrl} checkAsset={checkAsset} onUnavailable={assetUnavailable} />)}
-      </details>
+      </SupportingDetails>
+      </SupportingDetails>
     </section>}
   </ContentSections>;
 }
@@ -89,7 +109,7 @@ function EvidenceRecord({ record, document, assetBaseUrl, onUnavailable, checkAs
     const annotations = document.sections.flatMap((section) => section.review?.steps.flatMap((step) => step.media) ?? []).find((media) => media.assetId === asset.id);
     return <EvidenceMedia annotations={annotations} checkAsset={checkAsset} key={asset.sha256} onUnavailable={() => { if (record.required && !successor) onUnavailable(asset.id); }} asset={asset} url={assetBaseUrl ? `${assetBaseUrl}/${asset.id}` : undefined} />;
   }
-  return <div id={`tour-evidence:${record.id}`} className="min-w-0 scroll-mt-24">
+  return <div id={`tour-evidence:${record.id}`} tabIndex={-1} className="min-w-0 scroll-mt-24 focus-visible:outline-2 focus-visible:outline-ring">
     <VerificationSummary aria-label={`Verification: ${record.criterion}`} criterion={document.sections.flatMap((section) => section.specs).find((spec) => spec.id === record.criterion)?.label ?? record.criterion}
       result={record.result} applicability={applicability} superseded={!!successor} required={record.required} observed={record.observed} detailsLabel="Execution details, source, and receipts">
     <dl className="space-y-3 text-ui">
@@ -104,7 +124,7 @@ function EvidenceRecord({ record, document, assetBaseUrl, onUnavailable, checkAs
   </div>;
 }
 
-function EvidenceReferences({ ids, document }: { ids: string[]; document: TourDocumentV2 }) {
+function EvidenceReferences({ ids, document, onReveal }: { ids: string[]; document: TourDocumentV2; onReveal: (history: boolean, id: string) => void }) {
   if (!ids.length) return null;
   return <ul aria-label="Supporting checks" className="space-y-2 text-ui">{ids.map((id) => {
     const record = document.evidence.find((record) => record.id === id);
@@ -112,29 +132,16 @@ function EvidenceReferences({ ids, document }: { ids: string[]; document: TourDo
     const label = document.sections.flatMap((section) => section.specs).find((spec) => spec.id === record.criterion)?.label ?? record.criterion;
     const superseded = document.evidence.some((next) => next.supersedes === id);
     return <li key={id}><a className="inline-block min-h-11 py-3 underline underline-offset-4" href={`#tour-evidence:${id}`} onClick={() => {
-      const target = globalThis.document.getElementById(`tour-evidence:${id}`);
-      const disclosure = target?.closest("details");
-      if (disclosure) disclosure.open = true;
+      flushSync(() => onReveal(superseded, id));
     }}>{label} · {record.result} · {evidenceApplicability(document, record)}{superseded ? " · superseded (history)" : ""}</a></li>;
   })}</ul>;
 }
 
 function TourNavigation({ sections }: { sections: TourDocument["sections"] }) {
-  const { activeId } = useContentSections();
   return <nav aria-label="Tour sections" className="border-y-[length:var(--anaphor-border-hairline)] border-input-border py-3">
     <Text as="p" variant="label">Reading sequence</Text>
-      <ol className="grid gap-x-6 sm:grid-cols-2">{sections.map((section, index) => <li key={section.id} className="min-w-0"><a aria-current={activeId === `tour-section:${section.id}` ? "location" : undefined} href={`#tour-section:${section.id}`} className="block min-h-11 py-3 underline underline-offset-4 [overflow-wrap:anywhere]"><span aria-hidden="true">{index + 1}. </span>{section.title}</a></li>)}</ol>
+      <ol className="grid gap-x-6 sm:grid-cols-2">{sections.map((section, index) => <li key={section.id} className="min-w-0"><a href={`#tour-section:${section.id}`} className="block min-h-11 py-3 underline underline-offset-4 [overflow-wrap:anywhere]"><span aria-hidden="true">{index + 1}. </span>{section.title}</a></li>)}</ol>
     <a href="#merge-concerns" className="inline-block min-h-11 py-3 text-ui underline underline-offset-4">Review unresolved checks</a>
-  </nav>;
-}
-
-function SectionMovement({ sections, id }: { sections: TourDocument["sections"]; id: string }) {
-  const index = sections.findIndex((section) => section.id === id);
-  const before = sections[index - 1];
-  const after = sections[index + 1];
-  return <nav aria-label={`Continue from ${sections[index]?.title}`} className="flex flex-wrap justify-between gap-4 border-t-[length:var(--anaphor-border-hairline)] border-input-border pt-4 text-ui">
-    {before && <a href={`#tour-section:${before.id}`} className="min-h-11 py-3 underline underline-offset-4">Previous: {before.title}</a>}
-    {after && <a href={`#tour-section:${after.id}`} className="min-h-11 py-3 underline underline-offset-4">Next: {after.title}</a>}
   </nav>;
 }
 
@@ -148,4 +155,11 @@ function ReviewCode({ code, theme }: { code: NonNullable<NonNullable<TourDocumen
 function historicalAsset(document: TourDocumentV2, assetId: string) {
   const references = document.evidence.filter((record) => record.assetIds.includes(assetId));
   return references.length > 0 && references.every((record) => document.evidence.some((next) => next.supersedes === record.id));
+}
+
+function SupportingDetails({ label, name, children, open, onOpenChange, onSettled }: { label: string; name?: string; children: ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void; onSettled?: () => void }) {
+  return <Collapsible open={open} onOpenChange={onOpenChange}>
+    <CollapsibleTrigger aria-label={name}><CaretRightIcon aria-hidden="true" />{label}</CollapsibleTrigger>
+    <CollapsibleContent keepMounted onTransitionEnd={event => { if (event.target === event.currentTarget) onSettled?.(); }}><div className="min-w-0 space-y-4 py-3">{children}</div></CollapsibleContent>
+  </Collapsible>;
 }

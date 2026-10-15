@@ -62,8 +62,7 @@ regions and notes for the important claims rather than every changed line.
 Reader gutter selection is transient and independent of authored annotations.
 Its status and Clear action do not edit the source or author annotations.
 Selecting a region expands captured context and focuses its inline explanation; the full-context disclosure also
-provides both complete source texts for ordinary reading and copying. The view
-labels its limited PR coverage explicitly.
+provides both complete source texts for ordinary reading and copying. Pinned source links and full revisions sit inside Source and full context; the main caption shows only the file path. The view covers the captured files, not the complete PR.
 
 The default source viewport is at most 24rem high, including for entirely added files. Expanding full context removes that height limit. Source text and original line numbers are never sliced or rewritten.
 
@@ -73,7 +72,7 @@ focus, and selection tokens apply to Pierre's shadow surface; syntax uses its
 GitHub high-contrast light/dark themes. Pass the resolved application theme. Without a
 ResizeObserver the view remains unified.
 
-Region controls, Clear, and native context disclosure support keyboard use. Main
+Region controls, Clear, and design-system context Collapsible support keyboard use. Main
 diff gutter selection uses Pierre's pointer interaction; text remains selectable
 and complete source text remains available through the disclosure. Browser
 verification must cover shadow-surface source correspondence, context expansion,
@@ -85,3 +84,5 @@ files, and empty added/deleted files. Registry installation must supply
 The source viewport is a keyboard-focusable group. Authored ranges use an inset
 marker; classic plus/minus indicators distinguish changes without relying on
 color. High-contrast syntax themes preserve readable comments on shared surfaces.
+
+The initial bounded viewport starts at the first authored range without scrolling the page. The main narrative can lead directly from the slice heading to annotated code; source provenance remains available on request.
