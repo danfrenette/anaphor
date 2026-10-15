@@ -66,8 +66,8 @@ function AuthorizedTour({
   loggingOut: boolean;
 }) {
   const client = useQueryClient();
-  const checkAsset = useCallback(async (url: string, signal: AbortSignal) => {
-    await client.fetchQuery({ queryKey: ["private-tour-asset", url], staleTime: 0, queryFn: async () => { await http.head(url, { signal }); return true; } });
+  const checkAsset = useCallback(async (url: string) => {
+    await client.fetchQuery({ queryKey: ["private-tour-asset", url], staleTime: 0, queryFn: async ({ signal }) => { await http.head(url, { signal }); return true; } });
   }, [client]);
   const tour = useQuery({
     queryKey: ["private-tour", initial.id],
