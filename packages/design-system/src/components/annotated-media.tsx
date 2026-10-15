@@ -58,7 +58,7 @@ function AnnotatedScreenshot({ src, alt, width, height, title, description, call
       </div>
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-[var(--anaphor-z-backdrop)] bg-black/60" />
-        <Dialog.Popup className="fixed inset-4 z-[var(--anaphor-z-overlay)] m-auto flex h-fit max-h-[calc(100dvh-2rem)] max-w-6xl flex-col gap-4 overflow-auto rounded-card bg-background p-4 text-foreground shadow-[var(--anaphor-shadow-review)]">
+        <Dialog.Popup className="fixed inset-4 z-[var(--anaphor-z-overlay)] m-auto flex h-fit max-h-[calc(100dvh-2rem)] max-w-6xl flex-col gap-4 overflow-auto rounded-card bg-background p-4 text-foreground shadow-[var(--anaphor-shadow-upload)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Dialog.Title render={<Text as="h2" variant="heading" />}>{title}</Dialog.Title>
             <Dialog.Close render={<Button nativeButton={true} type="button" size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} />}>

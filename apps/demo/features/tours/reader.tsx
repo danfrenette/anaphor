@@ -4,11 +4,11 @@ import { useState } from "react";
 import { CodeReview, ContentSections, Prose, RequirementSummary, Section, Text, VerificationSummary, useContentSections, useTheme } from "@anaphor/system";
 import type { TourDocument, TourDocumentV2, TourEvidence } from "./document";
 import { evidenceApplicability, mergeConcerns } from "./evidence";
-import { EvidenceMedia } from "./evidence-media";
+import { EvidenceMedia, type CheckEvidenceAsset } from "./evidence-media";
 import { SliceMap } from "./slice-map";
 
-export function TourReader({ document, revision, assetBaseUrl }: {
-  document: TourDocument; revision: number; assetBaseUrl?: string;
+export function TourReader({ document, revision, assetBaseUrl, checkAsset }: {
+  document: TourDocument; revision: number; assetBaseUrl?: string; checkAsset?: CheckEvidenceAsset;
 }) {
   const { resolvedTheme } = useTheme();
   const [unavailable, setUnavailable] = useState<string[]>([]);
@@ -43,7 +43,7 @@ export function TourReader({ document, revision, assetBaseUrl }: {
           {step.code && <ReviewCode code={step.code} theme={resolvedTheme === "dark" ? "dark" : "light"} />}
           {step.media.map((media) => {
             const asset = document.assets.find((asset) => asset.id === media.assetId);
-            return asset ? <EvidenceMedia key={asset.sha256} asset={asset} annotations={media} url={assetBaseUrl ? `${assetBaseUrl}/${asset.id}` : undefined}
+            return asset ? <EvidenceMedia checkAsset={checkAsset} key={asset.sha256} asset={asset} annotations={media} url={assetBaseUrl ? `${assetBaseUrl}/${asset.id}` : undefined}
               onUnavailable={() => { if (document.evidence.some((record) => record.required && record.assetIds.includes(asset.id) && !document.evidence.some((next) => next.supersedes === record.id))) assetUnavailable(asset.id); }} /> : null;
           })}
           <EvidenceReferences ids={step.evidenceIds} document={document} />
@@ -66,9 +66,9 @@ export function TourReader({ document, revision, assetBaseUrl }: {
     {document.version === 2 && <section aria-label="Verification records" className="min-w-0 space-y-4">
       <Text as="h2" variant="heading">Verification records</Text>
       <p className="text-ui">Each run appears once. Recorded results, source applicability, and supersession describe separate facts.</p>
-      {document.evidence.filter((record) => !document.evidence.some((next) => next.supersedes === record.id)).map((record) => <EvidenceRecord key={record.id} record={record} document={document} assetBaseUrl={assetBaseUrl} onUnavailable={assetUnavailable} />)}
+      {document.evidence.filter((record) => !document.evidence.some((next) => next.supersedes === record.id)).map((record) => <EvidenceRecord key={record.id} record={record} document={document} assetBaseUrl={assetBaseUrl} checkAsset={checkAsset} onUnavailable={assetUnavailable} />)}
       <details><summary className="min-h-11 cursor-pointer py-3 text-ui">Full verification history</summary>
-        {document.evidence.filter((record) => document.evidence.some((next) => next.supersedes === record.id)).map((record) => <EvidenceRecord key={record.id} record={record} document={document} assetBaseUrl={assetBaseUrl} onUnavailable={assetUnavailable} />)}
+        {document.evidence.filter((record) => document.evidence.some((next) => next.supersedes === record.id)).map((record) => <EvidenceRecord key={record.id} record={record} document={document} assetBaseUrl={assetBaseUrl} checkAsset={checkAsset} onUnavailable={assetUnavailable} />)}
       </details>
     </section>}
   </ContentSections>;
@@ -80,9 +80,14 @@ function ReferenceLinks({ title, links }: { title: string; links: { id: string; 
   </div>;
 }
 
-function EvidenceRecord({ record, document, assetBaseUrl, onUnavailable }: { record: TourEvidence; document: TourDocumentV2; assetBaseUrl?: string; onUnavailable: (id: string) => void }) {
+function EvidenceRecord({ record, document, assetBaseUrl, onUnavailable, checkAsset }: { record: TourEvidence; document: TourDocumentV2; assetBaseUrl?: string; onUnavailable: (id: string) => void; checkAsset?: CheckEvidenceAsset }) {
   const applicability = evidenceApplicability(document, record);
   const successor = document.evidence.find((item) => item.supersedes === record.id);
+  const assetIds = [...new Set([...record.assetIds, ...record.sources.flatMap((source) => [source.patchAssetId, ...(source.untrackedAssetIds ?? [])].filter((id): id is string => !!id))])];
+  const assets = document.assets.filter((asset) => assetIds.includes(asset.id));
+  function renderAsset(asset: TourDocumentV2["assets"][number]) {
+    return <EvidenceMedia checkAsset={checkAsset} key={asset.sha256} onUnavailable={() => { if (record.required && !successor) onUnavailable(asset.id); }} asset={asset} url={assetBaseUrl ? `${assetBaseUrl}/${asset.id}` : undefined} />;
+  }
   return <div id={`tour-evidence:${record.id}`} className="min-w-0 scroll-mt-24">
     <VerificationSummary aria-label={`Verification: ${record.criterion}`} criterion={document.sections.flatMap((section) => section.specs).find((spec) => spec.id === record.criterion)?.label ?? record.criterion}
       result={record.result} applicability={applicability} superseded={!!successor} required={record.required} observed={record.observed} detailsLabel="Execution details, source, and receipts">
@@ -92,11 +97,9 @@ function EvidenceRecord({ record, document, assetBaseUrl, onUnavailable }: { rec
       <div><dt className="font-medium">Tested source</dt><dd className="space-y-2">{record.sources.map((source) => <p key={source.pr} className="break-all"><a className="underline underline-offset-4" href={source.pr}>{source.pr}</a><br /><code>{source.head}</code>{source.patchAssetId || source.untrackedAssetIds?.length ? " with retained uncommitted changes" : ""}</p>)}</dd></div>
     </dl>
     {record.assessments.map((assessment) => <p key={`${assessment.pr}:${assessment.head}`} className="break-words text-ui">Applicability reviewed at <code>{assessment.head}</code> on {assessment.assessedAt}: {assessment.rationale}</p>)}
+    {assets.filter((asset) => asset.mediaType === "text/plain").map(renderAsset)}
     </VerificationSummary>
-    {[...new Set([...record.assetIds, ...record.sources.flatMap((source) => [source.patchAssetId, ...(source.untrackedAssetIds ?? [])].filter((id): id is string => !!id))])].map((id) => {
-      const asset = document.assets.find((item) => item.id === id);
-      return asset ? <EvidenceMedia key={asset.sha256} onUnavailable={() => { if (record.required && !successor) onUnavailable(asset.id); }} asset={asset} url={assetBaseUrl ? `${assetBaseUrl}/${asset.id}` : undefined} /> : null;
-    })}
+    {assets.filter((asset) => asset.mediaType !== "text/plain").map(renderAsset)}
   </div>;
 }
 

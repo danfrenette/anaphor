@@ -2,23 +2,26 @@
 
 import { AnnotatedScreenshot, VideoEvidence } from "@anaphor/system";
 import { useEffect, useEffectEvent, useState } from "react";
+import { http } from "./browser-http";
 import type { TourAsset, TourDocumentV2 } from "./document";
+
+export type CheckEvidenceAsset = (url: string, signal: AbortSignal) => Promise<void>;
+async function checkLocalAsset(url: string, signal: AbortSignal) { await http.head(url, { signal }); }
 
 type MediaAnnotations = NonNullable<TourDocumentV2["sections"][number]["review"]>["steps"][number]["media"][number];
 
-export function EvidenceMedia({ asset, url, annotations, onUnavailable }: {
-  asset: TourAsset; url: string | undefined; annotations?: MediaAnnotations; onUnavailable?: () => void;
+export function EvidenceMedia({ asset, url, annotations, onUnavailable, checkAsset = checkLocalAsset }: {
+  asset: TourAsset; url: string | undefined; annotations?: MediaAnnotations; onUnavailable?: () => void; checkAsset?: CheckEvidenceAsset;
 }) {
   const [failed, setFailed] = useState(false);
   const reportUnavailable = useEffectEvent(() => { setFailed(true); onUnavailable?.(); });
   useEffect(() => {
-    if (!url || asset.mediaType !== "text/plain") return;
+    if (!url) return;
     const controller = new AbortController();
-    void fetch(url, { method: "HEAD", cache: "no-store", signal: controller.signal })
-      .then((response) => { if (!response.ok) reportUnavailable(); })
+    void checkAsset(url, controller.signal)
       .catch(() => { if (!controller.signal.aborted) reportUnavailable(); });
     return () => controller.abort();
-  }, [url, asset.mediaType]);
+  }, [url, checkAsset]);
   const unavailableLabel = `Evidence unavailable: ${asset.caption}. Restore the asset and refresh the tour.`;
   const description = <>{asset.description}<span className="mt-2 block text-small text-muted-foreground">{asset.provenance}</span></>;
   const onMediaError = () => { setFailed(true); onUnavailable?.(); };

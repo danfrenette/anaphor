@@ -62,3 +62,15 @@ it("shows a shared execution once and links each slice to its canonical record",
   expect(screen.getAllByRole("article", { name: "Verification: save" })).toHaveLength(1);
   expect(screen.getAllByRole("link", { name: "Draft persistence criterion · pass · stale" })).toHaveLength(2);
 });
+
+it("recognizes required checks linked at review steps and keeps an unproved step visible", () => {
+  const reviewed = tourDocument.parse({ ...document, sections: [{ ...document.sections[0], evidenceIds: [], review: {
+    problem: "A draft may disappear.", outcome: "The draft survives reopening.", acceptance: ["Save before closing."],
+    steps: [{ id: "save", title: "Save", explanation: "Write the draft.", criterionIds: ["save"], evidenceIds: ["reload"] },
+      { id: "recover", title: "Recover", explanation: "Report failed writes.", criterionIds: ["save"], evidenceIds: [] }],
+  } }] });
+  render(<TourReader document={reviewed} revision={2} assetBaseUrl="/api/assets" />);
+  const concerns = screen.getByRole("complementary", { name: "Merge concerns" });
+  expect(within(concerns).queryByText("Saving a draft: no required evidence is linked.")).not.toBeInTheDocument();
+  expect(within(concerns).getByText("Recover: criterion save has no required evidence.")).toBeVisible();
+});

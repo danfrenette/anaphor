@@ -81,7 +81,7 @@ function CodeReview({ before, after, regions, notes, theme, className, ref, ...p
   }
   const options = {
     themeType: theme,
-    theme: { light: "github-light", dark: "github-dark" },
+    theme: { light: "github-light-high-contrast", dark: "github-dark-high-contrast" },
     disableFileHeader: true,
     overflow: "wrap" as const,
     enableLineSelection: true,

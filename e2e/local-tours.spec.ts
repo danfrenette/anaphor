@@ -54,6 +54,7 @@ test("a local author imports managed evidence, reads slices and explicitly refre
   await page.evaluate(() => window.scrollTo(0, globalThis.document.body.scrollHeight));
   await expect.poll(() => page.getByRole("img").evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
   await expect(page.getByText(/Required evidence asset screenshot is unavailable/)).toHaveCount(0);
+  await page.getByText("Execution details, source, and receipts", { exact: true }).first().click();
   await expect(page.getByRole("link", { name: "Open Test receipt" })).toBeVisible();
   await expect(page.getByText(/Required evidence asset receipt is unavailable/)).toHaveCount(0);
   await page.getByRole("link", { name: "Save and reopen", exact: true }).click();

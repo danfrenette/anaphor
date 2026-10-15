@@ -19,8 +19,12 @@ export function mergeConcerns(document: TourDocument): string[] {
   const required = document.evidence.filter((record) => record.required && !superseded.has(record.id));
   if (!required.length) concerns.push("No required verification evidence is recorded.");
   for (const section of document.sections) {
-    if (!section.evidenceIds.some((id) => required.some((record) => record.id === id))) concerns.push(`${section.title}: no required evidence is linked.`);
-    for (const spec of section.specs) if (!required.some((record) => section.evidenceIds.includes(record.id) && record.criterion === spec.id)) concerns.push(`${section.title}: criterion ${spec.id} has no required evidence.`);
+    const linkedIds = [...section.evidenceIds, ...(section.review?.steps.flatMap((step) => step.evidenceIds) ?? [])];
+    if (!linkedIds.some((id) => required.some((record) => record.id === id))) concerns.push(`${section.title}: no required evidence is linked.`);
+    for (const spec of section.specs) if (!required.some((record) => linkedIds.includes(record.id) && record.criterion === spec.id)) concerns.push(`${section.title}: criterion ${spec.id} has no required evidence.`);
+    for (const step of section.review?.steps ?? []) {
+      for (const criterion of step.criterionIds) if (!required.some((record) => step.evidenceIds.includes(record.id) && record.criterion === criterion)) concerns.push(`${step.title}: criterion ${criterion} has no required evidence.`);
+    }
   }
   for (const record of required) {
     if (record.result !== "pass") concerns.push(`${record.criterion}: ${record.result}.`);

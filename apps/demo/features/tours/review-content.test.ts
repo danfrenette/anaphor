@@ -25,3 +25,11 @@ test("annotations remain bound to the exact immutable asset bytes", () => {
   expect(result.success).toBe(false);
   if (!result.success) expect(result.error.message).toContain("exact asset missing");
 });
+
+test("duplicate authored code IDs cannot redirect a region jump to another range", () => {
+  const step = review.steps[0]!;
+  const region = { id: "same", label: "Line", side: "after", startLine: 1, endLine: 1 };
+  const result = tourDocument.safeParse({ ...base, sections: [{ ...base.sections[0], review: { ...review, steps: [{ ...step, code: { ...step.code, regions: [region, region] } }] } }] });
+  expect(result.success).toBe(false);
+  if (!result.success) expect(result.error.message).toContain("Code annotation IDs must be unique");
+});

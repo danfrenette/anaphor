@@ -42,6 +42,7 @@ const codeReview = z.object({
 }).strict().superRefine((value, context) => {
   const issue = (message: string) => context.addIssue({ code: "custom", message });
   if (!value.before && !value.after) issue("A code review needs a captured source.");
+  for (const entries of [value.regions, value.notes]) if (new Set(entries.map((entry) => entry.id)).size !== entries.length) issue("Code annotation IDs must be unique within each list.");
   for (const source of [value.before, value.after]) if (source) {
     const url = new URL(source.href);
     if (url.hostname !== "github.com" || !url.pathname.endsWith(`/blob/${source.revision}/${source.path}`)) issue("Code source links must match the pinned revision and path.");

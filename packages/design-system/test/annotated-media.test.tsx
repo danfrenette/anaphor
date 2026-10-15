@@ -46,7 +46,7 @@ test("seeks labelled video moments without starting playback and keeps native co
   expect(video.controls).toBe(true);
   expect(video.autoplay).toBe(false);
   expect(video.paused).toBe(true);
-  await user.click(screen.getByRole("button", { name: "0:12 — Select Refresh" }));
+  await user.click(screen.getByRole("button", { name: "0:12.5 — Select Refresh" }));
   expect(video.currentTime).toBe(12.5);
   expect(video.paused).toBe(true);
   expect(video).toHaveFocus();
