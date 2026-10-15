@@ -210,3 +210,17 @@ input interruption, and live reduced-motion changes. Each request owns its
 callbacks so interrupted work cannot overwrite a later destination. `ContentSections`
 keeps focus and ordering policy and observes the actual section elements for
 layout changes. The hook ships with the sections registry item.
+
+## Review presentation
+
+Optional version 2 section reviews carry captured code, bounded line annotations,
+requirements, ordered steps, and hash-bound media annotations. Import validation
+checks source ranges and annotation identity before persistence. Existing text-only
+version 1 and version 2 documents remain readable.
+
+The design system supplies CodeReview, review summaries, and annotated media.
+Applications own source capture, pinned links, asset resolution, and evidence
+interpretation. The shared reader receives an asset-check callback: local checks
+use Axios directly; hosted checks run through the private query owner so denied
+access clears private content. Shared queries own cancellation across reader
+refreshes. Captures retain their original bytes; annotations live in the document.

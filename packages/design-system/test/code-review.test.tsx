@@ -1,7 +1,10 @@
 import userEvent from "@testing-library/user-event";
 import { render, screen } from "@testing-library/react";
-import { expect, test } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { CodeReview } from "@anaphor/system";
+
+beforeEach(() => { vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} }); });
+afterEach(() => vi.unstubAllGlobals());
 
 const before = { path: "local.ts", revision: "abc123", content: "const refresh = false;\n", href: "https://example.com/abc123/local.ts" };
 const after = { path: "local.ts", revision: "def456", content: "const refresh = true;\n", href: "https://example.com/def456/local.ts" };

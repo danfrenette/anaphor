@@ -19,7 +19,7 @@ type CodeReviewProps = Omit<ComponentProps<"figure">, "children"> & {
 const surfaceCSS = `
 :host { --diffs-font-family: var(--font-mono); --diffs-header-font-family: var(--font-sans); --diffs-font-size: 12px; --diffs-line-height: 20px; --diffs-bg: var(--color-background); --diffs-fg: var(--color-foreground); --diffs-selection-base: var(--color-primary); }
 [data-code] { font-family: var(--font-mono); }
-[data-authored-range] { box-shadow: inset 3px 0 var(--color-primary); background-image: linear-gradient(color-mix(in oklch, var(--color-primary) 8%, transparent),color-mix(in oklch, var(--color-primary) 8%, transparent)); }
+[data-authored-range] { box-shadow: inset 3px 0 var(--color-primary); }
 `;
 
 function rangeLabel(range: CodeReviewRange) {
@@ -83,6 +83,8 @@ function CodeReview({ before, after, regions, notes, theme, className, ref, ...p
     themeType: theme,
     theme: { light: "github-light-high-contrast", dark: "github-dark-high-contrast" },
     disableFileHeader: true,
+    disableBackground: true,
+    diffIndicators: "classic" as const,
     overflow: "wrap" as const,
     enableLineSelection: true,
     onLineSelectionEnd: setSelection,

@@ -81,3 +81,7 @@ region jumps, reader selection, both themes, and narrow layout. Component tests
 cover provenance, authored annotation semantics, full captured text, unchanged
 files, and empty added/deleted files. Registry installation must supply
 `@pierre/diffs` as a runtime dependency.
+
+The source viewport is a keyboard-focusable group. Authored ranges use an inset
+marker; classic plus/minus indicators distinguish changes without relying on
+color. High-contrast syntax themes preserve readable comments on shared surfaces.
