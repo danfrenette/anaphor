@@ -1,12 +1,21 @@
 "use client";
 
 import Image from "next/image";
-import { useId, useState } from "react";
+import { useEffect, useEffectEvent, useId, useState } from "react";
 import type { TourAsset } from "./document";
 
 export function EvidenceMedia({ asset, url, onUnavailable }: { asset: TourAsset; url: string | undefined; onUnavailable?: () => void }) {
   const descriptionId = useId();
   const [failed, setFailed] = useState(false);
+  const reportUnavailable = useEffectEvent(() => { setFailed(true); onUnavailable?.(); });
+  useEffect(() => {
+    if (!url || asset.mediaType !== "text/plain") return;
+    const controller = new AbortController();
+    void fetch(url, { method: "HEAD", cache: "no-store", signal: controller.signal })
+      .then((response) => { if (!response.ok) reportUnavailable(); })
+      .catch(() => { if (!controller.signal.aborted) reportUnavailable(); });
+    return () => controller.abort();
+  }, [url, asset.mediaType]);
   if (!url || failed) return <p role="alert">Evidence unavailable: {asset.caption}. Restore the asset and refresh the tour.</p>;
   return <figure className="space-y-3">
     {asset.mediaType.startsWith("image/") ? (
