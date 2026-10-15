@@ -10,7 +10,7 @@ export function TourReader({ document, revision, assetBaseUrl }: {
   document: TourDocument; revision: number; assetBaseUrl?: string;
 }) {
   const [unavailable, setUnavailable] = useState<string[]>([]);
-  const concerns = [...mergeConcerns(document), ...unavailable.map((id) => `Required evidence asset ${id} is unavailable. Restore it and refresh the tour.`)];
+  const concerns = [...new Set([...mergeConcerns(document), ...unavailable.map((id) => `Required evidence asset ${id} is unavailable. Restore it and refresh the tour.`)])];
   function assetUnavailable(id: string) { setUnavailable((previous) => previous.includes(id) ? previous : [...previous, id]); }
   return <ContentSections className="space-y-12">
     <header className="space-y-6">

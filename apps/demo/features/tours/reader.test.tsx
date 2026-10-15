@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { tourDocument } from "./document";
 import { TourReader } from "./reader";
@@ -43,4 +43,15 @@ it("keeps an unavailable required capture visible as a merge concern", () => {
   render(<TourReader document={document} revision={2} assetBaseUrl="/api/assets" />);
   fireEvent.error(screen.getByRole("img", { name: "Saved draft after reload" }));
   expect(screen.getByText(/Required evidence asset screenshot is unavailable/)).toBeVisible();
+});
+
+it("shows one concern when separate checks for the same criterion both become stale", () => {
+  if (document.version !== 2) throw new Error("Expected version 2 fixture");
+  const duplicate = tourDocument.parse({ ...document,
+    evidence: [...document.evidence, { ...document.evidence[0], id: "another-check" }],
+    sections: [{ ...document.sections[0], evidenceIds: ["reload", "another-check"] }],
+  });
+  render(<TourReader document={duplicate} revision={3} assetBaseUrl="/api/assets" />);
+  const concerns = screen.getByRole("complementary", { name: "Merge concerns" });
+  expect(within(concerns).getAllByText("save: stale evidence.", { exact: true })).toHaveLength(1);
 });
