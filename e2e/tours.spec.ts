@@ -37,6 +37,7 @@ test("a complete agent publication is readable in the built owner browser, with 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(result.url);
   await expect(page.getByRole("heading", { name: document.title })).toBeVisible();
+  await page.getByRole("button", { name: "Contents and pull requests" }).click();
   await page.getByRole("link", { name: "Changed behavior", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Changed behavior" })).toBeVisible();
   await page.reload();
@@ -273,6 +274,7 @@ test("authored section IDs cannot collide with headings or the reader shell", as
   expect(response.status()).toBe(201);
   await context.addCookies([identity.cookie]);
   await page.goto((await response.json()).url);
+  await page.getByRole("button", { name: "Contents and pull requests" }).click();
   for (const section of sections) {
     const link = page.getByRole("link", { name: section.title, exact: true });
     await link.click();
