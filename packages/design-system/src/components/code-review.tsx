@@ -32,10 +32,14 @@ function CodeReview({ before, after, regions, notes, theme, className, ref, ...p
   const prefix = useId();
   const container = useRef<HTMLDivElement>(null);
   const positionedSource = useRef("");
+  const sourceResize = useRef<ResizeObserver | null>(null);
+  const observedSource = useRef<Element | null>(null);
+  const readerPositioned = useRef(false);
   const annotationElements = useRef(new Map<string, HTMLDivElement>());
   const [wide, setWide] = useState(false);
   const [selection, setSelection] = useState<SelectedLineRange | null>(null);
   const [expanded, setExpanded] = useState(false);
+  useEffect(() => () => sourceResize.current?.disconnect(), []);
   useEffect(() => {
     const element = container.current;
     if (!element || typeof ResizeObserver === "undefined") return;
@@ -75,15 +79,28 @@ function CodeReview({ before, after, regions, notes, theme, className, ref, ...p
         }
       }
     }
-    const first = root.querySelector<HTMLElement>("[data-authored-range]");
     const viewport = container.current;
-    const sourceKey = `${before?.path}:${before?.revision}:${after?.path}:${after?.revision}`;
-    if (first && viewport && positionedSource.current !== sourceKey) {
+    const sourceKey = `${before?.path}:${before?.revision}:${after?.path}:${after?.revision}:${regions[0]?.startLine}`;
+    const sourceElement = root.querySelector("pre") ?? node;
+    const positionRange = () => {
+      const first = root.querySelector<HTMLElement>("[data-authored-range]");
+      if (!first || !viewport || readerPositioned.current) return;
       viewport.scrollTop += first.getBoundingClientRect().top - viewport.getBoundingClientRect().top - 80;
+    };
+    if (viewport && (positionedSource.current !== sourceKey || observedSource.current !== sourceElement)) {
+      if (positionedSource.current !== sourceKey) readerPositioned.current = false;
+      sourceResize.current?.disconnect();
+      if (typeof ResizeObserver !== "undefined") {
+        sourceResize.current = new ResizeObserver(positionRange);
+        sourceResize.current.observe(sourceElement);
+      }
+      observedSource.current = sourceElement;
       positionedSource.current = sourceKey;
     }
+    positionRange();
   }
   function jumpToRegion(region: CodeReviewRegion) {
+    readerPositioned.current = true;
     flushSync(() => setExpanded(true));
     const element = annotationElements.current.get(`${prefix}-region-${region.id}`);
     element?.scrollIntoView?.({ block: "nearest" });
@@ -109,7 +126,9 @@ function CodeReview({ before, after, regions, notes, theme, className, ref, ...p
     {regions.length > 0 && <div role="group" aria-label="Authored code regions" className="flex flex-wrap gap-x-4 gap-y-2 text-ui">
       {regions.map(region => <button type="button" key={region.id} onClick={() => jumpToRegion(region)} className="inline-flex min-h-11 items-center rounded-md px-2 hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">{region.label}</button>)}
     </div>}
-    <div ref={container} tabIndex={0} role="group" aria-label="Scrollable captured source" className={cn("min-w-0 overflow-auto focus-visible:outline-2 focus-visible:outline-ring border-y-[length:var(--anaphor-border-hairline)] border-border", !expanded && "max-h-96")}>
+    <div ref={container} tabIndex={0} role="group" aria-label="Scrollable captured source"
+      onWheelCapture={() => { readerPositioned.current = true; }} onPointerDownCapture={() => { readerPositioned.current = true; }} onKeyDownCapture={() => { readerPositioned.current = true; }}
+      className={cn("min-w-0 overflow-auto focus-visible:outline-2 focus-visible:outline-ring border-y-[length:var(--anaphor-border-hairline)] border-border", !expanded && "max-h-96")}>
       {unchanged && newFile ? <File file={newFile} options={{ ...options, onPostRender: node => markAuthoredRanges(node) }} selectedLines={selection}
         lineAnnotations={annotations.map(annotation => ({ lineNumber: annotation.lineNumber, metadata: annotation.metadata }))} renderAnnotation={renderAnnotation} />
         : oldFile && newFile ? <MultiFileDiff oldFile={oldFile} newFile={newFile} options={{ ...options, onPostRender: markAuthoredRanges, diffStyle: wide ? "split" : "unified", expandUnchanged: expanded, hunkSeparators: "line-info" }} selectedLines={selection} lineAnnotations={annotations} renderAnnotation={renderAnnotation} />

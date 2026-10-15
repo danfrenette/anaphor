@@ -23,7 +23,15 @@ test("a local author imports managed evidence, reads slices and explicitly refre
     prs: [{ url: pr, base: "a".repeat(40), head: "b".repeat(40) }],
     sections: [{ id: "save", title: "Save and reopen", paragraphs: ["Persist the draft before closing its editor."],
       specs: [{ id: "save", label: "Saved draft criterion", url: "https://example.com/spec#save" }],
-      evidenceIds: ["reload"] }],
+      evidenceIds: ["reload"], review: {
+        problem: "Keep a saved draft readable.", outcome: "Read the annotated save operation.", acceptance: ["Save before closing."],
+        steps: [{ id: "write", title: "Write the draft", explanation: "Persist before closing.", criterionIds: ["save"], evidenceIds: ["reload"],
+          code: { before: null, after: { path: "save.ts", revision: "b".repeat(40), href: `https://github.com/example/fixture/blob/${"b".repeat(40)}/save.ts`,
+            content: `const help = ${JSON.stringify("Long command help wraps before the important operation. ".repeat(60))};\nexport const saved = true;\n` },
+            regions: [{ id: "save", label: "Save operation", side: "after", startLine: 2, endLine: 2 }],
+            notes: [{ id: "why", label: "Keep the draft", side: "after", startLine: 2, endLine: 2, explanation: "Write the draft before closing." }] },
+        }],
+      } }],
     evidence: [{ id: "reload", criterion: "save", expected: "Saved draft survives reopening", observed: "Draft restored after reopening",
       action: "Save, close and reopen the editor", result: "pass", target: "Fictional browser fixture", context: "Fictional owner", testedAt: "2026-10-14T12:00:00Z",
       required: true, sources: [{ pr, head: "b".repeat(40) }], assetIds: ["recording", "screenshot", "receipt"] }],
@@ -43,6 +51,17 @@ test("a local author imports managed evidence, reads slices and explicitly refre
   await page.goto(`/local-tour/${imported.id}`);
   await expect(page.getByRole("heading", { name: "Reliable saved drafts" })).toBeVisible();
   await expect(page.getByText("Local preview", { exact: true })).toBeVisible();
+  const codeViewport = page.getByRole("group", { name: "Scrollable captured source" });
+  await codeViewport.scrollIntoViewIfNeeded();
+  await expect.poll(() => codeViewport.evaluate(element => {
+    const row = element.querySelector("diffs-container")?.shadowRoot?.querySelector("[data-authored-range]");
+    const note = [...element.querySelectorAll('[role="note"]')].find(element => element.textContent?.includes("Write the draft before closing."));
+    if (!row || !note) return { row: false, note: false };
+    const viewport = element.getBoundingClientRect();
+    const rowBox = row.getBoundingClientRect();
+    const noteBox = note.getBoundingClientRect();
+    return { row: rowBox.top >= viewport.top && rowBox.bottom <= viewport.bottom, note: noteBox.top >= viewport.top && noteBox.bottom <= viewport.bottom + 1 };
+  })).toEqual({ row: true, note: true });
   await page.getByRole("button", { name: /Sources and decisions for/ }).first().click();
   await expect(page.getByRole("link", { name: "Saved draft criterion", exact: true })).toBeVisible();
   await page.evaluate(() => window.scrollTo(0, globalThis.document.body.scrollHeight));

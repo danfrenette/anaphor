@@ -25,7 +25,7 @@ export function EvidenceMedia({ asset, url, annotations, onUnavailable, checkAss
   const unavailableLabel = `Evidence unavailable: ${asset.caption}. Restore the asset and refresh the tour.`;
   const description = <>{asset.description}<span className="mt-2 block text-small text-muted-foreground">{asset.provenance}</span></>;
   const onMediaError = () => { setFailed(true); onUnavailable?.(); };
-  if (asset.mediaType.startsWith("image/")) return <AnnotatedScreenshot
+  if (asset.mediaType.startsWith("image/")) return <AnnotatedScreenshot style={{ maxWidth: annotations?.width ?? 1600 }}
     src={failed ? null : url ?? null} alt={asset.description} width={annotations?.width ?? 1600} height={annotations?.height ?? 1000}
     title={asset.caption} description={description} callouts={annotations?.callouts ?? []}
     enlargeLabel={`Enlarge ${asset.caption}`} closeLabel="Close enlarged screenshot" unavailableLabel={unavailableLabel} onMediaError={onMediaError} />;
