@@ -74,3 +74,18 @@ it("recognizes required checks linked at review steps and keeps an unproved step
   expect(within(concerns).queryByText("Saving a draft: no required evidence is linked.")).not.toBeInTheDocument();
   expect(within(concerns).getByText("Recover: criterion save has no required evidence.")).toBeVisible();
 });
+
+it("keeps annotated historical captures in history after a rerun supersedes their proof", async () => {
+  if (document.version !== 2) throw new Error("Expected version 2 fixture");
+  const reviewed = tourDocument.parse({ ...document,
+    sections: [{ ...document.sections[0], evidenceIds: ["rerun"], review: {
+      problem: "A draft may disappear.", outcome: "Keep it.", acceptance: ["Save it."], steps: [{ id: "read", title: "Read", explanation: "Inspect proof.", evidenceIds: ["rerun"], media: [{ assetId: "screenshot", sha256: "a".repeat(64), width: 1600, height: 1000, callouts: [{ id: "original", label: "The original restored draft.", x: 0.5, y: 0.5 }] }] }],
+    } }], evidence: [...document.evidence, { ...document.evidence[0], id: "rerun", supersedes: "reload", assetIds: [], sources: [{ pr, head: "c".repeat(40) }] }],
+  });
+  render(<TourReader document={reviewed} revision={3} assetBaseUrl="/api/assets" checkAsset={async () => {}} />);
+  expect(screen.getByRole("img", { name: "Saved draft after reload" })).not.toBeVisible();
+  const user = (await import("@testing-library/user-event")).default.setup();
+  await user.click(screen.getByText("Full verification history", { exact: true }));
+  expect(screen.getByRole("img", { name: "Saved draft after reload" })).toBeVisible();
+  expect(screen.getByText("The original restored draft.", { exact: true })).toBeVisible();
+});

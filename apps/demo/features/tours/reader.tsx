@@ -41,7 +41,7 @@ export function TourReader({ document, revision, assetBaseUrl, checkAsset }: {
           <Text as="p" variant="body">{step.explanation}</Text>
           {!!step.criterionIds.length && <p className="text-ui">Criteria: {step.criterionIds.map((id, index) => <span key={id}>{index > 0 && " · "}<a className="underline underline-offset-4" href={section.specs.find((spec) => spec.id === id)?.url}>{section.specs.find((spec) => spec.id === id)?.label}</a></span>)}</p>}
           {step.code && <ReviewCode code={step.code} theme={resolvedTheme === "dark" ? "dark" : "light"} />}
-          {step.media.map((media) => {
+          {step.media.filter((media) => !historicalAsset(document, media.assetId)).map((media) => {
             const asset = document.assets.find((asset) => asset.id === media.assetId);
             return asset ? <EvidenceMedia checkAsset={checkAsset} key={asset.sha256} asset={asset} annotations={media} url={assetBaseUrl ? `${assetBaseUrl}/${asset.id}` : undefined}
               onUnavailable={() => { if (document.evidence.some((record) => record.required && record.assetIds.includes(asset.id) && !document.evidence.some((next) => next.supersedes === record.id))) assetUnavailable(asset.id); }} /> : null;
@@ -86,7 +86,8 @@ function EvidenceRecord({ record, document, assetBaseUrl, onUnavailable, checkAs
   const assetIds = [...new Set([...record.assetIds, ...record.sources.flatMap((source) => [source.patchAssetId, ...(source.untrackedAssetIds ?? [])].filter((id): id is string => !!id))])];
   const assets = document.assets.filter((asset) => assetIds.includes(asset.id));
   function renderAsset(asset: TourDocumentV2["assets"][number]) {
-    return <EvidenceMedia checkAsset={checkAsset} key={asset.sha256} onUnavailable={() => { if (record.required && !successor) onUnavailable(asset.id); }} asset={asset} url={assetBaseUrl ? `${assetBaseUrl}/${asset.id}` : undefined} />;
+    const annotations = document.sections.flatMap((section) => section.review?.steps.flatMap((step) => step.media) ?? []).find((media) => media.assetId === asset.id);
+    return <EvidenceMedia annotations={annotations} checkAsset={checkAsset} key={asset.sha256} onUnavailable={() => { if (record.required && !successor) onUnavailable(asset.id); }} asset={asset} url={assetBaseUrl ? `${assetBaseUrl}/${asset.id}` : undefined} />;
   }
   return <div id={`tour-evidence:${record.id}`} className="min-w-0 scroll-mt-24">
     <VerificationSummary aria-label={`Verification: ${record.criterion}`} criterion={document.sections.flatMap((section) => section.specs).find((spec) => spec.id === record.criterion)?.label ?? record.criterion}
@@ -99,7 +100,7 @@ function EvidenceRecord({ record, document, assetBaseUrl, onUnavailable, checkAs
     {record.assessments.map((assessment) => <p key={`${assessment.pr}:${assessment.head}`} className="break-words text-ui">Applicability reviewed at <code>{assessment.head}</code> on {assessment.assessedAt}: {assessment.rationale}</p>)}
     {assets.filter((asset) => asset.mediaType === "text/plain").map(renderAsset)}
     </VerificationSummary>
-    {assets.filter((asset) => asset.mediaType !== "text/plain").map(renderAsset)}
+    {assets.filter((asset) => asset.mediaType !== "text/plain" && (historicalAsset(document, asset.id) || !document.sections.some((section) => section.review?.steps.some((step) => step.media.some((media) => media.assetId === asset.id))))).map(renderAsset)}
   </div>;
 }
 
@@ -142,4 +143,9 @@ function ReviewCode({ code, theme }: { code: NonNullable<NonNullable<TourDocumen
   if (code.before) return <CodeReview before={code.before} after={code.after} {...props} />;
   if (code.after) return <CodeReview before={null} after={code.after} {...props} />;
   return null;
+}
+
+function historicalAsset(document: TourDocumentV2, assetId: string) {
+  const references = document.evidence.filter((record) => record.assetIds.includes(assetId));
+  return references.length > 0 && references.every((record) => document.evidence.some((next) => next.supersedes === record.id));
 }
