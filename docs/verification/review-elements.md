@@ -26,7 +26,12 @@ Inspect authored ranges and their original line numbers. Select a code line and
 confirm the reader selection remains distinct from authored emphasis. Expand full
 context; inspect unchanged, added, and removed source in component tests.
 Enlarge the screenshot with the keyboard, close with Escape, and confirm focus
-returns to the trigger. Select each labelled video moment: the playhead moves,
+returns to the icon trigger. Check fit-to-window and actual-size views, native image
+scrolling, callout alignment, accessible icon names, and zoom reset on reopen.
+Region jumps must keep every code viewport at its fixed height; raw context must
+also stay inside a bounded scroll area. Confirm green additions and red deletions
+retain readable syntax and visible plus/minus indicators in both themes.
+Select each labelled video moment: the playhead moves,
 playback does not start automatically, and native controls remain usable.
 
 Repeat at 320px, at 200% zoom, and in both themes. Check normalized callouts stay

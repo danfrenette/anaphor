@@ -19,8 +19,9 @@ type CodeReviewProps = Omit<ComponentProps<"figure">, "children"> & {
 } & ({ before: CodeReviewSource; after: CodeReviewSource | null } | { before: null; after: CodeReviewSource });
 
 const surfaceCSS = `
-:host { --diffs-font-family: var(--font-mono); --diffs-header-font-family: var(--font-sans); --diffs-font-size: 12px; --diffs-line-height: 20px; --diffs-bg: var(--color-background); --diffs-fg: var(--color-foreground); --diffs-selection-base: var(--color-primary); }
+:host { --diffs-font-family: var(--font-mono); --diffs-header-font-family: var(--font-sans); --diffs-font-size: 12px; --diffs-line-height: 20px; --diffs-bg: var(--color-background); --diffs-fg: var(--color-foreground); --diffs-selection-base: var(--color-primary); --diffs-bg-addition-override: color-mix(in srgb, var(--color-background) 88%, var(--diffs-addition-base)); --diffs-bg-deletion-override: color-mix(in srgb, var(--color-background) 88%, var(--diffs-deletion-base)); --diffs-bg-addition-number-override: var(--diffs-bg-addition-override); --diffs-bg-deletion-number-override: var(--diffs-bg-deletion-override); }
 [data-code] { font-family: var(--font-mono); }
+[data-code] [data-line] span { color: light-dark(color-mix(in srgb, var(--diffs-token-light, var(--diffs-light)) 82%, black), var(--diffs-token-dark, var(--diffs-dark))); }
 [data-authored-range] { box-shadow: inset 3px 0 var(--color-primary); }
 `;
 
@@ -39,6 +40,7 @@ function CodeReview({ before, after, regions, notes, theme, className, ref, ...p
   const [wide, setWide] = useState(false);
   const [selection, setSelection] = useState<SelectedLineRange | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [sourceOpen, setSourceOpen] = useState(false);
   useEffect(() => () => sourceResize.current?.disconnect(), []);
   useEffect(() => {
     const element = container.current;
@@ -110,7 +112,7 @@ function CodeReview({ before, after, regions, notes, theme, className, ref, ...p
     themeType: theme,
     theme: { light: "github-light-high-contrast", dark: "github-dark-high-contrast" },
     disableFileHeader: true,
-    disableBackground: true,
+    disableBackground: false,
     diffIndicators: "classic" as const,
     overflow: "wrap" as const,
     enableLineSelection: true,
@@ -128,7 +130,7 @@ function CodeReview({ before, after, regions, notes, theme, className, ref, ...p
     </div>}
     <div ref={container} tabIndex={0} role="group" aria-label="Scrollable captured source"
       onWheelCapture={() => { readerPositioned.current = true; }} onPointerDownCapture={() => { readerPositioned.current = true; }} onKeyDownCapture={() => { readerPositioned.current = true; }}
-      className={cn("min-w-0 overflow-auto focus-visible:outline-2 focus-visible:outline-ring border-y-[length:var(--anaphor-border-hairline)] border-border", !expanded && "max-h-96")}>
+      className={cn("min-w-0 overflow-auto focus-visible:outline-2 focus-visible:outline-ring border-y-[length:var(--anaphor-border-hairline)] border-border h-96")}>
       {unchanged && newFile ? <File file={newFile} options={{ ...options, onPostRender: node => markAuthoredRanges(node) }} selectedLines={selection}
         lineAnnotations={annotations.map(annotation => ({ lineNumber: annotation.lineNumber, metadata: annotation.metadata }))} renderAnnotation={renderAnnotation} />
         : oldFile && newFile ? <MultiFileDiff oldFile={oldFile} newFile={newFile} options={{ ...options, onPostRender: markAuthoredRanges, diffStyle: wide ? "split" : "unified", expandUnchanged: expanded, hunkSeparators: "line-info" }} selectedLines={selection} lineAnnotations={annotations} renderAnnotation={renderAnnotation} />
@@ -139,10 +141,10 @@ function CodeReview({ before, after, regions, notes, theme, className, ref, ...p
       <span role="status">Reader selection: {selection ? `${selection.side === "deletions" ? "before" : "after"} lines ${selection.start}–${selection.end}` : "none"}</span>
       {selection && <button type="button" onClick={() => setSelection(null)} className="min-h-11 px-2 text-ui underline focus-visible:outline-2 focus-visible:outline-ring">Clear reader selection</button>}
     </div>
-    <Collapsible open={expanded} onOpenChange={setExpanded}>
+    <Collapsible open={sourceOpen} onOpenChange={setSourceOpen}>
       <CollapsibleTrigger><CaretRightIcon aria-hidden="true" />Source and full context</CollapsibleTrigger>
       <CollapsibleContent keepMounted>
-      <div className="space-y-4">
+      <div className="max-h-96 space-y-4 overflow-auto">
         {sources.map(({ label, source }) => <section key={label} aria-label={`${label} captured source`} className="min-w-0">
           <p className="mb-2 break-words text-small text-muted-foreground">{source.href ? <a href={source.href} className="underline underline-offset-4">{label}: {source.path} at {source.revision}</a> : <span>{label}: {source.path} at {source.revision}</span>}</p>
           <pre tabIndex={0} aria-label={`${label} full source`} className="overflow-x-auto bg-muted p-3 font-mono text-small">{source.content}</pre>

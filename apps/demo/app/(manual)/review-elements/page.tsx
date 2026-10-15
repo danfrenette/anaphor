@@ -12,7 +12,7 @@ export default function ReviewElementsPage() {
     <section className="space-y-4"><Text as="h2" variant="heading">Requirements</Text><RequirementSummary problem="A reviewer has to move between source and logs." outcome="Read the explanation beside pinned code and evidence." acceptance={["Retain source revisions.", "Keep missing evidence visible."]} /></section>
     <section aria-label="Code review example" className="space-y-4">
       <Text as="h2" variant="heading">Pinned code and authored emphasis</Text>
-      <CodeReview before={{path:"save.ts",revision:"a".repeat(40),content:"export function save() {\n  return draft;\n}\n"}} after={{path:"save.ts",revision:"b".repeat(40),content:"export function save() {\n  storage.write(draft);\n  return draft;\n}\n"}}
+      <CodeReview before={{path:"save.ts",revision:"a".repeat(40),content:"export function save() {\n  // The old path loses the draft.\n  return undefined;\n}\n"}} after={{path:"save.ts",revision:"b".repeat(40),content:"export function save() {\n  storage.write(draft);\n  // Return after storage accepts the draft.\n  return draft;\n}\n"}}
         theme={resolvedTheme === "dark" ? "dark" : "light"} regions={[{id:"write",label:"Write before returning",side:"after",startLine:2,endLine:2}]}
         notes={[{id:"reason",side:"after",startLine:2,endLine:2,children:"Store the draft before reporting success. This example is illustrative."}]} />
     </section>

@@ -54,13 +54,14 @@ test.each(["added", "deleted"] as const)("reads the captured side of a %s empty 
   expect(screen.queryByRole("region", { name: `${kind === "added" ? "Before" : "After"} captured source` })).not.toBeInTheDocument();
 });
 
-test("a region jump expands source context and focuses its authored explanation without changing reader selection", async () => {
+test("a region jump focuses its explanation without opening raw source or changing reader selection", async () => {
   const user = (await import("@testing-library/user-event")).default.setup();
   render(<CodeReview before={before} after={after} theme="light" notes={[]}
     regions={[{ id: "refresh", label: "Refresh policy", side: "after", startLine: 1, endLine: 1 }]} />);
   await user.click(screen.getByRole("button", { name: "Refresh policy" }));
   expect(screen.getByText("Refresh policy · After lines 1–1").parentElement).toHaveFocus();
-  expect(screen.getByRole("region", { name: "After captured source" })).toBeVisible();
+  expect(screen.queryByRole("region", { name: "After captured source" })).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Source and full context" })).toHaveAttribute("aria-expanded", "false");
   expect(screen.getByRole("status")).toHaveTextContent("Reader selection: none");
 });
 

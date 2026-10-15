@@ -79,3 +79,15 @@ exercise keyboard enlargement and focus return, native video seeking without
 playback, and failure/replacement behavior through the public package API. Actual
 image scaling, media decoding, narrow reflow, theme appearance, and browser focus
 remain part of the [local-tour recipe](../verification/local-tours.md).
+
+Screenshot enlargement uses Phosphor icon buttons with supplied accessible names and native titles.
+The modal fits the annotated image inside the available viewport without changing its aspect ratio.
+An actual-size toggle preserves image pixels and enables native scrolling; Fit returns to the
+viewport. Close and Escape restore focus to the original trigger. Callouts remain attached to the
+same normalized image coordinates in either view.
+
+The implementation keeps Base UI Dialog for modality, scroll locking and focus return.
+[Yet Another React Lightbox](https://yet-another-react-lightbox.com/plugins/zoom) offers gallery
+zoom/pan gestures, and [PhotoSwipe](https://photoswipe.com/options/) offers gallery controls and
+focus management. This single-image evidence view uses the existing primitive and a fitted image
+region; it does not add gallery navigation or claim pinch-to-zoom support.

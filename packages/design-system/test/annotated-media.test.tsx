@@ -27,10 +27,13 @@ test("opens the annotated image by keyboard and returns focus after dismissal", 
   const dialog = screen.getByRole("dialog", { name: "Local tour" });
   expect(within(dialog).getByRole("img", { name: "Imported tour reader" })).toBeVisible();
   expect(within(dialog).getByRole("button", { name: "Close screenshot" })).toHaveFocus();
+  await user.click(within(dialog).getByRole("button", { name: "View image at actual size" }));
+  expect(within(dialog).getByRole("button", { name: "Fit image to window" })).toHaveAttribute("aria-pressed", "true");
   await user.keyboard("{Escape}");
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Enlarge screenshot" })).toHaveFocus();
   await user.keyboard("{Enter}");
+  expect(screen.getByRole("button", { name: "View image at actual size" })).toHaveAttribute("aria-pressed", "false");
   await user.click(screen.getByRole("button", { name: "Close screenshot" }));
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Enlarge screenshot" })).toHaveFocus();

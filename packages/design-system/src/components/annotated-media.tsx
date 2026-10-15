@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowsOutSimpleIcon, MagnifyingGlassPlusIcon, MagnifyingGlassMinusIcon, XIcon } from "@phosphor-icons/react";
 import { Dialog } from "@base-ui/react/dialog";
 import { useId, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { Button, ButtonLabel } from "./button";
@@ -43,31 +44,47 @@ function ScreenshotImage({ src, alt, width, height, callouts, onError }: Pick<An
 
 function AnnotatedScreenshot({ src, alt, width, height, title, description, callouts, enlargeLabel, closeLabel, unavailableLabel, onMediaError, className, ...props }: AnnotatedScreenshotProps) {
   const id = useId();
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const [zoomed, setZoomed] = useState(false);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const unavailable = !src || src === failedSrc;
   const image = src && <ScreenshotImage src={src} alt={alt} width={width} height={height} callouts={callouts} onError={() => { setFailedSrc(src); onMediaError?.(); }} />;
   return <figure {...props} aria-labelledby={`${id}-title`} className={cn("min-w-0 space-y-3", className)}>
-    <Dialog.Root>
-      <div className="space-y-2">
+    <Dialog.Root onOpenChangeComplete={open => { if (!open) setZoomed(false); }}>
+      <div className="relative">
         {unavailable ? <Text as="p" variant="ui" role="status">{unavailableLabel}</Text> : <>
           {image}
-          <Dialog.Trigger render={<Button nativeButton={true} type="button" size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} className="h-auto max-w-full min-w-0 whitespace-normal" />}>
-            <ButtonLabel className="min-w-0 [overflow-wrap:anywhere]">{enlargeLabel}</ButtonLabel>
+          <Dialog.Trigger aria-label={enlargeLabel} title={enlargeLabel} render={<Button nativeButton={true} type="button" size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={true} className="absolute right-2 top-2 bg-background" />}>
+            <ArrowsOutSimpleIcon aria-hidden="true" />
           </Dialog.Trigger>
         </>}
       </div>
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-[var(--anaphor-z-backdrop)] bg-black/60" />
-        <Dialog.Popup className="fixed inset-4 z-[var(--anaphor-z-overlay)] m-auto flex h-fit max-h-[calc(100dvh-2rem)] max-w-6xl flex-col gap-4 overflow-auto rounded-card bg-background p-4 text-foreground shadow-[var(--anaphor-shadow-upload)]">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Dialog.Title render={<Text as="h2" variant="heading" />}>{title}</Dialog.Title>
-            <Dialog.Close render={<Button nativeButton={true} type="button" size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} className="h-auto max-w-full min-w-0 whitespace-normal" />}>
-              <ButtonLabel className="min-w-0 [overflow-wrap:anywhere]">{closeLabel}</ButtonLabel>
-            </Dialog.Close>
+        <Dialog.Popup initialFocus={closeRef} className="fixed inset-4 z-[var(--anaphor-z-overlay)] m-auto flex h-[calc(100dvh-2rem)] max-w-6xl flex-col gap-3 overflow-hidden rounded-card bg-background p-4 text-foreground shadow-[var(--anaphor-shadow-upload)]">
+          <div className="flex shrink-0 items-start justify-between gap-3">
+            <Dialog.Title render={<Text as="h2" variant="heading" className="min-w-0 break-words" />}>{title}</Dialog.Title>
+            <div className="flex shrink-0 gap-2">
+              <Button nativeButton={true} type="button" size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={true}
+                aria-label={zoomed ? "Fit image to window" : "View image at actual size"} title={zoomed ? "Fit image to window" : "View image at actual size"} aria-pressed={zoomed} onClick={() => setZoomed(value => !value)}>
+                {zoomed ? <MagnifyingGlassMinusIcon aria-hidden="true" /> : <MagnifyingGlassPlusIcon aria-hidden="true" />}
+              </Button>
+              <Dialog.Close ref={closeRef} aria-label={closeLabel} title={closeLabel} render={<Button nativeButton={true} type="button" size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={true} />}>
+                <XIcon aria-hidden="true" />
+              </Dialog.Close>
+            </div>
           </div>
-          <Dialog.Description render={<div className="max-w-reading text-body text-reading" />}>{description}</Dialog.Description>
-          {unavailable ? <Text as="p" variant="ui" role="status">{unavailableLabel}</Text> : image}
-          <CalloutList callouts={callouts} />
+          <div tabIndex={0} role="region" aria-label="Enlarged screenshot" className="min-h-0 flex-1 overflow-auto [container-type:size] focus-visible:outline-2 focus-visible:outline-ring">
+            <div className={zoomed ? "min-h-full min-w-max" : "grid min-h-full min-w-full place-items-center"}>
+              <div className="shrink-0" style={{ width: zoomed ? width : `min(100cqw, calc(100cqh * ${width / height}), ${width}px)` }}>
+                {unavailable ? <Text as="p" variant="ui" role="status">{unavailableLabel}</Text> : image}
+              </div>
+            </div>
+          </div>
+          <div tabIndex={0} role="region" aria-label="Screenshot details" className="max-h-32 shrink-0 space-y-2 overflow-auto focus-visible:outline-2 focus-visible:outline-ring">
+            <Dialog.Description render={<div className="max-w-reading text-ui" />}>{description}</Dialog.Description>
+            <CalloutList callouts={callouts} />
+          </div>
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

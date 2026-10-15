@@ -8,7 +8,10 @@ for (const theme of ["light", "dark"] as const) {
     const code = page.locator("diffs-container").first();
     await expect(code.locator('[data-code] [data-line="2"][data-authored-range]')).toContainText("storage.write(draft)");
     const region = page.getByRole("button", { name: "Write before returning", exact: true });
+    const viewport = page.getByRole("group", { name: "Scrollable captured source" }).first();
     await region.click();
+    expect((await viewport.boundingBox())!.height).toBeLessThanOrEqual(384);
+    await expect(page.getByRole("button", { name: "Source and full context" }).first()).toHaveAttribute("aria-expanded", "false");
     await expect(page.getByText("Reader selection: none", { exact: true })).toBeVisible();
     await expect(page.getByRole("note", { name: "Write before returning · After lines 2–2", exact: true })).toBeFocused();
     await code.locator('[data-column-number="2"]').last().click();
@@ -22,6 +25,18 @@ for (const theme of ["light", "dark"] as const) {
     await enlarge.press("Enter");
     const dialog = page.getByRole("dialog", { name: "Screenshot with numbered callouts" });
     await expect(dialog).toBeVisible();
+    const enlargedImage = dialog.getByRole("img");
+    const stage = dialog.getByRole("region", { name: "Enlarged screenshot" });
+    await expect.poll(async () => {
+      const imageBox = await enlargedImage.boundingBox();
+      const stageBox = await stage.boundingBox();
+      return !!imageBox && !!stageBox && imageBox.width <= stageBox.width + 1 && imageBox.height <= stageBox.height + 1;
+    }).toBe(true);
+    await dialog.getByRole("button", { name: "View image at actual size" }).click();
+    await expect(enlargedImage).toHaveJSProperty("width", 960);
+    await dialog.getByRole("button", { name: "Fit image to window" }).click();
+    const violationsInDialog = (await new AxeBuilder({ page }).include('[role="dialog"]').analyze()).violations;
+    expect(violationsInDialog).toEqual([]);
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
     await expect(enlarge).toBeFocused();

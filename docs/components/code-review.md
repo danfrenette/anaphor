@@ -61,10 +61,10 @@ regions and notes for the important claims rather than every changed line.
 
 Reader gutter selection is transient and independent of authored annotations.
 Its status and Clear action do not edit the source or author annotations.
-Selecting a region expands captured context and focuses its inline explanation; the full-context disclosure also
+Selecting a region reveals its diff context and focuses its inline explanation within the fixed source window; the separate full-context disclosure also
 provides both complete source texts for ordinary reading and copying. Pinned source links and full revisions sit inside Source and full context; the main caption shows only the file path. The view covers the captured files, not the complete PR.
 
-The default source viewport is at most 24rem high, including for entirely added files. Expanding full context removes that height limit. Source text and original line numbers are never sliced or rewritten.
+Every source viewport stays 24rem high, including added, deleted and unchanged files. Region jumps and expanded diff context scroll inside that window. The raw-source disclosure also has a bounded 24rem scroll area. Light-theme syntax colors are darkened slightly so comments remain readable on the tinted rows. Source text and original line numbers are never sliced or rewritten.
 
 The diff is unified in containers narrower than 760px and split in wider
 containers. Code wraps to retain narrow-page reflow. Shared typography, surface,
@@ -82,7 +82,6 @@ files, and empty added/deleted files. Registry installation must supply
 `@pierre/diffs` as a runtime dependency.
 
 The source viewport is a keyboard-focusable group. Authored ranges use an inset
-marker; classic plus/minus indicators distinguish changes without relying on
-color. High-contrast syntax themes preserve readable comments on shared surfaces.
+marker; classic plus/minus indicators and green/red row backgrounds distinguish additions and deletions. Authored annotations retain their separate marker. High-contrast syntax and restrained background mixes preserve readable comments in both themes.
 
 The initial bounded viewport starts at the first authored range without scrolling the page. The main narrative can lead directly from the slice heading to annotated code; source provenance remains available on request.
