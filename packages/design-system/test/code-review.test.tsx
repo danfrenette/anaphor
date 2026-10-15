@@ -1,3 +1,4 @@
+import userEvent from "@testing-library/user-event";
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { CodeReview } from "@anaphor/system";
@@ -25,7 +26,7 @@ test("keeps authored ranges and explanations separate from the reader selection"
   render(<CodeReview before={before} after={after} theme="light"
     regions={[{ id: "refresh", label: "Explicit refresh", side: "after", startLine: 1, endLine: 1 }]}
     notes={[{ id: "refresh-note", side: "after", startLine: 1, endLine: 1, children: "Refresh is an explicit action." }]} />);
-  expect(screen.getByRole("navigation", { name: "Authored code regions" })).toHaveTextContent("Explicit refresh");
+  expect(screen.getByRole("group", { name: "Authored code regions" })).toHaveTextContent("Explicit refresh");
   expect(screen.getByRole("note", { name: "After lines 1–1" })).toHaveTextContent("Refresh is an explicit action.");
   expect(screen.getByRole("status")).toHaveTextContent("Reader selection: none");
 });
@@ -58,4 +59,11 @@ test("a region jump expands source context and focuses its authored explanation 
   expect(screen.getByText("Refresh policy · After lines 1–1").parentElement).toHaveFocus();
   expect(screen.getByRole("region", { name: "After captured source" })).toBeVisible();
   expect(screen.getByRole("status")).toHaveTextContent("Reader selection: none");
+});
+
+test("captured source scrolling is reachable from the keyboard", async () => {
+  const user = userEvent.setup();
+  render(<CodeReview before={null} after={{ path: "long.ts", revision: "b".repeat(40), content: "export const saved = true;" }} regions={[]} notes={[]} theme="light" />);
+  await user.tab();
+  expect(screen.getByRole("group", { name: "Scrollable captured source" })).toHaveFocus();
 });

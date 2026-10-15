@@ -51,8 +51,8 @@ function AnnotatedScreenshot({ src, alt, width, height, title, description, call
       <div className="space-y-2">
         {unavailable ? <Text as="p" variant="ui" role="status">{unavailableLabel}</Text> : <>
           {image}
-          <Dialog.Trigger render={<Button nativeButton={true} type="button" size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} />}>
-            <ButtonLabel>{enlargeLabel}</ButtonLabel>
+          <Dialog.Trigger render={<Button nativeButton={true} type="button" size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} className="h-auto max-w-full min-w-0 whitespace-normal" />}>
+            <ButtonLabel className="min-w-0 [overflow-wrap:anywhere]">{enlargeLabel}</ButtonLabel>
           </Dialog.Trigger>
         </>}
       </div>
@@ -61,8 +61,8 @@ function AnnotatedScreenshot({ src, alt, width, height, title, description, call
         <Dialog.Popup className="fixed inset-4 z-[var(--anaphor-z-overlay)] m-auto flex h-fit max-h-[calc(100dvh-2rem)] max-w-6xl flex-col gap-4 overflow-auto rounded-card bg-background p-4 text-foreground shadow-[var(--anaphor-shadow-upload)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Dialog.Title render={<Text as="h2" variant="heading" />}>{title}</Dialog.Title>
-            <Dialog.Close render={<Button nativeButton={true} type="button" size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} />}>
-              <ButtonLabel>{closeLabel}</ButtonLabel>
+            <Dialog.Close render={<Button nativeButton={true} type="button" size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} className="h-auto max-w-full min-w-0 whitespace-normal" />}>
+              <ButtonLabel className="min-w-0 [overflow-wrap:anywhere]">{closeLabel}</ButtonLabel>
             </Dialog.Close>
           </div>
           <Dialog.Description render={<div className="max-w-reading text-body text-reading" />}>{description}</Dialog.Description>

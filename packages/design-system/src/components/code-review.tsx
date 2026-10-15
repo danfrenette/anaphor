@@ -101,10 +101,10 @@ function CodeReview({ before, after, regions, notes, theme, className, ref, ...p
       <p>Captured source; omitted context can be expanded. This view does not establish complete PR coverage.</p>
       {unchanged && <p>Unchanged source excerpt.</p>}
     </figcaption>
-    {regions.length > 0 && <nav aria-label="Authored code regions" className="flex flex-wrap gap-x-4 gap-y-2 text-ui">
+    {regions.length > 0 && <div role="group" aria-label="Authored code regions" className="flex flex-wrap gap-x-4 gap-y-2 text-ui">
       {regions.map(region => <button type="button" key={region.id} onClick={() => jumpToRegion(region)} className="inline-flex min-h-11 items-center underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring">{region.label}</button>)}
-    </nav>}
-    <div ref={container} className={cn("min-w-0 overflow-auto border-y-[length:var(--anaphor-border-hairline)] border-border", !expanded && "max-h-96")}>
+    </div>}
+    <div ref={container} tabIndex={0} role="group" aria-label="Scrollable captured source" className={cn("min-w-0 overflow-auto focus-visible:outline-2 focus-visible:outline-ring border-y-[length:var(--anaphor-border-hairline)] border-border", !expanded && "max-h-96")}>
       {unchanged && newFile ? <File file={newFile} options={{ ...options, onPostRender: node => markAuthoredRanges(node) }} selectedLines={selection}
         lineAnnotations={annotations.map(annotation => ({ lineNumber: annotation.lineNumber, metadata: annotation.metadata }))} renderAnnotation={renderAnnotation} />
         : oldFile && newFile ? <MultiFileDiff oldFile={oldFile} newFile={newFile} options={{ ...options, onPostRender: markAuthoredRanges, diffStyle: wide ? "split" : "unified", expandUnchanged: expanded, hunkSeparators: "line-info" }} selectedLines={selection} lineAnnotations={annotations} renderAnnotation={renderAnnotation} />
@@ -120,7 +120,7 @@ function CodeReview({ before, after, regions, notes, theme, className, ref, ...p
       <div className="space-y-4">
         {sources.map(({ label, source }) => <section key={label} aria-label={`${label} captured source`} className="min-w-0">
           <p className="mb-2 text-small text-muted-foreground">{label}: {source.path} at {source.revision}</p>
-          <pre className="overflow-x-auto bg-muted p-3 font-mono text-small">{source.content}</pre>
+          <pre tabIndex={0} aria-label={`${label} full source`} className="overflow-x-auto bg-muted p-3 font-mono text-small">{source.content}</pre>
         </section>)}
       </div>
     </details>
