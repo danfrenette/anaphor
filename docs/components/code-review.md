@@ -52,7 +52,7 @@ component never fetches the source link. Do not insert a sliced excerpt and
 claim that its first line retains the original file number.
 
 Regions identify authored reading ranges. Their stable `id`, `label`, `side`,
-`startLine`, and `endLine` supply jump controls and inline range labels. Authored rows retain a separate orange inset marker and subtle tint; the reader selection remains independent. Notes use
+`startLine`, and `endLine` supply jump controls and inline range labels. Authored rows retain a separate orange inset marker; the reader selection remains independent. Notes use
 that same range shape, a stable `id`, and React `children` for the explanation.
 Ranges use inclusive, positive, one-based file line numbers. Consumers validate
 that ranges exist on the declared side and use unique IDs within each list.
@@ -70,7 +70,7 @@ The default source viewport is at most 24rem high, including for entirely added 
 The diff is unified in containers narrower than 760px and split in wider
 containers. Code wraps to retain narrow-page reflow. Shared typography, surface,
 focus, and selection tokens apply to Pierre's shadow surface; syntax uses its
-GitHub light/dark themes. Pass the resolved application theme. Without a
+GitHub high-contrast light/dark themes. Pass the resolved application theme. Without a
 ResizeObserver the view remains unified.
 
 Region controls, Clear, and native context disclosure support keyboard use. Main
