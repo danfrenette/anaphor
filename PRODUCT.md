@@ -22,8 +22,17 @@ components, and interaction patterns used across personal work. The demo
 application proves the package in realistic compositions; it is not a marketing
 site or a comprehensive component catalog.
 
-The existing application also provides private PR tours for the owner: a concise
-explanation of participating pinned changes, with explicit navigation and refresh.
+The application also provides PR tours that explain a change through its primary
+vertical slices and revision-bound verification evidence. Local previews run
+without hosted authentication or publication; explicitly published tours and
+media remain private to the owner. Both use the same navigable reader and
+explicit refresh.
+A tour opens with linked business cases stating who benefits and what improves.
+Each case connects changed behavior to implementation slices, concise code annotations,
+and observed evidence. Supporting source, decisions, receipts, and history stay behind
+disclosures; case concerns remain visible. Reading order is optional. PR-wide dependencies,
+rollout, and rollback remain visible at the final decision boundary. The owner
+retains the merge decision.
 The reference manual remains public. Tours are application content consumed
 through the existing design system, rather than a new component catalogue.
 

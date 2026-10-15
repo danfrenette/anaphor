@@ -88,6 +88,11 @@ purpose and placement, without repeating font, wrap, color, or reading-width rul
 Use tabular numbers for changing values and wrap token names rather than hiding
 them. Apply font smoothing once at the root.
 
+Design previews and mockups must apply the same uppercase transform to every
+use of Bell Gothic or the heading font token, including card titles and viewer
+headings. Keep stored copy in natural case. Before handoff, inspect every
+heading-font use for uppercase rendering; choosing the font alone is incomplete.
+
 ## Iconography
 
 Use Phosphor Icons for interface symbols. Prefer the regular weight and preserve

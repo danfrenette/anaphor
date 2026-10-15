@@ -68,6 +68,10 @@ it. Line emphasis is controlled; interactive reader range selection is not inclu
 Legacy `revealKey` keeps its page-flow scrolling behavior when `maxHeight` is null.
 Authored-note reveal below opens the file and expands its context automatically.
 
+Selected lines use Pierre's native selection and gutter styling with neutral
+theme colors. Line numbers provide the stronger selection cue. Code and
+annotations have no colored side border or stripe; keyboard focus remains explicit.
+
 ## Initial limits
 
 This first version uses Pierre's file renderer without a virtualizer. Bounded

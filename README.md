@@ -65,6 +65,9 @@ pnpm test:registry
 pnpm build
 ```
 
+Local PR tours use the same reader without hosted services. Start with
+[local tours](docs/verification/local-tours.md).
+
 Private tour setup, the CLI, isolated acceptance tests and the separate
 real-provider preview gate are documented in
 [private tours](docs/verification/private-tours.md). Use the repository's pinned
@@ -429,3 +432,9 @@ usage examples, with horizontally scrollable text and separate copy buttons.
 ## Collapsible sections
 
 Compose reusable disclosures and a nested Sidebar outline with controlled or initial state. See [Collapsible](docs/components/collapsible.md) for examples, keyboard behavior, and the Pierre Trees evaluation.
+
+## Change tours
+
+The tour reader composes business cases, the shared [Diff](docs/components/diff.md), and
+[MediaViewer](docs/components/media-viewer.md). Tour adapters own pinned source, capture annotations,
+verification facts, and asset URLs. See [local tour verification](docs/verification/local-tours.md).
