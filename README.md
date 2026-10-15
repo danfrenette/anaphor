@@ -65,6 +65,9 @@ pnpm test:registry
 pnpm build
 ```
 
+Local PR tours use the same reader without hosted services. Start with
+[local tours](docs/verification/local-tours.md).
+
 Private tour setup, the CLI, isolated acceptance tests and the separate
 real-provider preview gate are documented in
 [private tours](docs/verification/private-tours.md). Use the repository's pinned

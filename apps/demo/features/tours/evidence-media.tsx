@@ -1,0 +1,27 @@
+"use client";
+
+import Image from "next/image";
+import { useId, useState } from "react";
+import type { TourAsset } from "./document";
+
+export function EvidenceMedia({ asset, url }: { asset: TourAsset; url: string | undefined }) {
+  const descriptionId = useId();
+  const [failed, setFailed] = useState(false);
+  if (!url || failed) return <p role="alert">Evidence unavailable: {asset.caption}. Restore the asset and refresh the tour.</p>;
+  return <figure className="space-y-3">
+    {asset.mediaType.startsWith("image/") ? (
+      <Image src={url} alt={asset.description} width={1600} height={1000} unoptimized
+        className="h-auto w-full border border-input-border" onError={() => setFailed(true)} />
+    ) : asset.mediaType.startsWith("video/") ? (
+      <>
+        <video src={url} controls preload="metadata" aria-label={asset.caption}
+          aria-describedby={descriptionId} className="w-full border border-input-border"
+          onError={() => setFailed(true)} />
+        <p id={descriptionId} className="text-ui">{asset.description}</p>
+      </>
+    ) : <a href={url} className="underline underline-offset-4">Open {asset.caption}</a>}
+    <figcaption className="space-y-1 text-small text-muted-foreground">
+      <p>{asset.caption}</p><p>{asset.provenance}</p>
+    </figcaption>
+  </figure>;
+}

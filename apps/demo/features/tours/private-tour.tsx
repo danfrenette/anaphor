@@ -109,7 +109,8 @@ function AuthorizedTour({
           again.
         </p>
       )}
-      <TourReader document={tour.data.document} revision={tour.data.revision} />
+      <TourReader document={tour.data.document} revision={tour.data.revision}
+        assetBaseUrl={`/api/tours/${tour.data.id}/revisions/${tour.data.revision}/assets`} />
     </>
   );
 }
