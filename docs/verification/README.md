@@ -41,3 +41,5 @@ server started by that run.
 - [Bottom bar catalog](bottom-bar-catalog.md) — appearances, local utility actions, responsive labels, and playground reset.
 - [Manual navigation order](manual-order.md) — alphabetized groups, matching section order, and keyboard/index navigation.
 - [Step transition](step-transition.md) — directional ordered content and measured height.
+
+- [Local change tours](local-tours.md): persistent imports, shared evidence, and explicit refresh.

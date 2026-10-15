@@ -92,6 +92,33 @@ jobs:
             test-results/
           retention-days: 14
 
+  local-tours:
+    name: Local tour browser tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    container:
+      # Keep this version aligned with @playwright/test in package.json.
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:local-tours
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: failure()
+        continue-on-error: true
+        with:
+          name: local-tour-browser-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
   registry:
     name: Registry consumers
     runs-on: ubuntu-24.04
@@ -152,6 +179,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @anaphor/demo tour:migrate
+      - run: pnpm exec vitest run apps/demo/features/tours/hosted-publication.test.ts apps/demo/features/tours/hosted-cli.test.ts
       - run: pnpm test:tours
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: failure()

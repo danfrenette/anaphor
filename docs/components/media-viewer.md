@@ -43,7 +43,8 @@ last selected tab. Annotations and Evidence tabs live inside that panel. Details
 stays in the console with explicit expanded state; items without supporting
 content omit it. The panel sits beside media on wide windows and below it on
 narrow windows. Closing it gives the media stage the available space while the
-outer dialog stays fixed. Panel changes are immediate.
+outer dialog stays fixed. Showing or hiding Details is immediate. Annotations/Evidence content uses StepTransition; the
+outer dialog and tab list remain stationary.
 Annotations may be React content or a render function receiving the same inspection
 argument as `renderConsole`, so contextual actions can live beside their explanation.
 Long titles retain their bounded scroll region.

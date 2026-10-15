@@ -53,8 +53,21 @@ credential validation and server revocation stay in the CLI workflow. An explici
 helper overrides platform defaults. macOS loads the pinned native Keychain adapter
 only when selected; Linux retains Secret Service through `secret-tool`.
 
-Private Vercel Blob media arrives in the later media slice. Tour interpretation,
-authentication and persistence never enter the design-system package.
+Version 2 tours add explicit source/spec links, immutable verification records,
+logical asset references, and derived evidence applicability. Local imports copy
+assets into a persistent workspace outside product repositories. Complete
+revision directories and an atomic current pointer keep interrupted updates
+from replacing readable content. The unauthenticated local entry point is
+explicitly enabled only in a loopback development instance.
+
+The shared reader receives document data and revision-bound asset URLs. Local
+loading stays independent of auth and database modules. Runtime workspace
+paths carry Turbopack tracing exclusions so user data and CLI ancestry scans
+are never copied into a deployment. Hosted publication stages
+private Vercel Blob assets, then commits a document revision and retry result
+atomically in Postgres. Hosted asset reads authorize the owner and resolve only
+assets registered in that tour revision. Tour interpretation, authentication and
+persistence never enter the design-system package.
 
 ## Package Boundary
 
@@ -197,3 +210,18 @@ input interruption, and live reduced-motion changes. Each request owns its
 callbacks so interrupted work cannot overwrite a later destination. `ContentSections`
 keeps focus and ordering policy and observes the actual section elements for
 layout changes. The hook ships with the sections registry item.
+
+## Review presentation
+
+Optional version 2 section reviews carry captured code, bounded line annotations,
+requirements, ordered steps, and hash-bound media annotations. Import validation
+checks source ranges and annotation identity before persistence. Existing text-only
+version 1 and version 2 documents remain readable.
+
+The design system supplies Diff and MediaViewer. Tour adapters map captured source
+and annotations into their public APIs; recordings keep native inline playback.
+Applications own source capture, pinned links, asset resolution, and evidence
+interpretation. The shared reader receives an asset-check callback: local checks
+use Axios directly; hosted checks run through the private query owner so denied
+access clears private content. Shared queries own cancellation across reader
+refreshes. Captures retain their original bytes; annotations live in the document.

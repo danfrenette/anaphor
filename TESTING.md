@@ -100,6 +100,13 @@ machines. Package-registry access is required; dependencies declared by registry
 items intentionally resolve as in a new consumer. Failed temporary consumers
 retain their resolved lockfile and build output for diagnosis.
 
+Registry runtime dependencies must preserve the supported ranges declared by the
+workspace package when installed source relies on those versions' public types.
+The shortcut item uses `@tanstack/react-hotkeys@^0.10.0`, matching the package:
+newer pre-1.0 minor releases can change the `Hotkey` contract and require a
+separate compatibility review. Keep this bound in the registry rather than
+pinning the consumer fixture, so fresh installation verifies the shipped contract.
+
 ## Accessibility
 
 The release bar is WCAG 2.2 AA: semantic names and roles, complete keyboard
@@ -126,9 +133,12 @@ and correcting that contrast must not cause a test failure.
 - **Demo browser tests**: production build and the full Chromium/WebKit suite.
 - **Registry consumers**: fresh independent Button and complete-UI installations.
 
-**Private tour browser tests** additionally runs the tour suite against an isolated
+**Local tour browser tests** exercises the loopback development reader without
+hosted services. It covers managed evidence, refresh, media recovery, and
+Chromium/WebKit reflow. **Private tour browser tests** additionally runs the tour suite against an isolated
 Postgres service, with supported Better Auth migrations and fictional identity
-sessions. It builds the application and exercises private publication, reading
+sessions. The same job runs hosted publication/CLI integration against real
+authentication and Postgres while substituting the external Blob provider. It builds the application and exercises private publication, reading
 and device approval in Chromium/WebKit. It does not prove real OAuth-provider or
 deployed-domain acceptance; that separate gate is in
 [private tours](docs/verification/private-tours.md).

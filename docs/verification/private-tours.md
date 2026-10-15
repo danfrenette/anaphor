@@ -150,3 +150,40 @@ prove native Keychain behavior. Also exercise actual CLI login → publish → l
 without `ANAPHOR_SECURE_STORE`, using an isolated configured application, and
 verify that logout leaves no credential for that origin. Real-provider acceptance
 still uses the separate deployed-preview recipe above.
+
+## Version 2 media and updates
+
+Local authoring and the shared document contract are described in
+[local tours](local-tours.md). Hosted publication accepts the same prepared
+bundle. Configure `BLOB_READ_WRITE_TOKEN` for a **private** Vercel Blob store in
+the selected isolated environment. Run the supported migration before using
+revision history, publication operations, or asset registration. Existing version
+1 text tours remain readable.
+
+`tour publish --file <bundle.json> --key <operation-key> --origin <origin>` stages
+private assets and then creates the complete hosted revision. Supply `--id <UUID>`
+and `--expected-revision <N>` to update the same hosted tour. Retain the same
+content, key, ID, and expected revision after an uncertain response. Hosted
+revision numbers are independent of local revision numbers. Files remain
+owner-only and outside product repositories under the existing CLI rules.
+
+Assets up to 4 MiB use the server upload path. Larger assets, up to the same
+100 MiB local limit, upload directly to private Blob storage using a short-lived
+token scoped to that owner, hash, media type, and byte limit. Authenticated
+completion verifies the stored content before it can enter a published revision.
+The CLI retries completion first after an uncertain upload response. Check
+unauthorized document and asset reads, revision-bound media, range/HEAD
+requests, conflicting writers, unchanged retries, and failed uploads preserving
+the prior readable revision.
+
+The focused hosted HTTP/CLI integration suite uses real disposable Postgres and
+Better Auth, substituting the external Blob boundary. Run it with the configured
+`TOUR_TEST_DATABASE_URL`:
+
+```sh
+pnpm exec vitest run apps/demo/features/tours/hosted-publication.test.ts
+```
+
+That test does not establish actual Blob storage, OAuth-provider, or deployed
+publication acceptance. Exercise those boundaries separately in the configured
+isolated preview before claiming hosted launch readiness.
