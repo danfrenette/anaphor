@@ -20,8 +20,10 @@ for (const theme of ["light", "dark"] as const) {
     const enlarge = page.getByRole("button", { name: "Enlarge example screenshot", exact: true });
     await enlarge.focus();
     await enlarge.press("Enter");
-    await expect(page.getByRole("dialog", { name: "Screenshot with numbered callouts" })).toBeVisible();
+    const dialog = page.getByRole("dialog", { name: "Screenshot with numbered callouts" });
+    await expect(dialog).toBeVisible();
     await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
     await expect(enlarge).toBeFocused();
     await expect(image).toHaveCSS("outline-offset", "-1px");
     await expect(image).toHaveCSS("outline-color", theme === "light" ? "rgba(0, 0, 0, 0.1)" : "rgba(255, 255, 255, 0.1)");
