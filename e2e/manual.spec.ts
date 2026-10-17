@@ -87,7 +87,7 @@ test("button demo exposes bounded experiments and resets to approved defaults", 
   await expect(closedPanel.locator("..").locator("..")).toHaveAttribute("inert", "");
   await expect(closedPanel.locator("..").locator("..")).toHaveCSS("height", "0px");
   await page.getByRole("tab", { name: "Open Button controls" }).click();
-  await expect(page.getByLabel("Variant")).toBeVisible();
+  await expect(page.getByLabel("Variant", { exact: true })).toBeVisible();
 });
 
 test("button motion and touch sizing follow the active device preferences", async ({
@@ -268,8 +268,8 @@ test("controls preserve edits across switches and return keyboard focus", async 
   await expect(page.getByRole("button", { name: "Open workspace" })).toHaveCount(0);
   await page.getByRole("button", { name: "Close controls" }).click();
   await visit("Button");
-  await expect(page.getByLabel("Tone")).toHaveText("danger");
-  await page.getByLabel("Tone").focus();
+  await expect(page.getByLabel("Tone", { exact: true })).toHaveText("danger");
+  await page.getByLabel("Tone", { exact: true }).focus();
   await page.keyboard.press("Escape");
   const trigger = page.getByRole("tab", { name: "Open Button controls" });
   await expect(trigger).toBeFocused();
