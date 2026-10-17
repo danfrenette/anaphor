@@ -23,3 +23,4 @@ server started by that run.
 - [Visual foundation references](foundation-visuals.md) — Shadows, Spacing, Radius, and the combined Typography page.
 - [Button catalog](button-catalog.md) — comparison groups, code disclosures, and retained button interactions.
 - [Input catalog](input-catalog.md) — sizes, states, validation, search, and shared code-control spacing.
+- [Checkbox catalog](checkbox-catalog.md) — states, selection groups, required choice, and inline code.

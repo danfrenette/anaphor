@@ -177,3 +177,27 @@ test("checkbox marks and boundaries meet non-text contrast in both themes", asyn
     for (const ratio of ratios) expect(ratio).toBeGreaterThanOrEqual(3);
   }
 });
+
+
+test("checkbox catalog groups examples and exposes keyboard-accessible code", async ({ page }) => {
+  await page.goto("/#checkbox");
+  const section = page.locator("#checkbox");
+  for (const name of ["States", "Supporting text", "Related choices", "Required choice", "Playground"]) {
+    await expect(section.getByRole("heading", { name, exact: true })).toBeVisible();
+  }
+  const states = section.getByRole("group", { name: "Checkbox states" });
+  await expect(states.getByRole("checkbox", { name: "Mixed", exact: true })).toHaveAttribute("aria-checked", "mixed");
+  await expect(states.getByRole("checkbox", { name: "Unavailable", exact: true })).toBeDisabled();
+  const readOnly = states.getByRole("checkbox", { name: "Read only", exact: true });
+  await readOnly.press("Space");
+  await expect(readOnly).toBeChecked();
+  const example = section.getByRole("region", { name: "Related choices", exact: true });
+  const trigger = example.getByRole("button", { name: "Show related choices code" });
+  await trigger.focus();
+  await trigger.press("Enter");
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await expect(example.getByLabel("Related choices code", { exact: true })).toBeVisible();
+  expect(await section.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+  await trigger.press("Enter");
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+});
