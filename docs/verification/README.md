@@ -27,3 +27,4 @@ server started by that run.
 - [Radio group catalog](radio-group-catalog.md) — choice states, label colors, validation, and inline code.
 - [Card catalog](card-catalog.md) — anatomy, composition, logo showcase, and playground controls.
 - [Badge catalog](badge-catalog.md) — variants, sizes, icon/shape comparisons, and playground controls.
+- [Skeleton catalog](skeleton-catalog.md) — shapes, effects, content geometry, and reduced motion.
