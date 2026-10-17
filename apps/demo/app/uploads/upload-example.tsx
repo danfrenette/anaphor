@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, ButtonLabel, Card, Field, FieldFeedback, FileUpload, FileUploadDropzone, FileUploadProgress, FileUploadTrigger, Text, Tooltip, TooltipPopup, TooltipTrigger } from "@anaphor/system";
+import { Button, ButtonLabel, Field, FieldFeedback, FileUpload, FileUploadDropzone, FileUploadProgress, FileUploadTrigger, Text, Tooltip, TooltipPopup, TooltipTrigger } from "@anaphor/system";
 import { ArrowClockwise, Check, FileText, UploadSimple, WarningCircle, X } from "@phosphor-icons/react";
 import { AnimatePresence, motion, useIsPresent, useReducedMotion } from "motion/react";
 import { useCallback, useId, useRef, type RefObject } from "react";
@@ -114,11 +114,7 @@ export function UploadExample({ session, reducedMotion }: { session: UploadSessi
   const errors = session.items.filter(item => item.phase.endsWith("error")).length;
   return <FileUpload multiple={true} accept=".pdf,.md,.txt,application/pdf,text/markdown,text/plain" disabled={session.disabled} invalid={!!session.error} onFilesSelected={session.select}
     className="[overflow-anchor:none] [--anaphor-button-press-scale:0.96] [--anaphor-focus:var(--anaphor-font-tertiary)]">
-    <Card variant="default" className="@container/upload isolate bg-background p-6 shadow-upload forced-colors:border forced-colors:border-[CanvasText] forced-colors:shadow-none">
-      <header className="mb-6 grid gap-2">
-        <Text as="h3" variant="heading">Upload files</Text>
-        <Text as="p" variant="ui" className="max-w-none text-muted-foreground">Choose files and follow their progress here.</Text>
-      </header>
+    <div className="@container/upload isolate">
       <Field orientation="vertical" invalid={!!session.error} disabled={session.disabled}>
         <FileUploadDropzone className="min-h-28 flex-row flex-wrap justify-start gap-4 rounded-lg p-4 text-start sm:p-5">
           <UploadSimple aria-hidden="true" className="pointer-events-none size-6 shrink-0 text-muted-foreground" />
@@ -139,7 +135,7 @@ export function UploadExample({ session, reducedMotion }: { session: UploadSessi
         </ul>
       </section>}
       <footer className="mt-2 border-t border-border pt-4 [border-top-width:var(--anaphor-border-hairline)]"><Text as="p" variant="caption">You can add more files while uploads are running.</Text></footer>
-    </Card>
+    </div>
     <p className="sr-only" role="status" aria-atomic="true">{session.announcement}</p>
   </FileUpload>;
 }
