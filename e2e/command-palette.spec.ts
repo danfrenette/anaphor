@@ -15,11 +15,11 @@ test("sidebar search opens, filters, and navigates on desktop and mobile", async
   expect(box!.x + box!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
   await input.fill("Typography");
   await expect(dialog.getByRole("option", { name: "Typography", exact: true })).toBeVisible();
-  await expect(dialog.getByRole("option", { name: "Typography specimen", exact: true })).toBeVisible();
+  await expect(dialog.getByRole("option")).toHaveCount(1);
   expect((await new AxeBuilder({ page }).include('[data-slot="command-palette"]').analyze()).violations).toEqual([]);
   await input.press("Enter");
   await expect(dialog).not.toBeVisible();
-  await expect(page).toHaveURL(/#typography$/);
+  await expect(page).toHaveURL(/\/typography$/);
   if (isMobile) await expect(page.locator('[data-slot="sidebar"]')).not.toBeVisible();
 });
 
@@ -33,7 +33,7 @@ test("Command-K opens from an input and Escape restores focus", async ({ page, i
   const input = page.getByRole("combobox", { name: "Search the manual" });
   await expect(input).toBeFocused();
   await input.press("ArrowDown");
-  await expect(page.getByRole("option", { name: "Principles", exact: true })).toHaveAttribute("data-highlighted", "");
+  await expect(page.getByRole("option", { name: "Color", exact: true })).toHaveAttribute("data-highlighted", "");
   await input.fill("not-a-command");
   await expect(page.getByText("No commands found. Try another search.")).toBeVisible();
   await input.press("Escape");

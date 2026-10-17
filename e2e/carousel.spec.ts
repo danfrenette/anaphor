@@ -163,7 +163,7 @@ test("trusted touch swipes navigate Rail and Deck at 320px", async ({ browser, b
 test("carousel tabs survive reload and old prototype links reach the selected demo", async ({ page, isMobile }) => {
   await page.goto("/");
   if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
-  await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Rail and Deck" }).click();
+  await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Carousels" }).click();
   await expect(page.getByRole("region", { name: railName })).toBeVisible();
   await page.getByRole("tab", { name: "Deck", exact: true }).click();
   await expect(page).toHaveURL(/\/carousels\?tab=deck$/);

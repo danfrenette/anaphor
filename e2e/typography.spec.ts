@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("headings load Bell Gothic and article text keeps a single 90% alpha", async ({ page }) => {
-  await page.goto("/#typography");
+  await page.goto("/typography");
   await page.evaluate(() => document.fonts.ready);
   const heading = page.getByRole("heading", { name: "Type with a purpose" });
   await expect(heading).toHaveCSS("font-family", /Bell Gothic Black/);
@@ -40,9 +40,10 @@ test("purpose variants own wrapping and reading measure without caller styling",
   const description = page.locator('#button [data-slot="text"][data-variant="description"]').first();
   await expect(description).toHaveCSS("text-wrap-style", "pretty");
   await expect(page.getByRole("heading", { name: "Button", exact: true })).toHaveCSS("text-wrap-style", "balance");
+  await page.goto("/typography");
   const body = page.locator('#typography [data-slot="text"][data-variant="body"]').first();
   await expect(body).toHaveCSS("text-wrap-style", "auto");
-  const readingText = page.locator('[data-slot="text"][data-variant="body"], [data-slot="text"][data-variant="description"], [data-slot="prose"]');
+  const readingText = page.locator("#typography").locator('[data-slot="text"][data-variant="body"], [data-slot="text"][data-variant="description"], [data-slot="prose"]');
   for (const measure of ["65ch", "40ch"]) {
     if (measure === "40ch") {
       await page.evaluate(() => document.documentElement.style.setProperty("--container-reading", "40ch"));
@@ -55,20 +56,21 @@ test("purpose variants own wrapping and reading measure without caller styling",
       reference.remove();
       return { text: element.textContent, actual: getComputedStyle(element).maxWidth, expected };
     }), measure);
-    expect(widths.length).toBeGreaterThan(3);
+    expect(widths.length).toBeGreaterThan(1);
     for (const width of widths) {
       expect(width.actual, width.text ?? "Reading text").not.toBe("none");
       expect(parseFloat(width.actual), width.text ?? "Reading text").toBeCloseTo(width.expected, 1);
     }
   }
   await page.evaluate(() => document.documentElement.style.removeProperty("--container-reading"));
+  await page.goto("/#input");
   await expect(page.locator('[data-slot="field-description"]:visible').first()).toHaveCSS("text-wrap-style", "pretty");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
 
 test("semantic overrides retain purpose styling and prose respects exclusions", async ({ page }) => {
-  await page.goto("/#typography");
+  await page.goto("/typography");
   await page.evaluate(() => document.fonts.ready);
   // Reuse the real rendered variant classes on a heading to exercise the CSS cascade.
   for (const variant of ["ui", "caption"]) {
@@ -85,6 +87,7 @@ test("semantic overrides retain purpose styling and prose respects exclusions", 
     await expect(heading).toHaveCSS("text-wrap-style", "auto");
     await heading.evaluate(element => element.remove());
   }
+  await page.goto("/");
   const label = page.locator('[data-slot="card-title"][data-variant="label"]').first();
   await expect(label).toHaveCSS("font-family", /Inter/);
   await expect(label).toHaveCSS("font-weight", "500");
@@ -107,7 +110,7 @@ test("semantic overrides retain purpose styling and prose respects exclusions", 
 });
 
 test("Text and Prose respond to shared typography tokens", async ({ page }) => {
-  await page.goto("/#typography");
+  await page.goto("/typography");
   await page.evaluate(() => {
     const tokens = document.documentElement.style;
     tokens.setProperty("--tracking-heading", "0.04em");

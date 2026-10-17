@@ -20,3 +20,4 @@ server started by that run.
 
 - [Collapsible sections](collapsible.md)
 - [Agent-built consumer interfaces](agent-consumer.md) — fresh-agent evaluation of the reusable design skill; local registry transport does not cover GitHub authentication or the published branch.
+- [Visual foundation references](foundation-visuals.md) — Shadows, Spacing, Radius, and the combined Typography page.

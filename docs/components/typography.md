@@ -122,9 +122,11 @@ styles. Prose code-block radii continue to use `--radius-sm`.
 
 ## END-205: inline content and consumer proof
 
-The typography specimen lives at `/typography`. It uses the page's current theme;
-it does not own a theme toggle or depend on MorphSurface. The existing manual
-remains unchanged while the theme-display work is in progress.
+The combined typography reference lives at `/typography`: the type-role overview
+and article composition precede the interactive reading specimen. It uses the
+page's current theme; it does not own a theme toggle or depend on MorphSurface.
+The manual index and search expose one Typography destination. The original
+`/#typography` anchor links to the combined page.
 
 The ticket's five responsibilities map to the existing kit:
 
