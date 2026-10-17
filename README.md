@@ -240,8 +240,8 @@ and disabled behavior pass through to Base UI. `indeterminate` represents a
 partially selected set: derive it from child values, with `checked={false}` for
 the mixed state. Activation then selects the set; it is not a third toggle step.
 
-Selection and label color update immediately. Unchecked checkbox labels use muted
-text; checked and mixed labels use primary text. Disabled labels use muted text
+Selection and label color update immediately. Unchecked checkbox and unselected radio labels use muted
+text; selected and mixed labels use primary text. Disabled labels use muted text
 at 60% opacity, regardless of selection. This applies to sibling labels and
 labels nested in `FieldContent`, without dimming the row or its description.
 The checkbox mark stays light in both themes so it contrasts with the accent

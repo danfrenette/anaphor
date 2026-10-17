@@ -24,3 +24,4 @@ server started by that run.
 - [Button catalog](button-catalog.md) — comparison groups, code disclosures, and retained button interactions.
 - [Input catalog](input-catalog.md) — sizes, states, validation, search, and shared code-control spacing.
 - [Checkbox catalog](checkbox-catalog.md) — states, selection groups, required choice, and inline code.
+- [Radio group catalog](radio-group-catalog.md) — choice states, label colors, validation, and inline code.

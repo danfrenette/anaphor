@@ -37,7 +37,9 @@ test("required choices show feedback on submit and clear it on selection", async
 test("disabled choices are skipped and read-only selection stays fixed", async ({ page }) => {
   await page.goto("/#radio-group");
   const available = page.getByRole("radiogroup", { name: "Digest availability" });
-  await page.getByRole("radiogroup", { name: "Fixed frequency" }).getByRole("radio", { name: "Daily digest" }).press("Tab");
+  await available.getByRole("radio", { name: "Daily digest" }).focus();
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Tab");
   await expect(available.getByRole("radio", { name: "Daily digest" })).toBeFocused();
   await available.getByRole("radio", { name: "Daily digest" }).press("ArrowDown");
   await expect(available.getByRole("radio", { name: "Weekly digest" })).toBeFocused();
@@ -49,8 +51,7 @@ test("disabled choices are skipped and read-only selection stays fixed", async (
   await fixed.getByText("Weekly digest", { exact: true }).click();
   await expect(daily).toBeChecked();
   await expect(fixed.getByRole("radio", { name: "Weekly digest" })).not.toBeChecked();
-  await fixed.getByRole("radio", { name: "Weekly digest" }).press("Tab");
-  await expect(available.getByRole("radio", { name: "Weekly digest" })).toBeFocused();
+  await expect(available.getByRole("radio", { name: "Every update" })).toHaveAttribute("tabindex", "-1");
 });
 
 test("controls reset the controlled frequency and state", async ({ page }) => {
@@ -135,4 +136,39 @@ test("the control and label gap provide a 44px target without enlarging the circ
   await expect(every).not.toBeChecked();
   expect(box.width).toBe(20);
   expect(box.height).toBe(20);
+});
+
+
+test("catalog code and option label colors follow state without changing group headings", async ({ page }) => {
+  await page.goto("/#radio-group");
+  const section = page.locator("#radio-group");
+  for (const name of ["States", "With supporting text", "Required choice", "Unavailable option", "Playground"]) {
+    await expect(section.getByRole("heading", { name, exact: true })).toBeVisible();
+  }
+  const group = section.getByRole("radiogroup", { name: "Delivery frequency" });
+  const color = (name: string) => group.getByText(name, { exact: true }).evaluate(el => getComputedStyle(el).color);
+  for (const theme of ["light", "dark"]) {
+    await page.locator("html").evaluate((el, dark) => el.classList.toggle("dark", dark), theme === "dark");
+    const selected = await color("Daily digest");
+    const unselected = await color("Weekly digest");
+    expect(selected).not.toBe(unselected);
+    const heading = section.getByText("Delivery frequency", { exact: true });
+    const headingColor = await heading.evaluate(el => getComputedStyle(el).color);
+    await group.getByRole("radio", { name: "Daily digest" }).press("ArrowDown");
+    expect(await color("Weekly digest")).toBe(selected);
+    expect(await color("Daily digest")).toBe(unselected);
+    expect(await heading.evaluate(el => getComputedStyle(el).color)).toBe(headingColor);
+    const disabled = section.getByRole("radiogroup", { name: "Unavailable frequency" });
+    const disabledColors = await disabled.locator('[data-slot="field-label"]').evaluateAll(es => es.map(el => getComputedStyle(el).color));
+    expect(disabledColors[0]).toBe(disabledColors[1]);
+    expect(disabledColors[0]).not.toBe(selected);
+    expect(disabledColors[0]).not.toBe(unselected);
+    await group.getByRole("radio", { name: "Weekly digest" }).press("ArrowUp");
+  }
+  const trigger = section.getByRole("button", { name: "Show with supporting text code" });
+  await trigger.press("Enter");
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await expect(section.getByLabel("With supporting text code", { exact: true })).toBeVisible();
+  await trigger.press("Enter");
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
 });
