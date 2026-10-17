@@ -44,6 +44,11 @@ function FieldLabel({ className, ...props }: ComponentProps<typeof FieldPrimitiv
   return <FieldPrimitive.Label data-slot="field-label" className={(state) => cn(
     // Typography
     "text-ui",
+    // Checkbox labels follow selection, including labels nested in FieldContent.
+    "group-has-[>[data-slot=checkbox][data-unchecked]:not([data-disabled])]/field:text-muted-foreground",
+    "group-has-[>[data-slot=checkbox][data-checked]:not([data-disabled])]/field:text-foreground",
+    "group-has-[>[data-slot=checkbox][data-indeterminate]:not([data-disabled])]/field:text-foreground",
+    "group-has-[>[data-slot=checkbox][data-disabled]]/field:text-muted-foreground/60",
     // Horizontal orientation
     "group-data-[orientation=horizontal]/field:flex group-data-[orientation=horizontal]/field:flex-1",
     "group-data-[orientation=horizontal]/field:min-h-11 group-data-[orientation=horizontal]/field:items-center",

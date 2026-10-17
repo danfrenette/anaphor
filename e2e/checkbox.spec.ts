@@ -201,3 +201,32 @@ test("checkbox catalog groups examples and exposes keyboard-accessible code", as
   await trigger.press("Enter");
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
 });
+
+
+test("checkbox label colors follow selection and availability in both themes", async ({ page }) => {
+  await page.goto("/#checkbox");
+  const states = page.getByRole("group", { name: "Checkbox states" });
+  const labelColor = (name: string) => states.getByText(name, { exact: true }).evaluate(el => getComputedStyle(el).color);
+  for (const theme of ["light", "dark"] as const) {
+    const themeButton = page.getByRole("button", { name: `Switch to ${theme} theme` });
+    if (await themeButton.count()) await themeButton.click();
+    const unchecked = await labelColor("Unchecked");
+    const checked = await labelColor("Checked");
+    const disabled = await labelColor("Unavailable");
+    expect(unchecked).not.toBe(checked);
+    expect(disabled).not.toBe(checked);
+    expect(disabled).not.toBe(unchecked);
+    expect(await labelColor("Mixed")).toBe(checked);
+    expect(await labelColor("Read only")).toBe(checked);
+    await states.getByRole("checkbox", { name: "Unchecked", exact: true }).check();
+    expect(await labelColor("Unchecked")).toBe(checked);
+    await states.getByRole("checkbox", { name: "Unchecked", exact: true }).uncheck();
+    expect(await labelColor("Unchecked")).toBe(unchecked);
+    const supporting = page.locator("#checkbox").getByRole("region", { name: "Supporting text" });
+    const label = supporting.getByText("Include a plain-text version", { exact: true });
+    expect(await label.evaluate(el => getComputedStyle(el).color)).toBe(checked);
+    await supporting.getByRole("checkbox").uncheck();
+    expect(await label.evaluate(el => getComputedStyle(el).color)).toBe(unchecked);
+    await supporting.getByRole("checkbox").check();
+  }
+});
