@@ -12,3 +12,8 @@ It remains a demo-owned composition rather than a new package component.
 Run `pnpm exec playwright test e2e/data-table.spec.ts --workers=2`.
 Verify reference semantics, row spacing, light/dark reflow, code disclosure,
 filter reset focus, selection persistence, column controls, and row actions.
+
+Structural table scroll surfaces use `rounded-sm` (4px); the playground frame
+and separate full-grid mobile panels use `rounded-md` (8px). Colors, type,
+and cell spacing consume the shared semantic and spacing utilities. Check
+header/grid clipping and visible keyboard focus at the scroll boundary.

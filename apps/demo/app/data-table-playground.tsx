@@ -137,7 +137,7 @@ export function DataTablePlayground() {
           : settings.state === "Empty" || rows.length === 0 ? <div className="grid min-h-64 place-content-center justify-items-center gap-3 px-4 text-center" role="status"><Text as="h4" variant="subheading">{settings.state === "Empty" ? "No projects yet" : "No matching projects"}</Text><p className="text-ui text-muted-foreground">{settings.state === "Empty" ? "Projects will appear here once they’re added." : "Try another name or clear your filters."}</p>{settings.state !== "Empty" && <Action iconOnly={false} onClick={resetQuery}><ButtonLabel>Clear filters</ButtonLabel></Action>}</div>
           : <CheckboxGroup>
             <div className={cardMode ? "hidden @[640px]:block" : "block"}>
-              <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Project table, scroll horizontally for more columns">
+              <div className="overflow-x-auto rounded-sm focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring" tabIndex={0} role="region" aria-label="Project table, scroll horizontally for more columns">
                 <TableFluidHover><table className="w-full table-fixed border-collapse text-ui" style={{ minWidth: activeColumns.reduce((width, column) => width + (column === "name" ? 240 : 140), (selection ? 56 : 0) + (actions ? 56 : 0)) }}>
                   <caption className="sr-only">Studio projects</caption>
                   <colgroup>{selection && <col style={{ width: 56 }} />}{activeColumns.map(column => <col key={column} style={{ width: column === "name" ? 240 : 140 }} />)}{actions && <col style={{ width: 56 }} />}</colgroup>
@@ -150,7 +150,7 @@ export function DataTablePlayground() {
             </div>
             <div className={cardMode ? "@[640px]:hidden" : "hidden"}>
               {selection && <label className="flex min-h-14 cursor-pointer items-center gap-4 border-t border-border px-5">{selectPage}<span className="text-ui">Select this page</span></label>}
-              <TableFluidHover><ul className={`grid grid-cols-1 ${settings.treatment === "Full grid" ? "gap-3 p-3" : ""}`}>{rows.map(item => <li data-fluid-row key={item.id} onClick={event => selectRow(event, item)} className={`${cellPadding} ${borders} ${selection && selected.includes(item.id) ? "bg-muted" : ""}`}>
+              <TableFluidHover><ul className={`grid grid-cols-1 ${settings.treatment === "Full grid" ? "gap-3 p-3" : ""}`}>{rows.map(item => <li data-fluid-row key={item.id} onClick={event => selectRow(event, item)} className={`${cellPadding} ${borders} ${settings.treatment === "Full grid" ? "rounded-md" : ""} ${selection && selected.includes(item.id) ? "bg-muted" : ""}`}>
                 <div className="flex items-start gap-3">{selection && rowCheckbox(item)}<div className="min-w-0 flex-1">{value(item, "name")}</div>{actions && rowActions(item)}</div>
                 <dl className="mt-4 grid gap-3">{activeColumns.filter(column => column !== "name").map(column => <div key={column} className="flex flex-wrap items-center justify-between gap-2 text-ui"><dt className="text-muted-foreground">{labels[column]}</dt><dd className="tabular-nums">{value(item, column)}</dd></div>)}</dl>
               </li>)}</ul></TableFluidHover>

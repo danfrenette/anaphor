@@ -12,7 +12,7 @@ const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "
 
 function TableSample({ label, border, compact }: { label: string; border: string; compact: boolean }) {
   const padding = compact ? "px-3 py-2" : "px-4 py-4";
-  return <div className="overflow-x-auto" role="region" aria-label={`${label} table preview`} tabIndex={0}>
+  return <div className="overflow-x-auto rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" role="region" aria-label={`${label} table preview`} tabIndex={0}>
     <table className="w-full min-w-96 border-collapse text-ui">
       <caption className="sr-only">{label} project comparison</caption>
       <thead className="bg-muted"><tr>
@@ -38,6 +38,7 @@ export function DataTableDemo() {
 const borders = treatment === "Full grid" ? "border border-border"
   : treatment === "Horizontal rules" ? "border-b border-border" : "";
 
+<div className="overflow-x-auto rounded-sm">
 <table className="w-full border-collapse text-ui">
   <thead className="bg-muted">{/* Column headers */}</thead>
   <tbody>
@@ -46,7 +47,8 @@ const borders = treatment === "Full grid" ? "border border-border"
       {/* Status and budget cells */}
     </tr>)}
   </tbody>
-</table>`}>
+</table>
+</div>`}>
         <div className="grid min-w-0 gap-8">
           {treatments.map(treatment => <div key={treatment.name} className="min-w-0">
             <h4 className="font-sans text-ui font-medium normal-case text-muted-foreground">{treatment.name}</h4>

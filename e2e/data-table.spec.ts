@@ -38,12 +38,14 @@ test("table catalog compares treatments and density with accessible inline code"
     await page.locator("html").evaluate((el, dark) => el.classList.toggle("dark", dark), theme === "dark");
     for (const label of ["Borderless", "Horizontal rules", "Full grid", "Compact", "Editorial"]) {
       const preview = section.getByRole("region", { name: `${label} table preview`, exact: true });
+      await expect(preview).toHaveCSS("border-top-left-radius", "4px");
       await expect(preview.getByRole("table")).toHaveAccessibleName(`${label} project comparison`);
       await expect(preview.getByRole("row")).toHaveCount(4);
       await expect(preview.getByRole("columnheader")).toHaveCount(3);
     }
-    const heights = await Promise.all(["Compact", "Editorial"].map(label => section.getByRole("region", { name: `${label} table preview`, exact: true }).getByRole("row").nth(1).evaluate(el => el.getBoundingClientRect().height)));
-    expect(heights[1]).toBeGreaterThan(heights[0]);
+    const rowHeight = (label: string) => section.getByRole("region", { name: `${label} table preview`, exact: true }).getByRole("row").nth(1).evaluate(el => el.getBoundingClientRect().height);
+    const [compactHeight, editorialHeight] = await Promise.all([rowHeight("Compact"), rowHeight("Editorial")]);
+    expect(editorialHeight).toBeGreaterThan(compactHeight);
     expect(await section.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
   }
   const trigger = section.getByRole("button", { name: "Show table treatments code" });
