@@ -410,7 +410,7 @@
       "name": "shortcut",
       "type": "registry:hook",
       "dependencies": [
-        "@tanstack/react-hotkeys"
+        "@tanstack/react-hotkeys@^0.10.0"
       ],
       "files": [
         {
