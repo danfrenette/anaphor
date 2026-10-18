@@ -7,7 +7,7 @@ test("Tabs search navigates by keyboard and updates the manual context", async (
   const dialog = page.getByRole("dialog", { name: "Search the manual" });
   const input = dialog.getByRole("combobox");
   await input.fill("Tabs");
-  await expect(dialog.getByRole("option", { name: "Tabs", exact: true })).toBeVisible();
+  await expect(dialog.getByRole("option", { name: "Tabs", exact: true })).toHaveAttribute("data-highlighted", "");
   await input.press("Enter");
 
   await expect(dialog).toBeHidden();
@@ -65,4 +65,21 @@ test("legacy Principles links retain Overview context without retired navigation
   const index = page.getByRole("navigation", { name: "Manual index" });
   await expect(index.getByRole("link", { name: "Overview", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(index.getByRole("link", { name: /Studies|Signal|Field Notes|Source Outline|Principles/ })).toHaveCount(0);
+});
+
+test("index groups are alphabetized and in-page sections follow their order", async ({ page, isMobile }) => {
+  await page.goto("/");
+  if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
+  const index = page.getByRole("navigation", { name: "Manual index" });
+  for (const list of await index.getByRole("list").all()) {
+    const labels = await list.getByRole("link").allTextContents();
+    expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b)));
+  }
+  const links = await index.getByRole("link").evaluateAll(elements => elements.map(el => el.getAttribute("href")!));
+  const expected = links.flatMap(href => href.startsWith("/#") ? [href.slice(2)] : href === "/typography" ? ["typography"] : []);
+  const actual = await page.locator("article section[id], article header[id]").evaluateAll(elements => elements.map(el => el.id));
+  expect(actual.filter(id => expected.includes(id))).toEqual(expected);
+  await index.getByRole("link", { name: "Workspace shell", exact: true }).click();
+  await expect(page.locator("#workspace-shell")).toHaveAttribute("data-active", "");
+  await expect(page.locator('[data-slot="workspace-card-header"]').first()).toHaveText("Navigation/Workspace shell");
 });

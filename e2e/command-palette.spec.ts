@@ -57,9 +57,9 @@ test("default highlighting is instant for pointer and keyboard selection", async
   expect(await highlight.evaluate(el => el.getAnimations().length)).toBe(0);
   await expect.poll(async () => Math.abs((await color.boundingBox())!.y - (await highlight.boundingBox())!.y)).toBeLessThan(1);
   await input.press("ArrowDown");
-  const typography = dialog.getByRole("option", { name: "Typography", exact: true });
-  await expect(typography).toHaveAttribute("data-highlighted", "");
-  await expect.poll(async () => Math.abs((await typography.boundingBox())!.y - (await highlight.boundingBox())!.y)).toBeLessThan(1);
+  const motion = dialog.getByRole("option", { name: "Motion", exact: true });
+  await expect(motion).toHaveAttribute("data-highlighted", "");
+  await expect.poll(async () => Math.abs((await motion.boundingBox())!.y - (await highlight.boundingBox())!.y)).toBeLessThan(1);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await color.hover();
   await expect.poll(async () => Math.abs((await color.boundingBox())!.y - (await highlight.boundingBox())!.y)).toBeLessThan(1);

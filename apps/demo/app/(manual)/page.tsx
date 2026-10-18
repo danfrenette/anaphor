@@ -197,17 +197,7 @@ export default function HomePage() {
 
           <Separator orientation="horizontal" />
 
-          <Section id="typography" className="py-12">
-            <Text as="h2" variant="heading">Typography</Text>
-            <Text as="p" variant="description" className="mt-3">
-              Type roles, reading specimens, and local experiments share one reference.
-            </Text>
-            <Link href="/typography" className="mt-4 inline-flex min-h-11 items-center text-ui text-foreground underline underline-offset-4">
-              Explore typography
-            </Link>
-          </Section>
-
-          <Section id="motion" className="border-t border-border py-12">
+          <Section id="motion" className="py-12">
             <p className="text-label tracking-[0.08em] uppercase">
               01.03 / Motion
             </p>
@@ -217,28 +207,38 @@ export default function HomePage() {
             </Text>
           </Section>
 
-          <WorkspaceShellDemo />
-          <SidebarDemo />
+          <Section id="typography" className="border-t border-border py-12">
+            <Text as="h2" variant="heading">Typography</Text>
+            <Text as="p" variant="description" className="mt-3">
+              Type roles, reading specimens, and local experiments share one reference.
+            </Text>
+            <Link href="/typography" className="mt-4 inline-flex min-h-11 items-center text-ui text-foreground underline underline-offset-4">
+              Explore typography
+            </Link>
+          </Section>
+
           <ButtonDemo />
-          <CardDemo />
-          <BadgeDemo />
-          <NodeEdgeDemo />
-          <SkeletonDemo />
+          <CheckboxDemo />
           <UploadDemo />
           <InputDemo />
-          <SliderDemo />
-          <CheckboxDemo />
           <RadioGroupDemo />
+          <SliderDemo />
+          <BadgeDemo />
+          <CardDemo />
+          <DataTableDemo />
+          <DiffDemo />
+          <KbdDemo />
+          <NodeEdgeDemo />
+          <SkeletonDemo />
+          <BottomBarDemo />
+          <CollapsibleDemo />
+          <CommandPaletteDemo />
           <DropdownMenuDemo />
           <PopoverDemo />
-          <TooltipDemo />
-          <DataTableDemo />
-          <KbdDemo />
+          <SidebarDemo />
           <TabsDemo />
-          <CommandPaletteDemo />
-          <DiffDemo />
-          <CollapsibleDemo />
-          <BottomBarDemo />
+          <TooltipDemo />
+          <WorkspaceShellDemo />
         </article>
       </SidebarInsetContent>
     </main>

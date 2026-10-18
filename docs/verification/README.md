@@ -38,3 +38,4 @@ server started by that run.
 - [Tooltip catalog](tooltip-catalog.md) — independent hints, instant groups, placement/timing controls, and reset.
 - [Command palette catalog](command-palette-catalog.md) — grouped actions, keyword search, stable result geometry, and shared palette polish.
 - [Bottom bar catalog](bottom-bar-catalog.md) — appearances, local utility actions, responsive labels, and playground reset.
+- [Manual navigation order](manual-order.md) — alphabetized groups, matching section order, and keyboard/index navigation.
