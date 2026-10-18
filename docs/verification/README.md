@@ -33,3 +33,4 @@ server started by that run.
 - [Node-edge graph catalog](node-edge-catalog.md) — node composition, pulse direction, notebook playback, and shared settings.
 - [Kbd catalog](kbd-catalog.md) — keys, chords, sequences, platform notation, and live example markup.
 - [Tabs catalog](tabs-catalog.md) — variants, sizes, orientation, disabled selection, and shared playground controls.
+- [Dropdown menu catalog](menu-catalog.md) — action states, radio selection, popup configuration, and simulated action feedback.
