@@ -30,3 +30,4 @@ server started by that run.
 - [Badge catalog](badge-catalog.md) — variants, sizes, icon/shape comparisons, and playground controls.
 - [Skeleton catalog](skeleton-catalog.md) — shapes, effects, content geometry, and reduced motion.
 - [Data table catalog](data-table-catalog.md) — treatments, density, native-table references, and interactive playground.
+- [Node-edge graph catalog](node-edge-catalog.md) — node composition, pulse direction, notebook playback, and shared settings.
