@@ -31,3 +31,4 @@ server started by that run.
 - [Skeleton catalog](skeleton-catalog.md) — shapes, effects, content geometry, and reduced motion.
 - [Data table catalog](data-table-catalog.md) — treatments, density, native-table references, and interactive playground.
 - [Node-edge graph catalog](node-edge-catalog.md) — node composition, pulse direction, notebook playback, and shared settings.
+- [Kbd catalog](kbd-catalog.md) — keys, chords, sequences, platform notation, and live example markup.
