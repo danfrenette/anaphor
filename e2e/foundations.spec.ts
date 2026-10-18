@@ -61,12 +61,13 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
     const specimen = page.getByTestId(`foundation-${theme}`);
     await expect(specimen).toBeVisible();
-    await specimen.getByText("Theme elevation", { exact: true }).click();
-    await expect(specimen.locator("details").last()).toHaveAttribute("open", "");
+    const elevation = specimen.getByRole("button", { name: "Theme elevation", exact: true });
+    await elevation.click();
+    await expect(elevation).toHaveAttribute("aria-expanded", "true");
     await page.evaluate(() => document.fonts.ready);
     expect(await page.locator("html").evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
     const snapshotStyle = await prepareContentSnapshot(page);
-    await expect(specimen.locator("details").last()).toHaveScreenshot(`elevation-${theme}.png`);
+    await expect(specimen.locator('[data-slot="collapsible"]').last()).toHaveScreenshot(`elevation-${theme}.png`);
     for (const [name, file] of [["Type and reading", "type"], ["Space, geometry, elevation", "geometry"], ["Motion", "motion"], ["A bounded experiment", "experiment"]]) {
       await expect(page.getByRole("region", { name, exact: true })).toHaveScreenshot(`${file}-${theme}.png`);
     }

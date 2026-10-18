@@ -77,6 +77,6 @@ these as demo-owned compositions, not package exports. Reset remounts only the
 selected carousel, leaving the tab and its URL unchanged. The browser suite also
 checks reset and the matching code disclosure in each tab.
 
-Local-preview screenshot capture was blocked by the browser tool’s URL policy
-during the catalog cleanup. Automated production browser coverage is separate
-from that local-preview evidence.
+Local-preview capture succeeded after restarting the stopped server on port 3017.
+Rail, Deck, and the upper/lower alphabetical index were visually reviewed.
+Automated production browser coverage is separate from that local-preview evidence.

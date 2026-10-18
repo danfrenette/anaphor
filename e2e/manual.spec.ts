@@ -265,7 +265,7 @@ test("controls preserve edits across switches and return keyboard focus", async 
   await page.getByRole("button", { name: "Close controls" }).click();
   await visit("Card");
   await page.getByRole("checkbox", { name: "Footer", exact: true }).uncheck();
-  await expect(page.getByRole("button", { name: "Open workspace" })).toHaveCount(0);
+  await expect(page.locator('[aria-labelledby="card-project-title"]').getByRole("button", { name: "Open workspace" })).toHaveCount(0);
   await page.getByRole("button", { name: "Close controls" }).click();
   await visit("Button");
   await expect(page.getByLabel("Tone", { exact: true })).toHaveText("danger");
@@ -276,7 +276,7 @@ test("controls preserve edits across switches and return keyboard focus", async 
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
   const cardPanel = await visit("Card");
   await page.getByRole("button", { name: "Reset controls" }).click();
-  await expect(page.getByRole("button", { name: "Open workspace" })).toBeVisible();
+  await expect(page.locator('[aria-labelledby="card-project-title"]').getByRole("button", { name: "Open workspace" })).toBeVisible();
   const bounds = await cardPanel.boundingBox();
   if (!bounds) throw new Error("The controls panel must have visible bounds");
   expect(bounds.x).toBeGreaterThanOrEqual(0);

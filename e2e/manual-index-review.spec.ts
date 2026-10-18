@@ -78,7 +78,8 @@ test("index groups are alphabetized and in-page sections follow their order", as
   const links = await index.getByRole("link").evaluateAll(elements => elements.map(el => el.getAttribute("href")!));
   const expected = links.flatMap(href => href.startsWith("/#") ? [href.slice(2)] : href === "/typography" ? ["typography"] : []);
   const actual = await page.locator("article section[id], article header[id]").evaluateAll(elements => elements.map(el => el.id));
-  expect(actual.filter(id => expected.includes(id))).toEqual(expected);
+  // Principles is retained as an Overview subsection for incoming links.
+  expect(actual.filter(id => id !== "principles")).toEqual(expected);
   await index.getByRole("link", { name: "Workspace shell", exact: true }).click();
   await expect(page.locator("#workspace-shell")).toHaveAttribute("data-active", "");
   await expect(page.locator('[data-slot="workspace-card-header"]').first()).toHaveText("Navigation/Workspace shell");

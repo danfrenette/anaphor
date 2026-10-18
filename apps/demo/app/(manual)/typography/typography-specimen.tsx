@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, ButtonLabel, Kbd, KbdGroup, Prose, Text } from "@anaphor/system";
+import { CaretRight } from "@phosphor-icons/react";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent, Button, ButtonLabel, Kbd, KbdGroup, Prose, Text } from "@anaphor/system";
 import { useState, type CSSProperties } from "react";
 import { Select } from "../../playground-fields";
 
@@ -41,8 +42,8 @@ export function TypographySpecimen() {
 
   return (
     <div className="mt-10">
-      <details className="border-y border-border py-4">
-        <summary className="min-h-11 cursor-pointer content-center text-ui">Reading experiments</summary>
+      <Collapsible className="border-y border-border py-4">
+        <CollapsibleTrigger className="min-h-11 text-muted-foreground"><CaretRight aria-hidden="true" />Reading experiments</CollapsibleTrigger><CollapsibleContent className="px-2 pb-2">
         <p className="mt-2 text-ui text-muted-foreground">Changes affect only the reading sample. Reset restores approved values.</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <Select label="Body size (px)" value={size} options={["16", "18", "20"]} onChange={setSize} />
@@ -57,7 +58,7 @@ export function TypographySpecimen() {
         <Button className="mt-4" iconOnly={false} loading={false} nativeButton type="button" size="sm" shape="square" variant="outline" tone="neutral" onClick={reset}>
           <ButtonLabel>Reset typography</ButtonLabel>
         </Button>
-      </details>
+      </CollapsibleContent></Collapsible>
 
       <p role="status" className="my-6 text-small text-muted-foreground">{approved ? "Approved defaults" : "Local experiment — not a system change"}</p>
       <section aria-label="Typography specimen" className="min-w-0 bg-background py-4">
