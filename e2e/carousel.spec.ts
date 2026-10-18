@@ -189,6 +189,8 @@ for (const style of ["rail", "deck"] as const) {
     await carousel.getByRole("button", { name: "Next card" }).click();
     await expect(carousel.getByRole("button", { name: "Previous card" })).toBeEnabled();
     const second = carousel.getByRole("heading", { name: "Make room for attention" });
+    // The pager can scroll a tall mobile card’s heading above the viewport.
+    await second.scrollIntoViewIfNeeded();
     await expect(second).toBeInViewport();
     const assertStill = async () => {
       const positions = await second.evaluate(element => new Promise<number[]>(resolve => {
@@ -249,3 +251,18 @@ for (const style of ["rail", "deck"] as const) {
     });
   }
 }
+
+test("catalog code and reset follow the selected carousel", async ({ page }) => {
+  await page.goto("/carousels?tab=deck");
+  await page.getByRole("button", { name: "Next card", exact: true }).click();
+  await page.getByRole("button", { name: "Reset example", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Previous card", exact: true })).toBeDisabled();
+  await page.getByRole("button", { name: "Show deck code", exact: true }).click();
+  await expect(page.getByLabel("Deck code", { exact: true })).toContainText("<Deck />");
+  await page.getByRole("tab", { name: "Rail", exact: true }).click();
+  await page.getByRole("button", { name: "Next card", exact: true }).click();
+  await page.getByRole("button", { name: "Reset example", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Previous card", exact: true })).toBeDisabled();
+  await page.getByRole("button", { name: "Show rail code", exact: true }).click();
+  await expect(page.getByLabel("Rail code", { exact: true })).toContainText("<Rail />");
+});
