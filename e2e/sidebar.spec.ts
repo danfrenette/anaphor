@@ -7,7 +7,7 @@ const sidebar = (page: import("@playwright/test").Page) =>
 
 test("resize is opt-in and the layout honors provider-local width changes", async ({ page, isMobile }) => {
   test.skip(isMobile, "Desktop width is independent of the mobile drawer");
-  await page.goto("/");
+  await page.goto("/sidebar-fixture");
   await expect(page.locator('[data-slot="sidebar-rail"]')).toHaveCount(0);
   const before = await sidebar(page).boundingBox();
   if (!before) throw new Error("Expected a visible desktop sidebar");
@@ -21,7 +21,7 @@ test("resize is opt-in and the layout honors provider-local width changes", asyn
 test("right placement keeps the desktop sidebar and centered content coordinated", async ({ page, isMobile }) => {
   test.skip(isMobile, "Desktop grid behavior");
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/");
+  await page.goto("/sidebar-fixture");
   await page.getByRole("group", { name: "Sidebar placement" }).getByRole("button", { name: "Right" }).click();
 
   const provider = page.locator('[data-slot="sidebar-provider"]');
@@ -60,7 +60,7 @@ test("right placement keeps the desktop sidebar and centered content coordinated
 
 test("right mobile drawer enters from the right and restores focus", async ({ page, isMobile }) => {
   test.skip(!isMobile, "Mobile drawer behavior");
-  await page.goto("/");
+  await page.goto("/sidebar-fixture");
   await page.getByRole("group", { name: "Sidebar placement" }).getByRole("button", { name: "Right" }).click();
   const trigger = page.getByRole("button", { name: "Open sidebar", exact: true });
   await trigger.click();
@@ -77,7 +77,7 @@ test("right mobile drawer enters from the right and restores focus", async ({ pa
 
 test("the manual uses one navigation rail on either edge", async ({ page, isMobile }) => {
   test.skip(isMobile, "Desktop rail placement");
-  await page.goto("/#sidebar");
+  await page.goto("/sidebar-fixture#sidebar");
   const choices = page.getByRole("group", { name: "Sidebar placement" });
   await expect(choices.getByRole("button")).toHaveCount(2);
   await expect(page.getByRole("complementary", { name: "Component manual navigation" })).toBeVisible();
@@ -91,7 +91,7 @@ test("the manual uses one navigation rail on either edge", async ({ page, isMobi
 test("desktop pointer toggles move the surface and centered content together and reverse in place", async ({ page, isMobile }) => {
   test.skip(isMobile, "Desktop disclosure is hidden at the mobile breakpoint");
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/");
+  await page.goto("/sidebar-fixture");
   const provider = page.locator('[data-slot="sidebar-provider"]');
   const surface = page.locator('[data-app-shell] [data-slot="workspace-card"]').first();
   const content = page.locator('[data-slot="workspace-card-body"] [data-slot="sidebar-inset-content"]');
@@ -148,7 +148,7 @@ test("desktop pointer toggles move the surface and centered content together and
 test("desktop keyboard toggles are instant", async ({ page, isMobile }) => {
   test.skip(isMobile, "Desktop disclosure is hidden at the mobile breakpoint");
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/");
+  await page.goto("/sidebar-fixture");
 
   const trigger = page.getByRole("button", { name: "Collapse sidebar", exact: true });
   const provider = page.locator('[data-slot="sidebar-provider"]');
@@ -172,7 +172,7 @@ test("desktop keyboard toggles are instant", async ({ page, isMobile }) => {
 test("desktop reduced motion settles the content immediately", async ({ page, isMobile }) => {
   test.skip(isMobile, "Desktop disclosure is hidden at the mobile breakpoint");
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/sidebar-fixture");
   await page.getByRole("button", { name: "Collapse sidebar", exact: true }).click();
   const inset = page.locator('[data-slot="sidebar-inset"]');
   await expect(page.locator('[data-slot="sidebar-provider"]')).toHaveAttribute("data-desktop-open", "false");
@@ -241,7 +241,7 @@ test("selection travels while reduced motion settles it immediately", async ({ p
 test("mobile is modal, animates pointer entry, and restores focus", async ({ page, isMobile }) => {
   test.skip(!isMobile, "Mobile drawer behavior is breakpoint-specific");
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/");
+  await page.goto("/sidebar-fixture");
   await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
 
   const trigger = page.getByRole("button", { name: "Open sidebar", exact: true });
@@ -269,7 +269,7 @@ test("mobile is modal, animates pointer entry, and restores focus", async ({ pag
 test("mobile keyboard and reduced motion remove positional travel", async ({ page, isMobile }) => {
   test.skip(!isMobile, "Mobile drawer behavior is breakpoint-specific");
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/");
+  await page.goto("/sidebar-fixture");
 
   const trigger = page.getByRole("button", { name: "Open sidebar", exact: true });
   await trigger.focus();
