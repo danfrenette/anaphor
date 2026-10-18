@@ -85,13 +85,10 @@ test("palette controls opt into motion and reset to instant highlights", async (
   await page.goto("/#command-palette");
   await page.getByRole("tab", { name: "Open Command palette controls", exact: true }).click();
   const animate = page.getByRole("checkbox", { name: "Animate highlight", exact: true });
-  const icons = page.getByRole("checkbox", { name: "Show icons", exact: true });
   const shortcuts = page.getByRole("checkbox", { name: "Show shortcuts", exact: true });
   await expect(animate).not.toBeChecked();
-  await expect(icons).toBeChecked();
   await expect(shortcuts).toBeChecked();
   await animate.check();
-  await icons.uncheck();
   const trigger = page.getByRole("button", { name: "Open example palette" });
   await page.getByRole("button", { name: "Close controls" }).click();
   await trigger.click();
@@ -121,7 +118,6 @@ test("palette controls opt into motion and reset to instant highlights", async (
   if (await controls.getAttribute("aria-expanded") === "false") await controls.click();
   await page.getByRole("button", { name: "Reset controls", exact: true }).click();
   await expect(animate).not.toBeChecked();
-  await expect(icons).toBeChecked();
   await expect(shortcuts).toBeChecked();
 });
 
@@ -143,4 +139,26 @@ test("catalog groups and empty results preserve palette geometry", async ({ page
   await dialog.getByRole("option", { name: "Workspace settings", exact: true }).click();
   await expect(page.getByRole("group", { name: "Browse commands preview", exact: true }).getByRole("status")).toHaveText("Selected: Workspace settings");
   await expect(page.getByRole("group", { name: "Open example palette preview", exact: true }).getByRole("status")).toHaveText("Example commands report your selection here.");
+});
+
+test("palette arrow navigation keeps focus in search and Tab reaches close", async ({ page }) => {
+  await page.goto("/#command-palette");
+  const trigger = page.getByRole("button", { name: "Browse commands", exact: true });
+  await trigger.click();
+  const dialog = page.getByRole("dialog", { name: "Commands & groups", exact: true });
+  const input = dialog.getByRole("combobox");
+  await input.focus();
+  await input.press("ArrowDown");
+  await expect(input).toBeFocused();
+  const selected = dialog.getByRole("option", { name: /^Copy link/ });
+  await expect(selected).toHaveAttribute("data-highlighted", "");
+  await expect(input).toHaveAttribute("aria-activedescendant", await selected.getAttribute("id") ?? "");
+  await expect(dialog.getByRole("option").locator("svg")).toHaveCount(0);
+  await input.press("Tab");
+  await expect(dialog.getByRole("button", { name: "Close command palette", exact: true })).toBeFocused();
+  await expect(dialog.getByRole("button")).toHaveCount(1);
+  await page.keyboard.press("Shift+Tab");
+  await expect(input).toBeFocused();
+  await input.press("Escape");
+  await expect(trigger).toBeFocused();
 });

@@ -179,7 +179,7 @@ function ManualPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (o
   const { setMobileOpen } = useSidebar();
   const router = useRouter();
   return <CommandPalette open={open} onOpenChange={onOpenChange} title="Search the manual" placeholder="Find a component or foundation…"
-      items={groups.flatMap(group => group.items.map(item => ({ ...item, group: group.label || "Manual", icon: <item.icon aria-hidden="true" /> })))}
+      items={groups.flatMap(group => group.items.map(item => ({ ...item, group: group.label || "Manual", icon: undefined })))}
       onSelect={item => { setMobileOpen(false, true); router.push(item.href); }} />;
 }
 

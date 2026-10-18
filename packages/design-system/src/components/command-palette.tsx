@@ -5,7 +5,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { ArrowDown, ArrowUp, ArrowElbowDownLeft, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { motion, useReducedMotion } from "motion/react";
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { Button, ButtonLabel } from "./button";
+import { Button } from "./button";
 import { Text } from "./text";
 import { Kbd } from "./kbd";
 import { fluidHoverTravel } from "../lib/motion";
@@ -100,7 +100,7 @@ function PaletteContent<Item extends CommandPaletteItem>({ items, onSelect, titl
       )}
       onKeyDownCapture={() => setActiveFromFinePointer(false)}>
       <Dialog.Title render={<Text as="h2" variant="subheading" />} className="px-4 pt-4">{title}</Dialog.Title>
-      <Dialog.Description className="sr-only">Type to filter commands. Use the arrow keys to navigate and Enter to open.</Dialog.Description>
+      <Dialog.Description className="sr-only">Type to filter commands. Keep focus in search and use Up and Down Arrow to select a result, then Enter to run it. Tab moves to the close button. Escape closes the palette.</Dialog.Description>
       <Autocomplete.Root items={filtered} filter={null} inline open autoHighlight="always" keepHighlight
         value={query} onValueChange={setQuery} itemToStringValue={(item: Item) => item.label}
         onItemHighlighted={(item, details) => { setActive(item); setActiveFromFinePointer(details.reason === "pointer" && typeof window.matchMedia === "function" && window.matchMedia("(hover: hover) and (pointer: fine)").matches); }}>
@@ -149,8 +149,8 @@ function PaletteContent<Item extends CommandPaletteItem>({ items, onSelect, titl
         </div>
       </Autocomplete.Root>
       <div className="flex shrink-0 items-center justify-between gap-3 border-t-[length:var(--anaphor-border-hairline)] border-border px-4 py-2">
-        <Text as="span" variant="caption" className="flex items-center gap-1"><Kbd role="img" aria-label="Up arrow"><ArrowUp aria-hidden="true" /></Kbd><Kbd role="img" aria-label="Down arrow"><ArrowDown aria-hidden="true" /></Kbd> Navigate <Kbd role="img" aria-label="Enter" className="ms-2"><ArrowElbowDownLeft aria-hidden="true" /></Kbd> Open</Text>
-        <Dialog.Close render={<Button iconOnly={false} loading={false} nativeButton type="button" shape="square" size="md" variant="ghost" tone="neutral" />}><ButtonLabel>Esc</ButtonLabel></Dialog.Close>
+        <Text as="span" variant="caption" className="flex items-center gap-1"><Kbd role="img" aria-label="Up arrow"><ArrowUp aria-hidden="true" /></Kbd><Kbd role="img" aria-label="Down arrow"><ArrowDown aria-hidden="true" /></Kbd> Select <Kbd role="img" aria-label="Enter" className="ms-2"><ArrowElbowDownLeft aria-hidden="true" /></Kbd> Run</Text>
+        <Text as="span" variant="caption" className="flex items-center gap-1"><Kbd>Esc</Kbd> Close</Text>
       </div>
     </Dialog.Popup>
   );

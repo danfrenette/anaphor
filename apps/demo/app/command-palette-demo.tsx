@@ -15,7 +15,7 @@ export function CommandPaletteDemo() {
   { id: "settings", label: "Workspace settings", group: "Workspace", keywords: "preferences" },
 ];
 
-${commandPaletteCode({ animateHighlight: false, icons: false, shortcuts: false })}`}>
+${commandPaletteCode({ animateHighlight: false, shortcuts: false })}`}>
         <CommandExample label="Browse commands" title="Commands & groups" grouped />
       </CatalogExample>
       <CatalogExample title="Search & empty results" description="Search “bookmark” to find Add to favorites. Try an unmatched query, then clear it to restore the list." code={commandPaletteCode()}>
@@ -23,6 +23,6 @@ ${commandPaletteCode({ animateHighlight: false, icons: false, shortcuts: false }
       </CatalogExample>
       <CommandPalettePlayground />
     </div>
-    <p className="mt-4 text-small text-muted-foreground">Arrow keys navigate, Enter runs a command, and Escape returns focus. G then R, C, or F runs the focused example’s action while its palette is closed. Actions are simulated.</p>
+    <p className="mt-4 text-small text-muted-foreground">Keep focus in search: ↑/↓ selects a result and Enter runs it. Tab moves to the close button; Escape dismisses the palette and returns focus. G then R, C, or F runs the focused example’s action while its palette is closed. Actions are simulated.</p>
   </Section>;
 }

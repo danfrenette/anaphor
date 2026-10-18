@@ -77,17 +77,23 @@ The unsupported New component action and misleading brand chevron are removed.
 Search uses the same destination data as navigation, so it cannot advertise
 unsupported pages. The manual uses the instant default. The Command palette section explains the
 philosophy and provides a separate example with morph-surface controls for
-highlight animation, icons, and shortcut hints. Reset restores instant highlights,
-visible icons, and visible shortcuts.
+highlight animation and shortcut hints. Reset restores instant highlights,
+visible shortcuts.
 
 ## Catalog
 
 Commands & groups demonstrates two groups and an unavailable action. Search &
 empty results demonstrates keyword matching and recovery. Each example owns its
-selection independently. Playground retains icon, shortcut, and pointer-motion
+selection independently. Playground retains shortcut and pointer-motion
 controls, inline code, and an independent reset.
 
 The shared results region reserves 20rem, shrinking within the dialog's viewport
 bound on short screens. Filtering and empty results keep the search and footer
 positions stable. The footer uses shared Kbd hints and the hairline divider token;
-dismiss buttons use medium sizing for desktop and coarse-pointer targets.
+the close button uses medium sizing for desktop and coarse-pointer targets.
+
+The manual and catalog use text-only options to match sidebar navigation. The
+shared item API still supports icons for other consumers. Escape is a noninteractive
+Kbd hint in the footer; the named close button remains available to Tab and touch.
+Results follow the combobox pattern: DOM focus stays in search, arrow keys update
+the active descendant, and Enter executes. Results are not individual Tab stops.

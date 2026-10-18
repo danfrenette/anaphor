@@ -1,17 +1,17 @@
 "use client";
 
 import { Button, ButtonLabel, CommandPalette, FieldGroup, Kbd, KbdGroup, Text, useShortcut } from "@anaphor/system";
-import { Copy, MagnifyingGlass, PencilSimple, Star } from "@phosphor-icons/react";
-import { useRef, useState, type ReactNode, type RefObject } from "react";
+import { MagnifyingGlass } from "@phosphor-icons/react";
+import { useRef, useState, type RefObject } from "react";
 import { PlaygroundControls } from "./playground-host";
 import { CatalogExample } from "./catalog-example";
 import { Check } from "./playground-fields";
 
-const defaults = { animateHighlight: false, icons: true, shortcuts: true };
+const defaults = { animateHighlight: false, shortcuts: true };
 const commands = [
-  { id: "rename", label: "Rename document", group: "Document", icon: <PencilSimple aria-hidden="true" />, keywords: "edit title", shortcut: ["G", "R"] },
-  { id: "copy", label: "Copy link", group: "Document", icon: <Copy aria-hidden="true" />, keywords: "share url", shortcut: ["G", "C"] },
-  { id: "favorite", label: "Add to favorites", group: "Document", icon: <Star aria-hidden="true" />, keywords: "save bookmark", shortcut: ["G", "F"] },
+  { id: "rename", label: "Rename document", group: "Document", keywords: "edit title", shortcut: ["G", "R"] },
+  { id: "copy", label: "Copy link", group: "Document", keywords: "share url", shortcut: ["G", "C"] },
+  { id: "favorite", label: "Add to favorites", group: "Document", keywords: "save bookmark", shortcut: ["G", "F"] },
 ] as const;
 type DemoCommand = (typeof commands)[number];
 
@@ -22,18 +22,17 @@ export function CommandPalettePlayground() {
     <PlaygroundControls sectionId="command-palette" title="Command palette" onReset={() => { setSettings(defaults); setRevision(value => value + 1); }}>
       <FieldGroup>
         <Check label="Animate highlight" checked={settings.animateHighlight} onChange={animateHighlight => setSettings(s => ({ ...s, animateHighlight }))} />
-        <Check label="Show icons" checked={settings.icons} onChange={icons => setSettings(s => ({ ...s, icons }))} />
         <Check label="Show shortcuts" checked={settings.shortcuts} onChange={shortcuts => setSettings(s => ({ ...s, shortcuts }))} />
       </FieldGroup>
       <Text as="p" variant="caption" className="mt-3">Pointer motion only. Keyboard navigation stays instant.</Text>
     </PlaygroundControls>
-    <CatalogExample title="Playground" description="Use Controls to compare icons, shortcut hints, and optional pointer highlight motion." code={commandPaletteCode(settings)}>
+    <CatalogExample title="Playground" description="Use Controls to compare shortcut hints and optional pointer highlight motion." code={commandPaletteCode(settings)}>
       <CommandExample key={revision} settings={settings} />
     </CatalogExample>
   </>;
 }
 
-type ExampleCommand = { id: string; label: string; group: string; icon?: ReactNode; keywords?: string; shortcut?: readonly string[]; disabled?: boolean };
+type ExampleCommand = { id: string; label: string; group: string; keywords?: string; shortcut?: readonly string[]; disabled?: boolean };
 const groupedCommands: readonly ExampleCommand[] = [
   ...commands,
   { id: "archive", label: "Archive document", group: "Workspace", keywords: "store", disabled: true },
@@ -45,7 +44,7 @@ export function CommandExample({ label = "Open example palette", title = "Docume
   const [selected, setSelected] = useState<string>();
   const shortcutScope = useRef<HTMLDivElement>(null);
   const select = (command: { readonly label: string }) => setSelected(command.label);
-  const items = grouped ? groupedCommands : commands;
+  const items: readonly ExampleCommand[] = grouped ? groupedCommands : commands;
   return <div ref={shortcutScope}>
     {commands.map(command => <CommandShortcut key={command.id} command={command} scope={shortcutScope} onSelect={select} />)}
     <div aria-label={label + " preview"} role="group" className="grid min-h-48 place-content-center justify-items-center">
@@ -55,7 +54,7 @@ export function CommandExample({ label = "Open example palette", title = "Docume
         <Text as="p" variant="caption" role="status" className="mt-4">{selected ? `Selected: ${selected}` : "Example commands report your selection here."}</Text>
     </div>
     <CommandPalette open={open} onOpenChange={setOpen} title={title} animateHighlight={settings.animateHighlight}
-      items={items.map(item => ({ ...item, icon: settings.icons ? item.icon : undefined }))} onSelect={select}
+      items={items} onSelect={select}
       renderTrailing={settings.shortcuts ? item => item.shortcut && (
         <KbdGroup role="img" aria-label={`${item.shortcut[0]} then ${item.shortcut[1]}`}>
           {item.shortcut.map(key => <Kbd key={key}>{key}</Kbd>)}
@@ -70,7 +69,7 @@ export function commandPaletteCode(settings = defaults) {
   onOpenChange={setOpen}
   title="Document commands"
   animateHighlight={${settings.animateHighlight}}
-  items={commands${settings.icons ? "" : ".map(item => ({ ...item, icon: undefined }))"}}
+  items={commands}
   onSelect={item => setSelected(item.label)}${settings.shortcuts ? `
   renderTrailing={item => item.shortcut && <KbdGroup>
     {item.shortcut.map(key => <Kbd key={key}>{key}</Kbd>)}
