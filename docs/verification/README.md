@@ -35,3 +35,4 @@ server started by that run.
 - [Tabs catalog](tabs-catalog.md) — variants, sizes, orientation, disabled selection, and shared playground controls.
 - [Dropdown menu catalog](menu-catalog.md) — action states, radio selection, popup configuration, and simulated action feedback.
 - [Popover catalog](popover-catalog.md) — anatomy, independent settings examples, placement controls, and focus/dismissal behavior.
+- [Tooltip catalog](tooltip-catalog.md) — independent hints, instant groups, placement/timing controls, and reset.
