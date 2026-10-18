@@ -43,6 +43,12 @@ test("table catalog compares treatments and density with accessible inline code"
       await expect(preview.getByRole("row")).toHaveCount(4);
       await expect(preview.getByRole("columnheader")).toHaveCount(3);
     }
+    const grid = section.getByRole("region", { name: "Full grid table preview", exact: true });
+    await expect(grid).toHaveCSS("border-top-width", "1px");
+    await expect(grid.getByRole("table")).toHaveCSS("border-collapse", "separate");
+    await expect(grid.getByRole("columnheader").first()).toHaveCSS("border-top-width", "0px");
+    await expect(grid.getByRole("columnheader").last()).toHaveCSS("border-right-width", "0px");
+    await expect(grid.getByRole("row").last().getByRole("cell").first()).toHaveCSS("border-bottom-width", "0px");
     const rowHeight = (label: string) => section.getByRole("region", { name: `${label} table preview`, exact: true }).getByRole("row").nth(1).evaluate(el => el.getBoundingClientRect().height);
     const [compactHeight, editorialHeight] = await Promise.all([rowHeight("Compact"), rowHeight("Editorial")]);
     expect(editorialHeight).toBeGreaterThan(compactHeight);
@@ -53,4 +59,23 @@ test("table catalog compares treatments and density with accessible inline code"
   await expect(section.getByLabel("Table treatments code", { exact: true })).toBeVisible();
   await trigger.press("Enter");
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
+});
+
+test("inset card hover follows the row bounds and radius", async ({ page }) => {
+  await page.goto("/#data-table");
+  const section = page.locator("#data-table");
+  await section.getByRole("button", { name: "Full grid", exact: true }).click();
+  const row = section.locator("li[data-fluid-row]").first();
+  await page.setViewportSize({ width: 600, height: 900 });
+  await row.hover();
+  const highlight = section.locator('[data-slot="table-hover"]');
+  if (!await page.evaluate(() => matchMedia("(hover: hover) and (pointer: fine)").matches)) {
+    await expect(highlight).toHaveCount(0);
+    return;
+  }
+  await expect(highlight).toHaveCSS("border-radius", "8px");
+  await expect.poll(async () => {
+    const [rowBox, highlightBox] = await Promise.all([row.boundingBox(), highlight.boundingBox()]);
+    return rowBox && highlightBox ? Math.abs(rowBox.x - highlightBox.x) + Math.abs(rowBox.width - highlightBox.width) : Infinity;
+  }).toBeLessThan(1);
 });

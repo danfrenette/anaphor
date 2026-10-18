@@ -6,14 +6,14 @@ import { DataTablePlayground } from "./data-table-playground";
 const treatments = [
   { name: "Borderless", border: "", description: "Whitespace separates the rows." },
   { name: "Horizontal rules", border: "border-b border-border", description: "Rules provide a steady reading track across columns." },
-  { name: "Full grid", border: "border border-border", description: "Cell borders make each value easy to locate." },
+  { name: "Full grid", border: "border-e border-b border-border last:border-e-0", description: "Cell borders make each value easy to locate." },
 ] as const;
 const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 function TableSample({ label, border, compact }: { label: string; border: string; compact: boolean }) {
   const padding = compact ? "px-3 py-2" : "px-4 py-4";
-  return <div className="overflow-x-auto rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" role="region" aria-label={`${label} table preview`} tabIndex={0}>
-    <table className="w-full min-w-96 border-collapse text-ui">
+  return <div className={`overflow-x-auto rounded-sm ${label === "Full grid" ? "border border-border" : ""} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring`} role="region" aria-label={`${label} table preview`} tabIndex={0}>
+    <table className="w-full min-w-96 border-separate border-spacing-0 text-ui [&_tbody_tr:last-child_td]:border-b-0">
       <caption className="sr-only">{label} project comparison</caption>
       <thead className="bg-muted"><tr>
         <th scope="col" className={`${padding} ${border} text-start font-medium`}>Project</th>
@@ -35,11 +35,11 @@ export function DataTableDemo() {
     <Text as="p" variant="description" className="mt-3">One collection, different ways to read it. Compare the structure before choosing the details.</Text>
     <div className="mt-10 space-y-10">
       <CatalogExample title="Table treatments" description="The same three projects, with only the borders changed." code={`// Native table composition; apply the treatment to th and td.
-const borders = treatment === "Full grid" ? "border border-border"
+const borders = treatment === "Full grid" ? "border-e border-b border-border last:border-e-0"
   : treatment === "Horizontal rules" ? "border-b border-border" : "";
 
-<div className="overflow-x-auto rounded-sm">
-<table className="w-full border-collapse text-ui">
+<div className={\`overflow-x-auto rounded-sm \${treatment === "Full grid" ? "border border-border" : ""}\`}>
+<table className="w-full border-separate border-spacing-0 text-ui [&_tbody_tr:last-child_td]:border-b-0">
   <thead className="bg-muted">{/* Column headers */}</thead>
   <tbody>
     {records.map(item => <tr key={item.id}>

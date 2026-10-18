@@ -17,3 +17,8 @@ Structural table scroll surfaces use `rounded-sm` (4px); the playground frame
 and separate full-grid mobile panels use `rounded-md` (8px). Colors, type,
 and cell spacing consume the shared semantic and spacing utilities. Check
 header/grid clipping and visible keyboard focus at the scroll boundary.
+
+Full-grid scroll regions own the rounded perimeter border. Tables use separate
+borders with zero spacing and interior-only cell rules so the clipping edge cannot
+cut through a square perimeter. Inset mobile card hover follows each row's position
+and computed radius. Verify both in light and dark themes.
