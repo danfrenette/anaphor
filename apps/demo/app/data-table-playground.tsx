@@ -7,21 +7,8 @@ import { Check, Range, Select } from "./playground-fields";
 import { TableFluidHover } from "./table-fluid-hover";
 import { PlaygroundControls } from "./playground-host";
 
-type RecordItem = { id: string; name: string; category: string; status: string; owner: string; budget: number };
-const records: RecordItem[] = [
-  { id: "PR–001", name: "Neighborhood field guide", category: "Publication", status: "In progress", owner: "Amara Okafor", budget: 12400 },
-  { id: "PR–002", name: "Wayfinding for the waterfront", category: "Environment", status: "In review", owner: "Leo Chen", budget: 28750 },
-  { id: "PR–003", name: "An archive of everyday objects", category: "Digital", status: "Planned", owner: "Sofia Reyes", budget: 8600 },
-  { id: "PR–004", name: "Open house identity", category: "Identity", status: "Complete", owner: "Jules Martin", budget: 15200 },
-  { id: "PR–005", name: "The long way home: stories from the northern coast", category: "Publication", status: "In progress", owner: "Amara Okafor", budget: 19250 },
-  { id: "PR–006", name: "Community garden atlas", category: "Digital", status: "In review", owner: "Nour Haddad", budget: 6800 },
-  { id: "PR–007", name: "Evening school", category: "Identity", status: "Planned", owner: "Leo Chen", budget: 9400 },
-  { id: "PR–008", name: "Public library reading room", category: "Environment", status: "In progress", owner: "Sofia Reyes", budget: 42000 },
-  { id: "PR–009", name: "Small press directory", category: "Publication", status: "Complete", owner: "Nour Haddad", budget: 3750 },
-  { id: "PR–010", name: "A season of shared meals", category: "Digital", status: "Planned", owner: "Jules Martin", budget: 11200 },
-  { id: "PR–011", name: "Museum after hours", category: "Environment", status: "In review", owner: "Amara Okafor", budget: 31500 },
-  { id: "PR–012", name: "Common ground", category: "Identity", status: "Complete", owner: "Nour Haddad", budget: 17800 },
-];
+import { records, type RecordItem } from "./data-table-data";
+
 const columns = ["name", "status", "owner", "budget"] as const;
 type Column = typeof columns[number];
 const labels: Record<Column, string> = { name: "Project", status: "Status", owner: "Owner", budget: "Budget" };
@@ -129,7 +116,7 @@ export function DataTablePlayground() {
     </div>
     <div className="max-w-full" style={{ width: settings.width }}>
       <div className="@container rounded-md border border-border bg-background" role="group" aria-label="Data table preview">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 px-4 pt-5 pb-4"><div><Text as="h3" variant="subheading">Studio projects</Text><Text as="p" variant="caption" className="mt-1">A shared view of the work in progress.</Text></div><span className="font-mono text-small text-muted-foreground">{settings.state === "Empty" ? 0 : records.length} records</span></div>
+        <div className="flex flex-wrap items-baseline justify-between gap-2 px-4 pt-5 pb-4"><div><Text as="h4" variant="subheading">Studio projects</Text><Text as="p" variant="caption" className="mt-1">A shared view of the work in progress.</Text></div><span className="font-mono text-small text-muted-foreground">{settings.state === "Empty" ? 0 : records.length} records</span></div>
         {full && <div className="flex flex-wrap items-end gap-3 border-t border-border px-4 py-4">
           <form role="search" aria-label="Filter studio projects" className="min-w-0 flex-[1_1_180px]" onSubmit={event => { event.preventDefault(); setPage(0); }}><Field orientation="vertical"><FieldLabel>Search projects</FieldLabel><div className="relative"><MagnifyingGlass aria-hidden="true" className="pointer-events-none absolute start-3 top-1/2 z-10 -translate-y-1/2" /><Input ref={searchRef} type="search" enterKeyHint="search" autoComplete="off" spellCheck={false} data-1p-ignore data-lpignore="true" size="md" className="min-h-11 ps-9 pe-11 [&::-webkit-search-cancel-button]:appearance-none" placeholder="Name or owner…" value={query} onValueChange={next => { setQuery(next); setSelected([]); setPage(0); }} />{query && <button type="button" aria-label="Clear search" className="absolute end-0 top-0 grid size-11 place-items-center rounded-control text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring" onClick={() => { setQuery(""); setSelected([]); setPage(0); searchRef.current?.focus(); }}><X aria-hidden="true" /></button>}</div></Field></form>
           <Select label="Status" value={status} options={["All statuses", "Planned", "In progress", "In review", "Complete"]} onChange={next => { setStatus(next); setSelected([]); setPage(0); }} />

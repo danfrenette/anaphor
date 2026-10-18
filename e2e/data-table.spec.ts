@@ -27,3 +27,28 @@ test("table exploration preserves selection across pages and configures columns"
   await expect(section.getByText("0 selected", { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
+
+test("table catalog compares treatments and density with accessible inline code", async ({ page }) => {
+  await page.goto("/#data-table");
+  const section = page.locator("#data-table");
+  for (const name of ["Table treatments", "Density", "Playground"]) {
+    await expect(section.getByRole("heading", { name, exact: true })).toBeVisible();
+  }
+  for (const theme of ["light", "dark"]) {
+    await page.locator("html").evaluate((el, dark) => el.classList.toggle("dark", dark), theme === "dark");
+    for (const label of ["Borderless", "Horizontal rules", "Full grid", "Compact", "Editorial"]) {
+      const preview = section.getByRole("region", { name: `${label} table preview`, exact: true });
+      await expect(preview.getByRole("table")).toHaveAccessibleName(`${label} project comparison`);
+      await expect(preview.getByRole("row")).toHaveCount(4);
+      await expect(preview.getByRole("columnheader")).toHaveCount(3);
+    }
+    const heights = await Promise.all(["Compact", "Editorial"].map(label => section.getByRole("region", { name: `${label} table preview`, exact: true }).getByRole("row").nth(1).evaluate(el => el.getBoundingClientRect().height)));
+    expect(heights[1]).toBeGreaterThan(heights[0]);
+    expect(await section.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+  }
+  const trigger = section.getByRole("button", { name: "Show table treatments code" });
+  await trigger.press("Enter");
+  await expect(section.getByLabel("Table treatments code", { exact: true })).toBeVisible();
+  await trigger.press("Enter");
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+});

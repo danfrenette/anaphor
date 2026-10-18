@@ -28,3 +28,4 @@ server started by that run.
 - [Card catalog](card-catalog.md) — anatomy, composition, logo showcase, and playground controls.
 - [Badge catalog](badge-catalog.md) — variants, sizes, icon/shape comparisons, and playground controls.
 - [Skeleton catalog](skeleton-catalog.md) — shapes, effects, content geometry, and reduced motion.
+- [Data table catalog](data-table-catalog.md) — treatments, density, native-table references, and interactive playground.
