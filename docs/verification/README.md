@@ -37,3 +37,4 @@ server started by that run.
 - [Popover catalog](popover-catalog.md) — anatomy, independent settings examples, placement controls, and focus/dismissal behavior.
 - [Tooltip catalog](tooltip-catalog.md) — independent hints, instant groups, placement/timing controls, and reset.
 - [Command palette catalog](command-palette-catalog.md) — grouped actions, keyword search, stable result geometry, and shared palette polish.
+- [Bottom bar catalog](bottom-bar-catalog.md) — appearances, local utility actions, responsive labels, and playground reset.
