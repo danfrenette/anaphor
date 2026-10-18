@@ -28,9 +28,9 @@ const anatomyCode = `<Sidebar>
   <SidebarRail />
 </Sidebar>`;
 
-function Navigation({ selected, onSelect }: { selected: string; onSelect: (value: string) => void }) {
+function Navigation({ selected, onSelect, label = "Sidebar preview navigation" }: { selected: string; onSelect: (value: string) => void; label?: string }) {
   const { mobileOpen, toggleMobile } = useSidebar();
-  return <Sidebar aria-label="Sidebar preview navigation">
+  return <Sidebar aria-label={label}>
     <SidebarHeader className="flex-row items-center justify-between border-0"><span className="font-heading text-ui">Workspace</span><SidebarClose aria-label="Close sidebar preview" /></SidebarHeader>
     <SidebarContent><SidebarGroup>
       <SidebarGroupLabel className="text-ui text-muted-foreground">Navigation</SidebarGroupLabel>
@@ -51,6 +51,19 @@ function Controls({ side, setSide, resizable, setResizable, reset }: { side: "le
 
 function Placement({ side }: { side: "left" | "right" }) {
   return <div className="grid gap-3"><h4 className="font-sans text-ui font-medium normal-case text-muted-foreground">{side === "left" ? "Left" : "Right"}</h4><div className={`flex h-32 overflow-hidden rounded-card border border-border bg-muted ${side === "right" ? "flex-row-reverse" : ""}`}><div className="flex w-24 items-center justify-center text-small text-muted-foreground">Navigation</div><div className="m-2 flex min-w-0 flex-1 items-center justify-center rounded-card bg-background text-small shadow-card">Content</div></div></div>;
+}
+
+function RightSidebarExample() {
+  const [selected, setSelected] = useState("Overview");
+  return <WorkspaceShell aria-label="Right-hand sidebar example" className="relative inset-auto h-80 overflow-hidden rounded-card border border-border">
+    <SidebarProvider layout="workspace" side="right" mode="uncontrolled" defaultOpen={true} shortcut={null} resizable={false} className="[--anaphor-sidebar-width:12rem] [--anaphor-sidebar-min-width:10rem]">
+      <Navigation selected={selected} onSelect={setSelected} label="Right-hand navigation" />
+      <SidebarInset><WorkspaceCard>
+        <WorkspaceCardHeader className="justify-between gap-2"><SidebarInsetContent>{selected}</SidebarInsetContent><SidebarTrigger target="desktop" aria-label="Toggle right-hand navigation" className="hidden md:grid" /><SidebarTrigger target="mobile" aria-label="Open right-hand navigation" className="md:hidden" /></WorkspaceCardHeader>
+        <WorkspaceCardBody className="p-4 text-small text-muted-foreground"><SidebarInsetContent>Switch destinations or open and close navigation on the right.</SidebarInsetContent></WorkspaceCardBody>
+      </WorkspaceCard></SidebarInset>
+    </SidebarProvider>
+  </WorkspaceShell>;
 }
 
 export function SidebarDemo() {
@@ -89,6 +102,7 @@ export function SidebarDemo() {
       <CatalogExample title="Placement" description="Use the left edge for primary navigation or the right edge for supporting navigation." code={'<SidebarProvider side="left" /* … */ />\n<SidebarProvider side="right" /* … */ />'}>
         <div className="grid gap-6 sm:grid-cols-2"><Placement side="left" /><Placement side="right" /></div>
       </CatalogExample>
+      <CatalogExample title="Right-hand navigation" description="The same sidebar on the opposite edge, with shared selection and disclosure behavior." code={'<WorkspaceShell>\n  <SidebarProvider layout="workspace" side="right" mode="uncontrolled" defaultOpen={true} shortcut={null} resizable={false}>\n    <Sidebar>{/* Navigation */}</Sidebar>\n    <SidebarInset>{/* Content and SidebarTrigger */}</SidebarInset>\n  </SidebarProvider>\n</WorkspaceShell>'} framed={false}><RightSidebarExample /></CatalogExample>
       <CatalogExample title="Playground" description="Select a destination, toggle the sidebar, or use Controls to change its placement and resizing." code={code} framed={false}>
         <WorkspaceShell aria-label="Sidebar playground" className="relative inset-auto h-96 overflow-hidden rounded-card border border-border">
           <SidebarProvider layout="workspace" side={side} mode="controlled" open={open} onOpenChange={setOpen} shortcut={null} resizable={resizable} className="[--anaphor-sidebar-width:12rem] [--anaphor-sidebar-min-width:10rem] [--anaphor-sidebar-max-width:16rem]">

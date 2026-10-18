@@ -47,3 +47,7 @@ coverage lives in `e2e/sidebar.spec.ts`.
 
 **Cleanup:** Stop the owned local server after capturing the result. Leave
 failure artifacts until triage is complete.
+
+The Right-hand navigation example is independently interactive: select a destination,
+close and reopen the rail, and open/dismiss its mobile drawer. Neither example
+changes the other sidebar's state or the manual's navigation.

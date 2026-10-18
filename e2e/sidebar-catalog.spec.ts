@@ -47,3 +47,21 @@ test("sidebar playground selection, placement, resizing and reset stay local", a
   await expect(section.getByLabel("Playground code", { exact: true })).toContainText('side="left"');
   expect(await section.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
 });
+
+test("right-hand example selects destinations and toggles independently", async ({ page, isMobile }) => {
+  await page.goto("/#sidebar");
+  const example = page.getByLabel("Right-hand sidebar example", { exact: true });
+  if (isMobile) await example.getByRole("button", { name: "Open right-hand navigation" }).click();
+  await page.getByLabel("Right-hand navigation", { exact: true }).getByRole("button", { name: "Activity", exact: true }).click();
+  await expect(example.locator('[data-slot="workspace-card-header"]')).toContainText("Activity");
+  if (!isMobile) {
+    await example.getByRole("button", { name: "Toggle right-hand navigation" }).click();
+    await expect(example.locator('[data-slot="sidebar-provider"]')).toHaveAttribute("data-desktop-open", "false");
+    await example.getByRole("button", { name: "Toggle right-hand navigation" }).press("Enter");
+  } else {
+    await example.getByRole("button", { name: "Open right-hand navigation" }).click();
+    await page.getByRole("button", { name: "Close sidebar preview" }).click();
+    await expect(example.getByRole("button", { name: "Open right-hand navigation" })).toBeFocused();
+  }
+  await expect(page.getByLabel("Sidebar playground", { exact: true }).locator('[data-slot="sidebar-provider"]')).toHaveAttribute("data-side", "left");
+});
