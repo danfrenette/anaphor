@@ -20,6 +20,7 @@ server started by that run.
 
 - [Collapsible sections](collapsible.md)
 - [Agent-built consumer interfaces](agent-consumer.md) — fresh-agent evaluation of the reusable design skill; local registry transport does not cover GitHub authentication or the published branch.
+- [Diff reading](diff.md) — single-file diffs, reading controls, excerpt emphasis, and unavailable states.
 - [Visual foundation references](foundation-visuals.md) — Shadows, Spacing, Radius, and the combined Typography page.
 - [Button catalog](button-catalog.md) — comparison groups, code disclosures, and retained button interactions.
 - [Input catalog](input-catalog.md) — sizes, states, validation, search, and shared code-control spacing.

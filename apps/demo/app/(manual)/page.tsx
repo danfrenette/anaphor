@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DiffDemo } from "../diff-demo";
 import { CollapsibleDemo } from "../collapsible-demo";
 import { SidebarInsetContent, Section, Text, Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
 import { ButtonDemo } from "../button-demo";
@@ -235,6 +236,7 @@ export default function HomePage() {
           <KbdDemo />
           <TabsDemo />
           <CommandPaletteDemo />
+          <DiffDemo />
           <CollapsibleDemo />
           <BottomBarDemo />
         </article>

@@ -20,6 +20,8 @@
   "dependencies": {
     "@base-ui/react": "^1.9.0",
     "@phosphor-icons/react": "^2.1.10",
+    "@pierre/diffs": "^1.5.2",
+    "@primer/octicons-react": "^19.40.0",
     "@tanstack/react-hotkeys": "^0.10.0",
     "cn": "^0.2.5",
     "motion": "^13.2.0",

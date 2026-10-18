@@ -1,3 +1,4 @@
+import { Diff } from "./components/ui/diff";
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Badge } from "./components/ui/badge";
@@ -31,6 +32,7 @@ function Consumer() {
   const [frequency, setFrequency] = useState<string | null>(null);
   return <main className="mx-auto max-w-workspace px-page-inset py-6 font-sans">
     <div data-testid="editorial-layout" className="mx-auto max-w-editorial"><p className="max-w-reading">Shared layout in an independent consumer.</p></div>
+    <Diff source={{ kind: "files", before: { name: "example.ts", contents: "const count = 1;\n" }, after: { name: "example.ts", contents: "const count = 2;\n" } }} layout="unified" wrap={true} controls={false} context="collapsed" maxHeight={null} />
     <ContentSections defaultScope>
     <Section id="installed-intro" aria-label="Introduction">
     <Text as="h1" variant="title">Registry consumer</Text>

@@ -110,6 +110,7 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "badge", label: "Badge", href: "/#badge", icon: Tag },
       { id: "skeleton", label: "Skeleton", href: "/#skeleton", icon: Rectangle },
       { id: "data-table", label: "Data table", href: "/#data-table", icon: ListDashes },
+      { id: "diff", label: "Diff", href: "/#diff", icon: ListDashes },
       { id: "node-edge-graphs", label: "Node-edge graphs", href: "/#node-edge-graphs", icon: ShareNetwork },
       { id: "kbd", label: "Kbd", href: "/#kbd", icon: Keyboard },
     ],

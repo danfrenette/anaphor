@@ -98,6 +98,13 @@ async function checkBrowser(browser, directory, item) {
     await page.evaluate(() => document.documentElement.classList.add("dark"));
     const dark = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--anaphor-background"));
     assert.notEqual(light, dark, "Installed dark theme must change tokens");
+    if (item === "diff" || item === "ui") {
+      const diff = page.getByRole("region", { name: "Diff for example.ts" });
+      await expect(diff.locator("[data-line]").filter({ hasText: "const count = 2;" })).toBeVisible();
+      await diff.getByRole("button", { name: "Collapse example.ts" }).click();
+      await expect(diff.getByRole("region", { name: "Code changes: example.ts" })).toBeHidden();
+      await diff.getByRole("button", { name: "Expand example.ts" }).click();
+    }
     if (item === "ui") {
       const disclosure = page.getByRole("button", { name: "Registry disclosure" });
       await disclosure.click();
@@ -164,7 +171,7 @@ try {
   console.log(`Registry verification workspace: ${temporary}`);
   await prepareRegistry();
   browser = await chromium.launch();
-  for (const item of ["button", "ui"]) {
+  for (const item of ["button", "diff", "ui"]) {
     console.log(`\nChecking independent ${item} installation`);
     const consumer = path.join(temporary, item);
     await cp(path.join(root, "test/registry-consumer"), consumer, { recursive: true });
@@ -172,7 +179,7 @@ try {
     await writeFile(path.join(consumer, "src/styles.css"), '@import "tailwindcss";\nbody { margin: 0; }\n');
     await run("pnpm", ["install", "--ignore-workspace"], consumer);
     await run(process.execPath, [installer, "add", path.join(registryDirectory, `${item}.json`), "--cwd", consumer, "--yes"], consumer);
-    await cp(path.join(consumer, `${item}.tsx`), path.join(consumer, "src/main.tsx"));
+    await cp(path.join(consumer, item === "diff" ? "diff-consumer.tsx" : `${item}.tsx`), path.join(consumer, "src/main.tsx"));
     const installedCss = await readFile(path.join(consumer, "src/styles.css"), "utf8");
     assert.ok(installedCss.includes('@import "@/components/anaphor.css"'), "Installer must import the shared stylesheet");
     assert.ok(installedCss.includes("body { margin: 0; }"), "Installer must preserve application CSS");

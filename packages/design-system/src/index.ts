@@ -37,3 +37,4 @@ export { Tooltip, TooltipGroup, TooltipProvider, TooltipTrigger, TooltipPopup, t
 export { Skeleton, SkeletonRegion, SkeletonText, SkeletonBox, type SkeletonProps, type SkeletonRegionProps, type SkeletonTextProps, type SkeletonVariant } from "./components/skeleton";
 
 export { Collapsible, CollapsibleTrigger, CollapsibleContent, CollapsiblePanel, type CollapsibleProps, type CollapsibleTriggerProps, type CollapsibleContentProps } from "./components/collapsible";
+export { Diff, type DiffProps, type DiffSource } from "./components/diff";
