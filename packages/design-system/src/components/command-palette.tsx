@@ -7,6 +7,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Button, ButtonLabel } from "./button";
 import { Text } from "./text";
+import { Kbd } from "./kbd";
 import { fluidHoverTravel } from "../lib/motion";
 import { cn } from "../lib/utils";
 
@@ -116,38 +117,40 @@ function PaletteContent<Item extends CommandPaletteItem>({ items, onSelect, titl
             // Typography
             "font-sans text-body text-foreground placeholder:text-muted-foreground",
           )} />
-          <Dialog.Close render={<Button iconOnly loading={false} nativeButton type="button" shape="square" size="xs" variant="ghost" tone="neutral" aria-label="Close command palette" />}><X aria-hidden="true" /></Dialog.Close>
+          <Dialog.Close render={<Button iconOnly loading={false} nativeButton type="button" shape="square" size="md" variant="ghost" tone="neutral" aria-label="Close command palette" />}><X aria-hidden="true" /></Dialog.Close>
         </div>
-        <Autocomplete.Empty render={<Text as="p" variant="caption" />} className="px-4 py-10 text-center empty:hidden" >No commands found. Try another search.</Autocomplete.Empty>
-        <Autocomplete.List ref={listRef} className="relative min-h-0 overflow-y-auto overscroll-contain px-2 pb-2" aria-label="Commands">
-          {highlight && (animateHighlight && activeFromFinePointer && !reducedMotion ? (
-            <motion.div key={active?.group} aria-hidden="true" data-slot="command-fluid-highlight" className={highlightStyles}
-              initial={false} animate={{ transform: `translateY(${highlight.top}px)` }} style={{ height: highlight.height }} transition={fluidHoverTravel} />
-          ) : (
-            <div aria-hidden="true" data-slot="command-fluid-highlight" className={highlightStyles}
-              style={{ height: highlight.height, transform: `translateY(${highlight.top}px)` }} />
-          ))}
-          {groups.map(group => (
-            <Autocomplete.Group key={group}>
-              <Autocomplete.GroupLabel render={<Text as="div" variant="label" />} className="relative px-3 pt-3 pb-2 text-muted-foreground">{group}</Autocomplete.GroupLabel>
-              {filtered.filter(item => item.group === group).map(item => {
-                const trailing = renderTrailing?.(item);
-                return (
-                  <Autocomplete.Item key={item.id} value={item} disabled={item.disabled} data-command-id={item.id}
-                    className={itemStyles}
-                    onClick={() => { onOpenChange(false); onSelect(item); }}>
-                    {item.icon}<Text as="span" variant="ui" className="min-w-0 flex-1 truncate">{item.label}</Text>
-                    {trailing != null && <span data-slot="command-palette-trailing" className="pointer-events-none ms-auto flex shrink-0 items-center">{trailing}</span>}
-                  </Autocomplete.Item>
-                );
-              })}
-            </Autocomplete.Group>
-          ))}
-        </Autocomplete.List>
+        <div className="flex h-80 min-h-0 flex-col">
+          <Autocomplete.Empty render={<Text as="p" variant="caption" />} className="grid flex-1 place-content-center px-4 text-center empty:hidden" >No commands found. Try another search.</Autocomplete.Empty>
+          <Autocomplete.List ref={listRef} className="relative min-h-0 overflow-y-auto overscroll-contain px-2 pb-2" aria-label="Commands">
+            {highlight && (animateHighlight && activeFromFinePointer && !reducedMotion ? (
+              <motion.div key={active?.group} aria-hidden="true" data-slot="command-fluid-highlight" className={highlightStyles}
+                initial={false} animate={{ transform: `translateY(${highlight.top}px)` }} style={{ height: highlight.height }} transition={fluidHoverTravel} />
+            ) : (
+              <div aria-hidden="true" data-slot="command-fluid-highlight" className={highlightStyles}
+                style={{ height: highlight.height, transform: `translateY(${highlight.top}px)` }} />
+            ))}
+            {groups.map(group => (
+              <Autocomplete.Group key={group}>
+                <Autocomplete.GroupLabel render={<Text as="div" variant="ui" />} className="relative px-3 pt-3 pb-2 text-muted-foreground">{group}</Autocomplete.GroupLabel>
+                {filtered.filter(item => item.group === group).map(item => {
+                  const trailing = renderTrailing?.(item);
+                  return (
+                    <Autocomplete.Item key={item.id} value={item} disabled={item.disabled} data-command-id={item.id}
+                      className={itemStyles}
+                      onClick={() => { onOpenChange(false); onSelect(item); }}>
+                      {item.icon}<Text as="span" variant="ui" className="min-w-0 flex-1 truncate">{item.label}</Text>
+                      {trailing != null && <span data-slot="command-palette-trailing" className="pointer-events-none ms-auto flex shrink-0 items-center">{trailing}</span>}
+                    </Autocomplete.Item>
+                  );
+                })}
+              </Autocomplete.Group>
+            ))}
+          </Autocomplete.List>
+        </div>
       </Autocomplete.Root>
-      <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border px-4 py-3">
-        <Text as="span" variant="caption" className="flex items-center gap-1"><ArrowUp aria-hidden="true" /><ArrowDown aria-hidden="true" /> Navigate <ArrowElbowDownLeft aria-hidden="true" className="ms-2" /> Open</Text>
-        <Dialog.Close render={<Button iconOnly={false} loading={false} nativeButton type="button" shape="square" size="xs" variant="ghost" tone="neutral" />}><ButtonLabel>Esc</ButtonLabel></Dialog.Close>
+      <div className="flex shrink-0 items-center justify-between gap-3 border-t-[length:var(--anaphor-border-hairline)] border-border px-4 py-2">
+        <Text as="span" variant="caption" className="flex items-center gap-1"><Kbd role="img" aria-label="Up arrow"><ArrowUp aria-hidden="true" /></Kbd><Kbd role="img" aria-label="Down arrow"><ArrowDown aria-hidden="true" /></Kbd> Navigate <Kbd role="img" aria-label="Enter" className="ms-2"><ArrowElbowDownLeft aria-hidden="true" /></Kbd> Open</Text>
+        <Dialog.Close render={<Button iconOnly={false} loading={false} nativeButton type="button" shape="square" size="md" variant="ghost" tone="neutral" />}><ButtonLabel>Esc</ButtonLabel></Dialog.Close>
       </div>
     </Dialog.Popup>
   );

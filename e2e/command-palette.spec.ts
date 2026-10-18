@@ -124,3 +124,23 @@ test("palette controls opt into motion and reset to instant highlights", async (
   await expect(icons).toBeChecked();
   await expect(shortcuts).toBeChecked();
 });
+
+test("catalog groups and empty results preserve palette geometry", async ({ page }) => {
+  await page.goto("/#command-palette");
+  await page.getByRole("button", { name: "Browse commands", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Commands & groups", exact: true });
+  const input = dialog.getByRole("combobox");
+  await expect(dialog.getByRole("option", { name: "Archive document", exact: true })).toBeDisabled();
+  const initial = await dialog.boundingBox();
+  await input.fill("bookmark");
+  await expect(dialog.getByRole("option")).toHaveCount(1);
+  await input.fill("no matching command");
+  await expect(dialog.getByText("No commands found. Try another search.")).toBeVisible();
+  const empty = await dialog.boundingBox();
+  expect(empty!.height).toBeCloseTo(initial!.height, 0);
+  expect(empty!.y).toBeCloseTo(initial!.y, 0);
+  await input.fill("");
+  await dialog.getByRole("option", { name: "Workspace settings", exact: true }).click();
+  await expect(page.getByRole("group", { name: "Browse commands preview", exact: true }).getByRole("status")).toHaveText("Selected: Workspace settings");
+  await expect(page.getByRole("group", { name: "Open example palette preview", exact: true }).getByRole("status")).toHaveText("Example commands report your selection here.");
+});

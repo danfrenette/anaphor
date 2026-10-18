@@ -63,7 +63,7 @@ affordance; the footer still explains the palette-owned Enter behavior.
   private course material was copied.
 
 Anaphor's `Text` roles compose the surface: Bell Gothic subheading, Inter UI
-labels and categorical group names, and caption-sized keyboard instructions.
+labels and quiet sentence-case group names, and caption-sized keyboard instructions.
 The search input stays at 16px. Floating tools use the shared card radius and
 shadow. Opening and closing are immediate for this frequently used control.
 The top anchor is stable during filtering. Desktop opening focuses search;
@@ -79,3 +79,15 @@ unsupported pages. The manual uses the instant default. The Command palette sect
 philosophy and provides a separate example with morph-surface controls for
 highlight animation, icons, and shortcut hints. Reset restores instant highlights,
 visible icons, and visible shortcuts.
+
+## Catalog
+
+Commands & groups demonstrates two groups and an unavailable action. Search &
+empty results demonstrates keyword matching and recovery. Each example owns its
+selection independently. Playground retains icon, shortcut, and pointer-motion
+controls, inline code, and an independent reset.
+
+The shared results region reserves 20rem, shrinking within the dialog's viewport
+bound on short screens. Filtering and empty results keep the search and footer
+positions stable. The footer uses shared Kbd hints and the hairline divider token;
+dismiss buttons use medium sizing for desktop and coarse-pointer targets.

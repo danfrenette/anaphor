@@ -36,3 +36,4 @@ server started by that run.
 - [Dropdown menu catalog](menu-catalog.md) — action states, radio selection, popup configuration, and simulated action feedback.
 - [Popover catalog](popover-catalog.md) — anatomy, independent settings examples, placement controls, and focus/dismissal behavior.
 - [Tooltip catalog](tooltip-catalog.md) — independent hints, instant groups, placement/timing controls, and reset.
+- [Command palette catalog](command-palette-catalog.md) — grouped actions, keyword search, stable result geometry, and shared palette polish.

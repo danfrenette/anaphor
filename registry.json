@@ -454,6 +454,7 @@
         "danfrenette/anaphor/style",
         "danfrenette/anaphor/button",
         "danfrenette/anaphor/text",
+        "danfrenette/anaphor/kbd",
         "danfrenette/anaphor/motion-utils"
       ],
       "files": [
