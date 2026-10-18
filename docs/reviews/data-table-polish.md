@@ -1,6 +1,11 @@
 # Data table polish audit
 
-Verdict: **Approve with changes** (2026-10-17).
+Verdict at initial review: **Approve with changes** (2026-10-17).
+
+Follow-up: all three should-fix findings below have been addressed. State geometry
+uses real representative rows and shared Skeleton primitives; filter reset keeps a
+reserved slot; table rules consume the existing hairline token. The optional project
+convention notes remain recommendations, not changes in this pass.
 
 Scope: the Data Table catalog and playground, reviewed against emil-surfaces,
 emil-ui-polish, and emil-ui-review. This is not a whole-catalog accessibility audit.
@@ -17,7 +22,7 @@ emil-ui-polish, and emil-ui-review. This is not a whole-catalog accessibility au
   The layer now follows the row's horizontal position and computed radius.
   Touch devices retain no hover layer; reduced motion remains immediate.
 
-## Should fix
+## Resolved follow-ups (original findings)
 
 1. **Reserve the loaded layout across states.**
    `apps/demo/app/data-table-playground.tsx:135`: Records renders selection,
