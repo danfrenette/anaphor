@@ -71,3 +71,18 @@ test("diff reading controls, excerpts, file states and theme remain usable", asy
   expect(darkAccessibility.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => n.failureSummary) }))).toEqual([]);
   await page.screenshot({ path: `test-results/diff-${testInfo.project.name}-dark.png`, fullPage: false });
 });
+
+for (const key of ["Enter", "Space"]) {
+  test(`unchanged context expands from the keyboard with ${key}`, async ({ page }) => {
+    await page.goto("/#diff");
+    const full = page.getByRole("region", { name: "Diff playground", exact: true });
+    const lines = full.locator("[data-line]");
+    await expect(lines.first()).toBeVisible();
+    const before = await lines.count();
+    const expand = full.getByRole("button", { name: "Expand unchanged lines", exact: true }).first();
+    await expand.focus();
+    await expect(expand).toBeFocused();
+    await expand.press(key);
+    await expect.poll(() => lines.count()).toBeGreaterThan(before);
+  });
+}

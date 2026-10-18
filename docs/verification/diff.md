@@ -117,3 +117,10 @@ The standalone Diff registry install passed source installation, build, browser
 interaction, theme, and font checks. The complete-UI registry run encountered an
 unrelated `shortcut.ts:99` type error with its unversioned hotkeys dependency;
 that broader registry check remains unresolved by this catalog change.
+
+## Context-expansion accessibility
+
+The final catalog pass checks unchanged-context expansion by Enter and Space in
+Chromium and WebKit. Pierre's div-based controls receive an accessible name,
+keyboard activation, a token-based focus outline, and 44px coarse-pointer targets.
+The full-page axe scan includes the initially collapsed-context playground.

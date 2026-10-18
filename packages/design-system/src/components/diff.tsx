@@ -69,8 +69,8 @@ const diffCSS = `
 }
 [data-line], [data-line] span { font-weight: 400; font-style: normal; }
 [data-line][data-selected-line] { box-shadow: inset 2px 0 var(--anaphor-brand); }
-button:focus-visible, code[data-code]:focus-visible { outline: 2px solid var(--anaphor-focus); outline-offset: -2px; }
-@media (pointer: coarse) { button { min-height: 44px; } }
+button:focus-visible, [role="button"]:focus-visible, code[data-code]:focus-visible { outline: 2px solid var(--anaphor-focus); outline-offset: -2px; }
+@media (pointer: coarse) { button, [role="button"] { min-height: 44px; min-width: 44px; } }
 `;
 
 const changeLabels = { change: "Modified", "rename-pure": "Renamed", "rename-changed": "Renamed", new: "Added", deleted: "Deleted" };
@@ -143,9 +143,19 @@ function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedL
       for (const code of node.shadowRoot?.querySelectorAll<HTMLElement>("code[data-code]") ?? []) {
         code.tabIndex = wrap ? -1 : 0;
       }
-      for (const button of node.shadowRoot?.querySelectorAll("button") ?? []) {
+      for (const button of node.shadowRoot?.querySelectorAll<HTMLElement>('button, [data-expand-button][role="button"]') ?? []) {
         if (!button.textContent?.trim() && !button.hasAttribute("aria-label")) {
           button.setAttribute("aria-label", "Expand unchanged lines");
+        }
+        // Pierre's expansion controls are divs; supply their keyboard behavior.
+        if (button.tagName !== "BUTTON") {
+          button.tabIndex = 0;
+          button.onkeydown = event => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
+            event.stopPropagation();
+            button.click();
+          };
         }
       }
       if (revealKey === undefined || revealed.current === revealKey || !highlightedLines) return;
