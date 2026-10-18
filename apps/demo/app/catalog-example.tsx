@@ -10,7 +10,7 @@ export function CatalogExample({ title, description, code, children, framed = tr
     {description && <p className="mt-2 text-ui text-muted-foreground">{description}</p>}
     <div className={framed ? "mt-4 min-w-0 rounded-md border border-border bg-background" : "mt-4 min-w-0"}>
       <div className={framed ? "p-4 sm:p-6" : ""}>{children}</div>
-      <Collapsible className="border-t border-border">
+      <Collapsible className={framed ? "border-t border-border" : undefined}>
         <div className="flex items-center gap-2 px-2 py-1">
           <CollapsibleTrigger aria-label={`Show ${title.toLowerCase()} code`} className="h-9 min-w-0 flex-1 py-0 text-muted-foreground pointer-coarse:h-11"><CaretRight aria-hidden="true" />Show code</CollapsibleTrigger>
           <CardCopyButton value={code} aria-label={`Copy ${title.toLowerCase()} code`} className={catalogIconButtonClassName} />
