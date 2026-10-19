@@ -28,7 +28,7 @@ export function CardPlayground() {
       <Card className="flex flex-col" variant={card.variant} aria-labelledby="card-project-title">
         {card.variant === "showcase" && <CardPreview><div className="grid place-items-center p-6 text-heading font-medium">Space for your next idea.</div></CardPreview>}
         <CardHeader>
-          <CardTitle as="h3" variant="heading" id="card-project-title">Personal workspace</CardTitle>
+          <CardTitle as="h4" variant="heading" id="card-project-title">Personal workspace</CardTitle>
           {card.description && <CardDescription>A place for your next idea.</CardDescription>}
           {card.action && <CardAction><Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="xs" tone="neutral" variant="ghost"><ButtonLabel>Edit</ButtonLabel></Button></CardAction>}
         </CardHeader>

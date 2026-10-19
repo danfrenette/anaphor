@@ -15,11 +15,11 @@ test("sidebar search opens, filters, and navigates on desktop and mobile", async
   expect(box!.x + box!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
   await input.fill("Typography");
   await expect(dialog.getByRole("option", { name: "Typography", exact: true })).toBeVisible();
-  await expect(dialog.getByRole("option", { name: "Typography specimen", exact: true })).toBeVisible();
+  await expect(dialog.getByRole("option")).toHaveCount(1);
   expect((await new AxeBuilder({ page }).include('[data-slot="command-palette"]').analyze()).violations).toEqual([]);
   await input.press("Enter");
   await expect(dialog).not.toBeVisible();
-  await expect(page).toHaveURL(/#typography$/);
+  await expect(page).toHaveURL(/\/typography$/);
   if (isMobile) await expect(page.locator('[data-slot="sidebar"]')).not.toBeVisible();
 });
 
@@ -33,7 +33,7 @@ test("Command-K opens from an input and Escape restores focus", async ({ page, i
   const input = page.getByRole("combobox", { name: "Search the manual" });
   await expect(input).toBeFocused();
   await input.press("ArrowDown");
-  await expect(page.getByRole("option", { name: "Principles", exact: true })).toHaveAttribute("data-highlighted", "");
+  await expect(page.getByRole("option", { name: "Color", exact: true })).toHaveAttribute("data-highlighted", "");
   await input.fill("not-a-command");
   await expect(page.getByText("No commands found. Try another search.")).toBeVisible();
   await input.press("Escape");
@@ -57,9 +57,9 @@ test("default highlighting is instant for pointer and keyboard selection", async
   expect(await highlight.evaluate(el => el.getAnimations().length)).toBe(0);
   await expect.poll(async () => Math.abs((await color.boundingBox())!.y - (await highlight.boundingBox())!.y)).toBeLessThan(1);
   await input.press("ArrowDown");
-  const typography = dialog.getByRole("option", { name: "Typography", exact: true });
-  await expect(typography).toHaveAttribute("data-highlighted", "");
-  await expect.poll(async () => Math.abs((await typography.boundingBox())!.y - (await highlight.boundingBox())!.y)).toBeLessThan(1);
+  const motion = dialog.getByRole("option", { name: "Motion", exact: true });
+  await expect(motion).toHaveAttribute("data-highlighted", "");
+  await expect.poll(async () => Math.abs((await motion.boundingBox())!.y - (await highlight.boundingBox())!.y)).toBeLessThan(1);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await color.hover();
   await expect.poll(async () => Math.abs((await color.boundingBox())!.y - (await highlight.boundingBox())!.y)).toBeLessThan(1);
@@ -85,13 +85,10 @@ test("palette controls opt into motion and reset to instant highlights", async (
   await page.goto("/#command-palette");
   await page.getByRole("tab", { name: "Open Command palette controls", exact: true }).click();
   const animate = page.getByRole("checkbox", { name: "Animate highlight", exact: true });
-  const icons = page.getByRole("checkbox", { name: "Show icons", exact: true });
   const shortcuts = page.getByRole("checkbox", { name: "Show shortcuts", exact: true });
   await expect(animate).not.toBeChecked();
-  await expect(icons).toBeChecked();
   await expect(shortcuts).toBeChecked();
   await animate.check();
-  await icons.uncheck();
   const trigger = page.getByRole("button", { name: "Open example palette" });
   await page.getByRole("button", { name: "Close controls" }).click();
   await trigger.click();
@@ -121,6 +118,47 @@ test("palette controls opt into motion and reset to instant highlights", async (
   if (await controls.getAttribute("aria-expanded") === "false") await controls.click();
   await page.getByRole("button", { name: "Reset controls", exact: true }).click();
   await expect(animate).not.toBeChecked();
-  await expect(icons).toBeChecked();
   await expect(shortcuts).toBeChecked();
+});
+
+test("catalog groups and empty results preserve palette geometry", async ({ page }) => {
+  await page.goto("/#command-palette");
+  await page.getByRole("button", { name: "Browse commands", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Commands & groups", exact: true });
+  const input = dialog.getByRole("combobox");
+  await expect(dialog.getByRole("option", { name: "Archive document", exact: true })).toBeDisabled();
+  const initial = await dialog.boundingBox();
+  await input.fill("bookmark");
+  await expect(dialog.getByRole("option")).toHaveCount(1);
+  await input.fill("no matching command");
+  await expect(dialog.getByText("No commands found. Try another search.")).toBeVisible();
+  const empty = await dialog.boundingBox();
+  expect(empty!.height).toBeCloseTo(initial!.height, 0);
+  expect(empty!.y).toBeCloseTo(initial!.y, 0);
+  await input.fill("");
+  await dialog.getByRole("option", { name: "Workspace settings", exact: true }).click();
+  await expect(page.getByRole("group", { name: "Browse commands preview", exact: true }).getByRole("status")).toHaveText("Selected: Workspace settings");
+  await expect(page.getByRole("group", { name: "Open example palette preview", exact: true }).getByRole("status")).toHaveText("Example commands report your selection here.");
+});
+
+test("palette arrow navigation keeps focus in search and Tab reaches close", async ({ page }) => {
+  await page.goto("/#command-palette");
+  const trigger = page.getByRole("button", { name: "Browse commands", exact: true });
+  await trigger.click();
+  const dialog = page.getByRole("dialog", { name: "Commands & groups", exact: true });
+  const input = dialog.getByRole("combobox");
+  await input.focus();
+  await input.press("ArrowDown");
+  await expect(input).toBeFocused();
+  const selected = dialog.getByRole("option", { name: /^Copy link/ });
+  await expect(selected).toHaveAttribute("data-highlighted", "");
+  await expect(input).toHaveAttribute("aria-activedescendant", await selected.getAttribute("id") ?? "");
+  await expect(dialog.getByRole("option").locator("svg")).toHaveCount(0);
+  await input.press("Tab");
+  await expect(dialog.getByRole("button", { name: "Close command palette", exact: true })).toBeFocused();
+  await expect(dialog.getByRole("button")).toHaveCount(1);
+  await page.keyboard.press("Shift+Tab");
+  await expect(input).toBeFocused();
+  await input.press("Escape");
+  await expect(trigger).toBeFocused();
 });

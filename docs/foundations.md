@@ -70,3 +70,22 @@ preserve type roles, reading measure, spacing rhythm, geometry and elevations;
 annotate contrast exceptions and behavioral recipes. Snapshot the approved
 defaults, not an experimental setting. Paper represents static states; reduced
 motion, keyboard behavior and interaction mechanics remain code contracts.
+
+## Visual references
+
+The Foundations navigation exposes `/shadows`, `/spacing`, and `/radius` as
+visual companions to the token inventory. They consume existing CSS variables;
+no new scale or package API is introduced. Radius labels and the spacing base
+are read from the same shipped CSS inventory at build time. Pixel equivalents
+assume the default 16px root size; live examples retain relative token sizing.
+
+Shadows compare flat, card, and menu treatments on identical samples. Upload
+shadows are documented separately as component-specific treatments, and the
+clipped-card filter remains an equivalent rendering of card elevation.
+Spacing shows the documented preferred steps, padding, gaps, and page insets.
+Radius compares the four named Anaphor tokens; square and fully rounded shapes
+are described as endpoint treatments rather than additional named steps.
+
+Typography has one navigation/search destination at `/typography`, combining
+the type-role overview, article composition, and interactive reading specimen.
+The original `/#typography` anchor remains a short signpost to that page.

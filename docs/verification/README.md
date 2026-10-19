@@ -20,3 +20,22 @@ server started by that run.
 
 - [Collapsible sections](collapsible.md)
 - [Agent-built consumer interfaces](agent-consumer.md) — fresh-agent evaluation of the reusable design skill; local registry transport does not cover GitHub authentication or the published branch.
+- [Diff reading](diff.md) — single-file diffs, reading controls, excerpt emphasis, and unavailable states.
+- [Visual foundation references](foundation-visuals.md) — Shadows, Spacing, Radius, and the combined Typography page.
+- [Button catalog](button-catalog.md) — comparison groups, code disclosures, and retained button interactions.
+- [Input catalog](input-catalog.md) — sizes, states, validation, search, and shared code-control spacing.
+- [Checkbox catalog](checkbox-catalog.md) — states, selection groups, required choice, and inline code.
+- [Radio group catalog](radio-group-catalog.md) — choice states, label colors, validation, and inline code.
+- [Card catalog](card-catalog.md) — anatomy, composition, logo showcase, and playground controls.
+- [Badge catalog](badge-catalog.md) — variants, sizes, icon/shape comparisons, and playground controls.
+- [Skeleton catalog](skeleton-catalog.md) — shapes, effects, content geometry, and reduced motion.
+- [Data table catalog](data-table-catalog.md) — treatments, density, native-table references, and interactive playground.
+- [Node-edge graph catalog](node-edge-catalog.md) — node composition, pulse direction, notebook playback, and shared settings.
+- [Kbd catalog](kbd-catalog.md) — keys, chords, sequences, platform notation, and live example markup.
+- [Tabs catalog](tabs-catalog.md) — variants, sizes, orientation, disabled selection, and shared playground controls.
+- [Dropdown menu catalog](menu-catalog.md) — action states, radio selection, popup configuration, and simulated action feedback.
+- [Popover catalog](popover-catalog.md) — anatomy, independent settings examples, placement controls, and focus/dismissal behavior.
+- [Tooltip catalog](tooltip-catalog.md) — independent hints, instant groups, placement/timing controls, and reset.
+- [Command palette catalog](command-palette-catalog.md) — grouped actions, keyword search, stable result geometry, and shared palette polish.
+- [Bottom bar catalog](bottom-bar-catalog.md) — appearances, local utility actions, responsive labels, and playground reset.
+- [Manual navigation order](manual-order.md) — alphabetized groups, matching section order, and keyboard/index navigation.

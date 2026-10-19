@@ -57,7 +57,7 @@ test("a complete agent publication is readable in the built owner browser, with 
   // A fast session denial must not hide stale content restored from router history.
   await page.route("**/api/tours/session", (route) => route.abort("failed"));
   await page.getByRole("link", { name: "Anaphor reference manual" }).click();
-  await expect(page.getByRole("heading", { name: "Anaphor", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Anaphor", level: 1, exact: true })).toBeVisible();
   await page.goBack();
   await expect(page.getByRole("heading", { name: "Sign in to Anaphor" })).toBeVisible();
   await expect(page.getByText(document.overview)).toHaveCount(0);

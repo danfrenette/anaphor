@@ -105,3 +105,22 @@ test("search and button compose without overflow and preserve native editing", a
   const height = await input.evaluate((element) => element.getBoundingClientRect().height);
   expect(await form.getByRole("button", { name: "Search" }).evaluate((element) => element.getBoundingClientRect().height)).toBe(height);
 });
+
+
+test("input catalog exposes sizes, states and inline code without horizontal overflow", async ({ page }) => {
+  await page.goto("/#input");
+  const section = page.locator("#input");
+  for (const name of ["Sizes", "States", "Validation", "With an action", "Playground"]) {
+    await expect(section.getByRole("heading", { name, exact: true })).toBeVisible();
+  }
+  await expect(section.getByRole("textbox", { name: "Workspace ID", exact: true })).not.toBeEditable();
+  await expect(section.getByRole("textbox", { name: "Unavailable", exact: true })).toBeDisabled();
+  await expect(section.getByRole("textbox", { name: "Project slug", exact: true })).toHaveAccessibleDescription("Use lowercase letters and hyphens, such as my-project.");
+  const sizes = section.getByRole("region", { name: "Sizes", exact: true });
+  const trigger = sizes.getByRole("button", { name: "Show sizes code", exact: true });
+  await trigger.focus();
+  await trigger.press("Enter");
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await expect(sizes.getByLabel("Sizes code", { exact: true })).toBeVisible();
+  expect(await section.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+});

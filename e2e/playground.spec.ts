@@ -114,6 +114,7 @@ test("radial reveal starts at the toggle and releases after completion", async (
 test("one shell grows from the icon bar and keeps its bottom edge anchored", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#button");
+  await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
   await expect(page.getByRole("tab", { name: "Open Button controls" })).toBeEnabled();
   const surface = page.locator('[data-slot="morph-surface"]');
   const samples = await surface.evaluate(element => new Promise<{ height: number; bottom: number }[]>(resolve => {
@@ -125,8 +126,11 @@ test("one shell grows from the icon bar and keeps its bottom edge anchored", asy
     const start = performance.now();
     const tick = () => {
       sample();
-      if (performance.now() - start < 600) requestAnimationFrame(tick);
-      else resolve(frames);
+      const last = frames.at(-1)!;
+      const settled = last.height > frames[0]!.height + 40 && frames.length >= 4 &&
+        frames.slice(-3).every(frame => Math.abs(frame.height - last.height) < 0.1);
+      if (settled || performance.now() - start >= 10_000) resolve(frames);
+      else requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
   }));

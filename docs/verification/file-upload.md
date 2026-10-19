@@ -64,3 +64,10 @@ Verification on the corrected source: **148 integration tests passed across 31 f
 **Ten production-browser checks passed** in Chromium and 320px WebKit: manual-index navigation, active upload section, shared Controls and Code installation/usage, real multi-file selection, batch focus through completion, removal focus, RTL traversal/reduced motion, section accessibility/contrast, and manual accessibility/skip-link smoke. Native preview inspection also confirmed `Components / File upload` and both shared tabs.
 
 No package component, stylesheet, export, registry item, or dependency changed in this follow-up; the previous successful registry-consumer evidence applies to the identical distributed source. The full browser suite remains a PR CI check. Existing manual accessibility/OS coverage limits above remain open.
+
+## Catalog presentation
+
+The single Playground uses a flat bordered preview with inline Show code/copy
+controls. Sample/reset actions and the simulation disclosure sit below it.
+Check keyboard code expansion, narrow and RTL previews, and existing file
+selection/recovery flows after changing this composition.

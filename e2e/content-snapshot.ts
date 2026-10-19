@@ -9,6 +9,7 @@ export function prepareContentSnapshot(page: Page) {
     [data-app-shell] [data-slot="workspace-top-bar"],
     [data-app-shell] [data-slot="bottom-bar"],
     [data-app-shell] [data-slot="sidebar"],
+    [data-app-shell] a[href="#content"],
     [data-slot="morph-surface"] { visibility: hidden !important; }
   ` });
 }

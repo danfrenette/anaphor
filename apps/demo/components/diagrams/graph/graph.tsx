@@ -22,7 +22,7 @@ function Graph({ children, pulseSpeed }: GraphProps) {
   const { activePulses, pulse, clearGlows } = usePulses({ paths, endpoints, nodeLights, pulseSpeed });
   const playback = useDiagramPlayback({ clearFeedback: clearGlows });
   return <Context.Provider value={{ playback, register, boxes, surface, paths, endpoints, nodeLights, clearGlows, pulse }}>
-    <div className="relative" ref={root}>
+    <div className="relative isolate" ref={root}>
       <svg className="pointer-events-none absolute inset-0 z-[3] h-full w-full overflow-hidden" aria-hidden="true">
         <g ref={setSurface} data-layer="edges" />
         <g data-layer="pulses">
