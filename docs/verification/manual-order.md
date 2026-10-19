@@ -53,3 +53,60 @@ The pinned Linux CI image remains the required environment for that follow-up; d
 not copy macOS images to the Linux baseline paths. Private-tour database/provider
 acceptance, physical touch, and dedicated screen-reader testing were not run.
 Unrelated CODING_STANDARDS.md edits and the untracked lab route were preserved.
+
+## Linux follow-up — 2026-10-18
+
+Completed the previously blocked Linux follow-up from committed revision
+`b3c7b69f44e731df071d1924a9112fefe6ef8262`, with only the test corrections and
+reviewed Linux baselines described below overlaid. Docker became available after
+the macOS receipt above. The isolated checkout used Node 24.20.0, pnpm 10.33.0,
+`CI=true`, and `mcr.microsoft.com/playwright:v1.63.0-noble` on Linux amd64
+(image digest `sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27`).
+The image ran under emulation on an arm64 Mac; the 47.4-minute full browser run
+therefore does not establish the CI job's 30-minute runtime budget.
+
+- Frozen workspace installation passed.
+- The workflow's candidate-baseline command passed 18 tests. Reviewed the 44
+  changed Linux PNGs at desktop and 320px in both themes, covering Badge,
+  foundations, Typography, Button, Card, and the showcase. Two of the 46 candidate
+  images were unchanged. The full browser run then compared these baselines
+  without snapshot updates; all visual baseline checks passed.
+- `pnpm test:browser`: 375 passed, 43 intentional skips, seven failures, and three
+  tests passed on retry. Failures were four slider appearance comparisons,
+  first desktop tooltip hover, mobile reduced-motion Hold, and mobile clipboard
+  confirmation. Traces showed pre-hydration interaction/capture and transient
+  states expiring during slow browser round trips. Tests now await hydration,
+  pause the real Hold animation while asserting its state, and control clipboard
+  confirmation time with Playwright's clock. Product behavior is unchanged.
+- Focused recheck of Slider, Tooltip, Hold, clipboard, and the three retry cases:
+  17 passed and one touch-hover skip; only the two clipboard tests failed because
+  the initial test-clock pause targeted a time that had already elapsed. After
+  correcting the clock to fixed installation/pause dates, the clipboard check
+  passed in both projects (two passed, no retries). The original checkbox and
+  radio accessibility retry cases passed without retries. This combined evidence
+  is not a claim of a green single full-suite invocation after the test changes.
+- `pnpm lint`, `pnpm typecheck`, and `pnpm test --maxWorkers=2` passed serially:
+  168 integration tests passed, with the existing native Keychain opt-in skip.
+  An earlier integration attempt overlapped browser work and was stopped after
+  contention-related timeouts; the complete serial rerun passed.
+- `pnpm test:registry`: independent Button, Diff, and complete UI installations,
+  builds, browser interaction, themes, and fonts passed.
+- Disposable Postgres 17 migrations passed. Initial `pnpm test:tours` produced
+  17 passes, three intentional skips, and two failures from an ambiguous manual
+  heading after the new Card showcase added another “Anaphor” heading. Scoping
+  the assertion to the level-one heading fixes the intended return-to-manual
+  check. The entire rerun passed 19 tests with three intentional viewport skips,
+  without retries, including real CLI publication/revocation, device decisions,
+  fixed expiry, unauthorized access, and both fictional provider identities.
+- Production builds passed through each public/private Playwright harness.
+- Lint and strict types passed again after the final tour assertion change.
+  The test corrections are committed separately as `c3eaee4`.
+
+Full public failure evidence is retained in `/tmp/anaphor-linux-full-report` and
+`/tmp/anaphor-linux-full-results`; final tour screenshots are retained in
+`/tmp/anaphor-linux-tour-final-results`. Command logs use
+`/tmp/anaphor-linux-*.log`. Only the task's two disposable containers and network
+were removed after verification; Docker Desktop and the existing host dev server
+were left running. Real OAuth/deployed-domain acceptance, native Keychain access,
+physical touch, and dedicated screen-reader testing remain outside this run.
+Unrelated CODING_STANDARDS.md edits and the untracked lab route were preserved.
