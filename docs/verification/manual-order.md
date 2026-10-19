@@ -110,3 +110,47 @@ were removed after verification; Docker Desktop and the existing host dev server
 were left running. Real OAuth/deployed-domain acceptance, native Keychain access,
 physical touch, and dedicated screen-reader testing remain outside this run.
 Unrelated CODING_STANDARDS.md edits and the untracked lab route were preserved.
+
+## Full-run retry and targeted follow-up — 2026-10-19
+
+Recreated an isolated committed-HEAD checkout at `3b2c02c` (including `c3eaee4`)
+in the same pinned Linux amd64 image, Node 24.20.0 and pnpm 10.33.0. Frozen
+installation and the production build passed. No host checkout was mounted, and
+no snapshot updates or competing verification gates ran.
+
+- The requested complete `pnpm test:browser` retry finished in 42.5 minutes:
+  383 passed, 43 intentional skips, one failure, and one test passed on retry.
+  All seven original failures passed on their first attempts. The remaining
+  failure was mobile WebKit's combined light/dark Button contrast matrix exceeding
+  its explicit 120-second overall test budget, on both attempts. It reported a
+  timeout while operating the variant control, not a contrast violation.
+- Commit `87a6db4` separates that existing matrix into light and dark tests.
+  Every tone/variant combination, axe rule, and documented accent-solid exception
+  is retained; each theme keeps the existing 120-second per-test limit.
+- The surface-growth test passed on retry, but its trace showed the initial
+  600ms sample window ending at heights 56px/57px before content growth occurred.
+  The trace already had `data-hydrated=true` before evaluation, so hydration alone
+  does not establish the cause. The final correction samples until the expanded
+  height settles for three frames, bounded by ten seconds, while retaining the
+  expanded-height, intermediate-frame, bottom-edge, identity, and closing checks.
+- A subsequent 430-test full run was stopped during its initial desktop cases.
+  The user explicitly changed scope to targeted mobile verification and requested
+  no further full-suite run. That interrupted invocation is not a full-suite
+  acceptance result; no clean full run is claimed for these final corrections.
+- Final requested command:
+  `pnpm test:browser e2e/manual.spec.ts e2e/playground.spec.ts --project=mobile-webkit --grep 'button color roles|one shell grows'`.
+  All three tests passed without retries in 2.0 minutes. Each contrast theme took
+  about 1.2 minutes; surface growth passed in 14.3 seconds. No snapshots changed.
+- Final lint and strict type checking passed. The settled-growth correction is
+  committed as `c2b91e7`; the theme split is in `87a6db4`.
+
+The completed retry's evidence is retained in
+`/tmp/anaphor-linux-final-attempt1-report` and
+`/tmp/anaphor-linux-final-attempt1-results`, with output in
+`/tmp/anaphor-linux-final-browser.log`. Final targeted evidence is in
+`/tmp/anaphor-linux-final-mobile-report`,
+`/tmp/anaphor-linux-final-mobile-results`, and
+`/tmp/anaphor-linux-final-mobile-targeted.log`. The interrupted full-run output is
+`/tmp/anaphor-linux-final-browser-clean.log`. The task's isolated container was
+removed after saving evidence. Docker Desktop, the existing host preview,
+unrelated CODING_STANDARDS.md edits, and the untracked lab route were preserved.
