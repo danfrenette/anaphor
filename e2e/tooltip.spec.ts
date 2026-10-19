@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 test("instant tooltip groups skip the subsequent entrance animation", async ({ page, isMobile }) => {
   test.skip(isMobile, "Touch has no hover tooltip interaction");
   await page.goto("/#tooltip");
+  await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
   const section = page.locator("#tooltip");
 
   const bold = section.getByRole("button", { name: "Bold", exact: true });

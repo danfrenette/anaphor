@@ -25,10 +25,12 @@ test("reduced motion keeps the hold duration without a moving reveal", async ({ 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#button");
   const button = page.getByRole("button", { name: "Hold to delete", exact: true });
+  const pause = await page.addStyleTag({ content: '[data-slot="hold-button-overlay"] { animation-play-state: paused !important; }' });
   await button.focus();
   await page.keyboard.down("Enter");
   await expect(button).toHaveAttribute("data-holding", "true");
   await expect(button.locator('[data-slot="hold-button-overlay"]')).toHaveCSS("animation-name", "hold-duration");
+  await pause.evaluate(element => element.parentNode?.removeChild(element));
   await expect(page.getByText("Example item deleted.")).toBeVisible({ timeout: 3000 });
   await page.keyboard.up("Enter");
 });

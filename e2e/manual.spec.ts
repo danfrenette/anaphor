@@ -383,6 +383,7 @@ test("composed anchor navigates by keyboard", async ({ page }) => {
 });
 
 test("card copy confirms a write", async ({ page }) => {
+  await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") });
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: {
       writeText: async (value: string) => { document.documentElement.dataset.copiedText = value; },
@@ -391,9 +392,13 @@ test("card copy confirms a write", async ({ page }) => {
   await page.goto("/#card");
   const copy = page.getByRole("button", { name: "Copy development command" });
   const status = page.getByRole("group", { name: "Local development", exact: true }).getByRole("status");
+  await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
+  await copy.scrollIntoViewIfNeeded();
+  await page.clock.pauseAt(new Date("2026-01-02T00:00:00Z"));
   await copy.click();
   await expect(status).toHaveText("Copied to clipboard.");
   await expect(page.locator("html")).toHaveAttribute("data-copied-text", "pnpm dev");
+  await page.clock.fastForward(2000);
   await expect(status).toBeEmpty();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await copy.focus();
