@@ -163,7 +163,7 @@ test("trusted touch swipes navigate Rail and Deck at 320px", async ({ browser, b
 test("carousel tabs survive reload and old prototype links reach the selected demo", async ({ page, isMobile }) => {
   await page.goto("/");
   if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
-  await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Carousels" }).click();
+  await page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: "Rail and Deck" }).click();
   await expect(page.getByRole("region", { name: railName })).toBeVisible();
   await page.getByRole("tab", { name: "Deck", exact: true }).click();
   await expect(page).toHaveURL(/\/carousels\?tab=deck$/);
@@ -189,8 +189,6 @@ for (const style of ["rail", "deck"] as const) {
     await carousel.getByRole("button", { name: "Next card" }).click();
     await expect(carousel.getByRole("button", { name: "Previous card" })).toBeEnabled();
     const second = carousel.getByRole("heading", { name: "Make room for attention" });
-    // The pager can scroll a tall mobile card’s heading above the viewport.
-    await second.scrollIntoViewIfNeeded();
     await expect(second).toBeInViewport();
     const assertStill = async () => {
       const positions = await second.evaluate(element => new Promise<number[]>(resolve => {
@@ -251,18 +249,3 @@ for (const style of ["rail", "deck"] as const) {
     });
   }
 }
-
-test("catalog code and reset follow the selected carousel", async ({ page }) => {
-  await page.goto("/carousels?tab=deck");
-  await page.getByRole("button", { name: "Next card", exact: true }).click();
-  await page.getByRole("button", { name: "Reset example", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Previous card", exact: true })).toBeDisabled();
-  await page.getByRole("button", { name: "Show deck code", exact: true }).click();
-  await expect(page.getByLabel("Deck code", { exact: true })).toContainText("<Deck />");
-  await page.getByRole("tab", { name: "Rail", exact: true }).click();
-  await page.getByRole("button", { name: "Next card", exact: true }).click();
-  await page.getByRole("button", { name: "Reset example", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Previous card", exact: true })).toBeDisabled();
-  await page.getByRole("button", { name: "Show rail code", exact: true }).click();
-  await expect(page.getByLabel("Rail code", { exact: true })).toContainText("<Rail />");
-});

@@ -1,9 +1,8 @@
 "use client";
 
-import { CaretRight } from "@phosphor-icons/react";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { Collapsible, CollapsibleTrigger, CollapsibleContent, Text } from "@anaphor/system";
+import { Text } from "@anaphor/system";
 import { Check, Range } from "../../playground-fields";
 import { requireToken, type Tokens } from "./tokens";
 import { contrastRatio } from "./contrast";
@@ -76,8 +75,8 @@ function ThemeSpecimen({ theme, values, tokens, className = "" }: { theme: Theme
           <dd className="mt-1 break-words font-mono text-small">{color(role)?.replace(/var\((--[\w-]+)\)/g, (_, name: string) => values[name] ?? `var(${name})`)}</dd>
       </div>)}
     </dl>
-    <Collapsible className="mt-5 border-t border-[var(--anaphor-input-border)] pt-4" defaultOpen>
-      <CollapsibleTrigger className="min-h-11 text-muted-foreground"><CaretRight aria-hidden="true" />Contrast pairings</CollapsibleTrigger><CollapsibleContent className="px-2 pb-2">
+    <details className="mt-5 border-t border-[var(--anaphor-input-border)] pt-4" open>
+      <summary className="min-h-11 cursor-pointer text-ui font-medium">Contrast pairings</summary>
       <p className="mb-3 text-small">Measured in browser, sRGB with alpha compositing. Text AA: 4.5:1; non-text focus: 3:1. Rounded display only; pass checks use the full ratio.</p>
       <ul className="space-y-3">
         {pairs.map(([label, foreground, background, threshold, exception], index) => <li key={label} className="flex flex-wrap items-center justify-between gap-2 text-small">
@@ -87,11 +86,11 @@ function ThemeSpecimen({ theme, values, tokens, className = "" }: { theme: Theme
         </li>)}
       </ul>
       <p className="mt-4 text-small">Orange action labels retain the approved bright-label exception. This is not an AA pass. Disabled controls are exempt, and are not used as readable-content pairings.</p>
-    </CollapsibleContent></Collapsible>
-    <Collapsible className="mt-4 border-t border-[var(--anaphor-input-border)] pt-4"><CollapsibleTrigger className="min-h-11 text-muted-foreground"><CaretRight aria-hidden="true" />Theme elevation</CollapsibleTrigger><CollapsibleContent className="px-2 pb-2">
+    </details>
+    <details className="mt-4 border-t border-[var(--anaphor-input-border)] pt-4"><summary className="min-h-11 cursor-pointer text-ui font-medium">Theme elevation</summary>
       <div className="my-4 grid grid-cols-2 gap-4">{["card", "menu"].map(name => <div key={name} className="rounded-card p-4 text-small" style={{ background: color("muted"), boxShadow: tokens[`--anaphor-shadow-${name}`] }}>{name}</div>)}</div>
       <TokenList tokens={values} names={Object.keys(values).filter(name => name.startsWith("--anaphor-shadow-") && name.endsWith("-color"))} />
-    </CollapsibleContent></Collapsible>
+    </details>
   </div>;
 }
 
@@ -115,7 +114,7 @@ export function FoundationReference({ tokens, themes, springs }: { tokens: Token
       <div className={`mt-6 grid gap-6 ${compare ? "xl:grid-cols-2" : ""}`}>
         {(["light", "dark"] as const).map(value => <ThemeSpecimen key={value} theme={value} values={themes[value]} tokens={tokens} className={compare ? "" : themeVisibility[value]} />)}
       </div>
-      <Collapsible className="mt-5"><CollapsibleTrigger className="min-h-11 text-muted-foreground"><CaretRight aria-hidden="true" />Component-only color roles</CollapsibleTrigger><CollapsibleContent className="px-2 pb-2">{(["light", "dark"] as const).map(value => <div key={value} className={themeVisibility[value]}><TokenList tokens={themes[value]} names={["--anaphor-checkbox-mark", "--anaphor-input-disabled"]} /></div>)}</CollapsibleContent></Collapsible>
+      <details className="mt-5"><summary className="min-h-11 cursor-pointer text-ui">Component-only color roles</summary>{(["light", "dark"] as const).map(value => <div key={value} className={themeVisibility[value]}><TokenList tokens={themes[value]} names={["--anaphor-checkbox-mark", "--anaphor-input-disabled"]} /></div>)}</details>
     </section>
     <section aria-labelledby="type-reference"><Text as="h2" variant="section" id="type-reference">Type and reading</Text>
       <p className="mt-4 text-body">Three families, purpose-based sizes, a 65ch reading measure. <Link className="underline" href="/typography">See typography in use</Link>, including uppercase section titles and article rhythm.</p>

@@ -39,8 +39,7 @@
         "danfrenette/anaphor/skeleton",
         "danfrenette/anaphor/text",
         "danfrenette/anaphor/prose",
-        "danfrenette/anaphor/sections",
-        "danfrenette/anaphor/diff"
+        "danfrenette/anaphor/sections"
       ]
     },
     {
@@ -410,7 +409,7 @@
       "name": "shortcut",
       "type": "registry:hook",
       "dependencies": [
-        "@tanstack/react-hotkeys@^0.10.0"
+        "@tanstack/react-hotkeys"
       ],
       "files": [
         {
@@ -454,7 +453,6 @@
         "danfrenette/anaphor/style",
         "danfrenette/anaphor/button",
         "danfrenette/anaphor/text",
-        "danfrenette/anaphor/kbd",
         "danfrenette/anaphor/motion-utils"
       ],
       "files": [
@@ -562,33 +560,6 @@
           "path": "packages/design-system/src/components/collapsible.tsx",
           "type": "registry:ui",
           "target": "@ui/collapsible.tsx"
-        }
-      ]
-    },
-    {
-      "name": "diff",
-      "type": "registry:ui",
-      "title": "Diff",
-      "description": "Read-only file diffs with supplied patches or complete file contents.",
-      "dependencies": [
-        "@pierre/diffs@^1.5.2",
-        "@primer/octicons-react@^19.40.0",
-        "@phosphor-icons/react@^2.1.10"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils",
-        "danfrenette/anaphor/button",
-        "danfrenette/anaphor/card-copy-button",
-        "danfrenette/anaphor/theme",
-        "danfrenette/anaphor/tooltip",
-        "danfrenette/anaphor/collapsible"
-      ],
-      "files": [
-        {
-          "path": "packages/design-system/src/components/diff.tsx",
-          "type": "registry:ui",
-          "target": "@ui/diff.tsx"
         }
       ]
     }

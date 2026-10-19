@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Copy } from "@phosphor-icons/react/dist/ssr";
-import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { Button } from "./button";
 import { cn } from "../lib/utils";
 
@@ -16,12 +16,10 @@ const iconStyles = cn(
 
 type CardCopyButtonProps = Omit<ComponentProps<"button">, "children" | "onClick"> & {
   value: string;
-  /** Optional decorative content for the idle copy state. */
-  icon?: ReactNode;
   "aria-label": string;
 };
 
-function CardCopyButton({ value, icon, className, disabled, "aria-label": label, ...props }: CardCopyButtonProps) {
+function CardCopyButton({ value, className, disabled, "aria-label": label, ...props }: CardCopyButtonProps) {
   const [status, setStatus] = useState<"idle" | "pending" | "copied" | "error">("idle");
   const timer = useRef<number | undefined>(undefined);
   const mounted = useRef(false);
@@ -52,7 +50,7 @@ function CardCopyButton({ value, icon, className, disabled, "aria-label": label,
   return <>
     <Button loading={false} nativeButton={true} shape="square" {...props} type="button" iconOnly size="sm" tone="neutral" variant="ghost" disabled={disabled} aria-busy={status === "pending" || undefined} aria-label={label} title={status === "copied" ? "Copied!" : label} onClick={copy} className={className}>
       <span className="relative size-4" aria-hidden="true">
-        <span className={cn(iconStyles, "[&>svg]:size-4", status === "copied" && "scale-90 opacity-0")}>{icon ?? <Copy />}</span>
+        <Copy className={cn(iconStyles, status === "copied" && "scale-90 opacity-0")} />
         <Check className={cn(iconStyles, status === "copied" ? "scale-100 opacity-100" : "scale-90 opacity-0")} />
       </span>
     </Button>

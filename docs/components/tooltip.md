@@ -26,11 +26,9 @@ Do not add native title attributes alongside tooltips.
 References: https://ui.shadcn.com/docs/components/base/tooltip and
 https://coss.com/ui/docs/components/tooltip.
 
-The catalog presents Single tooltip, Instant group, and Playground as visible
-examples with inline code. Each owns its action state independently. Playground
-controls choose Single or Group and configure placement, alignment, offset,
-initial delay, and the group-only instant window. Reset restores only the playground.
-The formatting example follows Coss's grouped-tooltip composition; subsequent hints
+The dedicated Components section has Single tooltip and Instant group tabs, with
+placement, alignment, offset, initial delay, and instant-window controls. The
+formatting example follows Coss's grouped-tooltip composition; subsequent hints
 skip animation as described in https://emilkowal.ski/ui/7-practical-animation-tips.
 Placement and delay exploration also reference
 https://www.fluidfunctionalism.com/docs/tooltip.

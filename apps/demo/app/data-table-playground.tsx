@@ -2,13 +2,26 @@
 
 import { useRef, useState, type MouseEvent, type ComponentProps, type ReactNode, type ReactElement } from "react";
 import { ArrowDown, ArrowUp, ArrowsDownUp, CaretLeft, CaretRight, SlidersHorizontal, DotsThree, MagnifyingGlass, X } from "@phosphor-icons/react";
-import { SkeletonRegion, SkeletonBox, Badge, Button, ButtonLabel, Checkbox, CheckboxGroup, Field, FieldLabel, Input, Menu, MenuItem, MenuPopup, MenuTrigger, Popover, PopoverBody, PopoverDescription, PopoverPopup, PopoverTitle, PopoverTrigger, Text, Tooltip, TooltipGroup, TooltipTrigger, TooltipPopup } from "@anaphor/system";
+import { Badge, Button, ButtonLabel, Checkbox, CheckboxGroup, Field, FieldLabel, Input, Menu, MenuItem, MenuPopup, MenuTrigger, Popover, PopoverBody, PopoverDescription, PopoverPopup, PopoverTitle, PopoverTrigger, Text, Tooltip, TooltipGroup, TooltipTrigger, TooltipPopup } from "@anaphor/system";
 import { Check, Range, Select } from "./playground-fields";
 import { TableFluidHover } from "./table-fluid-hover";
 import { PlaygroundControls } from "./playground-host";
 
-import { records, type RecordItem } from "./data-table-data";
-
+type RecordItem = { id: string; name: string; category: string; status: string; owner: string; budget: number };
+const records: RecordItem[] = [
+  { id: "PR–001", name: "Neighborhood field guide", category: "Publication", status: "In progress", owner: "Amara Okafor", budget: 12400 },
+  { id: "PR–002", name: "Wayfinding for the waterfront", category: "Environment", status: "In review", owner: "Leo Chen", budget: 28750 },
+  { id: "PR–003", name: "An archive of everyday objects", category: "Digital", status: "Planned", owner: "Sofia Reyes", budget: 8600 },
+  { id: "PR–004", name: "Open house identity", category: "Identity", status: "Complete", owner: "Jules Martin", budget: 15200 },
+  { id: "PR–005", name: "The long way home: stories from the northern coast", category: "Publication", status: "In progress", owner: "Amara Okafor", budget: 19250 },
+  { id: "PR–006", name: "Community garden atlas", category: "Digital", status: "In review", owner: "Nour Haddad", budget: 6800 },
+  { id: "PR–007", name: "Evening school", category: "Identity", status: "Planned", owner: "Leo Chen", budget: 9400 },
+  { id: "PR–008", name: "Public library reading room", category: "Environment", status: "In progress", owner: "Sofia Reyes", budget: 42000 },
+  { id: "PR–009", name: "Small press directory", category: "Publication", status: "Complete", owner: "Nour Haddad", budget: 3750 },
+  { id: "PR–010", name: "A season of shared meals", category: "Digital", status: "Planned", owner: "Jules Martin", budget: 11200 },
+  { id: "PR–011", name: "Museum after hours", category: "Environment", status: "In review", owner: "Amara Okafor", budget: 31500 },
+  { id: "PR–012", name: "Common ground", category: "Identity", status: "Complete", owner: "Nour Haddad", budget: 17800 },
+];
 const columns = ["name", "status", "owner", "budget"] as const;
 type Column = typeof columns[number];
 const labels: Record<Column, string> = { name: "Project", status: "Status", owner: "Owner", budget: "Budget" };
@@ -63,14 +76,10 @@ export function DataTablePlayground() {
   const pageCount = Math.max(1, Math.ceil(sorted.length / 6));
   const currentPage = Math.min(page, pageCount - 1);
   const rows = sorted.slice(currentPage * 6, currentPage * 6 + 6);
-  const showRecords = settings.state === "Records" && rows.length > 0;
-  const previewRows = rows.length ? rows : records.slice(0, 6);
-  const previewValue = (item: RecordItem, column: Column) => <SkeletonBox>{value(item, column)}</SkeletonBox>;
   const allSelected = rows.length > 0 && rows.every(row => selected.includes(row.id));
   const someSelected = rows.some(row => selected.includes(row.id));
   const cellPadding = settings.density === "Compact" ? "px-3 py-2" : "px-4 py-4";
-  const borders = settings.treatment === "Full grid" ? "border [border-width:var(--anaphor-border-hairline)] border-border" : settings.treatment === "Horizontal rules" ? "border-b [border-bottom-width:var(--anaphor-border-hairline)] border-border" : "";
-  const tableBorders = settings.treatment === "Full grid" ? "border-e [border-inline-end-width:var(--anaphor-border-hairline)] border-b [border-bottom-width:var(--anaphor-border-hairline)] border-border last:[border-inline-end-width:0]" : borders;
+  const borders = settings.treatment === "Full grid" ? "border border-border" : settings.treatment === "Horizontal rules" ? "border-b border-border" : "";
   const cardMode = settings.responsive === "Cards";
   const resetQuery = () => { setQuery(""); setStatus("All statuses"); setSelected([]); setPage(0); };
   const reset = () => { setSettings(defaults); resetQuery(); setSort(null); setVisible([...columns]); setOrder([...columns]); };
@@ -119,9 +128,9 @@ export function DataTablePlayground() {
       {(["Borderless", "Horizontal rules", "Full grid"] as const).map(treatment => <Action iconOnly={false} key={treatment} aria-pressed={settings.treatment === treatment} className={settings.treatment === treatment ? "bg-muted" : ""} onClick={() => setSettings(s => ({ ...s, treatment }))}><ButtonLabel>{treatment}</ButtonLabel></Action>)}
     </div>
     <div className="max-w-full" style={{ width: settings.width }}>
-      <div className="@container rounded-md border [border-width:var(--anaphor-border-hairline)] border-border bg-background" role="group" aria-label="Data table preview">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 px-4 pt-5 pb-4"><div><Text as="h4" variant="subheading">Studio projects</Text><Text as="p" variant="caption" className="mt-1">A shared view of the work in progress.</Text></div><span className="font-mono text-small text-muted-foreground">{settings.state === "Empty" ? 0 : records.length} records</span></div>
-        {full && <div className="flex flex-wrap items-end gap-3 border-t [border-top-width:var(--anaphor-border-hairline)] border-border px-4 py-4">
+      <div className="@container rounded-md border border-border bg-background" role="group" aria-label="Data table preview">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 px-4 pt-5 pb-4"><div><Text as="h3" variant="subheading">Studio projects</Text><Text as="p" variant="caption" className="mt-1">A shared view of the work in progress.</Text></div><span className="font-mono text-small text-muted-foreground">{settings.state === "Empty" ? 0 : records.length} records</span></div>
+        {full && <div className="flex flex-wrap items-end gap-3 border-t border-border px-4 py-4">
           <form role="search" aria-label="Filter studio projects" className="min-w-0 flex-[1_1_180px]" onSubmit={event => { event.preventDefault(); setPage(0); }}><Field orientation="vertical"><FieldLabel>Search projects</FieldLabel><div className="relative"><MagnifyingGlass aria-hidden="true" className="pointer-events-none absolute start-3 top-1/2 z-10 -translate-y-1/2" /><Input ref={searchRef} type="search" enterKeyHint="search" autoComplete="off" spellCheck={false} data-1p-ignore data-lpignore="true" size="md" className="min-h-11 ps-9 pe-11 [&::-webkit-search-cancel-button]:appearance-none" placeholder="Name or owner…" value={query} onValueChange={next => { setQuery(next); setSelected([]); setPage(0); }} />{query && <button type="button" aria-label="Clear search" className="absolute end-0 top-0 grid size-11 place-items-center rounded-control text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring" onClick={() => { setQuery(""); setSelected([]); setPage(0); searchRef.current?.focus(); }}><X aria-hidden="true" /></button>}</div></Field></form>
           <Select label="Status" value={status} options={["All statuses", "Planned", "In progress", "In review", "Complete"]} onChange={next => { setStatus(next); setSelected([]); setPage(0); }} />
           <Popover><Hint text="Configure columns"><PopoverTrigger aria-label="Configure columns" render={<Button nativeButton type="button" variant="outline" tone="neutral" size="md" shape="square" iconOnly loading={false} className="size-11" />}><SlidersHorizontal aria-hidden="true" /></PopoverTrigger></Hint>
@@ -133,39 +142,34 @@ export function DataTablePlayground() {
             </PopoverBody></PopoverPopup>
           </Popover>
           <div className={cardMode ? "w-full @[640px]:hidden" : "hidden"}><Select label="Sort records" value={sort ? `${labels[sort.column]} ${sort.descending ? "descending" : "ascending"}` : "Original order"} options={["Original order", ...activeColumns.flatMap(column => [`${labels[column]} ascending`, `${labels[column]} descending`])]} onChange={next => { const column = columns.find(column => next.startsWith(`${labels[column]} `)); setSort(column ? { column, descending: next.endsWith("descending") } : null); setPage(0); }} /></div>
-          <Action iconOnly={false} className={!query && status === "All statuses" ? "invisible" : ""} onClick={resetQuery}><ButtonLabel>Reset filters</ButtonLabel></Action>
+          {(query || status !== "All statuses") && <Action iconOnly={false} onClick={resetQuery}><ButtonLabel>Reset filters</ButtonLabel></Action>}
         </div>}
-        {selection && <div inert={!showRecords || undefined} className={`${!showRecords ? "invisible" : ""} flex min-h-12 flex-wrap items-center gap-3 border-t [border-top-width:var(--anaphor-border-hairline)] border-border px-4 py-2 text-small tabular-nums`} aria-live="polite"><span>{selected.length} selected</span><Action iconOnly={false} className={selected.length === 0 ? "invisible" : ""} onClick={() => setSelected([])}><ButtonLabel>Clear selection</ButtonLabel></Action><span className="ms-auto text-muted-foreground">Select across pages</span></div>}
-        <div className="relative">
-          {settings.state === "Error" && <div className="absolute inset-0 grid place-content-center justify-items-center gap-3 px-4 text-center" role="alert"><Text as="h4" variant="subheading">Projects couldn’t load</Text><p className="text-ui text-muted-foreground">Try loading the collection again.</p><Action iconOnly={false} onClick={() => setSettings(s => ({ ...s, state: "Records" }))}><ButtonLabel>Try again</ButtonLabel></Action></div>}
-          {(settings.state === "Empty" || (settings.state === "Records" && rows.length === 0)) && <div className="absolute inset-0 grid place-content-center justify-items-center gap-3 px-4 text-center" role="status"><Text as="h4" variant="subheading">{settings.state === "Empty" ? "No projects yet" : "No matching projects"}</Text><p className="text-ui text-muted-foreground">{settings.state === "Empty" ? "Projects will appear here once they’re added." : "Try another name or clear your filters."}</p>{settings.state !== "Empty" && <Action iconOnly={false} onClick={resetQuery}><ButtonLabel>Clear filters</ButtonLabel></Action>}</div>}
-          <SkeletonRegion isLoading={settings.state === "Loading"} variant="static" label="Loading projects…" className={!showRecords && settings.state !== "Loading" ? "invisible" : ""}>
-          <div inert={!showRecords || undefined} aria-hidden={!showRecords || undefined}>
-          <CheckboxGroup>
+        {settings.state === "Records" && selection && <div className="flex min-h-12 flex-wrap items-center gap-3 border-t border-border px-4 py-2 text-small tabular-nums" aria-live="polite"><span>{selected.length} selected</span><Action iconOnly={false} className={selected.length === 0 ? "invisible" : ""} onClick={() => setSelected([])}><ButtonLabel>Clear selection</ButtonLabel></Action><span className="ms-auto text-muted-foreground">Select across pages</span></div>}
+        {settings.state === "Loading" ? <div className="grid gap-5 px-4 py-6" role="status"><span className="text-ui text-muted-foreground">Loading projects…</span>{[0, 1, 2, 3].map(row => <div key={row} className="h-10 rounded-sm bg-muted" aria-hidden="true" />)}</div>
+          : settings.state === "Error" ? <div className="grid min-h-64 place-content-center justify-items-center gap-3 px-4 text-center" role="alert"><Text as="h4" variant="subheading">Projects couldn’t load</Text><p className="text-ui text-muted-foreground">Try loading the collection again.</p><Action iconOnly={false} onClick={() => setSettings(s => ({ ...s, state: "Records" }))}><ButtonLabel>Try again</ButtonLabel></Action></div>
+          : settings.state === "Empty" || rows.length === 0 ? <div className="grid min-h-64 place-content-center justify-items-center gap-3 px-4 text-center" role="status"><Text as="h4" variant="subheading">{settings.state === "Empty" ? "No projects yet" : "No matching projects"}</Text><p className="text-ui text-muted-foreground">{settings.state === "Empty" ? "Projects will appear here once they’re added." : "Try another name or clear your filters."}</p>{settings.state !== "Empty" && <Action iconOnly={false} onClick={resetQuery}><ButtonLabel>Clear filters</ButtonLabel></Action>}</div>
+          : <CheckboxGroup>
             <div className={cardMode ? "hidden @[640px]:block" : "block"}>
-              <div className={`overflow-x-auto rounded-sm ${settings.treatment === "Full grid" ? "border [border-width:var(--anaphor-border-hairline)] border-border" : ""} focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring`} tabIndex={0} role="region" aria-label="Project table, scroll horizontally for more columns">
-                <TableFluidHover><table className="w-full table-fixed border-separate border-spacing-0 [&_tbody_tr:last-child_td]:border-b-0 text-ui" style={{ minWidth: activeColumns.reduce((width, column) => width + (column === "name" ? 240 : 140), (selection ? 56 : 0) + (actions ? 56 : 0)) }}>
+              <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Project table, scroll horizontally for more columns">
+                <TableFluidHover><table className="w-full table-fixed border-collapse text-ui" style={{ minWidth: activeColumns.reduce((width, column) => width + (column === "name" ? 240 : 140), (selection ? 56 : 0) + (actions ? 56 : 0)) }}>
                   <caption className="sr-only">Studio projects</caption>
                   <colgroup>{selection && <col style={{ width: 56 }} />}{activeColumns.map(column => <col key={column} style={{ width: column === "name" ? 240 : 140 }} />)}{actions && <col style={{ width: 56 }} />}</colgroup>
-                  <thead className="bg-muted"><tr>{selection && <th scope="col" className={`w-14 px-4 py-3 ${tableBorders}`}>{selectPage}</th>}{activeColumns.map(column => <th key={column} scope="col" aria-sort={sort?.column === column && full ? sort.descending ? "descending" : "ascending" : undefined} className={`${cellPadding} ${tableBorders} ${column === "budget" ? "text-end" : "text-start"} font-medium`}>
+                  <thead className="bg-muted"><tr>{selection && <th scope="col" className={`w-14 px-4 py-3 ${borders}`}>{selectPage}</th>}{activeColumns.map(column => <th key={column} scope="col" aria-sort={sort?.column === column && full ? sort.descending ? "descending" : "ascending" : undefined} className={`${cellPadding} ${borders} ${column === "budget" ? "text-end" : "text-start"} font-medium`}>
                     {full ? <button type="button" className={`-mx-2 inline-flex min-h-8 items-center gap-2 rounded-sm px-2 whitespace-nowrap hover:bg-background focus-visible:outline-2 focus-visible:outline-ring motion-safe:transition-[background-color,transform] motion-safe:duration-125 motion-safe:active:scale-[0.97] pointer-coarse:min-h-11 ${column === "budget" ? "justify-end" : ""}`} aria-label={`Sort by ${labels[column]}: ${sort?.column !== column ? "ascending" : sort.descending ? "clear sorting" : "descending"}`} onClick={() => sortBy(column)}>{labels[column]}{sort?.column === column ? sort.descending ? <ArrowDown aria-hidden="true" /> : <ArrowUp aria-hidden="true" /> : <ArrowsDownUp aria-hidden="true" className="text-muted-foreground" />}</button> : labels[column]}
-                  </th>)}{actions && <th scope="col" className={`px-2 ${tableBorders}`}><span className="sr-only">Actions</span></th>}</tr></thead>
-                  <tbody>{previewRows.map(item => <tr data-fluid-row key={item.id} onClick={event => selectRow(event, item)} className={selection && selected.includes(item.id) ? "bg-muted" : ""}>{selection && <td className={`px-4 ${tableBorders}`}>{rowCheckbox(item)}</td>}{activeColumns.map(column => <td key={column} className={`${cellPadding} ${tableBorders} break-words ${column === "budget" ? "text-end tabular-nums" : ""}`}>{previewValue(item, column)}</td>)}{actions && <td className={`px-1 text-center ${tableBorders}`}>{rowActions(item)}</td>}</tr>)}</tbody>
+                  </th>)}{actions && <th scope="col" className={`px-2 ${borders}`}><span className="sr-only">Actions</span></th>}</tr></thead>
+                  <tbody>{rows.map(item => <tr data-fluid-row key={item.id} onClick={event => selectRow(event, item)} className={selection && selected.includes(item.id) ? "bg-muted" : ""}>{selection && <td className={`px-4 ${borders}`}>{rowCheckbox(item)}</td>}{activeColumns.map(column => <td key={column} className={`${cellPadding} ${borders} break-words ${column === "budget" ? "text-end tabular-nums" : ""}`}>{value(item, column)}</td>)}{actions && <td className={`px-1 text-center ${borders}`}>{rowActions(item)}</td>}</tr>)}</tbody>
                 </table></TableFluidHover>
               </div>
             </div>
             <div className={cardMode ? "@[640px]:hidden" : "hidden"}>
-              {selection && <label className="flex min-h-14 cursor-pointer items-center gap-4 border-t [border-top-width:var(--anaphor-border-hairline)] border-border px-5">{selectPage}<span className="text-ui">Select this page</span></label>}
-              <TableFluidHover><ul className={`grid grid-cols-1 ${settings.treatment === "Full grid" ? "gap-3 p-3" : ""}`}>{previewRows.map(item => <li data-fluid-row key={item.id} onClick={event => selectRow(event, item)} className={`${cellPadding} ${borders} ${settings.treatment === "Full grid" ? "rounded-md" : ""} ${selection && selected.includes(item.id) ? "bg-muted" : ""}`}>
-                <div className="flex items-start gap-3">{selection && rowCheckbox(item)}<div className="min-w-0 flex-1">{previewValue(item, "name")}</div>{actions && rowActions(item)}</div>
-                <dl className="mt-4 grid gap-3">{activeColumns.filter(column => column !== "name").map(column => <div key={column} className="flex flex-wrap items-center justify-between gap-2 text-ui"><dt className="text-muted-foreground">{labels[column]}</dt><dd className="tabular-nums">{previewValue(item, column)}</dd></div>)}</dl>
+              {selection && <label className="flex min-h-14 cursor-pointer items-center gap-4 border-t border-border px-5">{selectPage}<span className="text-ui">Select this page</span></label>}
+              <TableFluidHover><ul className={`grid grid-cols-1 ${settings.treatment === "Full grid" ? "gap-3 p-3" : ""}`}>{rows.map(item => <li data-fluid-row key={item.id} onClick={event => selectRow(event, item)} className={`${cellPadding} ${borders} ${selection && selected.includes(item.id) ? "bg-muted" : ""}`}>
+                <div className="flex items-start gap-3">{selection && rowCheckbox(item)}<div className="min-w-0 flex-1">{value(item, "name")}</div>{actions && rowActions(item)}</div>
+                <dl className="mt-4 grid gap-3">{activeColumns.filter(column => column !== "name").map(column => <div key={column} className="flex flex-wrap items-center justify-between gap-2 text-ui"><dt className="text-muted-foreground">{labels[column]}</dt><dd className="tabular-nums">{value(item, column)}</dd></div>)}</dl>
               </li>)}</ul></TableFluidHover>
             </div>
-          </CheckboxGroup>
-          </div>
-          </SkeletonRegion>
-        </div>
-        <div inert={settings.state !== "Records" || undefined} className={`${settings.state !== "Records" ? "invisible" : ""} flex flex-wrap items-center justify-between gap-3 border-t [border-top-width:var(--anaphor-border-hairline)] border-border p-4 text-small`}><span className="text-muted-foreground tabular-nums" aria-live="polite">{sorted.length ? currentPage * 6 + 1 : 0}–{Math.min((currentPage + 1) * 6, sorted.length)} of {sorted.length}</span><div className="flex items-center gap-2"><Action iconOnly aria-label="Previous page" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}><CaretLeft aria-hidden="true" /></Action><span className="tabular-nums">{currentPage + 1} / {pageCount}</span><Action iconOnly aria-label="Next page" disabled={currentPage + 1 >= pageCount} onClick={() => setPage(currentPage + 1)}><CaretRight aria-hidden="true" /></Action></div></div>
+          </CheckboxGroup>}
+        {settings.state === "Records" && <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border p-4 text-small"><span className="text-muted-foreground tabular-nums" aria-live="polite">{sorted.length ? currentPage * 6 + 1 : 0}–{Math.min((currentPage + 1) * 6, sorted.length)} of {sorted.length}</span><div className="flex items-center gap-2"><Action iconOnly aria-label="Previous page" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}><CaretLeft aria-hidden="true" /></Action><span className="tabular-nums">{currentPage + 1} / {pageCount}</span><Action iconOnly aria-label="Next page" disabled={currentPage + 1 >= pageCount} onClick={() => setPage(currentPage + 1)}><CaretRight aria-hidden="true" /></Action></div></div>}
       </div>
     </div>
   </TooltipGroup>;

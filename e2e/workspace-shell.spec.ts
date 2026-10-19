@@ -42,8 +42,7 @@ test("optional shell regions collapse without blank tracks", async ({ page, isMo
   test.skip(isMobile, "The compact preview uses desktop shell tracks");
   await page.goto("/#workspace-shell");
   const preview = page.locator('[data-slot="workspace-shell"][aria-label="Workspace composition preview"]');
-  await page.getByRole("tab", { name: "Open Workspace shell controls" }).click();
-  const controls = page.getByRole("region", { name: "Workspace shell controls", exact: true });
+  const controls = page.getByRole("group", { name: "Preview regions" });
   const card = preview.locator('[data-slot="workspace-card"]');
   const top = preview.locator('[data-slot="workspace-top-bar"]');
   const bottom = preview.locator('[data-slot="bottom-bar"]');
@@ -54,8 +53,8 @@ test("optional shell regions collapse without blank tracks", async ({ page, isMo
   for (let mask = 0; mask < 16; mask += 1) {
     for (let index = 0; index < names.length; index += 1) {
       const shouldShow = Boolean(mask & (1 << index));
-      const control = controls.getByRole("checkbox", { name: names[index], exact: true });
-      if ((await control.getAttribute("aria-checked")) !== String(shouldShow)) await control.click();
+      const control = controls.getByRole("button", { name: names[index], exact: true });
+      if ((await control.getAttribute("aria-pressed")) !== String(shouldShow)) await control.click();
     }
     await expect(top).toHaveCount(Number(Boolean(mask & 1)));
     await expect(left).toHaveCount(Number(Boolean(mask & 2)));
@@ -113,8 +112,7 @@ test("top tabs can be omitted while top controls remain", async ({ page, isMobil
   const preview = page.locator('[data-slot="workspace-shell"][aria-label="Workspace composition preview"]');
   await preview.getByRole("tab", { name: "Details" }).click();
   await expect(preview.getByText("Each view supplies its own content.")).toBeVisible();
-  await page.getByRole("tab", { name: "Open Workspace shell controls" }).click();
-  await page.getByRole("region", { name: "Workspace shell controls", exact: true }).getByRole("checkbox", { name: "Tabs", exact: true }).click();
+  await page.getByRole("group", { name: "Preview regions" }).getByRole("button", { name: "Tabs", exact: true }).click();
   await expect(preview.getByRole("tablist")).toHaveCount(0);
   await expect(preview.getByText("Workspace controls")).toBeVisible();
   await expect(preview.locator('[data-slot="workspace-top-bar"]')).toBeVisible();
@@ -140,7 +138,6 @@ test("active tab labels stay aligned with their interactive tabs", async ({ page
     expect(Math.abs(offset.y)).toBeLessThan(0.5);
   }
   const card = preview.locator('[data-slot="workspace-card"]');
-  await preview.scrollIntoViewIfNeeded();
   const before = await card.boundingBox();
   await preview.getByRole("tab", { name: "Details" }).click();
   for (const offset of await alignment()) {
@@ -148,46 +145,4 @@ test("active tab labels stay aligned with their interactive tabs", async ({ page
     expect(Math.abs(offset.y)).toBeLessThan(0.5);
   }
   expect(await card.boundingBox()).toEqual(before);
-});
-
-test("workspace playground uses isolated shared sidebar motion and resets its regions", async ({ page, isMobile }) => {
-  await page.goto("/#workspace-shell");
-  const section = page.locator("#workspace-shell");
-  const preview = section.getByLabel("Workspace composition preview", { exact: true });
-  const provider = section.locator('[data-slot="sidebar-provider"]');
-  const height = await preview.evaluate(el => el.getBoundingClientRect().height);
-  for (const name of ["Anatomy", "Compositions", "Playground"]) await expect(section.getByRole("heading", { name, exact: true })).toBeVisible();
-  if (isMobile) {
-    await preview.getByRole("button", { name: "Open preview sidebar" }).click();
-    await expect(page.getByRole("button", { name: "Close preview navigation" })).toBeVisible();
-    await page.getByRole("button", { name: "Close preview navigation" }).click();
-    await expect(preview.getByRole("button", { name: "Open preview sidebar" })).toBeFocused();
-  } else {
-    const trigger = preview.getByRole("button", { name: "Toggle preview rails" });
-    const width = await preview.locator('[data-slot="workspace-card"]').evaluate(el => el.getBoundingClientRect().width);
-    await trigger.click();
-    await expect(provider).toHaveAttribute("data-desktop-open", "false");
-    await expect(provider).toHaveAttribute("data-motion", "animate");
-    await expect.poll(() => preview.locator('[data-slot="workspace-card"]').evaluate(el => el.getBoundingClientRect().width)).toBeGreaterThan(width);
-    await trigger.press("Enter");
-    await expect(provider).toHaveAttribute("data-motion", "instant");
-    await expect(provider).toHaveAttribute("data-desktop-open", "true");
-  }
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  if (!isMobile) {
-    await preview.getByRole("button", { name: "Toggle preview rails" }).click();
-    await expect(preview.locator('[data-slot="workspace-card"]')).toHaveCSS("transform", "none");
-    await expect(page.locator('[data-app-shell] > [data-slot="sidebar-provider"]')).toHaveAttribute("data-desktop-open", "true");
-  }
-  await page.getByRole("tab", { name: "Open Workspace shell controls" }).click();
-  const controls = page.getByRole("region", { name: "Workspace shell controls", exact: true });
-  await controls.getByRole("checkbox", { name: "Top", exact: true }).uncheck();
-  await expect(controls.getByRole("checkbox", { name: "Tabs", exact: true })).toBeDisabled();
-  await controls.getByRole("button", { name: "Reset controls" }).click();
-  await expect(controls.getByRole("checkbox", { name: "Tabs", exact: true })).toBeEnabled();
-  await page.getByRole("button", { name: "Close controls" }).click();
-  expect(await preview.evaluate(el => el.getBoundingClientRect().height)).toBe(height);
-  await section.getByRole("button", { name: "Show playground code", exact: true }).press("Enter");
-  await expect(section.getByLabel("Playground code", { exact: true })).toContainText('layout="workspace"');
-  expect(await section.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
 });

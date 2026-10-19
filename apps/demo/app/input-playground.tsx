@@ -1,6 +1,6 @@
 "use client";
 
-import { FieldGroup, Button, ButtonLabel, Field, FieldLabel, FieldFeedback, Input } from "@anaphor/system";
+import { FieldGroup, Button, ButtonLabel, Card, CardContent, CardHeader, CardTitle, Field, FieldLabel, FieldFeedback, Input } from "@anaphor/system";
 import { useRef, useState } from "react";
 import { PlaygroundControls } from "./playground-host";
 import { Check, Select } from "./playground-fields";
@@ -21,15 +21,16 @@ export function InputPlayground() {
           ))}
         </FieldGroup>
       </PlaygroundControls>
-      <div className="mt-4 rounded-md border border-border bg-background p-4 sm:p-6" role="group" aria-label="Primary input example">
-        <div className="max-w-90">
+      <Card variant="default" className="mt-10" role="group" aria-label="Primary input example">
+        <CardHeader><CardTitle as="h3" variant="label">Primary demo</CardTitle></CardHeader>
+        <CardContent>
           <Field orientation="vertical" invalid={input.invalid} disabled={input.disabled}>
             <FieldLabel>Try an input</FieldLabel>
             <Input size={input.size} type={input.type} readOnly={input.readOnly} aria-invalid={input.invalid || undefined} placeholder="Type something…" />
             <FieldFeedback hint="Explore sizes and states using the control panel." error="This value needs your attention." invalid={input.invalid} />
           </Field>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </>
   );
 }

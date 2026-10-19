@@ -97,13 +97,6 @@ content shares a centered flex axis. Icon-only buttons use equal width and heigh
 28px, 32px, 40px, and 48px for `xs` through `lg`, increased to at least 44px
 on coarse-pointer devices. Shape controls the corners independently.
 
-Diff reading controls use Pierre's dedicated unified/split glyphs and Octicons'
-`WrapIcon`, `UnwrapIcon`, and `CopyIcon` as a focused exception to Phosphor. These identify the code-reading
-operations at 16px; surrounding file and disclosure icons retain Phosphor. Other copy buttons retain
-their Phosphor default.
-Preserve upstream geometry and use accessible names and explanatory tooltips.
-See the [icon research](docs/research/diff-control-icons.md).
-
 ## Spacing And Layout
 
 Use a 4px base rhythm with 4, 8, 12, 16, 24, 32, 48, 64, and 96px steps.

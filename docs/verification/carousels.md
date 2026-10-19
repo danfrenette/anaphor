@@ -68,15 +68,3 @@ motion, routes, themes, axe and reflow. Trusted automated touch is browser input
 not physical hardware. Native Safari touch movement, Firefox, screen-reader
 speech, 200% zoom, and frame-rate profiling remain outside this recipe. A passing
 focused run does not claim full factory release verification.
-
-## Catalog presentation
-
-The page uses the Carousels title, a quiet Playground heading, and Rail/Deck
-tabs with contextual guidance and shared code disclosures. Snippets identify
-these as demo-owned compositions, not package exports. Reset remounts only the
-selected carousel, leaving the tab and its URL unchanged. The browser suite also
-checks reset and the matching code disclosure in each tab.
-
-Local-preview capture succeeded after restarting the stopped server on port 3017.
-Rail, Deck, and the upper/lower alphabetical index were visually reviewed.
-Automated production browser coverage is separate from that local-preview evidence.

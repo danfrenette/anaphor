@@ -26,7 +26,7 @@ test("dropdown supports pointer actions and keyboard dismissal", async ({ page }
   await trigger.click();
   await expect(page.getByRole("menu")).toBeVisible();
   await page.getByRole("menuitem", { name: "Rename R" }).click();
-  await expect(page.getByText("Rename selected", { exact: true })).toBeVisible();
+  await expect(page.getByText("Rename selected")).toBeVisible();
   await expect(page.getByRole("menu")).toBeHidden();
 
   await trigger.focus();
@@ -101,40 +101,4 @@ test("dropdown motion is restrained and reduced motion removes travel", async ({
     return { duration: styles.transitionDuration, property: styles.transitionProperty };
   });
   expect(reduced).toEqual({ duration: "0.2s", property: "opacity" });
-});
-
-test("menu catalog selection and playground controls use shared menu behavior", async ({ page }) => {
-  await page.goto("/#dropdown-menu");
-  const section = page.locator("#dropdown-menu");
-  for (const name of ["Actions & states", "Selection", "Playground"]) await expect(section.getByRole("heading", { name, exact: true })).toBeVisible();
-  await section.getByRole("button", { name: "Document actions", exact: true }).click();
-  await expect(page.getByRole("menuitem", { name: "Share", exact: true })).toBeDisabled();
-  await page.keyboard.press("Escape");
-  await section.getByRole("button", { name: "Sort: Name", exact: true }).click();
-  await page.getByRole("menuitemradio", { name: "Updated", exact: true }).click();
-  await expect(section.getByRole("button", { name: "Sort: Updated", exact: true })).toBeVisible();
-  const trigger = section.getByRole("button", { name: "File actions", exact: true });
-  await trigger.scrollIntoViewIfNeeded();
-  await page.getByRole("tab", { name: "Open Dropdown menu controls", exact: true }).click();
-  const controls = page.getByRole("region", { name: "Dropdown menu controls", exact: true });
-  await controls.getByRole("button", { name: "Placement", exact: true }).click();
-  await page.getByRole("menuitemradio", { name: "top", exact: true }).click();
-  await controls.getByRole("button", { name: "Alignment", exact: true }).click();
-  await page.getByRole("menuitemradio", { name: "end", exact: true }).click();
-  await controls.getByRole("checkbox", { name: "Icons", exact: true }).uncheck();
-  await controls.getByRole("checkbox", { name: "Shortcut hints", exact: true }).uncheck();
-  await controls.getByRole("checkbox", { name: "Disable Share", exact: true }).check();
-  await page.getByRole("button", { name: "Close controls" }).click();
-  await trigger.click();
-  await expect(page.getByRole("menuitem", { name: "Share", exact: true })).toBeDisabled();
-  await expect(page.getByRole("menuitem", { name: "Rename", exact: true }).locator("svg")).toHaveCount(0);
-  await page.getByRole("menuitem", { name: "Delete", exact: true }).click();
-  await expect(section.getByText("Delete selected", { exact: true })).toBeVisible();
-  await section.getByRole("button", { name: "Show playground code", exact: true }).press("Enter");
-  await expect(section.getByLabel("Playground code", { exact: true })).toContainText('side="top" align="end"');
-  await page.getByRole("tab", { name: "Open Dropdown menu controls", exact: true }).click();
-  await controls.getByRole("button", { name: "Reset controls" }).click();
-  await expect(section.getByText("Delete selected", { exact: true })).toHaveCount(0);
-  await expect(controls.getByRole("checkbox", { name: "Icons", exact: true })).toBeChecked();
-  expect(await section.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
 });

@@ -45,16 +45,3 @@ Chromium text-fragment navigation finds the phrase with all three levels closed;
 Chromium and WebKit both dispatch the browser's `beforematch` event and assert
 nested state and visibility. The event test does not establish native Find support
 in WebKit. Browsers without `hidden="until-found"` support require manual expansion.
-
-## Catalog controls
-
-The section groups States, Nested sections, and Playground with inline code.
-Use Collapsible Controls to change Open, Disabled, and Show caret. The Open
-control reflects trigger changes and can still change application state when
-the trigger is disabled. Reset closes the preview, enables the trigger, and
-restores its caret. Show code follows the current configuration. The preview
-reserves space while the disclosure itself expands naturally.
-
-The catalog browser recipe covers these controls, reset, reduced motion, and
-horizontal overflow on desktop and mobile. Demo-only layout changes do not
-require reinstalling the unchanged source registry component.

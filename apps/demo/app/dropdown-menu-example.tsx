@@ -20,41 +20,40 @@ import {
   Trash,
 } from "@phosphor-icons/react";
 import { useState } from "react";
-import type { MenuPopupProps } from "@anaphor/system";
 
-export function DropdownMenuExample({ label = "File actions", side = "bottom", align = "start", icons = true, shortcuts = true, disableShare = false }: { label?: string; side?: MenuPopupProps["side"]; align?: MenuPopupProps["align"]; icons?: boolean; shortcuts?: boolean; disableShare?: boolean }) {
+export function DropdownMenuExample() {
   const [lastAction, setLastAction] = useState("No action selected");
 
   return (
-    <div className="grid min-h-64 place-items-center">
+    <div className="grid min-h-72 place-items-center rounded-card border border-border bg-background px-6 py-12">
       <div className="grid justify-items-center gap-5">
         <Menu>
           <MenuTrigger render={<Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="neutral" variant="outline" />}>
-            <ButtonLabel>{label}</ButtonLabel>
+            <ButtonLabel>File actions</ButtonLabel>
             <CaretDown aria-hidden="true" />
           </MenuTrigger>
-          <MenuPopup side={side} sideOffset={6} align={align}>
+          <MenuPopup side="bottom" sideOffset={6} align="start">
             <MenuGroup>
               <MenuGroupLabel>Document</MenuGroupLabel>
               <MenuItem variant="default" onClick={() => setLastAction("Rename selected")}>
-                {icons && <PencilSimple aria-hidden="true" />}
+                <PencilSimple aria-hidden="true" />
                 Rename
-                {shortcuts && <MenuShortcut>R</MenuShortcut>}
+                <MenuShortcut>R</MenuShortcut>
               </MenuItem>
               <MenuItem variant="default" onClick={() => setLastAction("Move selected")}>
-                {icons && <FolderSimple aria-hidden="true" />}
+                <FolderSimple aria-hidden="true" />
                 Move to…
               </MenuItem>
-              <MenuItem variant="default" disabled={disableShare} onClick={() => setLastAction("Share selected")}>
-                {icons && <ShareNetwork aria-hidden="true" />}
+              <MenuItem variant="default" onClick={() => setLastAction("Share selected")}>
+                <ShareNetwork aria-hidden="true" />
                 Share
               </MenuItem>
             </MenuGroup>
             <MenuSeparator />
             <MenuItem variant="destructive" onClick={() => setLastAction("Delete selected")}>
-              {icons && <Trash aria-hidden="true" />}
+              <Trash aria-hidden="true" />
               Delete
-              {shortcuts && <MenuShortcut>⌘⌫</MenuShortcut>}
+              <MenuShortcut>⌘⌫</MenuShortcut>
             </MenuItem>
           </MenuPopup>
         </Menu>

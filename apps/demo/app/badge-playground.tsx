@@ -1,6 +1,6 @@
 "use client";
 
-import { FieldGroup, Badge, type BadgeProps } from "@anaphor/system";
+import { FieldGroup, Badge, Card, CardContent, CardHeader, CardTitle, type BadgeProps } from "@anaphor/system";
 import { Tag } from "@phosphor-icons/react";
 import { useState } from "react";
 import { PlaygroundControls } from "./playground-host";
@@ -18,8 +18,11 @@ export function BadgePlayground() {
         <Check label="Icon" checked={settings.icon} onChange={(icon) => setSettings(s => ({ ...s, icon }))} />
       </FieldGroup>
     </PlaygroundControls>
-    <div className="mt-4 flex min-h-32 items-center rounded-md border border-border bg-background p-6" aria-label="Badge preview" role="group">
-      <Badge size={settings.size} variant={settings.variant} shape={settings.shape}>{settings.icon && <Tag aria-hidden="true" />}Reference</Badge>
-    </div>
+    <Card variant="default" className="bg-background" aria-label="Badge preview" role="group">
+      <CardHeader className="p-4 pb-1"><CardTitle as="h3" variant="label">Primary demo</CardTitle></CardHeader>
+      <CardContent className="flex min-h-32 items-center justify-center p-6">
+      <Badge size={settings.size} variant={settings.variant} shape={settings.shape}>{settings.icon && <Tag aria-hidden="true" />}Study 01</Badge>
+      </CardContent>
+    </Card>
   </>;
 }

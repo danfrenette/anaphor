@@ -3,7 +3,6 @@
 import { Button, ButtonLabel, Section, Text } from "@anaphor/system";
 import { ArrowClockwise, FileText } from "@phosphor-icons/react";
 import { useState, type CSSProperties } from "react";
-import { CatalogExample } from "../catalog-example";
 import { Controls } from "./controls";
 import { UploadExample } from "./upload-example";
 import { useUpload } from "./use-upload";
@@ -21,29 +20,15 @@ export function UploadDemo() {
   }
   const canvasStyle: CSSProperties & { "--upload-duration": string } = { maxWidth: narrow ? 390 : 720, "--upload-duration": `${duration}ms` };
   return <Section id="file-upload" aria-labelledby="upload-title" className="border-t border-border py-12">
-      <header>
-        <Text as="h2" variant="title" id="upload-title">File upload</Text>
+      <header className="mb-8">
+        <Text as="p" variant="label" className="text-muted-foreground">Component</Text>
+        <Text as="h2" variant="title" id="upload-title" className="mt-8">File upload</Text>
         <Text as="p" variant="description" className="mt-3">Select, upload, and recover in one place.</Text>
       </header>
-      <div className="mt-10" style={canvasStyle}>
-        <CatalogExample title="Playground" description="Use Controls to explore upload scenarios, individual file states, and recovery." code={`<FileUpload multiple accept=".pdf,.md,.txt" onFilesSelected={selectFiles}>
-  <FileUploadDropzone>
-    <FileUploadTrigger size="md" shape="square" tone="accent"
-      variant="solid" loading={false} iconOnly={false}>
-      <ButtonLabel>Choose files</ButtonLabel>
-    </FileUploadTrigger>
-  </FileUploadDropzone>
-</FileUpload>
-
-// Render progress for each selected file as its transfer advances.
-<FileUploadProgress value={transferredBytes} max={file.size}
-  label={"Uploading: " + file.name} />`}>
-          <div dir={mirrored ? "rtl" : "ltr"}>
-            <UploadExample session={session} reducedMotion={reducedMotion} />
-          </div>
-        </CatalogExample>
+      <div className="mx-auto" dir={mirrored ? "rtl" : "ltr"} style={canvasStyle}>
+        <UploadExample session={session} reducedMotion={reducedMotion} />
       </div>
-      <div className="mt-4 grid max-w-[720px] gap-3">
+      <div className="mx-auto mt-5 grid max-w-[720px] gap-3">
         <div className="flex flex-wrap gap-2">
           <Button nativeButton type="button" size="md" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} disabled={session.disabled} onClick={session.useSample}><FileText aria-hidden="true" /><ButtonLabel>Use sample files</ButtonLabel></Button>
           <Button nativeButton type="button" size="md" shape="square" variant="ghost" tone="neutral" loading={false} iconOnly={false} onClick={reset}><ArrowClockwise aria-hidden="true" /><ButtonLabel>Reset example</ButtonLabel></Button>

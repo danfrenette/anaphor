@@ -1,6 +1,6 @@
 "use client";
 
-import { Checkbox, Field, FieldContent, FieldGroup, FieldDescription, FieldLabel } from "@anaphor/system";
+import { Card, CardContent, CardHeader, CardTitle, Checkbox, Field, FieldContent, FieldGroup, FieldDescription, FieldLabel } from "@anaphor/system";
 import { useState } from "react";
 import { Check } from "./playground-fields";
 import { PlaygroundControls } from "./playground-host";
@@ -18,14 +18,15 @@ export function CheckboxPlayground() {
           ))}
         </FieldGroup>
       </PlaygroundControls>
-      <div role="group" aria-label="Primary checkbox example" className="mt-4 rounded-md border border-border bg-background p-6">
-        <div className="max-w-96">
+      <Card variant="default" role="group" aria-label="Primary checkbox example">
+        <CardHeader className="p-4 pb-1"><CardTitle as="h3" variant="label">Primary demo</CardTitle></CardHeader>
+        <CardContent className="flex min-h-32 items-center justify-center p-6">
           <Field orientation="horizontal" invalid={settings.invalid} disabled={settings.disabled}>
             <Checkbox checked={settings.checked} indeterminate={settings.indeterminate} disabled={settings.disabled} readOnly={settings.readOnly} aria-invalid={settings.invalid || undefined} onCheckedChange={(checked) => setSettings((current) => ({ ...current, checked, indeterminate: false }))} />
             <FieldContent><FieldLabel>Keep me updated</FieldLabel><FieldDescription>Occasional updates about the design system.</FieldDescription></FieldContent>
           </Field>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </>
   );
 }

@@ -71,20 +71,3 @@ test("RTL activity traverses the complete track and reduces to a static indicato
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(segment).toHaveCSS("animation-duration", "0s");
 });
-
-
-test("upload playground exposes inline code without changing selection", async ({ page }) => {
-  await page.goto("/#file-upload");
-  const section = page.locator("#file-upload");
-  await expect(section.getByRole("heading", { name: "Playground", exact: true })).toBeVisible();
-  await section.getByRole("button", { name: "Use sample files" }).click();
-  const files = section.getByRole("list", { name: "Selected files" }).getByRole("listitem");
-  const count = await files.count();
-  expect(count).toBeGreaterThan(0);
-  const trigger = section.getByRole("button", { name: "Show playground code" });
-  await trigger.press("Enter");
-  await expect(section.getByLabel("Playground code", { exact: true })).toBeVisible();
-  await trigger.press("Enter");
-  await expect(trigger).toHaveAttribute("aria-expanded", "false");
-  await expect(files).toHaveCount(count);
-});

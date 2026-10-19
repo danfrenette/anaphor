@@ -75,60 +75,46 @@ type NavItem = { id: string; label: string; href: Route; icon: Icon };
 
 const groups: { label: string; items: NavItem[] }[] = [
   {
-    label: "",
-    items: [
-      { id: "purpose", label: "Overview", href: "/#purpose", icon: House },
-    ],
-  },
-  {
     label: "Foundations",
     items: [
-      { id: "color", label: "Color", href: "/#color", icon: Palette },
-      { id: "motion", label: "Motion", href: "/#motion", icon: CursorClick },
-      { id: "radius", label: "Radius", href: "/radius", icon: Rectangle },
-      { id: "shadows", label: "Shadows", href: "/shadows", icon: Rectangle },
-      { id: "spacing", label: "Spacing", href: "/spacing", icon: SlidersHorizontal },
+      { id: "purpose", label: "Introduction", href: "/#purpose", icon: House },
+      { id: "principles", label: "Principles", href: "/#principles", icon: CursorClick },
       { id: "foundations", label: "Token reference", href: "/foundations", icon: Palette },
-      { id: "typography", label: "Typography", href: "/typography", icon: TextAa },
+      { id: "color", label: "Color", href: "/#color", icon: Palette },
+      { id: "typography", label: "Typography", href: "/#typography", icon: TextAa },
+      { id: "typography-specimen", label: "Typography specimen", href: "/typography", icon: TextAa },
+      { id: "motion", label: "Motion", href: "/#motion", icon: CursorClick },
     ],
   },
   {
-    label: "Controls",
+    label: "Components",
     items: [
+      { id: "workspace-shell", label: "Workspace shell", href: "/#workspace-shell", icon: Rectangle },
       { id: "button", label: "Button", href: "/#button", icon: Rectangle },
-      { id: "checkbox", label: "Checkbox", href: "/#checkbox", icon: CheckSquare },
-      { id: "file-upload", label: "File upload", href: "/#file-upload", icon: UploadSimple },
-      { id: "input", label: "Input", href: "/#input", icon: Textbox },
-      { id: "radio-group", label: "Radio group", href: "/#radio-group", icon: RadioButton },
-      { id: "slider", label: "Slider", href: "/#slider", icon: SlidersHorizontal },
-    ],
-  },
-  {
-    label: "Content",
-    items: [
-      { id: "badge", label: "Badge", href: "/#badge", icon: Tag },
+      { id: "collapsible", label: "Collapsible", href: "/#collapsible", icon: ListDashes },
+      { id: "sidebar", label: "Sidebar", href: "/#sidebar", icon: ListDashes },
       { id: "card", label: "Card", href: "/#card", icon: SlidersHorizontal },
-      { id: "data-table", label: "Data table", href: "/#data-table", icon: ListDashes },
-      { id: "diff", label: "Diff", href: "/#diff", icon: ListDashes },
-      { id: "kbd", label: "Kbd", href: "/#kbd", icon: Keyboard },
+      { id: "badge", label: "Badge", href: "/#badge", icon: Tag },
       { id: "node-edge-graphs", label: "Node-edge graphs", href: "/#node-edge-graphs", icon: ShareNetwork },
       { id: "skeleton", label: "Skeleton", href: "/#skeleton", icon: Rectangle },
+      { id: "file-upload", label: "File upload", href: "/#file-upload", icon: UploadSimple },
+      { id: "input", label: "Input", href: "/#input", icon: Textbox },
+      { id: "slider", label: "Slider", href: "/#slider", icon: SlidersHorizontal },
+      { id: "checkbox", label: "Checkbox", href: "/#checkbox", icon: CheckSquare },
+      { id: "radio-group", label: "Radio group", href: "/#radio-group", icon: RadioButton },
+      { id: "dropdown-menu", label: "Dropdown menu", href: "/#dropdown-menu", icon: ListDashes },
+      { id: "popover", label: "Popover", href: "/#popover", icon: Rectangle },
+      { id: "tooltip", label: "Tooltip", href: "/#tooltip", icon: Rectangle },
+      { id: "data-table", label: "Data table", href: "/#data-table", icon: ListDashes },
+      { id: "kbd", label: "Kbd", href: "/#kbd", icon: Keyboard },
+      { id: "tabs", label: "Tabs", href: "/#tabs", icon: Rectangle },
+      { id: "command-palette", label: "Command palette", href: "/#command-palette", icon: MagnifyingGlass },
+      { id: "bottom-bar", label: "Bottom bar", href: "/#bottom-bar", icon: Rectangle },
     ],
   },
   {
-    label: "Navigation",
-    items: [
-      { id: "bottom-bar", label: "Bottom bar", href: "/#bottom-bar", icon: Rectangle },
-      { id: "carousels", label: "Carousels", href: "/carousels", icon: Rectangle },
-      { id: "collapsible", label: "Collapsible", href: "/#collapsible", icon: ListDashes },
-      { id: "command-palette", label: "Command palette", href: "/#command-palette", icon: MagnifyingGlass },
-      { id: "dropdown-menu", label: "Dropdown menu", href: "/#dropdown-menu", icon: ListDashes },
-      { id: "popover", label: "Popover", href: "/#popover", icon: Rectangle },
-      { id: "sidebar", label: "Sidebar", href: "/#sidebar", icon: ListDashes },
-      { id: "tabs", label: "Tabs", href: "/#tabs", icon: Rectangle },
-      { id: "tooltip", label: "Tooltip", href: "/#tooltip", icon: Rectangle },
-      { id: "workspace-shell", label: "Workspace shell", href: "/#workspace-shell", icon: Rectangle },
-    ],
+    label: "Carousels",
+    items: [{ id: "carousels", label: "Rail and Deck", href: "/carousels", icon: Rectangle }],
   },
 ];
 
@@ -144,7 +130,7 @@ function DemoSidebar({ onSearch }: { onSearch: () => void }) {
         <div className="flex min-h-11 items-center gap-2">
           <Link href="/" onNavigate={closeMobile} aria-label="Anaphor home" className="flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-md px-2 text-foreground no-underline motion-safe:transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-ring">
             <AnaphorMark className="size-9 shrink-0" />
-            <Text as="span" variant="ui" className="min-w-0 font-heading font-black uppercase tracking-tight">Anaphor</Text>
+            <Text as="span" variant="ui" className="min-w-0 font-semibold tracking-tight">Anaphor</Text>
           </Link>
           <button type="button" aria-label="Search manual" onClick={() => { closeMobile(); onSearch(); }} className="grid size-10 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-background focus-visible:outline-2 focus-visible:outline-ring md:hidden"><MagnifyingGlass aria-hidden="true" className="size-4" /></button>
           <SidebarClose className="shrink-0" />
@@ -155,12 +141,12 @@ function DemoSidebar({ onSearch }: { onSearch: () => void }) {
         <nav aria-label="Manual index">
           {groups.map((group) => (
             <SidebarGroup key={group.label} className="mt-6">
-              {group.label && <SidebarGroupLabel className="mb-1 text-ui text-muted-foreground">{group.label}</SidebarGroupLabel>}
+              <SidebarGroupLabel className="mb-1 font-medium">{group.label}</SidebarGroupLabel>
               <SidebarMenu>
-                {group.items.map(({ id, label, href }) => (
+                {group.items.map(({ id, label, href, icon: ItemIcon }) => (
                   <SidebarMenuItem key={id}>
-                    <SidebarMenuButton className="min-h-8 text-reading data-active:font-medium" isActive={pathname === "/" ? id === (activeId === "principles" ? "purpose" : activeId) : pathname === href} render={<Link href={href} onNavigate={closeMobile} />}>
-                      <span>{label}</span>
+                    <SidebarMenuButton isActive={pathname === "/" ? id === activeId : pathname === href} render={<Link href={href} onNavigate={closeMobile} />}>
+                      <ItemIcon aria-hidden="true" /><span>{label}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -179,7 +165,7 @@ function ManualPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (o
   const { setMobileOpen } = useSidebar();
   const router = useRouter();
   return <CommandPalette open={open} onOpenChange={onOpenChange} title="Search the manual" placeholder="Find a component or foundation…"
-      items={groups.flatMap(group => group.items.map(item => ({ ...item, group: group.label || "Manual", icon: undefined })))}
+      items={groups.flatMap(group => group.items.map(item => ({ ...item, group: group.label, icon: <item.icon aria-hidden="true" /> })))}
       onSelect={item => { setMobileOpen(false, true); router.push(item.href); }} />;
 }
 
@@ -187,9 +173,9 @@ function ManualBreadcrumb() {
   const pathname = usePathname();
   const { activeId } = useContentSections();
   const current = pathname === "/"
-    ? groups.flatMap(group => group.items.map(item => ({ group: group.label || "Manual", label: item.label, id: item.id, href: item.href }))).find(({ id }) => id === (activeId === "principles" ? "purpose" : activeId))
-      ?? { group: "Manual", label: "Overview" }
-    : groups.flatMap(group => group.items.map(item => ({ group: group.label || "Manual", label: item.label, href: item.href }))).find(({ href }) => href === pathname);
+    ? groups.flatMap(group => group.items.map(item => ({ group: group.label, label: item.label, id: item.id, href: item.href }))).find(({ id }) => id === activeId)
+      ?? { group: "Foundations", label: "Introduction" }
+    : groups.flatMap(group => group.items.map(item => ({ group: group.label, label: item.label, href: item.href }))).find(({ href }) => href === pathname);
   const group = current?.group ?? "Manual";
   const label = current?.label ?? "Overview";
 

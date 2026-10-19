@@ -136,30 +136,3 @@ test("popover placement is configurable and resettable", async ({ page }) => {
   await page.getByRole("button", { name: "Workspace settings", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "Workspace settings" })).toBeVisible();
 });
-
-test("catalog examples stay independent and inline code follows placement", async ({ page }) => {
-  await page.goto("/#popover");
-  const section = page.locator("#popover");
-  for (const name of ["Anatomy", "Interactive content", "Playground"]) await expect(section.getByRole("heading", { name, exact: true })).toBeVisible();
-  const about = section.getByRole("button", { name: "About this workspace", exact: true });
-  await about.click();
-  await expect(page.getByRole("dialog", { name: "Workspace details", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Done", exact: true }).click();
-  await expect(about).toBeFocused();
-  await section.getByRole("button", { name: "Edit preferences", exact: true }).click();
-  await page.getByRole("textbox", { name: "Workspace name", exact: true }).fill("Reading room");
-  await page.getByRole("button", { name: "Done", exact: true }).click();
-  const preview = section.getByRole("group", { name: "Workspace settings preview", exact: true });
-  await expect(preview).toContainText("My workspace");
-  await preview.getByRole("button", { name: "Workspace settings", exact: true }).scrollIntoViewIfNeeded();
-  await page.getByRole("tab", { name: "Open Popover controls", exact: true }).click();
-  await selectControl(page, "Side", "top");
-  await selectControl(page, "Alignment", "end");
-  await page.getByRole("button", { name: "Close controls", exact: true }).click();
-  await section.getByRole("button", { name: "Show playground code", exact: true }).press("Enter");
-  await expect(section.getByLabel("Playground code", { exact: true })).toContainText('side="top" align="end"');
-  await page.getByRole("tab", { name: "Open Popover controls", exact: true }).click();
-  await page.getByRole("button", { name: "Reset controls", exact: true }).click();
-  await expect(section.getByRole("group", { name: "Edit preferences preview", exact: true })).toContainText("Reading room");
-  expect(await section.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
-});

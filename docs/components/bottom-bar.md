@@ -25,13 +25,3 @@ The manual keeps global Search and Theme in the bottom bar. The sidebar carries 
 Actions are at least 40px high on fine pointers and 44px on coarse pointers. Icon-only actions need an accessible name. Keyboard focus remains visible; reduced-motion users do not get press movement. Keep long labels and shortcuts out of narrow widths rather than allowing the utility groups to collide.
 
 This composition draws from the current Linear desktop shell's restrained, full-width utility bar. The [bottom-bar research](../research/desktop-bottom-bars.md) records the inspected references and the limits of each source. The library parts are primitives for this shell, not a claim that shadcn/ui or Coss UI ship the same component.
-
-## Catalog
-
-The reference section presents Anatomy, Appearances, and Playground with code
-disclosures. Each preview owns its local Help feedback and command selection.
-Playground controls change appearance, status visibility, and action labels;
-Reset restores only that preview. The containing workspace uses `@container`
-so `@sm:inline` action labels follow preview width rather than viewport width.
-Actions keep accessible names when labels hide, and status truncates as space
-narrows. These previews stay in document flow.

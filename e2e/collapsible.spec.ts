@@ -18,8 +18,7 @@ test("standalone controls expose state, hide descendants and return focus", asyn
   const disabled = demo.getByRole("button", { name: "Unavailable section", exact: true });
   await expect(disabled).toBeDisabled();
   await expect(disabled).toHaveAttribute("aria-expanded", "false");
-  await page.getByRole("tab", { name: "Open Collapsible controls", exact: true }).click();
-  await page.getByRole("region", { name: "Collapsible controls", exact: true }).getByRole("button", { name: "Reset controls" }).click();
+  await demo.getByRole("button", { name: "Reset controlled example" }).click();
   await expect(controlled).toHaveAttribute("aria-expanded", "false");
 });
 
@@ -31,7 +30,7 @@ test("rapid disclosure reversals settle without clipping visible content", async
   await trigger.evaluate(element => { if (element instanceof HTMLElement) element.click(); });
   await trigger.evaluate(element => { if (element instanceof HTMLElement) element.click(); });
   await expect(trigger).toHaveAttribute("aria-expanded", "true");
-  const panel = page.getByRole("group", { name: "Collapsible playground" }).locator('[data-slot="collapsible-content"]');
+  const panel = page.locator("#collapsible").locator('[data-slot="collapsible-content"]').filter({ hasText: "Expansion belongs" });
   await expect(panel.getByRole("button", { name: "Close from inside" })).toBeVisible();
   await expect.poll(() => panel.evaluate(element => Math.abs(element.clientHeight - element.scrollHeight))).toBeLessThanOrEqual(1);
 });
@@ -75,35 +74,4 @@ test("native text search reveals collapsed content", async ({ page, browserName 
   await expect(page.getByRole("button", { name: "Chapter notes", exact: true })).toHaveAttribute("aria-expanded", "true");
   await expect(page.getByRole("button", { name: "Field observations", exact: true })).toHaveAttribute("aria-expanded", "true");
   await expect(page.getByText("The orchard notebook connects field observations to a shared language.", { exact: true })).toBeVisible();
-});
-
-test("catalog controls synchronize disclosure state and reset its presentation", async ({ page }) => {
-  await page.goto("/#collapsible");
-  const section = page.locator("#collapsible");
-  for (const name of ["States", "Nested sections", "Playground"]) await expect(section.getByRole("heading", { name, exact: true })).toBeVisible();
-  const preview = section.getByRole("group", { name: "Collapsible playground" });
-  const trigger = preview.getByRole("button", { name: "Controlled section", exact: true });
-  await trigger.scrollIntoViewIfNeeded();
-  const height = await preview.evaluate(el => el.getBoundingClientRect().height);
-  await page.getByRole("tab", { name: "Open Collapsible controls", exact: true }).click();
-  const controls = page.getByRole("region", { name: "Collapsible controls", exact: true });
-  await controls.getByRole("checkbox", { name: "Open", exact: true }).check();
-  await expect(trigger).toHaveAttribute("aria-expanded", "true");
-  await controls.getByRole("checkbox", { name: "Show caret", exact: true }).uncheck();
-  await expect(trigger.locator("svg")).toHaveCount(0);
-  await controls.getByRole("checkbox", { name: "Disabled", exact: true }).check();
-  await expect(trigger).toBeDisabled();
-  await controls.getByRole("checkbox", { name: "Open", exact: true }).uncheck();
-  await expect(trigger).toHaveAttribute("aria-expanded", "false");
-  await controls.getByRole("button", { name: "Reset controls" }).click();
-  await expect(trigger).toBeEnabled();
-  await expect(trigger.locator("svg")).toHaveCount(1);
-  await page.getByRole("button", { name: "Close controls" }).click();
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await trigger.click();
-  await expect(preview.locator('[data-slot="collapsible-content"]')).toHaveCSS("transition-duration", "0s");
-  expect(await preview.evaluate(el => el.getBoundingClientRect().height)).toBe(height);
-  await section.getByRole("button", { name: "Show playground code", exact: true }).press("Enter");
-  await expect(section.getByLabel("Playground code", { exact: true })).toContainText("useState(true)");
-  expect(await section.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
 });
