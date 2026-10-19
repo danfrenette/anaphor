@@ -126,8 +126,11 @@ test("one shell grows from the icon bar and keeps its bottom edge anchored", asy
     const start = performance.now();
     const tick = () => {
       sample();
-      if (performance.now() - start < 600) requestAnimationFrame(tick);
-      else resolve(frames);
+      const last = frames.at(-1)!;
+      const settled = last.height > frames[0]!.height + 40 && frames.length >= 4 &&
+        frames.slice(-3).every(frame => Math.abs(frame.height - last.height) < 0.1);
+      if (settled || performance.now() - start >= 10_000) resolve(frames);
+      else requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
   }));
