@@ -1,8 +1,8 @@
 "use client";
 
-import { Button, ButtonLabel, Card, CardContent, CardHeader, CardTitle, type ButtonProps } from "@anaphor/system";
+import { Button, ButtonLabel, type ButtonProps } from "@anaphor/system";
 import { ArrowRight, Trash } from "@phosphor-icons/react";
-import { useState, type Dispatch, type SetStateAction, type CSSProperties, type ReactNode } from "react";
+import { useState, type Dispatch, type SetStateAction, type CSSProperties } from "react";
 import { PlaygroundControls } from "./playground-host";
 import { Check, Range, Select } from "./playground-fields";
 
@@ -34,7 +34,7 @@ const buttonDefaults: ButtonControls = {
 
 const variants = ["solid", "outline", "ghost", "soft"] as const;
 
-export function ButtonPlayground({ children }: { children: ReactNode }) {
+export function ButtonPlayground() {
   const [controls, setButton] = useState(buttonDefaults);
   const destructive = controls.tone === "danger";
   const demoStyle: CSSProperties & Record<`--${string}`, string | number> = {
@@ -48,11 +48,7 @@ export function ButtonPlayground({ children }: { children: ReactNode }) {
       <PlaygroundControls sectionId="button" title="Button" onReset={() => setButton(buttonDefaults)}>
         <ButtonControlFields controls={controls} setButton={setButton} />
       </PlaygroundControls>
-      <Card variant="default" role="group" aria-label="Primary button example" className="mt-10">
-        <CardHeader>
-          <CardTitle as="h3" variant="label">Primary demo</CardTitle>
-        </CardHeader>
-        <CardContent className="flex min-h-56 items-center justify-center">
+      <div role="group" aria-label="Primary button example" className="mt-4 flex min-h-32 items-center justify-center rounded-md border border-border bg-background p-6">
           <Button nativeButton={true} type="button"
             data-testid="primary-button"
             variant={controls.variant}
@@ -68,10 +64,7 @@ export function ButtonPlayground({ children }: { children: ReactNode }) {
             {!controls.iconOnly ? <ButtonLabel>{destructive ? "Delete item" : "Execute"}</ButtonLabel> : null}
             {destructive ? <Trash aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
           </Button>
-        </CardContent>
-      </Card>
-
-      {children}
+      </div>
     </>
   );
 }

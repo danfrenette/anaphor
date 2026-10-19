@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-const panel = (page: import("@playwright/test").Page) => page.locator('[data-app-shell] [data-slot="sidebar"]');
-const top = (page: import("@playwright/test").Page) => page.locator('[data-app-shell] [data-slot="workspace-top-bar"]');
+const panel = (page: import("@playwright/test").Page) => page.locator('[data-app-shell] > [data-slot="sidebar-provider"] > [data-slot="sidebar"]');
+const top = (page: import("@playwright/test").Page) => page.locator('[data-app-shell] > [data-slot="sidebar-provider"] > [data-slot="workspace-top-bar"]');
 
 for (const side of ["left", "right"] as const) {
   test(`the ${side} workspace rail keeps label width throughout collapse and reopening`, async ({ page, isMobile }) => {
     test.skip(isMobile, "Desktop workspace rail");
-    await page.goto("/#sidebar");
+    await page.goto("/sidebar-fixture#sidebar");
     await page.getByRole("group", { name: "Sidebar placement" }).getByRole("button", { name: new RegExp(`^${side}$`, "i") }).click();
     const rail = panel(page);
     const before = await rail.evaluate(element => ({ width: element.getBoundingClientRect().width, brandHeight: element.querySelector('[aria-label="Anaphor home"]')!.getBoundingClientRect().height }));
@@ -37,7 +37,7 @@ for (const side of ["left", "right"] as const) {
 test("the right header trigger follows its rail without overlapping the manual tab", async ({ page, isMobile }) => {
   test.skip(isMobile, "Desktop header");
   await page.setViewportSize({ width: 768, height: 900 });
-  await page.goto("/#sidebar");
+  await page.goto("/sidebar-fixture#sidebar");
   await page.getByRole("group", { name: "Sidebar placement" }).getByRole("button", { name: /^right$/i }).click();
   for (const { width, fontSize } of [{ width: 768, fontSize: "16px" }, { width: 1024, fontSize: "20px" }]) {
     await page.setViewportSize({ width, height: 900 });
@@ -59,7 +59,7 @@ test("the right header trigger follows its rail without overlapping the manual t
 });
 
 test("the sidebar example operates the rail or drawer and returns mobile focus", async ({ page, isMobile }) => {
-  await page.goto("/#sidebar");
+  await page.goto("/sidebar-fixture#sidebar");
   const section = page.locator("#sidebar");
   const trigger = section.getByRole("button", { name: isMobile ? "Open sidebar in section" : "Collapse sidebar in section", exact: true });
   await trigger.click();
@@ -80,7 +80,7 @@ for (const side of ["left", "right"] as const) {
       test.skip(isMobile, "Desktop workspace geometry");
       await page.clock.install();
       await page.emulateMedia({ reducedMotion: "no-preference" });
-      await page.goto("/#sidebar");
+      await page.goto("/sidebar-fixture#sidebar");
       await page.evaluate(({ direction, zoom }) => { document.documentElement.dir = direction; document.documentElement.style.zoom = String(zoom); }, { direction, zoom });
       await page.getByRole("group", { name: "Sidebar placement" }).getByRole("button", { name: new RegExp(`^${side}$`, "i") }).click();
       await page.evaluate(() => document.fonts.ready);
@@ -125,7 +125,7 @@ for (const side of ["left", "right"] as const) {
         }
         return { initial, samples, expectedTextWidth, largestReversalStep };
       }, (side === "left") !== (direction === "rtl"));
-      await expect(page.locator('[data-app-shell] [data-slot="sidebar-provider"]')).toHaveAttribute("data-desktop-open", "false");
+      await expect(page.locator('[data-app-shell] > [data-slot="sidebar-provider"]')).toHaveAttribute("data-desktop-open", "false");
       await page.clock.runFor(2000);
       const result = await sampling;
       expect(result.samples.length).toBeGreaterThan(50);
@@ -146,9 +146,9 @@ for (const interrupt of ["reduced motion", "viewport resize", "text direction"] 
   test(`workspace motion settles when interrupted by ${interrupt}`, async ({ page, isMobile }) => {
     test.skip(isMobile, "Desktop workspace transition");
     await page.emulateMedia({ reducedMotion: "no-preference" });
-    await page.goto("/#sidebar");
+    await page.goto("/sidebar-fixture#sidebar");
     const card = page.locator('[data-app-shell] [data-slot="workspace-card"]').first();
-    await page.locator('[data-app-shell] [data-slot="sidebar-provider"]').evaluate(element => {
+    await page.locator('[data-app-shell] > [data-slot="sidebar-provider"]').evaluate(element => {
       if (!(element instanceof HTMLElement)) throw new Error("Expected provider");
       element.style.setProperty("--anaphor-sidebar-exit-duration", "1000ms");
     });
@@ -182,20 +182,25 @@ test("the left exit keeps text painted after a delayed commit at normal timing",
   await page.clock.runFor(16);
   const sampling = panel(page).evaluate(async rail => {
     const provider = rail.closest<HTMLElement>('[data-slot="sidebar-provider"]')!;
-    const destination = rail.querySelector('[data-slot="sidebar-menu-button"]')!;
-    const text = document.createRange();
-    text.selectNodeContents(destination);
+    // A short first label can legitimately leave the viewport in one moving
+    // frame. Inspect all navigation text to detect the rail disappearing early.
+    const destinations = [...rail.querySelectorAll('[data-slot="sidebar-menu-button"]')];
+    const textRanges = destinations.map(destination => {
+      const range = document.createRange();
+      range.selectNodeContents(destination);
+      return range;
+    });
     const initial = rail.getBoundingClientRect();
     const frames: Array<{ distance: number; textRight: number; visibility: string }> = [];
     const trigger = provider.querySelector<HTMLButtonElement>('[data-slot="workspace-top-bar"] [data-slot="sidebar-trigger"]')!;
     trigger.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
     for (let frame = 0; frame < 30; frame += 1) {
       await new Promise(requestAnimationFrame);
-      frames.push({ distance: initial.x - rail.getBoundingClientRect().x, textRight: text.getBoundingClientRect().right, visibility: getComputedStyle(destination).visibility });
+      frames.push({ distance: initial.x - rail.getBoundingClientRect().x, textRight: Math.max(...textRanges.map(range => range.getBoundingClientRect().right)), visibility: getComputedStyle(destinations[0]!).visibility });
     }
     return { frames, width: initial.width };
   });
-  await expect(page.locator('[data-app-shell] [data-slot="sidebar-provider"]')).toHaveAttribute("data-desktop-open", "false");
+  await expect(page.locator('[data-app-shell] > [data-slot="sidebar-provider"]')).toHaveAttribute("data-desktop-open", "false");
   // One delayed RAF models an 80ms blocked commit; later frames advance at 16ms.
   await page.clock.fastForward(80);
   await page.clock.runFor(480);

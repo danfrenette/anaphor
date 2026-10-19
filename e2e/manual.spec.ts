@@ -87,7 +87,7 @@ test("button demo exposes bounded experiments and resets to approved defaults", 
   await expect(closedPanel.locator("..").locator("..")).toHaveAttribute("inert", "");
   await expect(closedPanel.locator("..").locator("..")).toHaveCSS("height", "0px");
   await page.getByRole("tab", { name: "Open Button controls" }).click();
-  await expect(page.getByLabel("Variant")).toBeVisible();
+  await expect(page.getByLabel("Variant", { exact: true })).toBeVisible();
 });
 
 test("button motion and touch sizing follow the active device preferences", async ({
@@ -108,16 +108,13 @@ test("button motion and touch sizing follow the active device preferences", asyn
   expect(metrics.height).toBe(testInfo.project.name === "mobile-webkit" ? 44 : 40);
 });
 
-test("button color roles meet AA outside the documented solid accent exception", async ({
-  page,
-}) => {
-  test.setTimeout(120_000);
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/#button");
-  await page.getByRole("tab", { name: "Open Button controls" }).click();
-  const field = page.getByRole("group", { name: "Primary button example" });
-
-  for (const theme of ["light", "dark"] as const) {
+for (const theme of ["light", "dark"] as const) {
+  test(`button color roles meet AA in ${theme} outside the documented solid accent exception`, async ({ page }) => {
+    test.setTimeout(120_000);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/#button");
+    await page.getByRole("tab", { name: "Open Button controls" }).click();
+    const field = page.getByRole("group", { name: "Primary button example" });
     await field.evaluate((element, dark) => element.classList.toggle("dark", dark), theme === "dark");
 
     for (const tone of ["accent", "neutral", "danger"] as const) {
@@ -135,8 +132,8 @@ test("button color roles meet AA outside the documented solid accent exception",
         expect(contrast.violations).toEqual([]);
       }
     }
-  }
-});
+  });
+}
 
 test("loading preserves action colors while explicit disabled stays neutral", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -265,18 +262,18 @@ test("controls preserve edits across switches and return keyboard focus", async 
   await page.getByRole("button", { name: "Close controls" }).click();
   await visit("Card");
   await page.getByRole("checkbox", { name: "Footer", exact: true }).uncheck();
-  await expect(page.getByRole("button", { name: "Open workspace" })).toHaveCount(0);
+  await expect(page.locator('[aria-labelledby="card-project-title"]').getByRole("button", { name: "Open workspace" })).toHaveCount(0);
   await page.getByRole("button", { name: "Close controls" }).click();
   await visit("Button");
-  await expect(page.getByLabel("Tone")).toHaveText("danger");
-  await page.getByLabel("Tone").focus();
+  await expect(page.getByLabel("Tone", { exact: true })).toHaveText("danger");
+  await page.getByLabel("Tone", { exact: true }).focus();
   await page.keyboard.press("Escape");
   const trigger = page.getByRole("tab", { name: "Open Button controls" });
   await expect(trigger).toBeFocused();
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
   const cardPanel = await visit("Card");
   await page.getByRole("button", { name: "Reset controls" }).click();
-  await expect(page.getByRole("button", { name: "Open workspace" })).toBeVisible();
+  await expect(page.locator('[aria-labelledby="card-project-title"]').getByRole("button", { name: "Open workspace" })).toBeVisible();
   const bounds = await cardPanel.boundingBox();
   if (!bounds) throw new Error("The controls panel must have visible bounds");
   expect(bounds.x).toBeGreaterThanOrEqual(0);
@@ -383,6 +380,7 @@ test("composed anchor navigates by keyboard", async ({ page }) => {
 });
 
 test("card copy confirms a write", async ({ page }) => {
+  await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") });
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: {
       writeText: async (value: string) => { document.documentElement.dataset.copiedText = value; },
@@ -391,9 +389,13 @@ test("card copy confirms a write", async ({ page }) => {
   await page.goto("/#card");
   const copy = page.getByRole("button", { name: "Copy development command" });
   const status = page.getByRole("group", { name: "Local development", exact: true }).getByRole("status");
+  await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
+  await copy.scrollIntoViewIfNeeded();
+  await page.clock.pauseAt(new Date("2026-01-02T00:00:00Z"));
   await copy.click();
   await expect(status).toHaveText("Copied to clipboard.");
   await expect(page.locator("html")).toHaveAttribute("data-copied-text", "pnpm dev");
+  await page.clock.fastForward(2000);
   await expect(status).toBeEmpty();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await copy.focus();

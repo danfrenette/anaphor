@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, ButtonLabel, Card, CardContent, Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldItem, FieldLabel, Radio, RadioGroup } from "@anaphor/system";
+import { Button, ButtonLabel, Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldItem, FieldLabel, Radio, RadioGroup } from "@anaphor/system";
 import { useId, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Check } from "./playground-fields";
@@ -23,7 +23,7 @@ export function RadioGroupPlayground() {
         {(["disabled", "readOnly", "invalid"] as const).map(key => <Check key={key} label={key === "readOnly" ? "Read only" : key === "disabled" ? "Disabled" : "Invalid"} checked={settings[key]} onChange={value => setSettings(current => ({ ...current, [key]: value }))} />)}
       </FieldGroup>
     </PlaygroundControls>
-    <Card variant="default"><CardContent className="p-6">
+    <div className="mt-4 rounded-md border border-border bg-background p-6"><div className="max-w-96">
       <form aria-label="Notification preferences" onSubmit={event => {
         event.preventDefault();
         const value = new FormData(event.currentTarget).get("frequency");
@@ -45,7 +45,7 @@ export function RadioGroupPlayground() {
           <output className="text-ui" aria-live="polite">{saved ? `Saved: ${saved}.` : "Changes stay in this example."}</output>
         </div>
       </form>
-    </CardContent></Card>
+    </div></div>
   </>;
 }
 

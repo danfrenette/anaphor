@@ -1,0 +1,36 @@
+import { expect, test } from "@playwright/test";
+
+test("bottom bar playground runs local commands and resets independently", async ({ page }) => {
+  await page.goto("/#bottom-bar");
+  const section = page.locator("#bottom-bar");
+  const anatomy = section.getByRole("group", { name: "Bottom bar anatomy", exact: true });
+  const preview = section.getByRole("group", { name: "Bottom bar playground", exact: true });
+  await anatomy.getByRole("button", { name: "Help", exact: true }).click();
+  const trigger = preview.getByRole("button", { name: "Search workspace", exact: true });
+  await trigger.click();
+  const dialog = page.getByRole("dialog", { name: "Bottom bar playground commands" });
+  await dialog.getByRole("combobox").fill("notes");
+  await dialog.getByRole("combobox").press("Enter");
+  await expect(preview.getByRole("status")).toHaveText("Selected: Open notes");
+  await expect(trigger).toBeFocused();
+  await page.getByRole("tab", { name: "Open Bottom bar controls", exact: true }).click();
+  await page.getByRole("checkbox", { name: "Show status", exact: true }).uncheck();
+  await page.getByRole("checkbox", { name: "Show action labels", exact: true }).uncheck();
+  await page.getByRole("button", { name: "Appearance", exact: true }).click();
+  await page.getByRole("menuitemradio", { name: "standalone", exact: true }).click();
+  await page.getByRole("button", { name: "Close controls" }).click();
+  await expect(preview.getByText("All changes saved", { exact: true })).toHaveCount(0);
+  await section.getByRole("button", { name: "Show playground code", exact: true }).click();
+  await expect(section.getByLabel("Playground code", { exact: true })).toContainText('appearance="standalone"');
+  await trigger.scrollIntoViewIfNeeded();
+  await page.getByRole("tab", { name: "Open Bottom bar controls", exact: true }).click();
+  await page.getByRole("button", { name: "Reset controls", exact: true }).click();
+  await page.getByRole("button", { name: "Close controls" }).click();
+  await expect(preview.getByRole("status")).toHaveText("Your work stays in view above the utilities.");
+  await expect(preview.getByText("All changes saved", { exact: true })).toBeVisible();
+  await expect(anatomy.getByRole("status")).toContainText("Search opens workspace commands.");
+  const bounds = await preview.boundingBox();
+  const search = await preview.getByRole("button", { name: "Search workspace", exact: true }).boundingBox();
+  expect(search!.x + search!.width).toBeLessThanOrEqual(bounds!.x + bounds!.width);
+  expect(await preview.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+});

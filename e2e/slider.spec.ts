@@ -62,6 +62,7 @@ for (const theme of ["light", "dark"] as const) {
   test(`magnetic mode preserves the standard DialKit appearance in ${theme} theme`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
     await page.goto("/#slider");
+    await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
     await page.evaluate(() => document.fonts.ready);
     const amount = page.getByRole("slider", { name: "Amount", exact: true });
     await expect(amount).toHaveAttribute("aria-valuenow", "50");

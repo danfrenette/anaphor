@@ -16,8 +16,9 @@ No account or seeded data is needed.
 
 **Drive:** Run `pnpm exec playwright test e2e/workspace-shell.spec.ts`.
 In a manual pass, visit `/#workspace-shell` directly and confirm the top strip
-stays visible while the card body lands on that section. Toggle Top, Navigation, Context,
-and Bottom through all combinations. Toggle Tabs separately and switch between
+stays visible while the card body lands on that section. Open Workspace shell Controls and toggle Top, Navigation, Context,
+and Bottom through all combinations. Confirm Tabs is disabled when Top is omitted,
+and Reset restores all regions and the Overview tab. Toggle Tabs separately and switch between
 the two custom views. Inspect full, no-bottom, no-top, one-side, and no-side
 compositions in light and dark themes. Scroll the long manual article, then
 toggle the sidebar and open the contextual tools. Repeat a representative pass
@@ -34,6 +35,12 @@ The manual's breadcrumb stays inside the card header. Sidebar placement and
 modal behavior follow [Sidebar placement and motion](sidebar.md). A missing
 bottom bar reserves no clearance; Search, Theme, and morph controls remain
 reachable when the bar is present.
+
+The catalog presents Anatomy, Compositions, and Playground with inline code.
+The playground keeps its height as regions change. Its rail button uses the
+shared sidebar motion for pointer input and immediate changes for keyboard and
+reduced motion. The preview must not change the manual’s sidebar state. On
+mobile, open and close its drawer and confirm focus returns to the preview trigger.
 
 **Evidence:** Record the tested revision, command, browser, pass/fail counts,
 and any `test-results/` artifacts. Structural coverage for all 16 region
