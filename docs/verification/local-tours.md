@@ -63,7 +63,22 @@ still reopen the managed assets. Interrupted writes retain the last readable
 revision. If a writer lock survives a terminated process, inspect its ownership
 before removing that workspace's `.write-lock` directory and retrying.
 
-## Drive and assertions
+## Preview authored tour content
+
+For a local preview of new or updated tour content, open the returned URL and
+check only that:
+
+- The intended tour content loads, including the selected revision after an update.
+- Code links resolve to the intended pinned source.
+- Referenced assets load, including images, recordings and receipts when present.
+
+Accessibility checks belong to changes to the tour reader itself. Authoring a
+tour does not require rerunning reader tests or checking keyboard focus, accessible
+names, theme variants, responsive layouts, bounded scrolling or enlargement controls.
+
+## Verify changes to the tour reader
+
+When the reader itself changes, use the checks below for the affected behavior.
 
 Run `pnpm test:local-tours` for the real CLI, reader, media playback, range
 requests, explicit refresh, stale checks, scratch cleanup, theme, and narrow
@@ -89,10 +104,11 @@ read local APIs and that deployed-mode local routes return 404.
 
 ## Evidence and cleanup
 
-Retain actions, results, tested source/build, context, captures, and limitations
-in the delivery tour and linked receipts. Copy required artifacts into the
-persistent workspace before cleanup. Inspect the actual final preview and
-return its URL, identifying it as local to the current machine.
+For reader verification, retain actions, results, tested source/build, context,
+captures, and limitations in the delivery tour and linked receipts. Authored tour
+previews need only the content, code-link and asset checks above. Copy referenced
+assets into the persistent workspace before cleanup and return the preview URL,
+identifying it as local to the current machine.
 
 Stop only owned browser sessions and test servers. Keep the review server
 running when handing the owner a local preview, and report its port and worktree.
