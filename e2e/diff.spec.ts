@@ -216,6 +216,9 @@ test("an unavailable authored target clears unrelated legacy emphasis without re
   expect(await page.evaluate(() => scrollY)).toBe(scroll);
   await diff.getByRole("button", { name: "1. Explain omitted context", exact: true }).click();
   await expect(diff.getByText("This patch does not contain the unchanged label implementation.")).toBeVisible();
+  await page.getByRole("button", { name: "Locate the guard", exact: true }).click();
+  await expect(diff.locator('[data-line="20"][data-selected-line]')).toHaveCount(1);
+  await expect(diff.getByText("Highlighted line 20: the guard for a missing section.")).toBeVisible();
 });
 
 test("an invalid reveal cannot later turn emphasis-only selection into navigation", async ({ page }) => {
