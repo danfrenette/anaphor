@@ -173,3 +173,9 @@ Popover owns contextual positioning/dismissal/focus return; Button/ButtonLabel o
 controls; Tooltip and CardCopyButton retain existing header behavior. No shared
 primitive API change is needed for this package. The source registry adds Popover
 as a dependency and exercises its installed annotation consumer.
+
+The package and source registry pin Pierre Diffs to `1.5.2`, the verified renderer.
+Version `1.6.0` does not register the GitHub high-contrast themes used here by default;
+a fresh registry consumer fails to render code with `UnregisteredThemeError`.
+Upgrade the theme integration and rerun independent consumer verification together
+before changing this pin.

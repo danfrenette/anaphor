@@ -64,6 +64,7 @@ async function checkBrowser(browser, directory, item) {
   const page = await browser.newPage({ reducedMotion: "reduce" });
   const errors = [];
   page.on("pageerror", error => errors.push(error.message));
+  page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
   page.on("requestfailed", request => errors.push(request.url()));
   page.on("response", response => { if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`); });
   try {
@@ -175,6 +176,9 @@ async function checkBrowser(browser, directory, item) {
       await expect(page.getByRole("region", { name: "Introduction", exact: true })).toBeFocused();
     }
     assert.deepEqual(errors, [], "Installed consumer must load without browser errors");
+  } catch (error) {
+    if (errors.length) console.error("Installed consumer browser errors:", errors);
+    throw error;
   } finally {
     await page.close();
     await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

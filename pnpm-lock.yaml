@@ -129,7 +129,7 @@ importers:
         specifier: ^2.1.10
         version: 2.1.10(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@pierre/diffs':
-        specifier: ^1.5.2
+        specifier: 1.5.2
         version: 1.5.2(@shikijs/themes@4.5.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@primer/octicons-react':
         specifier: ^19.40.0
