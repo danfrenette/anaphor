@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, ButtonLabel, Diff, Section, Text, type DiffSource } from "@anaphor/system";
+import { Button, ButtonLabel, Diff, Section, Text, type DiffNote, type DiffSource } from "@anaphor/system";
 import { CatalogExample } from "./catalog-example";
 import { PlaygroundControls } from "./playground-host";
 import { Check, Select } from "./playground-fields";
@@ -75,6 +75,19 @@ const excerpt: DiffSource = {
 `,
 };
 
+const notes: DiffNote[] = [
+  { id: "guard", title: "Guard missing sections", body: "Unknown sections return no next section instead of restarting at the beginning.", presentation: "inline", range: { side: "after", start: 20, end: 22 } },
+  { id: "overlap", title: "Keep the return nearby", body: "The guard and successful return stay together.", presentation: "popover", range: { side: "after", start: 21, end: 22 } },
+  { id: "label", title: "Keep the existing label", body: "The fallback title is unchanged and remains part of the reading contract.", presentation: "inline", range: { side: "after", start: 8, end: 10 } },
+  { id: "old", title: "Replace implicit wrapping", body: "The old lookup restarted navigation when the current section was missing.", presentation: "inline", range: { side: "before", start: 20, end: 20 } },
+];
+
+const unchangedContents = before + '// Keep the original source location visible even when a reviewer follows a long explanation across a narrow screen; this line deliberately exercises wrapping and horizontal inspection without changing the captured source.\n';
+const unchangedSource: DiffSource = { kind: "unchanged", file: { name: "src/articles/labels.ts", contents: unchangedContents }, excerpts: [{ start: 8, end: 10 }, { start: 36, end: 36 }] };
+const excerptNotes: DiffNote[] = [
+  { id: "label-contract", title: "Preserve a readable fallback when the authored section title is empty", body: "An unchanged dependency can explain why a changed navigation path remains readable. The source is shown with its original numbering.", presentation: "inline", range: { side: "after", start: 8, end: 10 } },
+];
+
 const fileStates: { name: string; source: DiffSource }[] = [
   { name: "Added", source: { kind: "files", before: null, after: { name: "src/articles/constants.ts", contents: 'export const INITIAL_PROGRESS = 0;\n' } } },
   { name: "Deleted", source: { kind: "files", before: { name: "src/articles/legacy.ts", contents: 'export const WRAP_NAVIGATION = true;\n' }, after: null } },
@@ -88,6 +101,9 @@ const exampleCode = `<Diff source={source} layout="unified" wrap={false}
 
 export function DiffDemo() {
   const [settings, setSettings] = useState<Settings>(defaults);
+  const [sourceAvailable, setSourceAvailable] = useState(true);
+  const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+  const [noteReveal, setNoteReveal] = useState(0);
   const [reveal, setReveal] = useState(0);
   const [highlightGuard, setHighlightGuard] = useState(false);
   return <Section id="diff" className="border-t border-border py-12">
@@ -110,13 +126,23 @@ export function DiffDemo() {
         </div>
         <Diff aria-label="Navigation guard excerpt" source={excerpt} layout="unified" wrap={false} controls={false} context="collapsed" maxHeight={null} highlightedLines={highlightGuard ? { start: 20, end: 20, side: "additions" } : undefined} revealKey={highlightGuard ? reveal : undefined} notice={highlightGuard ? "Highlighted line 20: the guard for a missing section." : undefined} />
       </CatalogExample>
+      <CatalogExample framed={false} title="Authored notes" description="Read explanations in place, or follow an external note without opening its explanation again." code={`<Diff annotations={{ notes, activeNoteId, onActiveNoteChange, revealKey }} {...settings} />`}>
+        <ol aria-label="Change explanations" className="mb-4 space-y-2">{notes.map((note, index) => <li key={note.id}>
+          <Button type="button" nativeButton size="md" shape="square" variant="ghost" tone="neutral" loading={false} iconOnly={false} className="h-auto min-w-0 max-w-full whitespace-normal py-2 text-start" onClick={() => { setActiveNoteId(note.id); setNoteReveal(previous => previous + 1); }}><ButtonLabel>Locate {index + 1}: {note.title}</ButtonLabel></Button>
+        </li>)}</ol>
+        <div className="mb-4"><Button type="button" nativeButton size="md" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} onClick={() => { setSourceAvailable(value => !value); setActiveNoteId(null); }}><ButtonLabel>{sourceAvailable ? "Show unavailable source" : "Restore captured source"}</ButtonLabel></Button></div>
+        <Diff aria-label="Annotated navigation" source={sourceAvailable ? source : { kind: "unavailable", path: "src/articles/reading-position.ts", reason: "The captured source is unavailable. Authored explanations are retained." }} layout="split" wrap controls={false} context="collapsed" maxHeight={280} annotations={{ notes, activeNoteId, onActiveNoteChange: setActiveNoteId, revealKey: noteReveal }} />
+      </CatalogExample>
+      <CatalogExample framed={false} title="Unchanged excerpts" description="Inspect the existing contract with original line numbers and expandable context." code={`<Diff source={{ kind: "unchanged", file, excerpts: [{ start: 8, end: 10 }] }} {...settings} />`}>
+        <Diff aria-label="Unchanged label contract" source={unchangedSource} layout="unified" wrap controls={false} context="collapsed" maxHeight={280} annotations={{ notes: excerptNotes, activeNoteId, onActiveNoteChange: setActiveNoteId }} />
+      </CatalogExample>
       <CatalogExample framed={false} title="File states" description="Added, deleted, renamed, and unavailable files keep their status explicit." code={`// Complete files: use null for the missing side.
 <Diff source={{ kind: "files", before: null, after: file }}
   layout="unified" wrap={false} controls={false}
   context="collapsed" maxHeight={null} />`}>
         <div className="grid min-w-0 gap-6">{fileStates.map(state => <div key={state.name} className="min-w-0">
           <h4 className="mb-3 font-sans text-ui font-medium normal-case text-muted-foreground">{state.name}</h4>
-          <Diff aria-label={`${state.name} file example`} source={state.source} layout="unified" wrap={false} controls={false} context="collapsed" maxHeight={null} />
+          <Diff aria-label={`${state.name} file example`} source={state.source} layout="unified" wrap={false} controls={false} context="collapsed" maxHeight={240} annotations={{ notes: [{ id: state.name, title: `Explain the ${state.name.toLowerCase()} source`, body: state.name === "Unavailable" ? "The author’s explanation stays readable even when the binary capture cannot be displayed as code." : "The note refers to the original source on the available side of this change.", presentation: "inline", range: { side: state.name === "Deleted" ? "before" : "after", start: 1, end: 1 } }], activeNoteId, onActiveNoteChange: setActiveNoteId }} />
         </div>)}</div>
       </CatalogExample>
       <div>

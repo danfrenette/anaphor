@@ -1,11 +1,12 @@
 "use client";
 
-import { SVGSpriteSheet, parseDiffFromFile, parsePatchFiles, type FileContents, type FileDiffMetadata, type SelectedLineRange } from "@pierre/diffs";
+import { SVGSpriteSheet, parseDiffFromFile, parsePatchFiles, type FileContents, type FileDiffMetadata, type SelectedLineRange, type DiffLineAnnotation } from "@pierre/diffs";
 import { CopyIcon, UnwrapIcon, WrapIcon } from "@primer/octicons-react";
 import { FileDiff, type FileDiffOptions } from "@pierre/diffs/react";
 import { CaretRight, FileCode } from "@phosphor-icons/react/dist/ssr";
 import { useEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
-import { Button } from "./button";
+import { Popover, PopoverBody, PopoverPopup, PopoverTitle, PopoverTrigger } from "./popover";
+import { Button, ButtonLabel } from "./button";
 import { Tooltip, TooltipPopup, TooltipProvider, TooltipTrigger } from "./tooltip";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsible";
 import { CardCopyButton } from "./card-copy-button";
@@ -14,8 +15,41 @@ import { cn } from "../lib/utils";
 
 type DiffSource =
   | { kind: "patch"; patch: string; path: string }
+  | { kind: "unchanged"; file: FileContents; excerpts: readonly { start: number; end: number }[] }
   | { kind: "files"; before: FileContents | null; after: FileContents | null }
   | { kind: "unavailable"; path: string; reason: string };
+
+type DiffNote = {
+  id: string;
+  title: string;
+  body: ReactNode;
+  presentation: "inline" | "popover";
+  range: { side: "before" | "after"; start: number; end: number };
+};
+
+type DiffAnnotations = {
+  notes: readonly DiffNote[];
+  activeNoteId: string | null;
+  onActiveNoteChange: (id: string) => void;
+  /** Change the key to reveal a note, including a repeated request for the same note. */
+  revealKey?: string | number;
+};
+
+function Note({ note, number, active, unavailable, onActivate }: {
+  note: DiffNote; number: number; active: boolean; unavailable: boolean; onActivate: () => void;
+}) {
+  const title = <><span className="shrink-0 whitespace-nowrap tabular-nums">{number}.</span>{" "}<span className="min-w-0">{note.title}</span></>;
+  return <div className={cn("min-w-0 border-l-2 px-3 py-2 font-sans text-ui [overflow-wrap:anywhere]", active ? "border-[var(--anaphor-brand)] bg-muted/60" : "border-transparent")}>
+    {note.presentation === "inline" ? <Collapsible defaultOpen={false} onOpenChange={open => { if (open) onActivate(); }}>
+      <CollapsibleTrigger className="min-h-10"><CaretRight aria-hidden="true" />{title}</CollapsibleTrigger>
+      <CollapsibleContent hiddenUntilFound={false}><div className="max-w-reading px-2 pb-2 text-ui">{note.body}</div></CollapsibleContent>
+    </Collapsible> : <Popover onOpenChange={open => { if (open) onActivate(); }}>
+      <PopoverTrigger render={<Button type="button" nativeButton size="md" shape="square" variant="ghost" tone="neutral" loading={false} iconOnly={false} className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal text-start" />}><ButtonLabel>{title}</ButtonLabel></PopoverTrigger>
+      <PopoverPopup side="bottom" align="start" sideOffset={8}><PopoverBody><PopoverTitle>{note.title}</PopoverTitle><div className="mt-2 text-ui">{note.body}</div></PopoverBody></PopoverPopup>
+    </Popover>}
+    {unavailable && <p className="px-2 text-small text-muted-foreground">Code range unavailable in supplied source.</p>}
+  </div>;
+}
 
 type DiffProps = Omit<ComponentProps<"section">, "children"> & {
   source: DiffSource;
@@ -28,16 +62,65 @@ type DiffProps = Omit<ComponentProps<"section">, "children"> & {
   /** Change this value to request scrolling to the highlighted range. */
   revealKey?: string | number;
   notice?: string;
+  annotations?: DiffAnnotations;
   onLayoutChange?: (layout: "unified" | "split") => void;
   onWrapChange?: (wrap: boolean) => void;
 };
 
-function readSource(source: DiffSource): { file?: FileDiffMetadata; message?: string } {
+function hasRange(file: FileDiffMetadata | undefined, range: DiffNote["range"]) {
+  if (!file || !Number.isInteger(range.start) || !Number.isInteger(range.end) || range.start < 1 || range.end < range.start) return false;
+  const side = range.side === "after" ? "addition" : "deletion";
+  if (!file.isPartial) return range.end <= file[`${side}Lines`].length;
+  let next = range.start;
+  for (const hunk of file.hunks) {
+    if (hunk[`${side}Start`] > next) break;
+    if (hunk[`${side}Start`] + hunk[`${side}Count`] > next) next = hunk[`${side}Start`] + hunk[`${side}Count`];
+    if (next > range.end) return true;
+  }
+  return false;
+}
+
+// Context-only hunks use Pierre's public metadata format. Both source arrays remain
+// complete, so original numbers and Pierre's context-expansion controls stay intact.
+function excerptFile(file: FileDiffMetadata, excerpts: readonly { start: number; end: number }[]): FileDiffMetadata {
+  const ranges: { start: number; end: number }[] = [];
+  for (const range of [...excerpts].sort((a, b) => a.start - b.start)) {
+    const previous = ranges.at(-1);
+    if (previous && range.start <= previous.end + 1) previous.end = Math.max(previous.end, range.end);
+    else ranges.push({ ...range });
+  }
+  return { ...file, splitLineCount: file.additionLines.length, unifiedLineCount: file.additionLines.length,
+    hunks: ranges.map((range, index) => {
+      const start = range.start - 1;
+      const count = range.end - range.start + 1;
+      return {
+        collapsedBefore: start - (ranges[index - 1]?.end ?? 0),
+        additionStart: range.start, deletionStart: range.start,
+        additionCount: count, deletionCount: count, additionLines: 0, deletionLines: 0,
+        additionLineIndex: start, deletionLineIndex: start,
+        splitLineStart: start, unifiedLineStart: start, splitLineCount: count, unifiedLineCount: count,
+        noEOFCRAdditions: false, noEOFCRDeletions: false,
+        hunkContent: [{ type: "context", lines: count, additionLineIndex: start, deletionLineIndex: start }],
+      };
+    }),
+  };
+}
+
+function readSource(source: DiffSource, notes: readonly DiffNote[] | undefined): { file?: FileDiffMetadata; message?: string } {
   if (source.kind === "unavailable") return { message: source.reason };
   try {
+    if (source.kind === "unchanged") {
+      const file = parseDiffFromFile(source.file, source.file, { context: 3 }, true);
+      if (!source.excerpts.length || source.excerpts.some(range => !hasRange(file, { ...range, side: "after" }))) {
+        return { message: "Supply at least one valid excerpt within the unchanged file." };
+      }
+      return { file: excerptFile(file, source.excerpts) };
+    }
     if (source.kind === "files") {
       if (!source.before && !source.after) return { message: "No file contents supplied." };
-      return { file: parseDiffFromFile(source.before, source.after, { context: 3 }, true) };
+      const file = parseDiffFromFile(source.before, source.after, { context: 3 }, true);
+      const ranges = notes?.filter(note => hasRange(file, note.range)).map(note => note.range);
+      return { file: file.hunks.length === 0 && ranges?.length ? excerptFile(file, ranges) : file };
     }
     if (/^(Binary files |GIT binary patch)/m.test(source.patch)) return { message: "Binary file changed. A text diff is not available." };
     const files = parsePatchFiles(source.patch, undefined, true).flatMap(patch => patch.files);
@@ -104,18 +187,51 @@ function ReadingControl({ label, description, disabled, onClick, children }: {
   </Tooltip>;
 }
 
-function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedLines, revealKey, notice, onLayoutChange, onWrapChange, className, ref, ...props }: DiffProps) {
-  const { file, message } = useMemo(() => readSource(source), [source]);
+function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedLines, revealKey, notice, annotations, onLayoutChange, onWrapChange, className, ref, ...props }: DiffProps) {
+  const { file, message } = useMemo(() => readSource(source, annotations?.notes), [source, annotations?.notes]);
+  const noteGroups = useMemo(() => {
+    const groups: DiffLineAnnotation<{ note: DiffNote; number: number }[]>[] = [];
+    annotations?.notes.forEach((note, index) => {
+      if (!hasRange(file, note.range)) return;
+      const side = note.range.side === "after" ? "additions" : "deletions";
+      let group = groups.find(item => item.lineNumber === note.range.end && item.side === side);
+      if (!group) { group = { side, lineNumber: note.range.end, metadata: [] }; groups.push(group); }
+      group.metadata.push({ note, number: index + 1 });
+    });
+    return groups;
+  }, [annotations?.notes, file]);
+  const activeNote = annotations?.notes.find(note => note.id === annotations.activeNoteId);
+  const selectedLines = useMemo<SelectedLineRange | undefined>(() => activeNote && hasRange(file, activeNote.range)
+    ? { start: activeNote.range.start, end: activeNote.range.end, side: activeNote.range.side === "after" ? "additions" : "deletions" }
+    : highlightedLines, [activeNote, file, highlightedLines]);
   const [collapsed, setCollapsed] = useState(false);
+  const requestedKey = annotations?.revealKey;
+  const [lastRequest, setLastRequest] = useState<{ key: string | number | undefined; file: FileDiffMetadata | undefined }>({ key: undefined, file });
+  const [revealRequest, setRevealRequest] = useState<{ key: string | number; noteId: string; file: FileDiffMetadata | undefined }>();
+  const [expandedSource, setExpandedSource] = useState<FileDiffMetadata>();
+  if (lastRequest.key !== requestedKey || lastRequest.file !== file) {
+    setLastRequest({ key: requestedKey, file });
+    // A source replacement invalidates inspection state. Only a new key requests
+    // navigation; changing active emphasis or opening an inline note does not.
+    if (requestedKey !== undefined && lastRequest.key !== requestedKey && activeNote) {
+      setRevealRequest({ key: requestedKey, noteId: activeNote.id, file });
+      setCollapsed(false);
+      if (hasRange(file, activeNote.range)) setExpandedSource(file);
+    } else if (lastRequest.file !== file) {
+      setRevealRequest(undefined);
+    }
+  }
+  const viewport = useRef<HTMLDivElement>(null);
+  const revealedNote = useRef<typeof revealRequest>(undefined);
   const [wide, setWide] = useState(false);
   const root = useRef<HTMLElement>(null);
   const revealed = useRef<string | number | undefined>(undefined);
   const revealFrame = useRef<number | undefined>(undefined);
-  useEffect(() => () => cancelAnimationFrame(revealFrame.current ?? 0), []);
+  useEffect(() => () => cancelAnimationFrame(revealFrame.current ?? 0), [file]);
   const effectiveLayout = wide ? layout : "unified";
   const nextLayout = effectiveLayout === "unified" ? "split" : "unified";
   const { resolvedTheme } = useTheme();
-  const path = file?.name ?? (source.kind === "files" ? source.after?.name ?? source.before?.name ?? "Unknown file" : source.path);
+  const path = file?.name ?? (source.kind === "files" ? source.after?.name ?? source.before?.name ?? "Unknown file" : source.kind === "unchanged" ? source.file.name : source.path);
 
   useEffect(() => {
     const element = root.current;
@@ -125,7 +241,7 @@ function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedL
     return () => observer.disconnect();
   }, []);
 
-  const options = useMemo<FileDiffOptions<undefined, undefined>>(() => ({
+  const options = useMemo<FileDiffOptions<{ note: DiffNote; number: number }[], undefined>>(() => ({
     theme: { light: "github-light-high-contrast", dark: "github-dark-high-contrast" },
     themeType: resolvedTheme === "dark" ? "dark" : "light",
     diffStyle: wide ? layout : "unified",
@@ -134,11 +250,15 @@ function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedL
     diffIndicators: "classic",
     lineDiffType: "word-alt",
     hunkSeparators: "line-info",
-    expandUnchanged: context === "expanded",
+    expandUnchanged: context === "expanded" || (file !== undefined && expandedSource === file),
     expansionLineCount: 20,
     enableLineSelection: false,
     unsafeCSS: diffCSS,
-    onPostRender(node) {
+    onPostRender(node, instance) {
+      cancelAnimationFrame(revealFrame.current ?? 0);
+      // The React wrapper applies a row selection to both split columns. The public
+      // instance API also accepts the source side, which authored notes require.
+      instance.setSelectedLines(selectedLines ?? null, { activeLineSide: activeNote ? selectedLines?.side : undefined });
       // Pierre owns the horizontal scroller inside its shadow root.
       for (const code of node.shadowRoot?.querySelectorAll<HTMLElement>("code[data-code]") ?? []) {
         code.tabIndex = wrap ? -1 : 0;
@@ -158,18 +278,41 @@ function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedL
           };
         }
       }
-      if (revealKey === undefined || revealed.current === revealKey || !highlightedLines) return;
+      if (!selectedLines) return;
+      const notePending = revealRequest !== undefined && revealedNote.current !== revealRequest;
+      const legacyPending = revealKey !== undefined && revealed.current !== revealKey && highlightedLines;
+      if (!activeNote && !notePending && !legacyPending) return;
       cancelAnimationFrame(revealFrame.current ?? 0);
       // Selection is applied after Pierre renders; reveal once that update reaches layout.
       revealFrame.current = requestAnimationFrame(() => {
+        // Unified selection is a rendered-row interval, including interleaved
+        // changes from the other source. Keep authored emphasis on its own side.
+        // Both gutter and content cells carry the same source-type attribute.
+        if (activeNote) {
+          const opposite = activeNote.range.side === "after" ? "change-deletion" : "change-addition";
+          for (const row of node.shadowRoot?.querySelectorAll(`[data-line-type="${opposite}"][data-selected-line]`) ?? []) {
+            row.removeAttribute("data-selected-line");
+            const annotation = row.nextElementSibling;
+            if (annotation?.hasAttribute("data-line-annotation")) annotation.removeAttribute("data-selected-line");
+          }
+        }
+        if (!notePending && !legacyPending) return;
         const line = node.shadowRoot?.querySelector("[data-line][data-selected-line]");
         if (line) {
           revealed.current = revealKey;
-          line.scrollIntoView({ block: "center", behavior: "instant" });
+          revealedNote.current = revealRequest;
+          const scroller = viewport.current;
+          if (scroller && maxHeight !== null) {
+            const bounds = scroller.getBoundingClientRect();
+            const target = line.getBoundingClientRect();
+            scroller.scrollTop += target.top - bounds.top - (scroller.clientHeight - target.height) / 2;
+          } else if (!notePending) {
+            line.scrollIntoView({ block: "center", behavior: "instant" });
+          }
         }
       });
     },
-  }), [resolvedTheme, wide, layout, wrap, context, revealKey, highlightedLines]);
+  }), [resolvedTheme, wide, layout, wrap, context, revealKey, highlightedLines, selectedLines, activeNote, revealRequest, expandedSource, file, maxHeight]);
 
   const additions = file?.hunks.reduce((sum, hunk) => sum + hunk.additionLines, 0) ?? 0;
   const deletions = file?.hunks.reduce((sum, hunk) => sum + hunk.deletionLines, 0) ?? 0;
@@ -178,7 +321,7 @@ function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedL
     root.current = node;
     if (typeof ref === "function") return ref(node);
     if (ref) ref.current = node;
-  }} aria-label={props["aria-label"] ?? `Diff for ${path}`} className={cn("@container min-w-0 overflow-hidden rounded border border-border bg-background", className)}>
+  }} aria-label={props["aria-label"] ?? `Diff for ${path}`} className={cn("@container min-w-0 [overflow-anchor:none] overflow-hidden rounded border border-border bg-background", className)}>
     <Collapsible open={!collapsed} onOpenChange={open => setCollapsed(!open)}>
     <header className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 bg-muted/60 px-3 py-2">
       <div className="flex min-w-[min(100%,16rem)] flex-1 items-center gap-2">
@@ -191,7 +334,7 @@ function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedL
         </div>
       </div>
       {file && <div className="flex items-center gap-3 text-small">
-        <span className="sr-only text-muted-foreground @sm:not-sr-only">{changeLabels[file.type]}</span>
+        <span className="sr-only text-muted-foreground @sm:not-sr-only">{source.kind === "unchanged" ? "Unchanged" : changeLabels[file.type]}</span>
         <span className="font-mono tabular-nums" aria-label={`${additions} additions, ${deletions} deletions`}>+{additions} <span className="text-danger-text">−{deletions}</span></span>
       </div>}
       {controls && file && <div role="group" aria-label="Diff reading controls" className="ml-auto flex shrink-0 items-center">
@@ -200,6 +343,7 @@ function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedL
           {onWrapChange && <ReadingControl label={wrap ? "Unwrap lines" : "Wrap lines"} description={wrap ? "Unwrap lines — keep each line on one row and scroll horizontally." : "Wrap lines — fit long lines within the available width."} disabled={false} onClick={() => onWrapChange(!wrap)}>{wrap ? <UnwrapIcon size={16} aria-hidden="true" /> : <WrapIcon size={16} aria-hidden="true" />}</ReadingControl>}
         </TooltipProvider>
         <div className="ml-auto">
+          {source.kind === "unchanged" && <CardCopyButton icon={<CopyIcon size={16} aria-hidden="true" />} value={source.file.contents} aria-label="Copy file" />}
           {source.kind === "patch" && <CardCopyButton icon={<CopyIcon size={16} aria-hidden="true" />} value={source.patch} aria-label="Copy patch" />}
           {source.kind === "files" && source.after && <CardCopyButton icon={<CopyIcon size={16} aria-hidden="true" />} value={source.after.contents} aria-label="Copy new file" />}
         </div>
@@ -207,11 +351,14 @@ function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedL
     </header>
     <CollapsibleContent hiddenUntilFound={false} keepMounted>
     <div className="border-t border-border">
+      {annotations && annotations.notes.filter(note => !hasRange(file, note.range)).map(note => <Note key={note.id} note={note} number={annotations.notes.indexOf(note) + 1} active={annotations.activeNoteId === note.id} unavailable onActivate={() => annotations.onActiveNoteChange(note.id)} />)}
       {notice && <p className="border-b border-border px-4 py-3 text-small">{notice}</p>}
       {message ? <p role="status" className="px-4 py-6 text-ui text-muted-foreground">{message}</p> : file && <>
+        {file.type === "rename-pure" && file.hunks.length > 0 && <p className="border-b border-border px-4 py-2 text-small text-muted-foreground">File renamed without content changes.</p>}
+        {source.kind === "unchanged" && <p className="border-b border-border px-4 py-2 text-small text-muted-foreground">Unchanged file · Excerpts with expandable context.</p>}
         {file.isPartial && <p className="border-b border-border px-4 py-2 text-small text-muted-foreground">Patch excerpt · Only supplied context is available.</p>}
-        {file.hunks.length === 0 ? <p className="px-4 py-6 text-ui text-muted-foreground">{file.type === "rename-pure" ? "File renamed without content changes." : "No text changes."}</p> : <div className="min-w-0 overflow-auto focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2" style={{ maxHeight: maxHeight ?? undefined }} tabIndex={0} role="region" aria-label={`Code changes: ${props["aria-label"] ?? path}`}>
-          <FileDiff fileDiff={file} options={options} selectedLines={highlightedLines ?? null} />
+        {file.hunks.length === 0 ? <p className="px-4 py-6 text-ui text-muted-foreground">{file.type === "rename-pure" ? "File renamed without content changes." : "No text changes."}</p> : <div ref={viewport} className="min-w-0 overflow-auto overscroll-contain [overflow-anchor:none] focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2" style={{ maxHeight: maxHeight ?? undefined }} tabIndex={0} role="region" aria-label={`Code changes: ${props["aria-label"] ?? path}`}>
+          <FileDiff fileDiff={file} options={options} lineAnnotations={noteGroups} renderAnnotation={annotation => annotation.metadata.map(({ note, number }) => <Note key={note.id} note={note} number={number} active={annotations?.activeNoteId === note.id} unavailable={false} onActivate={() => annotations?.onActiveNoteChange(note.id)} />)} />
         </div>}
       </>}
     </div>
@@ -220,4 +367,4 @@ function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedL
   </section>;
 }
 
-export { Diff, type DiffProps, type DiffSource };
+export { Diff, type DiffProps, type DiffSource, type DiffNote, type DiffAnnotations };

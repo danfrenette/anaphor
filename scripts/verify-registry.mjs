@@ -102,6 +102,12 @@ async function checkBrowser(browser, directory, item) {
     if (item === "diff" || item === "ui") {
       const diff = page.getByRole("region", { name: "Diff for example.ts" });
       await expect(diff.locator("[data-line]").filter({ hasText: "const count = 2;" })).toBeVisible();
+      if (item === "diff") {
+        await diff.getByRole("button", { name: "1. Raise the initial count" }).click();
+        await expect(page.getByRole("dialog")).toContainText("New readers begin with two items.");
+        await page.keyboard.press("Escape");
+        await expect(diff.getByRole("button", { name: "1. Raise the initial count" })).toBeFocused();
+      }
       await diff.getByRole("button", { name: "Collapse example.ts" }).click();
       await expect(diff.getByRole("region", { name: "Code changes: example.ts" })).toBeHidden();
       await diff.getByRole("button", { name: "Expand example.ts" }).click();
