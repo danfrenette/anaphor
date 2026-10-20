@@ -129,7 +129,7 @@ export function DiffDemo() {
   highlightedLines={{ start: 20, end: 20, side: "additions" }}
   revealKey={reveal} />`}>
         <div className="mb-4 flex flex-wrap gap-2">
-          <Button type="button" nativeButton size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} onClick={() => { setHighlightGuard(true); setReveal(value => value + 1); }}><ButtonLabel>Locate the guard</ButtonLabel></Button>
+          <Button type="button" nativeButton size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} onClick={() => { setActiveNoteId(null); setHighlightGuard(true); setReveal(value => value + 1); }}><ButtonLabel>Locate the guard</ButtonLabel></Button>
           <Button type="button" nativeButton size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} onClick={() => { setActiveNoteId("missing-context"); setNoteReveal(value => value + 1); }}><ButtonLabel>Locate omitted context</ButtonLabel></Button>
           <Button type="button" nativeButton size="sm" shape="square" variant="ghost" tone="neutral" loading={false} iconOnly={false} disabled={!highlightGuard} onClick={() => setHighlightGuard(false)}><ButtonLabel>Clear highlight</ButtonLabel></Button>
         </div>
