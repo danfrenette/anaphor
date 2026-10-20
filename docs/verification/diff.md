@@ -124,3 +124,52 @@ The final catalog pass checks unchanged-context expansion by Enter and Space in
 Chromium and WebKit. Pierre's div-based controls receive an accessible name,
 keyboard activation, a token-based focus outline, and 44px coarse-pointer targets.
 The full-page axe scan includes the initially collapsed-context playground.
+
+## E1 authored evidence notes and unchanged excerpts
+
+Public contracts: `DiffNote`, `DiffAnnotations`, and the `unchanged` source branch
+are documented in [Diff](../components/diff.md). The package owns presentation;
+the consumer owns authored content, active note, reveal requests, and source identity.
+
+Run `pnpm test packages/design-system/test/diff.test.tsx`, `pnpm typecheck`, and
+`pnpm test:browser e2e/diff.spec.ts`. Registry distribution adds the Popover item;
+`pnpm test:registry` exercises a real installed annotation popover, Escape/focus
+return, and the existing copy/collapse/source rendering consumer.
+
+1. In **Authored notes**, open the numbered guard title by keyboard. Its explanation
+   is initially collapsed. Open the adjacent short note, dismiss with Escape, and
+   confirm focus returns. The two notes sharing an anchor remain independently
+   accessible. Follow the before-side note and verify original deleted code is emphasized.
+2. Collapse the file. Focus **Locate 3: Keep the existing label** and press Enter.
+   The file and previously hidden context open; line 8 is emphasized inside the
+   280px viewport. Focus remains on the external button, the page does not scroll,
+   and the inline explanation stays collapsed. Repeat requests remain usable.
+3. **Unchanged excerpts** initially shows original lines 8–10 and 36. Expand the
+   omitted context with Enter/Space. No changed-line markers are manufactured;
+   the full file stays bounded, with the long line wrapping at narrow widths.
+4. **Show unavailable source** retains all explanations and explicitly marks their
+   missing targets. **Restore captured source** clears the consumer's active note
+   and restores closed explanations. Inspect File states notes on added, deleted,
+   renamed, and binary/unavailable sources. Integration tests cover a note outside
+   supplied patch context and invalid excerpt bounds; neither is silently clamped.
+5. Check both themes and 320px WebKit. The annotation recipe also uses 200% CSS
+   layout zoom in a 640px viewport (320px effective width), reduced motion,
+   keyboard focus, open popover axe scans, and captures the resulting surfaces.
+   This zoom check is layout emulation, not a claim of browser-menu zoom or physical
+   touch/screen-reader acceptance.
+
+The E1 implementation run's scratch receipts are under
+`/private/tmp/anaphor-evidence-delivery/`; final delivery records the exact revision
+and integrated checks separately. Do not treat earlier receipts above as proof of E1.
+
+The expanded annotation accessibility scan excludes only
+`[data-base-ui-focus-guard]`. Base UI 1.9.0 deliberately assigns those visually
+hidden sentinels `role="button"` on WebKit/VoiceOver to intercept its virtual cursor
+(its `utils/FocusGuard` implementation); axe reports their missing command names.
+All rules remain enabled for authored controls, code, and popup content. This is a
+scoped scan limitation, not a substitute for dedicated VoiceOver acceptance.
+
+Authored emphasis is source-side-specific. Verify that a before-side note does
+not paint the adjacent after column in split view, and an after-side range in
+unified view excludes interleaved deleted rows. The adapter uses Pierre's public
+selection-side option and trims opposite-side unified row decorations after render.

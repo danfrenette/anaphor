@@ -68,7 +68,7 @@ test("diff reading controls, excerpts, file states and theme remain usable", asy
   await expect(page.locator("html")).toHaveClass(/dark/);
   await full.scrollIntoViewIfNeeded();
   const darkAccessibility = await new AxeBuilder({ page }).include("#diff").analyze();
-  expect(darkAccessibility.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => n.failureSummary) }))).toEqual([]);
+  expect(darkAccessibility.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ target: n.target, summary: n.failureSummary })) }))).toEqual([]);
   await page.screenshot({ path: `test-results/diff-${testInfo.project.name}-dark.png`, fullPage: false });
 });
 
@@ -86,3 +86,115 @@ for (const key of ["Enter", "Space"]) {
     await expect.poll(() => lines.count()).toBeGreaterThan(before);
   });
 }
+
+test("authored notes disclose inline and popover explanations without duplicating external reveals", async ({ page }) => {
+  await page.goto("/#diff");
+  const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
+  const note = diff.getByRole("button", { name: "1. Guard missing sections", exact: true });
+  await expect(note).toHaveAttribute("aria-expanded", "false");
+  await note.click();
+  await expect(diff.getByText("Unknown sections return no next section instead of restarting at the beginning.")).toBeVisible();
+  await note.click();
+  await diff.getByRole("button", { name: "2. Keep the return nearby", exact: true }).click();
+  await expect(page.getByRole("dialog")).toContainText("The guard and successful return stay together.");
+  await page.keyboard.press("Escape");
+  await expect(diff.getByRole("button", { name: "2. Keep the return nearby", exact: true })).toBeFocused();
+});
+
+test("external notes open hidden context and reveal only inside the bounded diff", async ({ page }) => {
+  await page.goto("/#diff");
+  const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
+  await diff.getByRole("button", { name: "Collapse src/articles/reading-position.ts", exact: true }).click();
+  const external = page.getByRole("button", { name: "Locate 3: Keep the existing label", exact: true });
+  await external.focus();
+  const pagePosition = await page.evaluate(() => scrollY);
+  await external.press("Enter");
+  await expect(external).toBeFocused();
+  await expect(diff.getByRole("button", { name: "Collapse src/articles/reading-position.ts", exact: true })).toBeVisible();
+  const code = diff.getByRole("region", { name: "Code changes: Annotated navigation", exact: true });
+  await expect(code.locator('[data-line][data-selected-line]').first()).toContainText("export function sectionLabel");
+  await expect(diff.getByRole("button", { name: "3. Keep the existing label", exact: true })).toHaveAttribute("aria-expanded", "false");
+  await expect(diff.locator('[data-slot="collapsible-content"]').first()).toHaveCSS("height", "281px");
+  expect(await page.evaluate(() => scrollY)).toBe(pagePosition);
+  await expect.poll(() => code.evaluate(element => {
+    const line = element.querySelector('diffs-container')?.shadowRoot?.querySelector('[data-line][data-selected-line]');
+    if (!line) return false;
+    const bounds = element.getBoundingClientRect();
+    const target = line.getBoundingClientRect();
+    return target.top >= bounds.top && target.bottom <= bounds.bottom;
+  })).toBe(true);
+});
+
+test("unchanged excerpts preserve original numbering and expand surrounding context", async ({ page }) => {
+  await page.goto("/#diff");
+  const diff = page.getByRole("region", { name: "Unchanged label contract", exact: true });
+  await expect(diff.getByText("Unchanged file · Excerpts with expandable context.")).toBeVisible();
+  await expect(diff.locator('[data-line="8"]')).toContainText("export function sectionLabel");
+  await expect(diff.locator('[data-line]').filter({ hasText: "export type ReadingPosition" })).toHaveCount(0);
+  const lines = await diff.locator('[data-line]').count();
+  await diff.getByRole("button", { name: "Expand unchanged lines", exact: true }).first().press("Enter");
+  await expect.poll(() => diff.locator('[data-line]').count()).toBeGreaterThan(lines);
+  await expect(diff.locator('[data-line]').filter({ hasText: "export type ReadingPosition" })).toBeVisible();
+});
+
+test("annotation focus, failure recovery, themes and zoom remain usable", async ({ page }, testInfo) => {
+  await page.addInitScript(() => localStorage.setItem("anaphor-theme", "light"));
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/#diff");
+  const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
+  await page.getByRole("button", { name: "Locate 1: Guard missing sections", exact: true }).click();
+  await expect(diff.locator('[data-line][data-selected-line]')).not.toHaveCount(0);
+  await page.getByRole("button", { name: "Show unavailable source", exact: true }).click();
+  await expect(diff.getByRole("status")).toContainText("Authored explanations are retained");
+  const note = diff.getByRole("button", { name: "1. Guard missing sections", exact: true });
+  await note.press("Enter");
+  await expect(diff.getByText("Unknown sections return no next section instead of restarting at the beginning.")).toBeVisible();
+  await page.getByRole("button", { name: "Restore captured source", exact: true }).click();
+  await expect(diff.locator('[data-line][data-selected-line]')).toHaveCount(0);
+  await expect(note).toHaveAttribute("aria-expanded", "false");
+  await page.setViewportSize({ width: 640, height: 1000 });
+  await page.evaluate(() => { document.documentElement.style.zoom = "2"; });
+  await note.press("Enter");
+  await expect(note).toBeFocused();
+  await expect(note).toHaveAttribute("aria-expanded", "true");
+  await expect(note.locator('..').locator('[data-slot="collapsible-content"]')).toHaveCSS("transition-duration", "0s");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await note.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: testInfo.outputPath("notes-zoom.png") });
+  await page.evaluate(() => { document.documentElement.style.zoom = "1"; });
+  for (const theme of ["light", "dark"]) {
+    if (theme === "dark") await page.getByRole("button", { name: "Switch to dark theme", exact: true }).click();
+    await expect(page.locator("html")).toHaveClass(theme === "dark" ? /dark/ : /light/);
+    await diff.getByRole("button", { name: "2. Keep the return nearby", exact: true }).click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    // Base UI's WebKit/VoiceOver focus sentinels intentionally use role=button
+    // to intercept the virtual cursor (Base UI utils/FocusGuard). They are not
+    // authored commands; keep every rule enabled for the actual note UI.
+    const accessibility = await new AxeBuilder({ page }).include('[data-slot="popover-popup"]').include('#diff').exclude('[data-base-ui-focus-guard]').analyze();
+    expect(accessibility.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ target: n.target, summary: n.failureSummary })) }))).toEqual([]);
+    await page.screenshot({ path: testInfo.outputPath(`notes-${theme}.png`) });
+    await page.keyboard.press("Escape");
+    await expect(diff.getByRole("button", { name: "2. Keep the return nearby", exact: true })).toBeFocused();
+  }
+});
+
+
+test("before-side authored emphasis does not select the adjacent after-side code", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-chromium", "Two columns require a desktop surface.");
+  await page.goto("/#diff");
+  const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
+  await expect(diff.locator('[data-diff-type="split"]')).toBeVisible();
+  await page.getByRole("button", { name: "Locate 4: Replace implicit wrapping", exact: true }).click();
+  await expect(diff.locator('code[data-deletions] [data-line][data-selected-line]')).toContainText("return document.sections[index + 1]");
+  await expect(diff.locator('code[data-additions] [data-line][data-selected-line]')).toHaveCount(0);
+});
+
+test("unified authored ranges exclude interleaved changes from the other side", async ({ page }) => {
+  await page.setViewportSize({ width: 500, height: 800 });
+  await page.goto("/#diff");
+  const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
+  await page.getByRole("button", { name: "Locate 1: Guard missing sections", exact: true }).click();
+  await expect(diff.locator('[data-diff-type="single"]')).toBeVisible();
+  await expect(diff.locator('[data-line][data-line-type="change-addition"][data-selected-line]')).toHaveCount(3);
+  await expect(diff.locator('[data-line][data-line-type="change-deletion"][data-selected-line]')).toHaveCount(0);
+});

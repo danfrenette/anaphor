@@ -21,7 +21,7 @@ const [wrap, setWrap] = useState(false);
 />
 ```
 
-Import `Diff`, `DiffProps`, and `DiffSource` from `@anaphor/system`. The source
+Import `Diff`, `DiffProps`, `DiffSource`, `DiffNote`, and `DiffAnnotations` from `@anaphor/system`. The source
 registry item is `danfrenette/anaphor/diff`.
 
 ## Source and ownership
@@ -31,10 +31,15 @@ registry item is `danfrenette/anaphor/diff`.
 - `patch`: a single-file unified `patch` and a fallback `path`. Multiple files and
   invalid patches produce an explicit status. Patch context cannot be expanded
   beyond the supplied source. Supply complete files to enable full expansion.
+- `unchanged`: a complete `file` and nonempty `excerpts` of inclusive one-based
+  `{ start, end }` ranges. Ranges are sorted and overlapping/adjacent ranges merge
+  for display. Invalid bounds produce an explicit status; they are never clamped.
+  Omitted regions expand through the same Pierre controls, retaining original
+  numbering. Use `context="expanded"` to inspect all supplied source.
 - `unavailable`: a `path` and a reader-facing `reason`, including binary changes or
   a missing patch. Binary previews are outside this component.
 
-Fetching, PR provenance, authentication, persistence, and explanation text belong
+Fetching, PR provenance, authentication, persistence, and authorship of explanation text belong
 to the consuming application. No tour document schema changes are included.
 The application must identify truncated source through `notice`; the component
 cannot infer whether its supplied contents are complete.
@@ -59,16 +64,18 @@ complete after contents. Native code selection is available in either mode.
 `side: "additions" | "deletions"`. `revealKey` requests an immediate scroll to a
 rendered highlighted range when it changes. It does not steal keyboard focus.
 For a range outside the displayed hunks, supply expanded context before revealing
-it. Line emphasis is controlled; interactive range selection and comments are
-not included. A collapsed file stays collapsed until the reader opens it.
+it. Line emphasis is controlled; interactive reader range selection is not included.
+Legacy `revealKey` keeps its page-flow scrolling behavior when `maxHeight` is null.
+Authored-note reveal below opens the file and expands its context automatically.
 
 ## Initial limits
 
 This first version uses Pierre's file renderer without a virtualizer. Bounded
 height limits the visible surface, not work performed. Very large files still
 need a measured virtualization pass before use at repository-viewer scale.
-The excerpt example supplies one patch hunk; arbitrary range slicing from a full
-file is not yet an API. Full-file context expansion is supported independently.
+Changed-file excerpts still use supplied patch hunks. Arbitrary slicing of changed
+files is outside this API; `unchanged` supports authored excerpts of a complete
+unchanged file. Full-file context expansion remains available.
 
 ## Verification
 
@@ -100,3 +107,68 @@ action is disabled. WrapIcon and UnwrapIcon similarly show the next action.
 The example starts without line emphasis. Locate the guard highlights line 20,
 adds an explanatory label, and offers Clear highlight. The orange marker denotes
 application-supplied emphasis, not a change type.
+
+## Authored notes
+
+```tsx
+const notes: DiffNote[] = [{
+  id: "guard",
+  title: "Stop at a missing section",
+  body: <p>Unknown sections return no next section.</p>,
+  presentation: "inline",
+  range: { side: "after", start: 20, end: 22 },
+}];
+const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+const [revealKey, setRevealKey] = useState(0);
+
+// An external explanation can use this action while reusing notes[].body.
+function locate(note: DiffNote) {
+  setActiveNoteId(note.id);
+  setRevealKey(key => key + 1);
+}
+
+<Diff source={source} layout="unified" wrap controls={false}
+  context="collapsed" maxHeight={280}
+  annotations={{ notes, activeNoteId, onActiveNoteChange: setActiveNoteId, revealKey }}
+/>
+```
+
+`annotations` is optional content. When present, its notes, active ID (or null),
+and change callback are explicit. Each note needs a unique stable `id`, `title`,
+React `body`, `presentation: "inline" | "popover"`, and one inclusive range with
+`side: "before" | "after"`. Array order determines the visible number. Keep source
+and note identities stable between reading interactions; replace them when the
+captured source or authored notes change. The application resets its controlled
+active ID and reveal key for a new evidence item.
+
+Notes appear after their range's final line, grouped when they share that anchor.
+Numbered inline titles start collapsed; popovers open on activation and return
+focus on dismissal. Opening a note requests active emphasis through the callback.
+Changing only the active ID does not request scrolling. Existing `highlightedLines`
+remains available; a valid active note takes precedence over that legacy emphasis.
+
+Changing `annotations.revealKey` follows the currently active note. A repeat request
+for the same note needs a new key. It opens the file and expands all available
+context, then reveals the first target line within the numeric `maxHeight` viewport.
+It retains the invoking focus and does not scroll the page or open the explanation.
+With `maxHeight={null}`, note reveal expands and emphasizes without scrolling;
+use a numeric bound for tour inspection. Existing `context` still specifies the
+initial context; a reveal's expanded context remains until source replacement.
+Very tall ranges reveal their beginning; the rest stays available by scrolling.
+
+Pure renames with complete contents render annotated context without manufacturing
+changes. Invalid/out-of-source note ranges, including gaps in partial patches, show
+an unavailable-target message with an operable explanation outside the code slots.
+They never highlight a different line. Source failure does not discard authored
+explanations. Notes, external lists, and source identity validation remain app-owned;
+this component neither stores comments nor fetches source.
+
+The catalog adds Authored notes (overlaps, same-anchor notes, both sides, an external
+context reveal) and Unchanged excerpts (multiple regions, long content). File states
+also demonstrate notes on additions, deletions, pure renames, and unavailable source.
+
+Shared component audit: Collapsible owns inline disclosure and file collapse;
+Popover owns contextual positioning/dismissal/focus return; Button/ButtonLabel own
+controls; Tooltip and CardCopyButton retain existing header behavior. No shared
+primitive API change is needed for this package. The source registry adds Popover
+as a dependency and exercises its installed annotation consumer.

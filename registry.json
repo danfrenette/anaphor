@@ -609,7 +609,8 @@
         "danfrenette/anaphor/card-copy-button",
         "danfrenette/anaphor/theme",
         "danfrenette/anaphor/tooltip",
-        "danfrenette/anaphor/collapsible"
+        "danfrenette/anaphor/collapsible",
+        "danfrenette/anaphor/popover"
       ],
       "files": [
         {

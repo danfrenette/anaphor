@@ -2,10 +2,10 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createRef } from "react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { Diff } from "../src/components/diff";
+import { Diff } from "@anaphor/system";
 
 beforeEach(() => {
-  vi.stubGlobal("ResizeObserver", class { observe() {} disconnect() {} });
+  vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} });
 });
 afterEach(() => vi.unstubAllGlobals());
 
@@ -47,4 +47,38 @@ test("patch copy preserves the original patch payload", async () => {
   await user.click(screen.getByRole("button", { name: "Copy patch" }));
   expect(await navigator.clipboard.readText()).toBe(patch);
   expect(screen.queryByRole("button", { name: "Copy new file" })).not.toBeInTheDocument();
+});
+
+test("authored explanations remain available when their source is unavailable", async () => {
+  const user = userEvent.setup();
+  render(<Diff {...settings} source={{ kind: "unavailable", path: "guard.ts", reason: "Source was not captured." }}
+    annotations={{ notes: [{ id: "guard", title: "Guard missing sections", body: "Unknown sections return no next section.", presentation: "inline", range: { side: "after", start: 20, end: 20 } }], activeNoteId: null, onActiveNoteChange: () => {} }} />);
+  const note = screen.getByRole("button", { name: "1. Guard missing sections" });
+  expect(note).toHaveAttribute("aria-expanded", "false");
+  expect(screen.getByText("Code range unavailable in supplied source.")).toBeVisible();
+  await user.click(note);
+  expect(screen.getByText("Unknown sections return no next section.")).toBeVisible();
+});
+
+test("notes on a pure rename expose unchanged code instead of disappearing", async () => {
+  const user = userEvent.setup();
+  render(<Diff {...settings} source={{ kind: "files", before: { name: "old.ts", contents: "const value = 1;\n" }, after: { name: "new.ts", contents: "const value = 1;\n" } }}
+    annotations={{ notes: [{ id: "move", title: "Keep the value", body: "Only the module location changes.", presentation: "inline", range: { side: "after", start: 1, end: 1 } }], activeNoteId: null, onActiveNoteChange: () => {} }} />);
+  await user.click(screen.getByRole("button", { name: "1. Keep the value" }));
+  expect(screen.getByText("Only the module location changes.")).toBeVisible();
+});
+
+test("a partial patch cannot silently relocate a note to supplied lines", async () => {
+  const user = userEvent.setup();
+  render(<Diff {...settings} source={{ kind: "patch", path: "sample.ts", patch: "--- a/sample.ts\n+++ b/sample.ts\n@@ -8,1 +8,1 @@\n-old\n+new\n" }}
+    annotations={{ notes: [{ id: "missing", title: "Inspect the earlier context", body: "This claim refers to source absent from this patch.", presentation: "inline", range: { side: "before", start: 2, end: 4 } }], activeNoteId: "missing", onActiveNoteChange: () => {}, revealKey: 1 }} />);
+  expect(screen.getByText("Patch excerpt · Only supplied context is available.")).toBeVisible();
+  expect(screen.getByText("Code range unavailable in supplied source.")).toBeVisible();
+  await user.click(screen.getByRole("button", { name: "1. Inspect the earlier context" }));
+  expect(screen.getByText("This claim refers to source absent from this patch.")).toBeVisible();
+});
+
+test("invalid unchanged excerpt bounds explain the missing source instead of clamping", () => {
+  render(<Diff {...settings} source={{ kind: "unchanged", file: { name: "sample.ts", contents: "one\ntwo\n" }, excerpts: [{ start: 2, end: 5 }] }} />);
+  expect(screen.getByRole("status")).toHaveTextContent("Supply at least one valid excerpt within the unchanged file.");
 });
