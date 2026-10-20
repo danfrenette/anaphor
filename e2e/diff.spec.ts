@@ -114,7 +114,8 @@ test("external notes open hidden context and reveal only inside the bounded diff
   const code = diff.getByRole("region", { name: "Code changes: Annotated navigation", exact: true });
   await expect(code.locator('[data-line][data-selected-line]').first()).toContainText("export function sectionLabel");
   await expect(diff.getByRole("button", { name: "3. Keep the existing label", exact: true })).toHaveAttribute("aria-expanded", "false");
-  await expect(diff.locator('[data-slot="collapsible-content"]').first()).toHaveCSS("height", "281px");
+  await expect.poll(() => diff.evaluate(element => element.getAnimations({ subtree: true }).filter(animation => animation.playState === "running").length)).toBe(0);
+  expect(await code.evaluate(element => element.getBoundingClientRect().height)).toBeLessThanOrEqual(280);
   expect(await page.evaluate(() => scrollY)).toBe(pagePosition);
   await expect.poll(() => code.evaluate(element => {
     const line = element.querySelector('diffs-container')?.shadowRoot?.querySelector('[data-line][data-selected-line]');
@@ -197,4 +198,57 @@ test("unified authored ranges exclude interleaved changes from the other side", 
   await expect(diff.locator('[data-diff-type="single"]')).toBeVisible();
   await expect(diff.locator('[data-line][data-line-type="change-addition"][data-selected-line]')).toHaveCount(3);
   await expect(diff.locator('[data-line][data-line-type="change-deletion"][data-selected-line]')).toHaveCount(0);
+});
+
+test("an unavailable authored target clears unrelated legacy emphasis without revealing it", async ({ page }) => {
+  await page.goto("/#diff");
+  const diff = page.getByRole("region", { name: "Navigation guard excerpt", exact: true });
+  await page.getByRole("button", { name: "Locate the guard", exact: true }).click();
+  await expect(diff.locator('[data-line][data-selected-line]')).toHaveCount(1);
+  await diff.getByRole("button", { name: "Collapse src/articles/reading-position.ts", exact: true }).click();
+  const missing = page.getByRole("button", { name: "Locate omitted context", exact: true });
+  await missing.focus();
+  const scroll = await page.evaluate(() => scrollY);
+  await missing.press("Enter");
+  await expect(diff.getByText("Code range unavailable in supplied source.")).toBeVisible();
+  await expect(diff.locator('[data-line][data-selected-line]')).toHaveCount(0);
+  await expect(missing).toBeFocused();
+  expect(await page.evaluate(() => scrollY)).toBe(scroll);
+  await diff.getByRole("button", { name: "1. Explain omitted context", exact: true }).click();
+  await expect(diff.getByText("This patch does not contain the unchanged label implementation.")).toBeVisible();
+});
+
+test("an invalid reveal cannot later turn emphasis-only selection into navigation", async ({ page }) => {
+  await page.goto("/#diff");
+  const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
+  const code = diff.getByRole("region", { name: "Code changes: Annotated navigation", exact: true });
+  await page.getByRole("button", { name: "Locate 5: Explain a missing capture", exact: true }).click();
+  await expect(diff.getByText("Code range unavailable in supplied source.")).toBeVisible();
+  const emphasize = page.getByRole("button", { name: "Emphasize guard only", exact: true });
+  await emphasize.focus();
+  await expect.poll(() => diff.evaluate(element => element.getAnimations({ subtree: true }).filter(animation => animation.playState === "running").length)).toBe(0);
+  await code.evaluate(element => { element.scrollTop = element.scrollHeight; });
+  const scroll = await code.evaluate(element => element.scrollTop);
+  await emphasize.click();
+  await expect(diff.locator('[data-line][data-selected-line]')).not.toHaveCount(0);
+  await expect.poll(() => code.evaluate(element => element.scrollTop)).toBe(scroll);
+});
+
+test("source replacement and a new reveal key reveal the current target", async ({ page }) => {
+  await page.goto("/#diff");
+  const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
+  const code = diff.getByRole("region", { name: "Code changes: Annotated navigation", exact: true });
+  await page.getByRole("button", { name: "Locate 3: Keep the existing label", exact: true }).click();
+  await expect(diff.locator('[data-line="8"][data-selected-line]').first()).toBeVisible();
+  await code.evaluate(element => { element.scrollTop = element.scrollHeight; });
+  const replace = page.getByRole("button", { name: "Replace captured source", exact: true });
+  await replace.click();
+  await expect(replace).toBeFocused();
+  await expect.poll(() => code.evaluate(element => {
+    const line = element.querySelector('diffs-container')?.shadowRoot?.querySelector('[data-line][data-selected-line]');
+    if (!line) return false;
+    const bounds = element.getBoundingClientRect();
+    const target = line.getBoundingClientRect();
+    return target.top >= bounds.top && target.bottom <= bounds.bottom;
+  })).toBe(true);
 });

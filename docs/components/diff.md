@@ -145,7 +145,8 @@ Notes appear after their range's final line, grouped when they share that anchor
 Numbered inline titles start collapsed; popovers open on activation and return
 focus on dismissal. Opening a note requests active emphasis through the callback.
 Changing only the active ID does not request scrolling. Existing `highlightedLines`
-remains available; a valid active note takes precedence over that legacy emphasis.
+remains available; an active authored note takes precedence over that legacy emphasis. An invalid
+active note clears emphasis rather than falling back to an unrelated legacy range.
 
 Changing `annotations.revealKey` follows the currently active note. A repeat request
 for the same note needs a new key. It opens the file and expands all available

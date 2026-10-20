@@ -201,33 +201,41 @@ function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedL
     return groups;
   }, [annotations?.notes, file]);
   const activeNote = annotations?.notes.find(note => note.id === annotations.activeNoteId);
-  const selectedLines = useMemo<SelectedLineRange | undefined>(() => activeNote && hasRange(file, activeNote.range)
-    ? { start: activeNote.range.start, end: activeNote.range.end, side: activeNote.range.side === "after" ? "additions" : "deletions" }
-    : highlightedLines, [activeNote, file, highlightedLines]);
+  const selectedLines = useMemo<SelectedLineRange | undefined>(() => {
+    if (!activeNote) return highlightedLines;
+    if (!hasRange(file, activeNote.range)) return undefined;
+    return { start: activeNote.range.start, end: activeNote.range.end, side: activeNote.range.side === "after" ? "additions" : "deletions" };
+  }, [activeNote, file, highlightedLines]);
   const [collapsed, setCollapsed] = useState(false);
   const requestedKey = annotations?.revealKey;
-  const [lastRequest, setLastRequest] = useState<{ key: string | number | undefined; file: FileDiffMetadata | undefined }>({ key: undefined, file });
+  const requestedNoteId = annotations?.activeNoteId;
+  const [lastRequest, setLastRequest] = useState<{ key: string | number | undefined; file: FileDiffMetadata | undefined; noteId: string | null | undefined }>({ key: undefined, file, noteId: requestedNoteId });
   const [revealRequest, setRevealRequest] = useState<{ key: string | number; noteId: string; file: FileDiffMetadata | undefined }>();
   const [expandedSource, setExpandedSource] = useState<FileDiffMetadata>();
-  if (lastRequest.key !== requestedKey || lastRequest.file !== file) {
-    setLastRequest({ key: requestedKey, file });
+  if (lastRequest.key !== requestedKey || lastRequest.file !== file || lastRequest.noteId !== requestedNoteId) {
+    setLastRequest({ key: requestedKey, file, noteId: requestedNoteId });
     // A source replacement invalidates inspection state. Only a new key requests
     // navigation; changing active emphasis or opening an inline note does not.
     if (requestedKey !== undefined && lastRequest.key !== requestedKey && activeNote) {
-      setRevealRequest({ key: requestedKey, noteId: activeNote.id, file });
       setCollapsed(false);
-      if (hasRange(file, activeNote.range)) setExpandedSource(file);
-    } else if (lastRequest.file !== file) {
+      if (hasRange(file, activeNote.range)) {
+        setRevealRequest({ key: requestedKey, noteId: activeNote.id, file });
+        setExpandedSource(file);
+      } else {
+        setRevealRequest(undefined);
+      }
+    } else {
       setRevealRequest(undefined);
     }
   }
   const viewport = useRef<HTMLDivElement>(null);
+  const readingPosition = useRef({ file, top: 0 });
   const revealedNote = useRef<typeof revealRequest>(undefined);
   const [wide, setWide] = useState(false);
   const root = useRef<HTMLElement>(null);
   const revealed = useRef<string | number | undefined>(undefined);
   const revealFrame = useRef<number | undefined>(undefined);
-  useEffect(() => () => cancelAnimationFrame(revealFrame.current ?? 0), [file]);
+  useEffect(() => () => cancelAnimationFrame(revealFrame.current ?? 0), []);
   const effectiveLayout = wide ? layout : "unified";
   const nextLayout = effectiveLayout === "unified" ? "split" : "unified";
   const { resolvedTheme } = useTheme();
@@ -278,13 +286,14 @@ function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedL
           };
         }
       }
-      if (!selectedLines) return;
-      const notePending = revealRequest !== undefined && revealedNote.current !== revealRequest;
+      const previousTop = readingPosition.current.file === file ? readingPosition.current.top : 0;
+      const notePending = revealRequest !== undefined && revealRequest.file === file && revealRequest.noteId === activeNote?.id && revealedNote.current !== revealRequest;
       const legacyPending = revealKey !== undefined && revealed.current !== revealKey && highlightedLines;
-      if (!activeNote && !notePending && !legacyPending) return;
+
       cancelAnimationFrame(revealFrame.current ?? 0);
       // Selection is applied after Pierre renders; reveal once that update reaches layout.
       revealFrame.current = requestAnimationFrame(() => {
+        if (!node.isConnected) return;
         // Unified selection is a rendered-row interval, including interleaved
         // changes from the other source. Keep authored emphasis on its own side.
         // Both gutter and content cells carry the same source-type attribute.
@@ -296,7 +305,12 @@ function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedL
             if (annotation?.hasAttribute("data-line-annotation")) annotation.removeAttribute("data-selected-line");
           }
         }
-        if (!notePending && !legacyPending) return;
+        if (!notePending && !legacyPending) {
+          // WebKit can reset the outer scroller while Pierre replaces its rows.
+          // Emphasis changes preserve the reader’s position without a reveal key.
+          if (viewport.current && maxHeight !== null) viewport.current.scrollTop = previousTop;
+          return;
+        }
         const line = node.shadowRoot?.querySelector("[data-line][data-selected-line]");
         if (line) {
           revealed.current = revealKey;
@@ -357,7 +371,7 @@ function Diff({ source, layout, wrap, controls, context, maxHeight, highlightedL
         {file.type === "rename-pure" && file.hunks.length > 0 && <p className="border-b border-border px-4 py-2 text-small text-muted-foreground">File renamed without content changes.</p>}
         {source.kind === "unchanged" && <p className="border-b border-border px-4 py-2 text-small text-muted-foreground">Unchanged file · Excerpts with expandable context.</p>}
         {file.isPartial && <p className="border-b border-border px-4 py-2 text-small text-muted-foreground">Patch excerpt · Only supplied context is available.</p>}
-        {file.hunks.length === 0 ? <p className="px-4 py-6 text-ui text-muted-foreground">{file.type === "rename-pure" ? "File renamed without content changes." : "No text changes."}</p> : <div ref={viewport} className="min-w-0 overflow-auto overscroll-contain [overflow-anchor:none] focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2" style={{ maxHeight: maxHeight ?? undefined }} tabIndex={0} role="region" aria-label={`Code changes: ${props["aria-label"] ?? path}`}>
+        {file.hunks.length === 0 ? <p className="px-4 py-6 text-ui text-muted-foreground">{file.type === "rename-pure" ? "File renamed without content changes." : "No text changes."}</p> : <div ref={viewport} onScroll={event => { readingPosition.current = { file, top: event.currentTarget.scrollTop }; }} className="min-w-0 overflow-auto overscroll-contain [overflow-anchor:none] focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2" style={{ maxHeight: maxHeight ?? undefined }} tabIndex={0} role="region" aria-label={`Code changes: ${props["aria-label"] ?? path}`}>
           <FileDiff fileDiff={file} options={options} lineAnnotations={noteGroups} renderAnnotation={annotation => annotation.metadata.map(({ note, number }) => <Note key={note.id} note={note} number={number} active={annotations?.activeNoteId === note.id} unavailable={false} onActivate={() => annotations?.onActiveNoteChange(note.id)} />)} />
         </div>}
       </>}
