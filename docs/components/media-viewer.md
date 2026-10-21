@@ -23,7 +23,9 @@ The viewer does not interpret receipts or evidence validity.
 Images additionally require `alt`, `width`, and `height`, describing capture
 pixels. Invalid dimensions produce an explicit unavailable state. Optional
 `reveal: { x, y, key }` uses normalized capture coordinates between zero and one.
-Changing `key` repeats a reveal; invalid coordinates are ignored. Reveal scrolls
+Changing `key` requests a new reveal; invalid coordinates are ignored. A request
+waits until the image is loaded and active, then is consumed once. Re-rendering
+the same request or returning to the item preserves subsequent manual panning. Reveal scrolls
 the bounded inspection area without changing zoom or moving focus. Fit shows the
 complete capture; Actual size assigns one capture pixel to one CSS pixel. This
 does not promise a physical display pixel at browser zoom or on high-DPI screens.
@@ -37,6 +39,8 @@ by the browser; this component does not introduce a streaming adapter.
 `renderConsole(item)` adds consumer controls to the bottom central console.
 Annotations and Evidence tabs control one supporting panel: beside media on wide
 windows and below it on narrow windows. Hide details restores media space.
+Hide details returns focus to its console tab. Long titles have a bounded
+scroll region so Close and the bottom console remain reachable.
 The console shares the system's rounded floating-surface vocabulary and tokens;
 it does not mount a second MorphSurface panel or independent dismissal handler.
 

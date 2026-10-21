@@ -74,3 +74,36 @@ test("replacement source resets actual size and arrows in annotation inputs do n
   view.rerender(<Example media={[{ ...media[0], sourceKey: "replacement" }, media[1]]} />);
   expect(screen.getByRole("button", { name: "Fit" })).toHaveAttribute("aria-pressed", "true");
 });
+
+test("consumes each reveal once after loading and preserves panning across item visits", async () => {
+  const user = userEvent.setup();
+  const media: [MediaViewerItem, MediaViewerItem] = [{ ...items[0], kind: "image", src: "/one.png", alt: "First capture", width: 1200, height: 800, reveal: { x: 0.75, y: 0.75, key: "note-1" } }, items[1]];
+  const view = render(<Example media={media} />);
+  await user.click(screen.getByRole("button", { name: "Open media" }));
+  const image = screen.getByAltText("First capture");
+  const viewport = screen.getByLabelText("First image inspection");
+  Object.defineProperties(image, { clientWidth: { value: 1200 }, clientHeight: { value: 800 } });
+  Object.defineProperties(viewport, { clientWidth: { value: 400 }, clientHeight: { value: 300 } });
+  expect(viewport.scrollLeft).toBe(0);
+  fireEvent.load(image);
+  expect(viewport.scrollLeft).toBe(700);
+  viewport.scrollLeft = 100;
+  viewport.scrollTop = 50;
+  await user.click(screen.getByRole("button", { name: "Next" }));
+  await user.click(screen.getByRole("button", { name: "Previous" }));
+  expect(viewport.scrollLeft).toBe(100);
+  const first = media[0];
+  if (first.kind !== "image") throw new Error("Image fixture required");
+  view.rerender(<Example media={[{ ...first, reveal: { x: 0.75, y: 0.75, key: "note-1" } }, media[1]]} />);
+  expect(viewport.scrollLeft).toBe(100);
+  view.rerender(<Example media={[{ ...first, reveal: { x: 0.75, y: 0.75, key: "note-2" } }, media[1]]} />);
+  expect(viewport.scrollLeft).toBe(700);
+});
+
+test("hiding the supporting panel returns focus to its console tab", async () => {
+  const user = userEvent.setup();
+  render(<Example />);
+  await user.click(screen.getByRole("button", { name: "Open media" }));
+  await user.click(screen.getByRole("button", { name: "Hide details" }));
+  expect(screen.getByRole("tab", { name: "Annotations" })).toHaveFocus();
+});

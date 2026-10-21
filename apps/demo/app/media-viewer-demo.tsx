@@ -3,17 +3,17 @@
 import { useRef, useState } from "react";
 import {
   Button, ButtonLabel, Collapsible, CollapsibleContent, CollapsibleTrigger,
-  MediaViewer, Section, Text, type MediaViewerItem,
+  MediaViewer, Popover, PopoverTrigger, PopoverPopup, PopoverBody, PopoverTitle, PopoverDescription, Section, Text, type MediaViewerItem,
 } from "@anaphor/system";
 import { CatalogExample } from "./catalog-example";
 import { PlaygroundControls } from "./playground-host";
 import { Select } from "./playground-fields";
 
-const evidence = <dl className="space-y-3 text-ui">
+const evidence = <div><dl className="space-y-3 text-ui">
   <div><dt className="text-muted-foreground">Source</dt><dd>Locally authored fixture</dd></div>
   <div><dt className="text-muted-foreground">Purpose</dt><dd>Demonstrate inspection, not evidence of a product change.</dd></div>
   <div><dt className="text-muted-foreground">Availability</dt><dd>Bundled with this reference manual.</dd></div>
-</dl>;
+</dl><Popover><PopoverTrigger render={<Button nativeButton type="button" variant="outline" tone="neutral" size="md" shape="square" iconOnly={false} loading={false} className="mt-4" />}><ButtonLabel>About this fixture</ButtonLabel></PopoverTrigger><PopoverPopup side="top" align="end" sideOffset={8}><PopoverBody><PopoverTitle>Fixture details</PopoverTitle><PopoverDescription>The image is locally authored. It is an illustration, not an execution receipt.</PopoverDescription></PopoverBody></PopoverPopup></Popover></div>;
 const image: MediaViewerItem = {
   id: "landscape", sourceKey: "landscape-v1", kind: "image", title: "Landscape inspection",
   src: "/media/landscape.svg", alt: "Illustrative reading room with a continue reading action",
@@ -37,7 +37,9 @@ const unavailable: MediaViewerItem = {
   src: "/media/intentionally-unavailable.png",
   annotations: <Text as="p" variant="body">This explanation remains available when the capture cannot load.</Text>,
 };
+const longTitle: MediaViewerItem = { ...image, id: "long-title", title: "A detailed capture title that remains readable in a short window. ".repeat(24) };
 const examples = [
+  { title: "Long content", label: "Inspect long title", items: [longTitle], description: "Long supplied titles remain readable while Close and inspection controls stay reachable." },
   { title: "Individual image", label: "Inspect landscape image", items: [image], description: "Fit and actual-size inspection with a supporting annotation panel." },
   { title: "Individual recording", label: "Inspect recording", items: [video], description: "Video.js v10 playback with a poster, captions, and a readable account." },
   { title: "Mixed collection", label: "Inspect mixed collection", items: [image, video, portrait], description: "Finite previous/next navigation. Leaving a recording pauses playback; revisiting retains its position." },
@@ -46,6 +48,7 @@ const examples = [
 
 export function MediaViewerDemo() {
   const [open, setOpen] = useState(false);
+  const [revealKey, setRevealKey] = useState(0);
   const [items, setItems] = useState<readonly MediaViewerItem[]>([image]);
   const [activeItemId, setActiveItemId] = useState(image.id);
   const [initialPanel, setInitialPanel] = useState<"annotations" | "evidence" | "closed">("annotations");
@@ -58,8 +61,9 @@ export function MediaViewerDemo() {
       <Button nativeButton type="button" variant="outline" tone="neutral" size="md" shape="square" iconOnly={false} loading={false}
         onClick={event => { const first = example.items[0]; if (!first) return; opener.current = event.currentTarget; setItems(example.items); setActiveItemId(first.id); setOpen(true); }}><ButtonLabel>{example.label}</ButtonLabel></Button>
     </CatalogExample>)}</div>
-    <MediaViewer open={open} onOpenChange={setOpen} items={items} activeItemId={activeItemId} onActiveItemChange={setActiveItemId}
-      initialPanel={initialPanel === "closed" ? null : initialPanel} returnFocus={opener} />
+    <MediaViewer open={open} onOpenChange={setOpen} items={items.map(item => item.kind === "image" && revealKey > 0 ? { ...item, reveal: { x: 0.85, y: 0.85, key: revealKey } } : item)} activeItemId={activeItemId} onActiveItemChange={setActiveItemId}
+      initialPanel={initialPanel === "closed" ? null : initialPanel} returnFocus={opener}
+      renderConsole={item => item.kind === "image" ? <Button nativeButton type="button" variant="ghost" tone="neutral" size="md" shape="square" iconOnly={false} loading={false} onClick={() => setRevealKey(key => key + 1)}><ButtonLabel>Reveal detail</ButtonLabel></Button> : null} />
     <PlaygroundControls sectionId="media-viewer" title="Media viewer" onReset={() => setInitialPanel("annotations")}>
       <Select label="Opening panel" value={initialPanel} options={["annotations", "evidence", "closed"]} onChange={setInitialPanel} />
     </PlaygroundControls>
