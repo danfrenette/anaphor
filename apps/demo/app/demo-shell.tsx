@@ -106,7 +106,6 @@ const groups: { label: string; items: NavItem[] }[] = [
   {
     label: "Content",
     items: [
-      { id: "authored-notes", label: "Authored notes", href: "/#authored-notes", icon: ListDashes },
       { id: "badge", label: "Badge", href: "/#badge", icon: Tag },
       { id: "card", label: "Card", href: "/#card", icon: SlidersHorizontal },
       { id: "data-table", label: "Data table", href: "/#data-table", icon: ListDashes },
@@ -116,7 +115,6 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "node-edge-graphs", label: "Node-edge graphs", href: "/#node-edge-graphs", icon: ShareNetwork },
       { id: "skeleton", label: "Skeleton", href: "/#skeleton", icon: Rectangle },
       { id: "step-transition", label: "Step transition", href: "/#step-transition", icon: Rectangle },
-      { id: "unchanged-excerpts", label: "Unchanged excerpts", href: "/#unchanged-excerpts", icon: ListDashes },
     ],
   },
   {

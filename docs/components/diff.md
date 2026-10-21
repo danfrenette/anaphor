@@ -164,10 +164,8 @@ They never highlight a different line. Source failure does not discard authored
 explanations. Notes, external lists, and source identity validation remain app-owned;
 this component neither stores comments nor fetches source.
 
-The Content sidebar links directly to Authored notes at `/#authored-notes`
-(overlaps, same-anchor notes, both sides, an external context reveal) and Unchanged
-excerpts at `/#unchanged-excerpts` (multiple regions, long content). Both are Diff
-compositions, with independent inspection state. Sidebar and page order are alphabetical. File states
+The catalog adds Authored notes (overlaps, same-anchor notes, both sides, an external
+context reveal) and Unchanged excerpts (multiple regions, long content). File states
 also demonstrate notes on additions, deletions, pure renames, and unavailable source.
 
 Shared component audit: Collapsible owns inline disclosure and file collapse;

@@ -106,45 +106,10 @@ type Settings = { layout: "unified" | "split"; wrap: boolean; context: "collapse
 const exampleCode = `<Diff source={source} layout="unified" wrap={false}
   controls={false} context="collapsed" maxHeight={null} />`;
 
-export function AuthoredNotesDemo() {
-  const [alternateCapture, setAlternateCapture] = useState(false);
-  const [sourceAvailable, setSourceAvailable] = useState(true);
-  const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
-  const [noteReveal, setNoteReveal] = useState(0);
-  return <Section id="authored-notes" className="border-t border-border py-12">
-    <Text as="h2" variant="title">Authored notes</Text>
-    <Text as="p" variant="description" className="mt-3">Explain code with numbered Diff annotations, inline details, and short-note popovers.</Text>
-    <div className="mt-10">
-      <CatalogExample framed={false} title="Notes and source states" description="Read explanations in place, or follow an external note without opening its explanation again." code={`<Diff annotations={{ notes, activeNoteId, onActiveNoteChange, revealKey }} {...settings} />`}>
-        <ol aria-label="Change explanations" className="mb-4 space-y-2">{notes.map((note, index) => <li key={note.id}>
-          <Button type="button" nativeButton size="md" shape="square" variant="ghost" tone="neutral" loading={false} iconOnly={false} className="h-auto min-w-0 max-w-full whitespace-normal py-2 text-start" onClick={() => { setActiveNoteId(note.id); setNoteReveal(previous => previous + 1); }}><ButtonLabel>Locate {index + 1}: {note.title}</ButtonLabel></Button>
-        </li>)}</ol>
-        <div className="mb-4"><Button type="button" nativeButton size="md" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} onClick={() => { setSourceAvailable(value => !value); setActiveNoteId(null); }}><ButtonLabel>{sourceAvailable ? "Show unavailable source" : "Restore captured source"}</ButtonLabel></Button></div>
-        <div className="mb-4 flex flex-wrap gap-2">
-          <Button type="button" nativeButton size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} onClick={() => setActiveNoteId("guard")}><ButtonLabel>Emphasize guard only</ButtonLabel></Button>
-          <Button type="button" nativeButton size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} onClick={() => { setSourceAvailable(true); setAlternateCapture(value => !value); setActiveNoteId("guard"); setNoteReveal(value => value + 1); }}><ButtonLabel>Replace captured source</ButtonLabel></Button>
-        </div>
-        <Diff aria-label="Annotated navigation" source={sourceAvailable ? (alternateCapture ? alternateSource : source) : { kind: "unavailable", path: "src/articles/reading-position.ts", reason: "The captured source is unavailable. Authored explanations are retained." }} layout="split" wrap controls={false} context="collapsed" maxHeight={280} annotations={{ notes, activeNoteId, onActiveNoteChange: setActiveNoteId, revealKey: noteReveal }} />
-      </CatalogExample>
-    </div>
-  </Section>;
-}
-
-export function UnchangedExcerptsDemo() {
-  const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
-  return <Section id="unchanged-excerpts" className="border-t border-border py-12">
-    <Text as="h2" variant="title">Unchanged excerpts</Text>
-    <Text as="p" variant="description" className="mt-3">Read unchanged source through Diff with original line numbers and expandable context.</Text>
-    <div className="mt-10">
-      <CatalogExample framed={false} title="Expandable context" description="Inspect the existing contract with original line numbers and expandable context." code={`<Diff source={{ kind: "unchanged", file, excerpts: [{ start: 8, end: 10 }] }} {...settings} />`}>
-        <Diff aria-label="Unchanged label contract" source={unchangedSource} layout="unified" wrap controls={false} context="collapsed" maxHeight={280} annotations={{ notes: excerptNotes, activeNoteId, onActiveNoteChange: setActiveNoteId }} />
-      </CatalogExample>
-    </div>
-  </Section>;
-}
-
 export function DiffDemo() {
   const [settings, setSettings] = useState<Settings>(defaults);
+  const [alternateCapture, setAlternateCapture] = useState(false);
+  const [sourceAvailable, setSourceAvailable] = useState(true);
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [noteReveal, setNoteReveal] = useState(0);
   const [reveal, setReveal] = useState(0);
@@ -169,6 +134,20 @@ export function DiffDemo() {
           <Button type="button" nativeButton size="sm" shape="square" variant="ghost" tone="neutral" loading={false} iconOnly={false} disabled={!highlightGuard} onClick={() => setHighlightGuard(false)}><ButtonLabel>Clear highlight</ButtonLabel></Button>
         </div>
         <Diff aria-label="Navigation guard excerpt" source={excerpt} layout="unified" wrap={false} controls={false} context="collapsed" maxHeight={null} highlightedLines={highlightGuard ? { start: 20, end: 20, side: "additions" } : undefined} revealKey={highlightGuard ? reveal : undefined} notice={highlightGuard && activeNoteId !== "missing-context" ? "Highlighted line 20: the guard for a missing section." : undefined} annotations={{ notes: missingContextNotes, activeNoteId, onActiveNoteChange: setActiveNoteId, revealKey: noteReveal }} />
+      </CatalogExample>
+      <CatalogExample framed={false} title="Authored notes" description="Read explanations in place, or follow an external note without opening its explanation again." code={`<Diff annotations={{ notes, activeNoteId, onActiveNoteChange, revealKey }} {...settings} />`}>
+        <ol aria-label="Change explanations" className="mb-4 space-y-2">{notes.map((note, index) => <li key={note.id}>
+          <Button type="button" nativeButton size="md" shape="square" variant="ghost" tone="neutral" loading={false} iconOnly={false} className="h-auto min-w-0 max-w-full whitespace-normal py-2 text-start" onClick={() => { setActiveNoteId(note.id); setNoteReveal(previous => previous + 1); }}><ButtonLabel>Locate {index + 1}: {note.title}</ButtonLabel></Button>
+        </li>)}</ol>
+        <div className="mb-4"><Button type="button" nativeButton size="md" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} onClick={() => { setSourceAvailable(value => !value); setActiveNoteId(null); }}><ButtonLabel>{sourceAvailable ? "Show unavailable source" : "Restore captured source"}</ButtonLabel></Button></div>
+        <div className="mb-4 flex flex-wrap gap-2">
+          <Button type="button" nativeButton size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} onClick={() => setActiveNoteId("guard")}><ButtonLabel>Emphasize guard only</ButtonLabel></Button>
+          <Button type="button" nativeButton size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} onClick={() => { setSourceAvailable(true); setAlternateCapture(value => !value); setActiveNoteId("guard"); setNoteReveal(value => value + 1); }}><ButtonLabel>Replace captured source</ButtonLabel></Button>
+        </div>
+        <Diff aria-label="Annotated navigation" source={sourceAvailable ? (alternateCapture ? alternateSource : source) : { kind: "unavailable", path: "src/articles/reading-position.ts", reason: "The captured source is unavailable. Authored explanations are retained." }} layout="split" wrap controls={false} context="collapsed" maxHeight={280} annotations={{ notes, activeNoteId, onActiveNoteChange: setActiveNoteId, revealKey: noteReveal }} />
+      </CatalogExample>
+      <CatalogExample framed={false} title="Unchanged excerpts" description="Inspect the existing contract with original line numbers and expandable context." code={`<Diff source={{ kind: "unchanged", file, excerpts: [{ start: 8, end: 10 }] }} {...settings} />`}>
+        <Diff aria-label="Unchanged label contract" source={unchangedSource} layout="unified" wrap controls={false} context="collapsed" maxHeight={280} annotations={{ notes: excerptNotes, activeNoteId, onActiveNoteChange: setActiveNoteId }} />
       </CatalogExample>
       <CatalogExample framed={false} title="File states" description="Added, deleted, renamed, and unavailable files keep their status explicit." code={`// Complete files: use null for the missing side.
 <Diff source={{ kind: "files", before: null, after: file }}

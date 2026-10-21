@@ -84,17 +84,3 @@ test("index groups are alphabetized and in-page sections follow their order", as
   await expect(page.locator("#workspace-shell")).toHaveAttribute("data-active", "");
   await expect(page.locator('[data-slot="workspace-card-header"]').first()).toHaveText("Navigation/Workspace shell");
 });
-
-for (const [id, label] of [["authored-notes", "Authored notes"], ["unchanged-excerpts", "Unchanged excerpts"]]) {
-  test(`${label} is reachable from the Content index`, async ({ page, isMobile }) => {
-    await page.goto("/");
-    if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
-    const link = page.getByRole("navigation", { name: "Manual index" }).getByRole("link", { name: label, exact: true });
-    await link.click();
-    await expect(page).toHaveURL(new RegExp(`/#${id}$`));
-    await expect(page.locator(`#${id}`)).toHaveAttribute("data-active", "");
-    await expect(page.locator(`#${id}`).getByRole("heading", { name: label, exact: true })).toBeVisible();
-    await expect(page.locator('[data-slot="workspace-card-header"]').first()).toHaveText(`Content/${label}`);
-    if (isMobile) await expect(page.locator('[data-slot="sidebar"]')).toBeHidden();
-  });
-}

@@ -136,7 +136,7 @@ Run `pnpm test packages/design-system/test/diff.test.tsx`, `pnpm typecheck`, and
 `pnpm test:registry` exercises a real installed annotation popover, Escape/focus
 return, and the existing copy/collapse/source rendering consumer.
 
-1. Open **Authored notes** from Content (`/#authored-notes`), then open the numbered guard title by keyboard. Its explanation
+1. In **Authored notes**, open the numbered guard title by keyboard. Its explanation
    is initially collapsed. Open the adjacent short note, dismiss with Escape, and
    confirm focus returns. The two notes sharing an anchor remain independently
    accessible. Follow the before-side note and verify original deleted code is emphasized.
@@ -144,7 +144,7 @@ return, and the existing copy/collapse/source rendering consumer.
    The file and previously hidden context open; line 8 is emphasized inside the
    280px viewport. Focus remains on the external button, the page does not scroll,
    and the inline explanation stays collapsed. Repeat requests remain usable.
-3. Open **Unchanged excerpts** from Content (`/#unchanged-excerpts`). It initially shows original lines 8–10 and 36. Expand the
+3. **Unchanged excerpts** initially shows original lines 8–10 and 36. Expand the
    omitted context with Enter/Space. No changed-line markers are manufactured;
    the full file stays bounded, with the long line wrapping at narrow widths.
 4. **Show unavailable source** retains all explanations and explicitly marks their
