@@ -1,0 +1,1 @@
+Locally authored, illustrative media fixtures; not product execution evidence. SVGs have explicit capture dimensions. inspection.mp4 is a six-second silent H.264 recording generated with FFmpeg from a solid canvas and timed rectangles; inspection.vtt describes its before/action/after states. No third-party assets.

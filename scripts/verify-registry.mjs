@@ -105,6 +105,15 @@ async function checkBrowser(browser, directory, item) {
       await expect(diff.getByRole("region", { name: "Code changes: example.ts" })).toBeHidden();
       await diff.getByRole("button", { name: "Expand example.ts" }).click();
     }
+    if (item === "media-viewer") {
+      await page.getByRole("button", { name: "Inspect registry media" }).click();
+      const viewer = page.getByRole("dialog", { name: "Registry media" });
+      await expect(viewer.getByText("Installed supporting details.")).toBeVisible();
+      await viewer.getByRole("button", { name: "Actual size", exact: true }).click();
+      await expect(viewer.getByRole("img", { name: "Example" })).toHaveJSProperty("clientWidth", 800);
+      await viewer.getByRole("button", { name: "Close media viewer" }).click();
+      await expect(page.getByRole("button", { name: "Inspect registry media" })).toBeFocused();
+    }
     if (item === "ui") {
       const disclosure = page.getByRole("button", { name: "Registry disclosure" });
       await disclosure.click();
@@ -171,7 +180,7 @@ try {
   console.log(`Registry verification workspace: ${temporary}`);
   await prepareRegistry();
   browser = await chromium.launch();
-  for (const item of ["button", "diff", "ui"]) {
+  for (const item of ["button", "diff", "media-viewer", "ui"]) {
     console.log(`\nChecking independent ${item} installation`);
     const consumer = path.join(temporary, item);
     await cp(path.join(root, "test/registry-consumer"), consumer, { recursive: true });

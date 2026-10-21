@@ -38,3 +38,4 @@ export { Skeleton, SkeletonRegion, SkeletonText, SkeletonBox, type SkeletonProps
 
 export { Collapsible, CollapsibleTrigger, CollapsibleContent, CollapsiblePanel, type CollapsibleProps, type CollapsibleTriggerProps, type CollapsibleContentProps } from "./components/collapsible";
 export { Diff, type DiffProps, type DiffSource } from "./components/diff";
+export { MediaViewer, type MediaViewerProps, type MediaViewerItem, type MediaViewerImage, type MediaViewerVideo, type MediaViewerTrack, type MediaViewerPanel } from "./components/media-viewer";

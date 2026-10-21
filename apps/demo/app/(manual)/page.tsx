@@ -14,6 +14,7 @@ import { DropdownMenuDemo } from "../dropdown-menu-demo";
 import { TooltipDemo } from "../tooltip-demo";
 import { DataTableDemo } from "../data-table-demo";
 import { PopoverDemo } from "../popover-demo";
+import { MediaViewerDemo } from "../media-viewer-demo";
 import { KbdDemo } from "../kbd-demo";
 import { SliderDemo } from "../slider-demo";
 import { SkeletonDemo } from "../skeleton-demo";
@@ -228,6 +229,7 @@ export default function HomePage() {
           <DataTableDemo />
           <DiffDemo />
           <KbdDemo />
+          <MediaViewerDemo />
           <NodeEdgeDemo />
           <SkeletonDemo />
           <BottomBarDemo />

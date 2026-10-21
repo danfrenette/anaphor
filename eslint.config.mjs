@@ -27,6 +27,11 @@ export default defineConfig([
       },
     },
   },
+  {
+    files: ["packages/design-system/src/components/media-viewer.tsx"],
+    // Exact source pixels in a framework-neutral package require a native image.
+    rules: { "@next/next/no-img-element": "off" },
+  },
   globalIgnores([
     "**/.next/**",
     "**/coverage/**",

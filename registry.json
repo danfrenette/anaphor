@@ -4,6 +4,30 @@
   "homepage": "https://github.com/danfrenette/anaphor",
   "items": [
     {
+      "name": "media-viewer",
+      "type": "registry:ui",
+      "title": "Media viewer",
+      "description": "Inspect images and Video.js recordings in a finite collection with supporting details.",
+      "dependencies": [
+        "@base-ui/react",
+        "@phosphor-icons/react",
+        "@videojs/react@10.1.0"
+      ],
+      "registryDependencies": [
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/utils",
+        "danfrenette/anaphor/button",
+        "danfrenette/anaphor/text",
+        "danfrenette/anaphor/tabs"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/media-viewer.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "ui",
       "type": "registry:ui",
       "title": "Anaphor UI",
@@ -40,6 +64,7 @@
         "danfrenette/anaphor/text",
         "danfrenette/anaphor/prose",
         "danfrenette/anaphor/sections",
+        "danfrenette/anaphor/media-viewer",
         "danfrenette/anaphor/diff"
       ]
     },
