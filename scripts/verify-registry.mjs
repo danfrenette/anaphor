@@ -105,7 +105,7 @@ async function checkBrowser(browser, directory, item) {
       await expect(diff.getByRole("region", { name: "Code changes: example.ts" })).toBeHidden();
       await diff.getByRole("button", { name: "Expand example.ts" }).click();
     }
-    if (item === "media-viewer") {
+    if (item === "media-viewer" || item === "ui") {
       await page.getByRole("button", { name: "Inspect registry media" }).click();
       const viewer = page.getByRole("dialog", { name: "Registry media" });
       await expect(viewer.getByText("Installed supporting details.")).toBeVisible();

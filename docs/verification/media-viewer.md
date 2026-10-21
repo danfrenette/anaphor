@@ -9,7 +9,7 @@ The manual demonstrates it at `/#media-viewer`, alphabetized under Content.
 
 ## Automated consumer checks
 
-Run `pnpm test -- packages/design-system/test/media-viewer.test.tsx`,
+Run `pnpm exec vitest run packages/design-system/test/media-viewer.test.tsx`,
 `pnpm typecheck`, and `pnpm test:browser e2e/media-viewer.spec.ts
  e2e/manual-index-review.spec.ts`. The browser harness builds the demo and serves
 port 3105, using desktop Chromium and 320px WebKit. Run `pnpm test:registry` for

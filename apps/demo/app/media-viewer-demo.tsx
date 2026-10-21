@@ -37,12 +37,14 @@ const unavailable: MediaViewerItem = {
   src: "/media/intentionally-unavailable.png",
   annotations: <Text as="p" variant="body">This explanation remains available when the capture cannot load.</Text>,
 };
+const unavailableVideo: MediaViewerItem = { ...video, id: "unavailable-video", sourceKey: "unavailable-video-v1", src: "/media/intentionally-unavailable.mp4", title: "Unavailable recording" };
 const longTitle: MediaViewerItem = { ...image, id: "long-title", title: "A detailed capture title that remains readable in a short window. ".repeat(24) };
 const examples = [
   { title: "Long content", label: "Inspect long title", items: [longTitle], description: "Long supplied titles remain readable while Close and inspection controls stay reachable." },
   { title: "Individual image", label: "Inspect landscape image", items: [image], description: "Fit and actual-size inspection with a supporting annotation panel." },
   { title: "Individual recording", label: "Inspect recording", items: [video], description: "Video.js v10 playback with a poster, captions, and a readable account." },
   { title: "Mixed collection", label: "Inspect mixed collection", items: [image, video, portrait], description: "Finite previous/next navigation. Leaving a recording pauses playback; revisiting retains its position." },
+  { title: "Unavailable recording", label: "Inspect unavailable recording", items: [unavailableVideo], description: "The readable action account remains available when video playback fails." },
   { title: "Unavailable asset", label: "Inspect unavailable image", items: [unavailable], description: "A failed asset keeps its caption and explanation available, with an explicit retry." },
 ];
 

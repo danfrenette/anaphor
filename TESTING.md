@@ -85,7 +85,7 @@ fresh copies of `test/registry-consumer/` in the OS temporary directory. The
 fixture supplies only React and its TypeScript/Vite/Tailwind build environment;
 the registry must supply its own runtime dependencies and source imports.
 
-Button and Diff are each installed alone so the complete UI cannot hide their missing dependencies.
+Button, Diff, and Media viewer are each installed alone so the complete UI cannot hide their missing dependencies.
 A separate complete-UI install compiles every installed module and renders each
 advertised UI item. Chromium checks activation, input/checkbox behavior, opening
 the surface, generated Button dimensions, theme tokens, both font loads, and

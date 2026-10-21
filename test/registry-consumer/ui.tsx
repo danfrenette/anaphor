@@ -1,3 +1,4 @@
+import { MediaViewer } from "./components/ui/media-viewer";
 import { Diff } from "./components/ui/diff";
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -25,6 +26,7 @@ import { Prose } from "./components/ui/prose";
 import "./styles.css";
 
 function Consumer() {
+  const [mediaOpen, setMediaOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
@@ -33,6 +35,9 @@ function Consumer() {
   return <main className="mx-auto max-w-workspace px-page-inset py-6 font-sans">
     <div data-testid="editorial-layout" className="mx-auto max-w-editorial"><p className="max-w-reading">Shared layout in an independent consumer.</p></div>
     <Diff source={{ kind: "files", before: { name: "example.ts", contents: "const count = 1;\n" }, after: { name: "example.ts", contents: "const count = 2;\n" } }} layout="unified" wrap={true} controls={false} context="collapsed" maxHeight={null} />
+    <button onClick={() => setMediaOpen(true)}>Inspect registry media</button>
+    <MediaViewer open={mediaOpen} onOpenChange={setMediaOpen} activeItemId="example" onActiveItemChange={() => {}} initialPanel="annotations"
+      items={[{id:"example",sourceKey:"v1",kind:"image",src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600'%3E%3Crect width='800' height='600' fill='gray'/%3E%3C/svg%3E",width:800,height:600,alt:"Example",title:"Registry media",annotations:<p>Installed supporting details.</p>}]} />
     <ContentSections defaultScope>
     <Section id="installed-intro" aria-label="Introduction">
     <Text as="h1" variant="title">Registry consumer</Text>

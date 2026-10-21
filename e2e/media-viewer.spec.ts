@@ -107,6 +107,10 @@ test("long titles keep close and console reachable in a short window", async ({ 
   await expect(dialog.getByRole("button", { name: "Close media viewer" })).toBeInViewport();
   await expect(dialog.getByRole("button", { name: "Fit", exact: true })).toBeInViewport();
   await expect(dialog.getByRole("button", { name: "Actual size", exact: true })).toBeInViewport();
+  const title = dialog.getByRole("heading", { level: 2 });
+  await title.focus();
+  await title.press("End");
+  await expect.poll(() => title.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
   await dialog.getByRole("button", { name: "Close media viewer" }).click();
   await expect(page.getByRole("button", { name: "Inspect long title" })).toBeFocused();
 });
@@ -159,4 +163,34 @@ test("short narrow inspection keeps media, caption, and details in separate rows
   expect(detailsBox!.y).toBeGreaterThanOrEqual(captionBox!.y + captionBox!.height);
   await dialog.getByRole("button", { name: "Hide details" }).click();
   await expect(dialog.getByRole("button", { name: "Close media viewer" })).toBeInViewport();
+});
+
+
+test("inspection controls remain reachable under 200 percent layout magnification", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 960 });
+  await page.goto("/#media-viewer");
+  await page.evaluate(() => { document.documentElement.style.zoom = "2"; });
+  await page.getByRole("button", { name: "Inspect landscape image", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("button", { name: "Close media viewer" })).toBeInViewport();
+  await expect(dialog.getByRole("button", { name: "Fit", exact: true })).toBeInViewport();
+  await dialog.getByRole("button", { name: "Close media viewer" }).click();
+});
+
+
+test("video failure retains the account and retries without autoplay", async ({ page }) => {
+  let requests = 0;
+  await page.route("**/media/intentionally-unavailable.mp4", async route => {
+    requests += 1;
+    if (requests === 1) await route.fulfill({ status: 404, body: "Missing" });
+    else await route.fulfill({ path: "apps/demo/public/media/inspection.mp4", contentType: "video/mp4" });
+  });
+  await page.goto("/#media-viewer");
+  await page.getByRole("button", { name: "Inspect unavailable recording", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByText("Action, 0:02: an orange rectangle appears on the left.")).toBeVisible();
+  await dialog.getByRole("button", { name: "Retry video", exact: true }).click();
+  const video = dialog.locator("video");
+  await expect.poll(() => video.evaluate((el: HTMLVideoElement) => el.readyState)).toBeGreaterThan(0);
+  await expect(video).toHaveJSProperty("paused", true);
 });

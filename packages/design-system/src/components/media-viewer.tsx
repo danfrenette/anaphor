@@ -80,7 +80,7 @@ function ViewerContent({ items, activeItemId, onActiveItemChange, initialPanel, 
       if (target) { event.preventDefault(); onActiveItemChange(target.id); }
     }}>
     <header className="flex shrink-0 items-start gap-3 border-b border-border px-4 py-2">
-      <Dialog.Title render={<Text as="h2" variant="subheading" />} className="max-h-[20dvh] min-w-0 flex-1 overflow-auto break-words">{active?.title ?? "Media unavailable"}</Dialog.Title>
+      <Dialog.Title tabIndex={0} render={<Text as="h2" variant="subheading" />} className="max-h-[20dvh] min-w-0 flex-1 overflow-auto break-words focus-visible:outline-2 focus-visible:outline-ring">{active?.title ?? "Media unavailable"}</Dialog.Title>
       {active && items.length > 1 && <Text as="span" variant="caption" className="shrink-0 tabular-nums">{index + 1} / {items.length}</Text>}
       <Dialog.Close ref={closeRef} render={<Button {...control} iconOnly aria-label="Close media viewer" />}><X aria-hidden="true" /></Dialog.Close>
     </header>
