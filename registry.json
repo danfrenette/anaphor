@@ -75,9 +75,7 @@
       "type": "registry:style",
       "title": "Anaphor Style",
       "description": "Anaphor tokens, typography, fonts, themes, and shared component styles.",
-      "dependencies": [
-        "tailwindcss"
-      ],
+      "dependencies": ["tailwindcss"],
       "css": {
         "@import \"@/components/anaphor.css\"": {}
       },
@@ -118,9 +116,7 @@
     {
       "name": "utils",
       "type": "registry:lib",
-      "dependencies": [
-        "cn"
-      ],
+      "dependencies": ["cn"],
       "files": [
         {
           "path": "packages/design-system/src/lib/utils.ts",
@@ -143,10 +139,7 @@
     {
       "name": "badge",
       "type": "registry:ui",
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/badge.tsx",
@@ -158,9 +151,7 @@
     {
       "name": "adaptive-surface",
       "type": "registry:ui",
-      "dependencies": [
-        "@base-ui/react"
-      ],
+      "dependencies": ["@base-ui/react"],
       "files": [
         {
           "path": "packages/design-system/src/components/adaptive-surface.tsx",
@@ -172,18 +163,8 @@
     {
       "name": "sidebar",
       "type": "registry:ui",
-      "dependencies": [
-        "@base-ui/react",
-        "@phosphor-icons/react",
-        "motion"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/adaptive-surface",
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils",
-        "danfrenette/anaphor/motion-utils",
-        "danfrenette/anaphor/shortcut"
-      ],
+      "dependencies": ["@base-ui/react", "@phosphor-icons/react", "motion"],
+      "registryDependencies": ["danfrenette/anaphor/adaptive-surface", "danfrenette/anaphor/style", "danfrenette/anaphor/utils", "danfrenette/anaphor/motion-utils", "danfrenette/anaphor/shortcut"],
       "files": [
         {
           "path": "packages/design-system/src/components/sidebar.tsx",
@@ -200,10 +181,7 @@
     {
       "name": "workspace-shell",
       "type": "registry:ui",
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/workspace-shell.tsx",
@@ -215,13 +193,8 @@
     {
       "name": "bottom-bar",
       "type": "registry:ui",
-      "dependencies": [
-        "@base-ui/react"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/bottom-bar.tsx",
@@ -233,14 +206,8 @@
     {
       "name": "button",
       "type": "registry:ui",
-      "dependencies": [
-        "@base-ui/react",
-        "@phosphor-icons/react"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "dependencies": ["@base-ui/react", "@phosphor-icons/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/button.tsx",
@@ -252,11 +219,7 @@
     {
       "name": "hold-button",
       "type": "registry:ui",
-      "registryDependencies": [
-        "danfrenette/anaphor/button",
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "registryDependencies": ["danfrenette/anaphor/button", "danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/hold-button.tsx",
@@ -268,11 +231,7 @@
     {
       "name": "card",
       "type": "registry:ui",
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils",
-        "danfrenette/anaphor/text"
-      ],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils", "danfrenette/anaphor/text"],
       "files": [
         {
           "path": "packages/design-system/src/components/card.tsx",
@@ -284,14 +243,8 @@
     {
       "name": "card-copy-button",
       "type": "registry:ui",
-      "dependencies": [
-        "@phosphor-icons/react"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/button",
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "dependencies": ["@phosphor-icons/react"],
+      "registryDependencies": ["danfrenette/anaphor/button", "danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/card-copy-button.tsx",
@@ -303,14 +256,8 @@
     {
       "name": "checkbox",
       "type": "registry:ui",
-      "dependencies": [
-        "@base-ui/react",
-        "@phosphor-icons/react"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "dependencies": ["@base-ui/react", "@phosphor-icons/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/checkbox.tsx",
@@ -322,13 +269,8 @@
     {
       "name": "radio-group",
       "type": "registry:ui",
-      "dependencies": [
-        "@base-ui/react"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/radio-group.tsx",
@@ -340,14 +282,8 @@
     {
       "name": "field",
       "type": "registry:ui",
-      "dependencies": [
-        "@base-ui/react"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils",
-        "danfrenette/anaphor/checkbox"
-      ],
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils", "danfrenette/anaphor/checkbox"],
       "files": [
         {
           "path": "packages/design-system/src/components/field.tsx",
@@ -359,14 +295,8 @@
     {
       "name": "field-feedback",
       "type": "registry:ui",
-      "dependencies": [
-        "@phosphor-icons/react",
-        "motion"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/field",
-        "danfrenette/anaphor/style"
-      ],
+      "dependencies": ["@phosphor-icons/react", "motion"],
+      "registryDependencies": ["danfrenette/anaphor/field", "danfrenette/anaphor/style"],
       "files": [
         {
           "path": "packages/design-system/src/components/field-feedback.tsx",
@@ -380,11 +310,7 @@
       "type": "registry:ui",
       "title": "File upload",
       "description": "Native file selection, a quiet drop surface, and brand progress. The application owns file policy and upload jobs.",
-      "registryDependencies": [
-        "danfrenette/anaphor/button",
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "registryDependencies": ["danfrenette/anaphor/button", "danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/file-upload.tsx",
@@ -396,13 +322,8 @@
     {
       "name": "input",
       "type": "registry:ui",
-      "dependencies": [
-        "@base-ui/react"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/input.tsx",
@@ -414,13 +335,8 @@
     {
       "name": "popover",
       "type": "registry:ui",
-      "dependencies": [
-        "@base-ui/react"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/popover.tsx",
@@ -432,13 +348,8 @@
     {
       "name": "tooltip",
       "type": "registry:ui",
-      "dependencies": [
-        "@base-ui/react"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/tooltip.tsx",
@@ -450,15 +361,8 @@
     {
       "name": "menu",
       "type": "registry:ui",
-      "dependencies": [
-        "@base-ui/react",
-        "motion"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils",
-        "danfrenette/anaphor/motion-utils"
-      ],
+      "dependencies": ["@base-ui/react", "motion"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils", "danfrenette/anaphor/motion-utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/menu.tsx",
@@ -470,14 +374,8 @@
     {
       "name": "morph-surface",
       "type": "registry:ui",
-      "dependencies": [
-        "motion"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils",
-        "danfrenette/anaphor/text"
-      ],
+      "dependencies": ["motion"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils", "danfrenette/anaphor/text"],
       "files": [
         {
           "path": "packages/design-system/src/components/morph-surface.tsx",
@@ -489,13 +387,8 @@
     {
       "name": "separator",
       "type": "registry:ui",
-      "dependencies": [
-        "@base-ui/react"
-      ],
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/separator.tsx",
@@ -507,10 +400,7 @@
     {
       "name": "text",
       "type": "registry:ui",
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/text.tsx",
@@ -522,10 +412,7 @@
     {
       "name": "prose",
       "type": "registry:ui",
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/prose.tsx",
@@ -537,10 +424,7 @@
     {
       "name": "kbd",
       "type": "registry:ui",
-      "registryDependencies": [
-        "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
-      ],
+      "registryDependencies": ["danfrenette/anaphor/style", "danfrenette/anaphor/utils"],
       "files": [
         {
           "path": "packages/design-system/src/components/kbd.tsx",
@@ -566,9 +450,7 @@
     {
       "name": "sections",
       "type": "registry:ui",
-      "dependencies": [
-        "motion"
-      ],
+      "dependencies": ["motion"],
       "registryDependencies": [
         "danfrenette/anaphor/style",
         "danfrenette/anaphor/utils",
