@@ -29,9 +29,8 @@ independent media-viewer source installation and complete-UI compilation.
    Return to find it paused at its retained position. Captions and controls stay
    usable independently of the supporting panel. Close and reopen to inspect
    timestamp and available preference retention.
-5. Switch Annotations/Evidence in the central console; there is one supporting
-   panel, on the right when wide and below when narrow. Hide details maximizes
-   media space. Arrow keys in tabs and video controls do not change items.
+5. Open Details in the central console and switch Annotations/Evidence within it; there is one supporting
+   panel, on the right when wide and below when narrow. Toggle Details off to reclaim media space; toggle it on to restore the last tab. Arrow keys in tabs and video controls do not change items.
 6. Open Unavailable asset. Caption, explanation, and retry remain available.
    Exercise retry, then close with Escape. A missing active item has an explicit
    unavailable state and can still be closed.

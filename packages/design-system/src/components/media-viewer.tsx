@@ -3,7 +3,7 @@
 import { Dialog } from "@base-ui/react/dialog";
 import { CaretLeft, CaretRight, X } from "@phosphor-icons/react";
 import { Video, VideoPlayer } from "@videojs/react/video";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useCallback, useEffect, useLayoutEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Button, ButtonLabel } from "./button";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "./tabs";
 import { Text } from "./text";
@@ -11,13 +11,14 @@ import { cn } from "../lib/utils";
 
 type MediaViewerTrack = { src: string; srcLang: string; label: string; kind: "captions" | "subtitles"; default: boolean };
 type MediaViewerPanel = "annotations" | "evidence";
+type MediaViewerInspection = { imageSize: "fit" | "actual" | null };
 type MediaViewerItemBase = {
   id: string;
   /** Change this identity when the captured bytes or track assets change. */
   sourceKey: string;
   title: string;
   caption?: ReactNode;
-  annotations?: ReactNode;
+  annotations?: ReactNode | ((inspection: MediaViewerInspection) => ReactNode);
   evidence?: ReactNode;
 };
 type MediaViewerImage = MediaViewerItemBase & {
@@ -38,7 +39,7 @@ type MediaViewerProps = {
   initialPanel: MediaViewerPanel | null;
   returnFocus?: RefObject<HTMLElement | null>;
   /** Additional controls in the central console; state belongs to the consumer. */
-  renderConsole?: (item: MediaViewerItem) => ReactNode;
+  renderConsole?: (item: MediaViewerItem, inspection: MediaViewerInspection) => ReactNode;
 };
 const control = { nativeButton: true, type: "button", size: "md", shape: "square", variant: "ghost", tone: "neutral", loading: false, iconOnly: false } as const;
 type VideoPosition = { time: number; volume: number; muted: boolean; rate: number; captions: string[] };
@@ -50,22 +51,26 @@ function MediaViewer({ open, onOpenChange, items, activeItemId, onActiveItemChan
   const onPosition = useCallback((key: string, value: VideoPosition) => { positions.current.set(key, value); }, []);
   return <Dialog.Root open={open} onOpenChange={onOpenChange} disablePointerDismissal modal>
     <Dialog.Portal className="fixed inset-0 isolate z-[var(--anaphor-z-overlay)]">
-      <Dialog.Backdrop className="fixed inset-0 bg-black/60" />
-      <ViewerContent items={items} activeItemId={activeItemId} onActiveItemChange={onActiveItemChange} initialPanel={initialPanel} returnFocus={returnFocus} renderConsole={renderConsole} getPosition={getPosition} onPosition={onPosition} />
+      <Dialog.Backdrop className="fixed inset-0 bg-black/60 transition-opacity duration-[var(--anaphor-motion-duration-standard)] ease-[var(--anaphor-ease-out)] data-starting-style:opacity-0 data-ending-style:opacity-0 motion-reduce:transition-none" />
+      <ViewerContent open={open} items={items} activeItemId={activeItemId} onActiveItemChange={onActiveItemChange} initialPanel={initialPanel} returnFocus={returnFocus} renderConsole={renderConsole} getPosition={getPosition} onPosition={onPosition} />
     </Dialog.Portal>
   </Dialog.Root>;
 }
 
-function ViewerContent({ items, activeItemId, onActiveItemChange, initialPanel, returnFocus, renderConsole, getPosition, onPosition }: Omit<MediaViewerProps, "open" | "onOpenChange"> & { getPosition: (key: string) => VideoPosition | undefined; onPosition: (key: string, value: VideoPosition) => void }) {
-  const [panel, setPanel] = useState<MediaViewerPanel | null>(initialPanel);
+function ViewerContent({ open, items, activeItemId, onActiveItemChange, initialPanel, returnFocus, renderConsole, getPosition, onPosition }: Omit<MediaViewerProps, "onOpenChange"> & { getPosition: (key: string) => VideoPosition | undefined; onPosition: (key: string, value: VideoPosition) => void }) {
+  const [panel, setPanel] = useState<MediaViewerPanel>(initialPanel ?? "annotations");
+  const [detailsOpen, setDetailsOpen] = useState(initialPanel !== null);
+  const detailsId = useId();
   const [sizes, setSizes] = useState<Record<string, boolean>>({});
   const closeRef = useRef<HTMLButtonElement>(null);
-  const annotationTabRef = useRef<HTMLButtonElement>(null);
-  const evidenceTabRef = useRef<HTMLButtonElement>(null);
+
   const index = items.findIndex(item => item.id === activeItemId);
   const active = items[index];
   const key = active ? JSON.stringify([active.id, active.sourceKey, active.src]) : "";
-  const hasPanel = active && ((panel === "annotations" && active.annotations != null) || (panel === "evidence" && active.evidence != null));
+  const hasDetails = active && (active.annotations != null || active.evidence != null);
+  const selectedPanel = panel === "annotations" && active?.annotations == null ? "evidence" : panel === "evidence" && active?.evidence == null ? "annotations" : panel;
+  const hasPanel = hasDetails && detailsOpen;
+  const inspection: MediaViewerInspection = { imageSize: active?.kind === "image" ? sizes[key] ? "actual" : "fit" : null };
   return <Dialog.Popup initialFocus={closeRef} finalFocus={returnFocus} data-slot="media-viewer"
     className={cn(
       // Modal bounds and layout
@@ -73,19 +78,22 @@ function ViewerContent({ items, activeItemId, onActiveItemChange, initialPanel, 
       "pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]",
       // Surface and focus
       "rounded-card bg-background text-foreground shadow-card outline-none",
+      // Base UI retains the popup through its interruptible entry and exit transitions.
+      "transition-[opacity,transform] duration-[var(--anaphor-motion-duration-standard)] ease-[var(--anaphor-ease-out)]",
+      "data-starting-style:opacity-0 data-ending-style:opacity-0 motion-safe:data-starting-style:scale-[0.99] motion-safe:data-ending-style:scale-[0.99] motion-reduce:transition-none",
     )}
     onKeyDown={event => {
       if (event.defaultPrevented || event.target !== event.currentTarget || event.altKey || event.metaKey || event.ctrlKey) return;
       const target = event.key === "ArrowRight" ? items[index + 1] : event.key === "ArrowLeft" ? items[index - 1] : undefined;
       if (target) { event.preventDefault(); onActiveItemChange(target.id); }
     }}>
-    <header className="flex shrink-0 items-start gap-3 border-b border-border px-4 py-2">
+    <header className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-2">
       <Dialog.Title tabIndex={0} render={<Text as="h2" variant="subheading" />} className="max-h-[20dvh] min-w-0 flex-1 overflow-auto break-words focus-visible:outline-2 focus-visible:outline-ring">{active?.title ?? "Media unavailable"}</Dialog.Title>
       {active && items.length > 1 && <Text as="span" variant="caption" className="shrink-0 tabular-nums">{index + 1} / {items.length}</Text>}
       <Dialog.Close ref={closeRef} render={<Button {...control} iconOnly aria-label="Close media viewer" />}><X aria-hidden="true" /></Dialog.Close>
     </header>
     <Dialog.Description className="sr-only">Inspect media and its supporting details. Escape closes the viewer.</Dialog.Description>
-    <Tabs value={panel} onValueChange={value => setPanel(value === "annotations" || value === "evidence" ? value : null)} className="flex min-h-0 flex-1 flex-col">
+    <Tabs value={selectedPanel} onValueChange={value => { if (value === "annotations" || value === "evidence") setPanel(value); }} className="flex min-h-0 flex-1 flex-col">
       <div className={cn(
         // Narrow windows use one scrolling document flow; content cannot overlap grid tracks.
         "flex min-h-0 flex-1 flex-col overflow-auto",
@@ -93,16 +101,17 @@ function ViewerContent({ items, activeItemId, onActiveItemChange, initialPanel, 
         "lg:grid lg:grid-rows-[minmax(0,1fr)]",
         hasPanel && "lg:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)]",
       )}>
-        <div className="flex min-w-0 shrink-0 flex-col lg:min-h-0 lg:overflow-auto">
+        <div className={cn("flex min-w-0 shrink-0 flex-col lg:min-h-0 lg:overflow-auto", !hasPanel && "min-h-0 flex-1")}>
           <div className={cn(
             "relative h-[max(12rem,40dvh)] shrink-0 overflow-hidden",
             "lg:h-auto lg:min-h-48 lg:flex-1",
+            !hasPanel && "h-auto min-h-48 flex-1",
           )} data-slot="media-viewer-stage">
             {!active && <Text as="p" variant="body" className="p-6">The selected media is unavailable.</Text>}
             {items.map(item => {
               const identity = JSON.stringify([item.id, item.sourceKey, item.src]);
               return <div key={identity} hidden={item.id !== activeItemId} className="h-full min-h-48" aria-hidden={item.id !== activeItemId || undefined}>
-                {item.kind === "image" ? <ViewerImage item={item} actual={sizes[identity] === true} active={item.id === activeItemId} /> : <ViewerVideo item={item} active={item.id === activeItemId} getPosition={() => getPosition(identity)} onPosition={value => onPosition(identity, value)} />}
+                {item.kind === "image" ? <ViewerImage item={item} actual={sizes[identity] === true} active={item.id === activeItemId} /> : <ViewerVideo item={item} active={open && item.id === activeItemId} getPosition={() => getPosition(identity)} onPosition={value => onPosition(identity, value)} />}
               </div>;
             })}
           </div>
@@ -111,9 +120,12 @@ function ViewerContent({ items, activeItemId, onActiveItemChange, initialPanel, 
         {hasPanel && <aside className={cn(
           "shrink-0 border-t border-border p-4",
           "lg:min-h-0 lg:overflow-auto lg:border-t-0 lg:border-l",
-        )} aria-label="Supporting details">
-          <div className="mb-3 flex justify-end"><Button {...control} onClick={() => { (panel === "annotations" ? annotationTabRef : evidenceTabRef).current?.focus(); setPanel(null); }}><ButtonLabel>Hide details</ButtonLabel></Button></div>
-          {active.annotations != null && <TabsPanel value="annotations">{active.annotations}</TabsPanel>}
+        )} id={detailsId} aria-label="Supporting details">
+          <TabsList size="lg" variant="default" aria-label="Media details" className="mb-4 max-w-full">
+            {active.annotations != null && <TabsTab className="pointer-coarse:min-h-11" value="annotations">Annotations</TabsTab>}
+            {active.evidence != null && <TabsTab className="pointer-coarse:min-h-11" value="evidence">Evidence</TabsTab>}
+          </TabsList>
+          {active.annotations != null && <TabsPanel value="annotations">{typeof active.annotations === "function" ? active.annotations(inspection) : active.annotations}</TabsPanel>}
           {active.evidence != null && <TabsPanel value="evidence">{active.evidence}</TabsPanel>}
         </aside>}
       </div>
@@ -124,14 +136,11 @@ function ViewerContent({ items, activeItemId, onActiveItemChange, initialPanel, 
           "order-first flex w-full flex-wrap items-center justify-center gap-1 p-1",
           "sm:order-none sm:mx-auto sm:w-auto",
           // Floating control surface
-          "rounded-control bg-muted shadow-card",
+          "rounded-control bg-muted shadow-card [--anaphor-button-radius:calc(var(--radius-control)-var(--spacing))]",
         )} data-slot="media-viewer-console">
-          {active?.kind === "image" && <div role="group" aria-label="Image size" className="flex"><Button {...control} aria-pressed={!sizes[key]} onClick={() => setSizes(previous => ({ ...previous, [key]: false }))}><ButtonLabel>Fit</ButtonLabel></Button><Button {...control} aria-pressed={sizes[key] === true} onClick={() => setSizes(previous => ({ ...previous, [key]: true }))}><ButtonLabel>Actual size</ButtonLabel></Button></div>}
-          {active && (active.annotations != null || active.evidence != null) && <TabsList size="md" variant="default" aria-label="Media details">
-            {active.annotations != null && <TabsTab ref={annotationTabRef} className="pointer-coarse:min-h-11" value="annotations">Annotations</TabsTab>}
-            {active.evidence != null && <TabsTab ref={evidenceTabRef} className="pointer-coarse:min-h-11" value="evidence">Evidence</TabsTab>}
-          </TabsList>}
-          {active && renderConsole?.(active)}
+          {active?.kind === "image" && <div role="group" aria-label="Image size" className="flex"><Button {...control} className="aria-pressed:bg-background" aria-pressed={!sizes[key]} onClick={() => setSizes(previous => ({ ...previous, [key]: false }))}><ButtonLabel>Fit</ButtonLabel></Button><Button {...control} className="aria-pressed:bg-background" aria-pressed={sizes[key] === true} onClick={() => setSizes(previous => ({ ...previous, [key]: true }))}><ButtonLabel>Actual size</ButtonLabel></Button></div>}
+          {hasDetails && <div className={cn(active.kind === "image" && "ms-2 border-s border-border ps-2")}><Button {...control} aria-expanded={detailsOpen} aria-controls={detailsId} className="aria-expanded:bg-background" onClick={() => setDetailsOpen(value => !value)}><ButtonLabel>{detailsOpen ? "Hide details" : "Show details"}</ButtonLabel></Button></div>}
+          {active && renderConsole?.(active, inspection)}
         </div>
         {items.length > 1 && <Button {...control} aria-label="Next" disabled={index < 0 || index >= items.length - 1} onClick={() => { const next = items[index + 1]; if (next) onActiveItemChange(next.id); }}><ButtonLabel>Next</ButtonLabel><CaretRight aria-hidden="true" /></Button>}
       </footer>

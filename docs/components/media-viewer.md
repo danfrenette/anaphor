@@ -36,11 +36,17 @@ uses `VideoPlayer` and `Video` from the v10 video preset with native controls,
 inline playback, metadata preload, and no autoplay. Source URLs must be playable
 by the browser; this component does not introduce a streaming adapter.
 
-`renderConsole(item)` adds consumer controls to the bottom central console.
-Annotations and Evidence tabs control one supporting panel: beside media on wide
-windows and below it on narrow windows. Hide details restores media space.
-Hide details returns focus to its console tab. Long titles have a bounded
-scroll region so Close and the bottom console remain reachable.
+`renderConsole(item, inspection)` adds consumer controls to the bottom central console.
+The inspection argument exposes `imageSize` (`"fit"`, `"actual"`, or `null` for videos), so consumer actions can reflect the current inspection mode.
+The persistent Details button opens and closes the supporting panel, restoring its
+last selected tab. Annotations and Evidence tabs live inside that panel. Details
+stays in the console with explicit expanded state; items without supporting
+content omit it. The panel sits beside media on wide windows and below it on
+narrow windows. Closing it gives the media stage the available space while the
+outer dialog stays fixed. Panel changes are immediate.
+Annotations may be React content or a render function receiving the same inspection
+argument as `renderConsole`, so contextual actions can live beside their explanation.
+Long titles retain their bounded scroll region.
 The console shares the system's rounded floating-surface vocabulary and tokens;
 it does not mount a second MorphSurface panel or independent dismissal handler.
 
@@ -81,3 +87,14 @@ failure/retry, explicit invalid dimensions, missing selection, supporting tabs,
 and arrow isolation. Browser verification owns real media decoding, pixel sizing,
 scroll retention, focus behavior, themes, narrow and short windows, zoom, and
 accessibility. See the media viewer recipe for executed coverage.
+
+The dialog and backdrop enter and exit over the shared standard duration (200ms)
+with the shared ease-out curve. The popup travels from 99% scale; reduced motion
+removes both transitions and scale. Video pauses as closing begins, before the
+exit completes. Header contents are vertically centered; title typography stays
+at the shared subheading size across viewport widths. Long titles wrap and scroll
+within the existing bounded title region instead of shrinking automatically.
+
+Structural references: [Coss Dialog](https://coss.com/ui/docs/components/dialog)
+and [shadcn Base Dialog](https://ui.shadcn.com/docs/components/base/dialog).
+The viewer keeps its large media layout and Anaphor tokens.
