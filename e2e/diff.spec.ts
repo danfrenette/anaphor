@@ -145,6 +145,7 @@ test("annotation focus, failure recovery, themes and zoom remain usable", async 
   const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
   await page.getByRole("button", { name: "Locate 1: Guard missing sections", exact: true }).click();
   await expect(diff.locator('[data-line][data-selected-line]')).not.toHaveCount(0);
+  await page.getByRole("button", { name: "Source and emphasis scenarios", exact: true }).click();
   await page.getByRole("button", { name: "Show unavailable source", exact: true }).click();
   await expect(diff.getByRole("status")).toContainText("Authored explanations are retained");
   const note = diff.getByRole("button", { name: "1. Guard missing sections", exact: true });
@@ -227,6 +228,7 @@ test("an invalid reveal cannot later turn emphasis-only selection into navigatio
   const code = diff.getByRole("region", { name: "Code changes: Annotated navigation", exact: true });
   await page.getByRole("button", { name: "Locate 5: Explain a missing capture", exact: true }).click();
   await expect(diff.getByText("Code range unavailable in supplied source.")).toBeVisible();
+  await page.getByRole("button", { name: "Source and emphasis scenarios", exact: true }).click();
   const emphasize = page.getByRole("button", { name: "Emphasize guard only", exact: true });
   await emphasize.focus();
   await expect.poll(() => diff.evaluate(element => element.getAnimations({ subtree: true }).filter(animation => animation.playState === "running").length)).toBe(0);
@@ -244,6 +246,7 @@ test("source replacement and a new reveal key reveal the current target", async 
   await page.getByRole("button", { name: "Locate 3: Keep the existing label", exact: true }).click();
   await expect(diff.locator('[data-line="8"][data-selected-line]').first()).toBeVisible();
   await code.evaluate(element => { element.scrollTop = element.scrollHeight; });
+  await page.getByRole("button", { name: "Source and emphasis scenarios", exact: true }).click();
   const replace = page.getByRole("button", { name: "Replace captured source", exact: true });
   await replace.click();
   await expect(replace).toBeFocused();
