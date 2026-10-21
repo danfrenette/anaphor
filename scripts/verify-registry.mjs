@@ -87,6 +87,7 @@ async function checkBrowser(browser, directory, item) {
     await expect(page.getByRole("button", { name: "Count 1", exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Count 1", exact: true }).press("Enter");
     await expect(page.getByRole("button", { name: "Count 2", exact: true })).toBeVisible();
+    if (item === "step-transition") await expect(page.getByText("Current step 2", { exact: true })).toBeVisible();
     const fonts = await page.evaluate(async () => {
       await document.fonts.ready;
       return [...document.fonts].filter(font => font.status === "loaded").map(font => font.family.replaceAll('"', ""));
@@ -180,7 +181,7 @@ try {
   console.log(`Registry verification workspace: ${temporary}`);
   await prepareRegistry();
   browser = await chromium.launch();
-  for (const item of ["button", "diff", "media-viewer", "ui"]) {
+  for (const item of ["button", "diff", "media-viewer", "step-transition", "ui"]) {
     console.log(`\nChecking independent ${item} installation`);
     const consumer = path.join(temporary, item);
     await cp(path.join(root, "test/registry-consumer"), consumer, { recursive: true });

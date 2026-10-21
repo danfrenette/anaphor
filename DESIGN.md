@@ -356,3 +356,12 @@ assistive technology. Pulse, stationary sheen, and static variants use theme
 neutrals. Opacity-only 1.8s/2.4s loops are an ongoing-status exception to short
 interaction timings. Reduced motion stops all effects; completion is immediate.
 The API, limitations, and credits live in [Skeleton](docs/components/skeleton.md).
+
+## Step transition
+
+Ordered content may travel horizontally while a measured shell changes height.
+StepTransition uses a 300ms spring with no bounce and 110% inline travel, following
+consumer-supplied direction. Measured height is a deliberate layout-motion exception
+for step and supporting-panel changes. Initial content is static; reduced motion
+or explicit animation opt-out makes changes immediate. Navigation stays outside
+the moving content, and outgoing content is inert and hidden from accessibility.
