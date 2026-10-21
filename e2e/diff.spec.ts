@@ -88,7 +88,7 @@ for (const key of ["Enter", "Space"]) {
 }
 
 test("authored notes disclose inline and popover explanations without duplicating external reveals", async ({ page }) => {
-  await page.goto("/#diff");
+  await page.goto("/#authored-notes");
   const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
   const note = diff.getByRole("button", { name: "1. Guard missing sections", exact: true });
   await expect(note).toHaveAttribute("aria-expanded", "false");
@@ -102,7 +102,7 @@ test("authored notes disclose inline and popover explanations without duplicatin
 });
 
 test("external notes open hidden context and reveal only inside the bounded diff", async ({ page }) => {
-  await page.goto("/#diff");
+  await page.goto("/#authored-notes");
   const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
   await diff.getByRole("button", { name: "Collapse src/articles/reading-position.ts", exact: true }).click();
   const external = page.getByRole("button", { name: "Locate 3: Keep the existing label", exact: true });
@@ -127,7 +127,7 @@ test("external notes open hidden context and reveal only inside the bounded diff
 });
 
 test("unchanged excerpts preserve original numbering and expand surrounding context", async ({ page }) => {
-  await page.goto("/#diff");
+  await page.goto("/#unchanged-excerpts");
   const diff = page.getByRole("region", { name: "Unchanged label contract", exact: true });
   await expect(diff.getByText("Unchanged file · Excerpts with expandable context.")).toBeVisible();
   await expect(diff.locator('[data-line="8"]')).toContainText("export function sectionLabel");
@@ -141,7 +141,7 @@ test("unchanged excerpts preserve original numbering and expand surrounding cont
 test("annotation focus, failure recovery, themes and zoom remain usable", async ({ page }, testInfo) => {
   await page.addInitScript(() => localStorage.setItem("anaphor-theme", "light"));
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/#diff");
+  await page.goto("/#authored-notes");
   const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
   await page.getByRole("button", { name: "Locate 1: Guard missing sections", exact: true }).click();
   await expect(diff.locator('[data-line][data-selected-line]')).not.toHaveCount(0);
@@ -171,7 +171,7 @@ test("annotation focus, failure recovery, themes and zoom remain usable", async 
     // Base UI's WebKit/VoiceOver focus sentinels intentionally use role=button
     // to intercept the virtual cursor (Base UI utils/FocusGuard). They are not
     // authored commands; keep every rule enabled for the actual note UI.
-    const accessibility = await new AxeBuilder({ page }).include('[data-slot="popover-popup"]').include('#diff').exclude('[data-base-ui-focus-guard]').analyze();
+    const accessibility = await new AxeBuilder({ page }).include('[data-slot="popover-popup"]').include('#authored-notes').exclude('[data-base-ui-focus-guard]').analyze();
     expect(accessibility.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ target: n.target, summary: n.failureSummary })) }))).toEqual([]);
     await page.screenshot({ path: testInfo.outputPath(`notes-${theme}.png`) });
     await page.keyboard.press("Escape");
@@ -182,7 +182,7 @@ test("annotation focus, failure recovery, themes and zoom remain usable", async 
 
 test("before-side authored emphasis does not select the adjacent after-side code", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop-chromium", "Two columns require a desktop surface.");
-  await page.goto("/#diff");
+  await page.goto("/#authored-notes");
   const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
   await expect(diff.locator('[data-diff-type="split"]')).toBeVisible();
   await page.getByRole("button", { name: "Locate 4: Replace implicit wrapping", exact: true }).click();
@@ -192,7 +192,7 @@ test("before-side authored emphasis does not select the adjacent after-side code
 
 test("unified authored ranges exclude interleaved changes from the other side", async ({ page }) => {
   await page.setViewportSize({ width: 500, height: 800 });
-  await page.goto("/#diff");
+  await page.goto("/#authored-notes");
   const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
   await page.getByRole("button", { name: "Locate 1: Guard missing sections", exact: true }).click();
   await expect(diff.locator('[data-diff-type="single"]')).toBeVisible();
@@ -222,7 +222,7 @@ test("an unavailable authored target clears unrelated legacy emphasis without re
 });
 
 test("an invalid reveal cannot later turn emphasis-only selection into navigation", async ({ page }) => {
-  await page.goto("/#diff");
+  await page.goto("/#authored-notes");
   const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
   const code = diff.getByRole("region", { name: "Code changes: Annotated navigation", exact: true });
   await page.getByRole("button", { name: "Locate 5: Explain a missing capture", exact: true }).click();
@@ -238,7 +238,7 @@ test("an invalid reveal cannot later turn emphasis-only selection into navigatio
 });
 
 test("source replacement and a new reveal key reveal the current target", async ({ page }) => {
-  await page.goto("/#diff");
+  await page.goto("/#authored-notes");
   const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
   const code = diff.getByRole("region", { name: "Code changes: Annotated navigation", exact: true });
   await page.getByRole("button", { name: "Locate 3: Keep the existing label", exact: true }).click();

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { DiffDemo } from "../diff-demo";
+import { AuthoredNotesDemo, DiffDemo, UnchangedExcerptsDemo } from "../diff-demo";
 import { CollapsibleDemo } from "../collapsible-demo";
 import { SidebarInsetContent, Section, Text, Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
 import { ButtonDemo } from "../button-demo";
@@ -225,6 +225,7 @@ export default function HomePage() {
           <InputDemo />
           <RadioGroupDemo />
           <SliderDemo />
+          <AuthoredNotesDemo />
           <BadgeDemo />
           <CardDemo />
           <DataTableDemo />
@@ -234,6 +235,7 @@ export default function HomePage() {
           <NodeEdgeDemo />
           <SkeletonDemo />
           <StepTransitionDemo />
+          <UnchangedExcerptsDemo />
           <BottomBarDemo />
           <CollapsibleDemo />
           <CommandPaletteDemo />
