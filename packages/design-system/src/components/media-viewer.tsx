@@ -184,9 +184,11 @@ function ViewerVideo({ item, active, getPosition, onPosition }: { item: MediaVie
   const [attempt, setAttempt] = useState(0);
   const [position] = useState(getPosition);
   const initial = useRef(position);
+  const restored = useRef(false);
   useEffect(() => { if (!active) videoRef.current?.pause(); }, [active]);
   useEffect(() => { const video = videoRef.current; return () => { video?.pause(); }; }, []);
   function remember(video: HTMLVideoElement) {
+    if (!restored.current || video.readyState === 0 || video !== videoRef.current || !video.isConnected) return;
     const value = readVideoPosition(video);
     initial.current = value;
     onPosition(value);
@@ -195,6 +197,7 @@ function ViewerVideo({ item, active, getPosition, onPosition }: { item: MediaVie
     const video = videoRef.current;
     if (!video) return;
     const changed = () => {
+      if (!restored.current || video.readyState === 0 || video !== videoRef.current || !video.isConnected) return;
       const value = readVideoPosition(video);
       initial.current = value;
       onPosition(value);
@@ -203,9 +206,9 @@ function ViewerVideo({ item, active, getPosition, onPosition }: { item: MediaVie
     return () => video.textTracks.removeEventListener("change", changed);
   }, [onPosition, failed, attempt]);
   return <div className="flex h-full min-h-48 flex-col justify-center">
-    {failed ? <div className="grid place-content-center gap-3 p-6 text-center"><Text as="p" variant="body">Video unavailable.</Text><Button {...control} onClick={() => { setFailed(false); setAttempt(value => value + 1); }}><ButtonLabel>Retry video</ButtonLabel></Button></div> : <VideoPlayer title={item.title}>
+    {failed ? <div className="grid place-content-center gap-3 p-6 text-center"><Text as="p" variant="body">Video unavailable.</Text><Button {...control} onClick={() => { restored.current = false; setFailed(false); setAttempt(value => value + 1); }}><ButtonLabel>Retry video</ButtonLabel></Button></div> : <VideoPlayer title={item.title}>
       <Video key={attempt} ref={videoRef} src={item.src} poster={item.poster} controls playsInline preload="metadata" aria-label={item.title} className="block h-full max-h-full w-full object-contain"
-        onLoadedMetadata={event => { const video = event.currentTarget; const saved = initial.current; if (saved) { if (Number.isFinite(video.duration) && saved.time <= video.duration) video.currentTime = saved.time; video.volume = saved.volume; video.muted = saved.muted; video.playbackRate = saved.rate; for (const track of Array.from(video.textTracks)) track.mode = saved.captions.includes(`${track.language}:${track.label}`) ? "showing" : "disabled"; } }}
+        onLoadedMetadata={event => { const video = event.currentTarget; const saved = initial.current; if (saved) { if (Number.isFinite(video.duration) && saved.time <= video.duration) video.currentTime = saved.time; video.volume = saved.volume; video.muted = saved.muted; video.playbackRate = saved.rate; for (const track of Array.from(video.textTracks)) track.mode = saved.captions.includes(`${track.language}:${track.label}`) ? "showing" : "disabled"; } restored.current = true; }}
         onPlay={event => { if (!active) event.currentTarget.pause(); }} onTimeUpdate={event => remember(event.currentTarget)} onVolumeChange={event => remember(event.currentTarget)} onRateChange={event => remember(event.currentTarget)} onPause={event => remember(event.currentTarget)} onError={() => setFailed(true)}>
         {item.tracks?.map(track => <track key={track.src} {...track} onLoad={() => { const video = videoRef.current; const saved = initial.current; if (video && saved) for (const caption of Array.from(video.textTracks)) caption.mode = saved.captions.includes(`${caption.language}:${caption.label}`) ? "showing" : "disabled"; }} />)}
       </Video>

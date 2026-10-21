@@ -194,3 +194,26 @@ test("video failure retains the account and retries without autoplay", async ({ 
   await expect.poll(() => video.evaluate((el: HTMLVideoElement) => el.readyState)).toBeGreaterThan(0);
   await expect(video).toHaveJSProperty("paused", true);
 });
+
+test("reopening a recording retains playback preferences and stays paused", async ({ page }) => {
+  await page.goto("/#media-viewer");
+  const opener = page.getByRole("button", { name: "Inspect recording", exact: true });
+  await opener.click();
+  const video = page.getByRole("dialog").locator("video");
+  await expect.poll(() => video.evaluate((el: HTMLVideoElement) => el.readyState)).toBeGreaterThan(0);
+  await video.evaluate((el: HTMLVideoElement) => {
+    el.currentTime = 2;
+    el.muted = true;
+    el.playbackRate = 1.5;
+    for (const track of Array.from(el.textTracks)) track.mode = "disabled";
+  });
+  await expect(video).toHaveJSProperty("currentTime", 2);
+  await page.getByRole("button", { name: "Close media viewer" }).click();
+  await opener.click();
+  await expect.poll(() => video.evaluate((el: HTMLVideoElement) => el.readyState)).toBeGreaterThan(0);
+  await expect(video).toHaveJSProperty("paused", true);
+  await expect(video).toHaveJSProperty("currentTime", 2);
+  await expect(video).toHaveJSProperty("muted", true);
+  await expect(video).toHaveJSProperty("playbackRate", 1.5);
+  await expect.poll(() => video.evaluate((el: HTMLVideoElement) => Array.from(el.textTracks).map(track => track.mode))).toEqual(["disabled"]);
+});
