@@ -67,12 +67,13 @@ test("rapid reversal settles on the latest step and scaled ancestors do not clip
   await page.clock.pauseAt(new Date("2026-01-01T00:00:01Z"));
   for (const label of ["Continue", "Back", "Continue"]) {
     await section.getByRole("button", { name: label, exact: true }).evaluate((button: HTMLButtonElement) => button.click());
+    await expect(section.getByRole("heading", { name: label === "Back" ? "Choose the evidence" : "Explain the change" })).toBeVisible();
     await page.clock.runFor(80);
   }
   await page.clock.runFor(1000);
+  await page.clock.resume();
   await expect(section.getByRole("heading", { name: "Explain the change" })).toBeVisible();
   await expect(surface.locator("[inert]")).toHaveCount(0);
-  await page.clock.resume();
   await section.evaluate(el => { el.style.transform = "scale(0.8)"; });
   await section.getByRole("button", { name: "Expand explanation" }).evaluate((button: HTMLButtonElement) => button.click());
   await expect(section.getByRole("button", { name: "Hide explanation" })).toBeVisible();
