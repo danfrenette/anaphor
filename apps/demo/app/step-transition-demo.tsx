@@ -21,8 +21,8 @@ export function StepTransitionDemo() {
     <Text as="h2" variant="title">Step transition</Text>
     <Text as="p" variant="description" className="mt-3">Move ordered content in the direction of navigation while its container follows the content height.</Text>
     <div className="mt-10"><CatalogExample title="Ordered content" description="Back and Continue stay outside the moving content. Expand an explanation to resize the current step."
-      code={'<StepTransition value={stepId} direction={direction} animate>\n  {content}\n</StepTransition>'}>
-      <StepTransition value={String(step)} direction={direction} animate>
+      code={'<StepTransition dir="ltr" value={stepId} direction={direction} animate>\n  {content}\n</StepTransition>'}>
+      <StepTransition dir="ltr" value={String(step)} direction={direction} animate>
         <div className="space-y-4 p-2">
           <Text as="h3" variant="heading">{current.title}</Text>
           <Text as="p" variant="body">{current.description}</Text>

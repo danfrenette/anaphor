@@ -5,14 +5,15 @@ completion, or tab semantics. A wizard composes it with Back/Continue controls;
 a tab interface supplies its own tab list and active panel.
 
 ```tsx
-<StepTransition value={stepId} direction="forward" animate>
+<StepTransition dir="ltr" value={stepId} direction="forward" animate>
   {content}
 </StepTransition>
 ```
 
 Required props are `value` (stable string identity), `direction` (`forward` or
-`backward`), `animate` (explicit motion choice), and `children`. Optional `dir`
-selects `ltr` (default) or `rtl`; `className` styles the containing surface.
+`backward`), `animate` (explicit motion choice), `dir` (`ltr` or `rtl`), and `children`.
+Optional `className` styles the containing surface. Supply the application’s
+writing direction explicitly; the component does not override it by default.
 Forward enters from the inline end and exits toward the inline start; backward
 reverses both. The consumer supplies direction, including skipped steps and loops.
 A changed value replaces content; a resize under the same value changes height

@@ -9,7 +9,7 @@ function Consumer() {
     <div data-testid="editorial-layout" className="mx-auto max-w-editorial"><p className="max-w-reading">Shared layout in an independent consumer.</p></div>
     <button className="h-10" onClick={() => setCount(count + 1)}>Count {count}</button>
     <p className="font-mono">Installed source</p>
-    <StepTransition value={String(count)} direction="forward" animate>
+    <StepTransition dir="ltr" value={String(count)} direction="forward" animate>
       <p>Current step {count}</p>
     </StepTransition>
   </main>;

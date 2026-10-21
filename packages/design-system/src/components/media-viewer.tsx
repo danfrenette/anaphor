@@ -128,7 +128,7 @@ function ViewerContent({ open, items, activeItemId, onActiveItemChange, initialP
             {active.evidence != null && <TabsTab className="pointer-coarse:min-h-11" value="evidence">Evidence</TabsTab>}
           </TabsList>
           <TabsPanel value={selectedPanel}>
-            <StepTransition value={selectedPanel} direction={panelDirection} animate>
+            <StepTransition dir="ltr" value={selectedPanel} direction={panelDirection} animate>
               <div className="p-1">{selectedPanel === "annotations" ? typeof active.annotations === "function" ? active.annotations(inspection) : active.annotations : active.evidence}</div>
             </StepTransition>
           </TabsPanel>
