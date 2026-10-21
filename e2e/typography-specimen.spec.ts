@@ -73,7 +73,12 @@ test("reading experiments are bounded, local, and resettable", async ({ page }) 
 
 test("pretty wrapping only affects sample paragraphs and resets", async ({ page }) => {
   await page.goto("/typography");
-  await page.getByText("Reading experiments", { exact: true }).click();
+  const experiments = page.getByRole("button", { name: "Reading experiments", exact: true });
+  await experiments.click();
+  await expect(experiments).toHaveAttribute("aria-expanded", "true");
+  const panel = page.locator('[data-slot="collapsible"]').filter({ has: experiments }).locator('[data-slot="collapsible-content"]');
+  // Auto-scrolling to the last control during expansion can displace its menu anchor.
+  await expect.poll(() => panel.evaluate(element => element.getAnimations().filter(animation => animation.playState === "running").length)).toBe(0);
   const sample = page.getByRole("article", { name: "Reading sample" });
   await selectControl(page, "Paragraph wrapping", "Pretty");
   await expect(sample.locator("p").first()).toHaveCSS("text-wrap-style", "pretty");
