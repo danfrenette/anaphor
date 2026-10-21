@@ -4,9 +4,6 @@ Keep Overview first, followed by Foundations, Controls, Content, and Navigation.
 Alphabetize labels within each group. In-page sections follow the same sequence;
 dedicated reference routes retain their links in the corresponding sorted group.
 Manual search consumes the navigation data, so its group order stays aligned.
-Content includes Authored notes and Unchanged excerpts as direct Diff-composition
-links. Verify each reaches its own heading and Content breadcrumb, and dismisses
-the narrow sidebar.
 
 Run `pnpm exec playwright test e2e/manual-index-review.spec.ts e2e/sections.spec.ts --workers=2`.
 Check desktop and mobile index navigation, direct links, breadcrumbs, drawer
