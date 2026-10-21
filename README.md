@@ -98,8 +98,8 @@ Run `pnpm test:registry` to verify the current checkout with the pinned shadcn
 installer. On a new machine, install the browser first with
 `pnpm exec playwright install chromium`.
 
-The check builds temporary registry item files and installs Button alone and the
-full UI into two fresh React/Vite consumers outside the workspace. It compiles
+The check builds temporary registry item files and installs Button, Diff, and Media viewer alone plus the
+full UI into four fresh React/Vite consumers outside the workspace. It compiles
 all installed source and checks automatic stylesheet setup, preservation of
 application CSS, repeat installation, browser interaction, generated styles,
 light/dark tokens, and bundled fonts. The consumers have no `@anaphor/system`
