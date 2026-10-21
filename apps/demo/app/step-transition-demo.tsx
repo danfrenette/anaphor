@@ -32,8 +32,8 @@ export function StepTransitionDemo() {
       </StepTransition>
       <div className="mt-6 flex items-center justify-between gap-3">
         <Button {...button} disabled={step === 0} onClick={() => go(step - 1)}><ButtonLabel>Back</ButtonLabel></Button>
-        <Text as="span" variant="caption" className="tabular-nums">{step + 1} / {steps.length}</Text>
-        <Button {...button} disabled={step === steps.length - 1} onClick={() => go(step + 1)}><ButtonLabel>Continue</ButtonLabel></Button>
+        <Text as="span" variant="caption" className="font-mono tabular-nums">{step + 1} / {steps.length}</Text>
+        <Button {...button} variant="solid" tone="accent" disabled={step === steps.length - 1} onClick={() => go(step + 1)}><ButtonLabel>Continue</ButtonLabel></Button>
       </div>
     </CatalogExample></div>
   </Section>;
