@@ -19,11 +19,11 @@ const image: MediaViewerItem = {
   src: "/media/landscape.svg", alt: "Illustrative reading room with a continue reading action",
   width: 1440, height: 900,
   caption: "Illustrative desktop interface · 1440 × 900 pixels",
-  annotations: <div className="space-y-4"><Text as="p" variant="body">The complete image stays visible in Fit. Actual size makes each captured pixel one CSS pixel.</Text><Collapsible><CollapsibleTrigger>1. Continue reading</CollapsibleTrigger><CollapsibleContent><Text as="p" variant="body">The primary action follows the reading preview. Annotation details can use the same shared disclosures as inline content.</Text></CollapsibleContent></Collapsible></div>, evidence,
+  annotations: <div className="space-y-4"><Text as="p" variant="body">The complete image stays visible in Fit. Actual size makes each captured pixel one CSS pixel. Then use Locate action to bring Continue reading into view.</Text><Collapsible><CollapsibleTrigger>1. Continue reading</CollapsibleTrigger><CollapsibleContent><Text as="p" variant="body">The primary action follows the reading preview. Annotation details can use the same shared disclosures as inline content.</Text></CollapsibleContent></Collapsible></div>, evidence,
 };
 const video: MediaViewerItem = {
   id: "recording", sourceKey: "recording-v1", kind: "video", title: "Recording inspection",
-  src: "/media/inspection.mp4", poster: "/media/landscape.svg",
+  src: "/media/inspection.mp4",
   tracks: [{ src: "/media/inspection.vtt", srcLang: "en", label: "English account", kind: "captions", default: true }],
   caption: "Six-second silent recording · locally generated example",
   annotations: <ol className="list-decimal space-y-4 ps-5 text-body"><li>Before, 0:00: the canvas is empty.</li><li>Action, 0:02: an orange rectangle appears on the left.</li><li>After, 0:04: the rectangle appears on the right.</li></ol>, evidence,
@@ -38,12 +38,12 @@ const unavailable: MediaViewerItem = {
   annotations: <Text as="p" variant="body">This explanation remains available when the capture cannot load.</Text>,
 };
 const unavailableVideo: MediaViewerItem = { ...video, id: "unavailable-video", sourceKey: "unavailable-video-v1", src: "/media/intentionally-unavailable.mp4", title: "Unavailable recording" };
-const longTitle: MediaViewerItem = { ...image, id: "long-title", title: "A detailed capture title that remains readable in a short window. ".repeat(24) };
+const longTitle: MediaViewerItem = { ...image, id: "long-title", title: "Continue reading after returning to a saved article: desktop capture showing the restored reading position and the next available section" };
 const examples = [
-  { title: "Long content", label: "Inspect long title", items: [longTitle], description: "Long supplied titles remain readable while Close and inspection controls stay reachable." },
   { title: "Individual image", label: "Inspect landscape image", items: [image], description: "Fit and actual-size inspection with a supporting annotation panel." },
-  { title: "Individual recording", label: "Inspect recording", items: [video], description: "Video.js v10 playback with a poster, captions, and a readable account." },
+  { title: "Individual recording", label: "Inspect recording", items: [video], description: "Video.js v10 playback with captions and a readable account." },
   { title: "Mixed collection", label: "Inspect mixed collection", items: [image, video, portrait], description: "Finite previous/next navigation. Leaving a recording pauses playback; revisiting retains its position." },
+  { title: "Long content", label: "Inspect long title", items: [longTitle], description: "Long supplied titles remain readable while Close and inspection controls stay reachable." },
   { title: "Unavailable recording", label: "Inspect unavailable recording", items: [unavailableVideo], description: "The readable action account remains available when video playback fails." },
   { title: "Unavailable asset", label: "Inspect unavailable image", items: [unavailable], description: "A failed asset keeps its caption and explanation available, with an explicit retry." },
 ];
@@ -61,11 +61,14 @@ export function MediaViewerDemo() {
     <div className="mt-10 space-y-10">{examples.map(example => <CatalogExample key={example.title} title={example.title} description={example.description}
       code={'<MediaViewer open={open} onOpenChange={setOpen}\n  items={items} activeItemId={activeId}\n  onActiveItemChange={setActiveId} initialPanel="annotations" />'}>
       <Button nativeButton type="button" variant="outline" tone="neutral" size="md" shape="square" iconOnly={false} loading={false}
-        onClick={event => { const first = example.items[0]; if (!first) return; opener.current = event.currentTarget; setItems(example.items); setActiveItemId(first.id); setOpen(true); }}><ButtonLabel>{example.label}</ButtonLabel></Button>
+        onClick={event => { const first = example.items[0]; if (!first) return; opener.current = event.currentTarget; setRevealKey(0); setItems(example.items); setActiveItemId(first.id); setOpen(true); }}><ButtonLabel>{example.label}</ButtonLabel></Button>
     </CatalogExample>)}</div>
-    <MediaViewer open={open} onOpenChange={setOpen} items={items.map(item => item.kind === "image" && revealKey > 0 ? { ...item, reveal: { x: 0.85, y: 0.85, key: revealKey } } : item)} activeItemId={activeItemId} onActiveItemChange={setActiveItemId}
+    <MediaViewer open={open} onOpenChange={setOpen} items={items.map(item => item.kind === "image" && item.id !== "unavailable" ? { ...item,
+        reveal: revealKey > 0 ? { x: 114 / item.width, y: 522 / item.height, key: revealKey } : undefined,
+        annotations: inspection => <>{typeof item.annotations !== "function" && item.annotations}<Button nativeButton type="button" variant="outline" tone="neutral" size="md" shape="square" iconOnly={false} loading={false} className="mt-4" disabled={inspection.imageSize !== "actual"} title="Choose Actual size to locate Continue reading" onClick={() => setRevealKey(key => key + 1)}><ButtonLabel>Locate action</ButtonLabel></Button></>,
+      } : item)} activeItemId={activeItemId} onActiveItemChange={setActiveItemId}
       initialPanel={initialPanel === "closed" ? null : initialPanel} returnFocus={opener}
-      renderConsole={item => item.kind === "image" ? <Button nativeButton type="button" variant="ghost" tone="neutral" size="md" shape="square" iconOnly={false} loading={false} onClick={() => setRevealKey(key => key + 1)}><ButtonLabel>Reveal detail</ButtonLabel></Button> : null} />
+      />
     <PlaygroundControls sectionId="media-viewer" title="Media viewer" onReset={() => setInitialPanel("annotations")}>
       <Select label="Opening panel" value={initialPanel} options={["annotations", "evidence", "closed"]} onChange={setInitialPanel} />
     </PlaygroundControls>

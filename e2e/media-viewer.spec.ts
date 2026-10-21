@@ -12,6 +12,7 @@ test("media viewer is an alphabetized Content destination with working single-im
   const dialog = page.getByRole("dialog", { name: "Landscape inspection", exact: true });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole("button", { name: "Next", exact: true })).toHaveCount(0);
+  await expect(dialog.getByRole("button", { name: "Locate action", exact: true })).toBeDisabled();
   await dialog.getByRole("button", { name: "Actual size", exact: true }).click();
   await expect(dialog.getByRole("img", { name: "Illustrative reading room with a continue reading action" })).toHaveJSProperty("clientWidth", 1440);
   await dialog.getByRole("button", { name: "Fit", exact: true }).click();
@@ -75,11 +76,17 @@ test("hiding details returns keyboard focus to the console", async ({ page }) =>
   await page.goto("/#media-viewer");
   await page.getByRole("button", { name: "Inspect landscape image", exact: true }).click();
   const dialog = page.getByRole("dialog");
-  const hide = dialog.getByRole("button", { name: "Hide details" });
+  const hide = dialog.getByRole("button", { name: /^(Show|Hide) details$/ });
   await hide.focus();
   await hide.press("Enter");
-  await expect(dialog.getByRole("tab", { name: "Annotations", exact: true })).toBeFocused();
+  await expect(dialog.getByRole("button", { name: "Show details", exact: true })).toBeFocused();
   await expect(dialog.getByRole("complementary", { name: "Supporting details" })).toHaveCount(0);
+  await expect(hide).toHaveAttribute("aria-expanded", "false");
+  await hide.click();
+  await dialog.getByRole("tab", { name: "Evidence", exact: true }).click();
+  await hide.click();
+  await hide.click();
+  await expect(dialog.getByRole("tab", { name: "Evidence", exact: true })).toHaveAttribute("aria-selected", "true");
 });
 
 
@@ -89,7 +96,7 @@ test("a consumed annotation reveal does not replace the reader's retained pan", 
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("button", { name: "Actual size", exact: true }).click();
   const viewport = dialog.getByLabel("Landscape inspection image inspection", { exact: true });
-  await dialog.getByRole("button", { name: "Reveal detail" }).click();
+  await dialog.getByRole("button", { name: "Locate action" }).click();
   await expect.poll(() => viewport.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
   await viewport.evaluate(el => { el.scrollTop = 0; el.scrollLeft = 0; });
   await dialog.getByRole("button", { name: "Next", exact: true }).click();
@@ -108,6 +115,8 @@ test("long titles keep close and console reachable in a short window", async ({ 
   await expect(dialog.getByRole("button", { name: "Fit", exact: true })).toBeInViewport();
   await expect(dialog.getByRole("button", { name: "Actual size", exact: true })).toBeInViewport();
   const title = dialog.getByRole("heading", { level: 2 });
+  // Keep pathological content in the regression fixture, not the public example.
+  await title.evaluate(el => { el.textContent = "A detailed capture title that remains readable in a short window. ".repeat(24); });
   await title.focus();
   await title.press("End");
   await expect.poll(() => title.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
@@ -216,4 +225,27 @@ test("reopening a recording retains playback preferences and stays paused", asyn
   await expect(video).toHaveJSProperty("muted", true);
   await expect(video).toHaveJSProperty("playbackRate", 1.5);
   await expect.poll(() => video.evaluate((el: HTMLVideoElement) => Array.from(el.textTracks).map(track => track.mode))).toEqual(["disabled"]);
+});
+
+test("dialog motion respects reduced motion and the header keeps a stable centered title", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/#media-viewer");
+  await page.getByRole("button", { name: "Inspect recording", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toHaveCSS("opacity", "1");
+  await expect(dialog).toHaveCSS("transition-duration", "0.2s");
+  const title = dialog.getByRole("heading", { level: 2 });
+  const fontSize = await title.evaluate(el => getComputedStyle(el).fontSize);
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 640 });
+    await expect(title).toHaveCSS("font-size", fontSize);
+    const heading = await title.boundingBox();
+    const close = await dialog.getByRole("button", { name: "Close media viewer" }).boundingBox();
+    expect(Math.abs(heading!.y + heading!.height / 2 - close!.y - close!.height / 2)).toBeLessThan(1);
+  }
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(dialog).toHaveCSS("transition-property", "none");
+  await expect.poll(() => dialog.evaluate(el => el.getAnimations().length)).toBe(0);
+  await dialog.press("Escape");
+  await expect(dialog).toBeHidden();
 });

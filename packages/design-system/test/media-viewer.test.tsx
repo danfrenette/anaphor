@@ -105,5 +105,5 @@ test("hiding the supporting panel returns focus to its console tab", async () =>
   render(<Example />);
   await user.click(screen.getByRole("button", { name: "Open media" }));
   await user.click(screen.getByRole("button", { name: "Hide details" }));
-  expect(screen.getByRole("tab", { name: "Annotations" })).toHaveFocus();
+  expect(screen.getByRole("button", { name: "Show details" })).toHaveFocus();
 });
