@@ -17,6 +17,7 @@ import { PopoverDemo } from "../popover-demo";
 import { MediaViewerDemo } from "../media-viewer-demo";
 import { KbdDemo } from "../kbd-demo";
 import { SliderDemo } from "../slider-demo";
+import { StepTransitionDemo } from "../step-transition-demo";
 import { SkeletonDemo } from "../skeleton-demo";
 import { UploadDemo } from "../uploads/upload-demo";
 import { TabsDemo } from "../tabs-demo";
@@ -232,6 +233,7 @@ export default function HomePage() {
           <MediaViewerDemo />
           <NodeEdgeDemo />
           <SkeletonDemo />
+          <StepTransitionDemo />
           <BottomBarDemo />
           <CollapsibleDemo />
           <CommandPaletteDemo />

@@ -6,6 +6,7 @@ import { Video, VideoPlayer } from "@videojs/react/video";
 import { useCallback, useEffect, useLayoutEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Button, ButtonLabel } from "./button";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "./tabs";
+import { StepTransition } from "./step-transition";
 import { Text } from "./text";
 import { cn } from "../lib/utils";
 
@@ -59,6 +60,7 @@ function MediaViewer({ open, onOpenChange, items, activeItemId, onActiveItemChan
 
 function ViewerContent({ open, items, activeItemId, onActiveItemChange, initialPanel, returnFocus, renderConsole, getPosition, onPosition }: Omit<MediaViewerProps, "onOpenChange"> & { getPosition: (key: string) => VideoPosition | undefined; onPosition: (key: string, value: VideoPosition) => void }) {
   const [panel, setPanel] = useState<MediaViewerPanel>(initialPanel ?? "annotations");
+  const [panelDirection, setPanelDirection] = useState<"forward" | "backward">("forward");
   const [detailsOpen, setDetailsOpen] = useState(initialPanel !== null);
   const detailsId = useId();
   const [sizes, setSizes] = useState<Record<string, boolean>>({});
@@ -93,7 +95,7 @@ function ViewerContent({ open, items, activeItemId, onActiveItemChange, initialP
       <Dialog.Close ref={closeRef} render={<Button {...control} iconOnly aria-label="Close media viewer" />}><X aria-hidden="true" /></Dialog.Close>
     </header>
     <Dialog.Description className="sr-only">Inspect media and its supporting details. Escape closes the viewer.</Dialog.Description>
-    <Tabs value={selectedPanel} onValueChange={value => { if (value === "annotations" || value === "evidence") setPanel(value); }} className="flex min-h-0 flex-1 flex-col">
+    <Tabs value={selectedPanel} onValueChange={value => { if (value === "annotations" || value === "evidence") { setPanelDirection(value === "evidence" ? "forward" : "backward"); setPanel(value); } }} className="flex min-h-0 flex-1 flex-col">
       <div className={cn(
         // Narrow windows use one scrolling document flow; content cannot overlap grid tracks.
         "flex min-h-0 flex-1 flex-col overflow-auto",
@@ -125,8 +127,11 @@ function ViewerContent({ open, items, activeItemId, onActiveItemChange, initialP
             {active.annotations != null && <TabsTab className="pointer-coarse:min-h-11" value="annotations">Annotations</TabsTab>}
             {active.evidence != null && <TabsTab className="pointer-coarse:min-h-11" value="evidence">Evidence</TabsTab>}
           </TabsList>
-          {active.annotations != null && <TabsPanel value="annotations">{typeof active.annotations === "function" ? active.annotations(inspection) : active.annotations}</TabsPanel>}
-          {active.evidence != null && <TabsPanel value="evidence">{active.evidence}</TabsPanel>}
+          <TabsPanel value={selectedPanel}>
+            <StepTransition value={selectedPanel} direction={panelDirection} animate>
+              <div className="p-1">{selectedPanel === "annotations" ? typeof active.annotations === "function" ? active.annotations(inspection) : active.annotations : active.evidence}</div>
+            </StepTransition>
+          </TabsPanel>
         </aside>}
       </div>
       <footer className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-border p-2 sm:p-4">

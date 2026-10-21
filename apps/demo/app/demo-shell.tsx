@@ -114,6 +114,7 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "media-viewer", label: "Media viewer", href: "/#media-viewer", icon: Rectangle },
       { id: "node-edge-graphs", label: "Node-edge graphs", href: "/#node-edge-graphs", icon: ShareNetwork },
       { id: "skeleton", label: "Skeleton", href: "/#skeleton", icon: Rectangle },
+      { id: "step-transition", label: "Step transition", href: "/#step-transition", icon: Rectangle },
     ],
   },
   {
