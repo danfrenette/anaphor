@@ -2,7 +2,13 @@ import { useState } from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MediaViewer, type MediaViewerItem } from "@anaphor/system";
-import { expect, test } from "vitest";
+import { afterAll, beforeAll, expect, test, vi } from "vitest";
+
+// JSDOM has no layout observer; real resizing is covered by browser tests.
+beforeAll(() => {
+  vi.stubGlobal("ResizeObserver", class { observe() {} disconnect() {} });
+});
+afterAll(() => vi.unstubAllGlobals());
 
 const items: [MediaViewerItem, MediaViewerItem] = [
   { id: "one", sourceKey: "one-v1", kind: "image", src: "/one.png", alt: "First capture", width: 1200, height: 800, title: "First", annotations: <p>First note</p>, evidence: <p>First receipt</p> },
@@ -44,8 +50,8 @@ test("one supporting panel exposes the same supplied explanation after image fai
   await user.click(screen.getByRole("button", { name: "Retry image" }));
   expect(screen.getByAltText("First capture")).toBeInTheDocument();
   await user.click(screen.getByRole("tab", { name: "Evidence" }));
-  expect(screen.getByText("First receipt")).toBeVisible();
-  expect(screen.queryByText("First note")).not.toBeInTheDocument();
+  await waitFor(() => expect(screen.getByText("First receipt")).toBeVisible());
+  await waitFor(() => expect(screen.queryByText("First note")).not.toBeInTheDocument());
 });
 
 test("invalid image dimensions and missing active source retain an explicit usable dialog", async () => {
