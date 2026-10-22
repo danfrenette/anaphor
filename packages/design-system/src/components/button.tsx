@@ -40,7 +40,7 @@ const baseStyles = cn(
   // Disabled state
   "data-disabled:cursor-not-allowed data-muted:border-transparent data-muted:bg-[var(--anaphor-input-disabled)] data-muted:text-[var(--anaphor-font-tertiary)]",
   // Motion and active state
-  "motion-safe:transition-[background-color,border-color,color,transform] motion-safe:duration-[var(--anaphor-button-duration,125ms)] motion-safe:ease-in-out",
+  "motion-safe:transition-[background-color,border-color,color,transform,scale] motion-safe:duration-[var(--anaphor-button-duration,125ms)] motion-safe:ease-in-out",
   "motion-safe:active:not-data-disabled:scale-[var(--anaphor-button-press-scale,0.97)]",
   // Forced colors
   "forced-colors:border-[ButtonText] forced-colors:data-muted:border-[GrayText] forced-colors:data-muted:bg-[ButtonFace] forced-colors:data-muted:text-[GrayText]",
