@@ -43,7 +43,7 @@ export function SkeletonDemo() {
       <CatalogExample title="Playground" description="Switch effects and reveal the content to compare its layout with the placeholders." code={`<SkeletonRegion isLoading={isLoading} variant="pulse" label="Loading field note">
   <Card variant="default">
     <CardContent>
-      <SkeletonBox>{cover}</SkeletonBox>
+      <SkeletonBox reveal="fade">{cover}</SkeletonBox>
       <Text as="h4" variant="heading">
         <SkeletonText>Room for the work</SkeletonText>
       </Text>
@@ -67,7 +67,7 @@ export function SkeletonDemo() {
         <SkeletonRegion isLoading={isLoading} variant={variant} label="Loading field note">
           <Card variant="default">
             <CardContent className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-              <SkeletonBox className="self-start overflow-hidden rounded-[4px]">
+              <SkeletonBox reveal="fade" className="self-start overflow-hidden rounded-[4px]">
                 <div className="flex aspect-[4/3] items-end bg-muted p-4" aria-label="Field note cover">
                   <Text as="span" variant="label">Field notes<br />No. 024</Text>
                 </div>
@@ -86,7 +86,7 @@ export function SkeletonDemo() {
       </CatalogExample>
     </div>
     <div className="mt-6 grid gap-3">
-      <Text as="p" variant="caption">Resize the window to see the text placeholders follow the real line breaks. Content appears immediately; loading never adds an artificial delay.</Text>
+      <Text as="p" variant="caption">Resize the window to see the text placeholders follow the real line breaks. Media fades in within its reserved space; text and interaction become available immediately.</Text>
       <Text as="p" variant="caption">Foundation: <a className="underline underline-offset-4" href="https://ui.shadcn.com/docs/components/base/skeleton">shadcn/ui</a>. Content-shaped loading inspired by <a className="underline underline-offset-4" href="https://x.com/devongovett/status/1838980741197447529">Devon Govett / React Spectrum</a> and <a className="underline underline-offset-4" href="https://x.com/0xGoodfuture/status/2039818750568878245">goodfuture / Boneyard</a>.</Text>
     </div>
   </Section>;

@@ -354,7 +354,8 @@ Loading placeholders follow actual content geometry through explicit text and bo
 participants. Stable shells remain visible; mock content is inert and hidden from
 assistive technology. Pulse, stationary sheen, and static variants use theme
 neutrals. Opacity-only 1.8s/2.4s loops are an ongoing-status exception to short
-interaction timings. Reduced motion stops all effects; completion is immediate.
+interaction timings. Reduced motion stops loading effects; completion is immediate
+by default, with an optional media opacity reveal of 200ms (160ms reduced motion).
 The API, limitations, and credits live in [Skeleton](docs/components/skeleton.md).
 
 ## Step transition

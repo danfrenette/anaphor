@@ -504,9 +504,16 @@ html[data-theme-transition]::view-transition-new(root) {
 [data-slot="skeleton-region"][data-loading="true"] .anaphor-skeleton-box > [data-slot="skeleton-box-content"] {
   visibility: hidden;
 }
+[data-slot="skeleton-region"] .anaphor-skeleton-box[data-reveal="fade"] > [data-slot="skeleton-box-content"] {
+  transition: opacity 200ms var(--anaphor-ease-out);
+}
+[data-slot="skeleton-region"][data-loading="true"] .anaphor-skeleton-box[data-reveal="fade"] > [data-slot="skeleton-box-content"] {
+  opacity: 0;
+}
 @keyframes anaphor-skeleton-pulse { 50% { opacity: 0.5; } }
 @keyframes anaphor-skeleton-sheen { 50% { opacity: 0.72; } }
 @media (prefers-reduced-motion: reduce) {
+  [data-slot="skeleton-region"] .anaphor-skeleton-box[data-reveal="fade"] > [data-slot="skeleton-box-content"] { transition-duration: 160ms; }
   .anaphor-skeleton,
   [data-slot="skeleton-region"][data-loading="true"] :is(.anaphor-skeleton-text, .anaphor-skeleton-box) { animation: none; }
 }
