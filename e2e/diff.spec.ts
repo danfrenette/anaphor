@@ -222,13 +222,15 @@ test("an unavailable authored target clears unrelated legacy emphasis without re
   await expect(diff.getByText("Highlighted line 20: the guard for a missing section.")).toBeVisible();
 });
 
-test("an invalid reveal cannot later turn emphasis-only selection into navigation", async ({ page }) => {
+test("unavailable explanations stay separate and emphasis preserves reading position", async ({ page }) => {
   await page.goto("/#diff");
   const diff = page.getByRole("region", { name: "Annotated navigation", exact: true });
   const code = diff.getByRole("region", { name: "Code changes: Annotated navigation", exact: true });
-  await page.getByRole("button", { name: "Locate 5: Explain a missing capture", exact: true }).click();
-  await expect(diff.getByText("Code range unavailable in supplied source.")).toBeVisible();
+  await expect(page.getByRole("list", { name: "Change explanations" }).getByRole("button")).toHaveCount(4);
   await page.getByRole("button", { name: "Source and emphasis scenarios", exact: true }).click();
+  const unavailable = page.getByRole("region", { name: "Unavailable annotation range", exact: true });
+  await unavailable.getByRole("button", { name: "1. Explain a missing capture", exact: true }).click();
+  await expect(unavailable.getByText("This original source range was not captured. The explanation remains readable.")).toBeVisible();
   const emphasize = page.getByRole("button", { name: "Emphasize guard only", exact: true });
   await emphasize.focus();
   await expect.poll(() => diff.evaluate(element => element.getAnimations({ subtree: true }).filter(animation => animation.playState === "running").length)).toBe(0);

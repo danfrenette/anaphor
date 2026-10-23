@@ -173,3 +173,10 @@ Authored emphasis is source-side-specific. Verify that a before-side note does
 not paint the adjacent after column in split view, and an after-side range in
 unified view excludes interleaved deleted rows. The adapter uses Pierre's public
 selection-side option and trims opposite-side unified row decorations after render.
+
+The authored-note index displays four labelled code targets with before/after line
+ranges. Selecting an entry marks it current without opening its explanation.
+Inline notes use a chevron; short popover notes use an information icon. Both show
+source-range metadata. The unavailable-range example lives under Source and
+emphasis scenarios and has no code-navigation action. Hiding the captured source
+also hides the target index while retaining readable explanations.

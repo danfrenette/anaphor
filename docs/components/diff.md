@@ -143,7 +143,8 @@ active ID and reveal key for a new evidence item.
 
 Notes appear after their range's final line, grouped when they share that anchor.
 Numbered inline titles start collapsed; popovers open on activation and return
-focus on dismissal. Opening a note requests active emphasis through the callback.
+focus on dismissal. Inline disclosures use a chevron and popovers an information
+icon; both show the original before/after line range. Opening a note requests active emphasis through the callback.
 Changing only the active ID does not request scrolling. Existing `highlightedLines`
 remains available; an active authored note takes precedence over that legacy emphasis. An invalid
 active note clears emphasis rather than falling back to an unrelated legacy range.
