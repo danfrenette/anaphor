@@ -55,7 +55,7 @@ test("authored explanations remain available when their source is unavailable", 
     annotations={{ notes: [{ id: "guard", title: "Guard missing sections", body: "Unknown sections return no next section.", presentation: "inline", range: { side: "after", start: 20, end: 20 } }], activeNoteId: null, onActiveNoteChange: () => {} }} />);
   const note = screen.getByRole("button", { name: "1. Guard missing sections" });
   expect(note).toHaveAttribute("aria-expanded", "false");
-  expect(screen.getByText("Code range unavailable in supplied source.")).toBeVisible();
+  expect(screen.getByText("Source unavailable · Code range unavailable in supplied source.")).toBeVisible();
   await user.click(note);
   expect(screen.getByText("Unknown sections return no next section.")).toBeVisible();
 });
@@ -73,7 +73,7 @@ test("a partial patch cannot silently relocate a note to supplied lines", async 
   render(<Diff {...settings} source={{ kind: "patch", path: "sample.ts", patch: "--- a/sample.ts\n+++ b/sample.ts\n@@ -8,1 +8,1 @@\n-old\n+new\n" }}
     annotations={{ notes: [{ id: "missing", title: "Inspect the earlier context", body: "This claim refers to source absent from this patch.", presentation: "inline", range: { side: "before", start: 2, end: 4 } }], activeNoteId: "missing", onActiveNoteChange: () => {}, revealKey: 1 }} />);
   expect(screen.getByText("Patch excerpt · Only supplied context is available.")).toBeVisible();
-  expect(screen.getByText("Code range unavailable in supplied source.")).toBeVisible();
+  expect(screen.getByText("Source unavailable · Code range unavailable in supplied source.")).toBeVisible();
   await user.click(screen.getByRole("button", { name: "1. Inspect the earlier context" }));
   expect(screen.getByText("This claim refers to source absent from this patch.")).toBeVisible();
 });

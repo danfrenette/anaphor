@@ -3,7 +3,7 @@
 import { SVGSpriteSheet, parseDiffFromFile, parsePatchFiles, type FileContents, type FileDiffMetadata, type SelectedLineRange, type DiffLineAnnotation } from "@pierre/diffs";
 import { CopyIcon, UnwrapIcon, WrapIcon } from "@primer/octicons-react";
 import { FileDiff, type FileDiffOptions } from "@pierre/diffs/react";
-import { CaretRight, FileCode } from "@phosphor-icons/react/dist/ssr";
+import { CaretRight, FileCode, Info } from "@phosphor-icons/react/dist/ssr";
 import { useEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { Popover, PopoverBody, PopoverPopup, PopoverTitle, PopoverTrigger } from "./popover";
 import { Button, ButtonLabel } from "./button";
@@ -38,16 +38,16 @@ type DiffAnnotations = {
 function Note({ note, number, active, unavailable, onActivate }: {
   note: DiffNote; number: number; active: boolean; unavailable: boolean; onActivate: () => void;
 }) {
-  const title = <><span className="shrink-0 whitespace-nowrap tabular-nums">{number}.</span>{" "}<span className="min-w-0">{note.title}</span></>;
+  const title = <><span className="shrink-0 whitespace-nowrap font-mono tabular-nums">{number}.</span>{" "}<span className="min-w-0">{note.title}</span></>;
   return <div className={cn("min-w-0 border-l-2 px-3 py-2 font-sans text-ui [overflow-wrap:anywhere]", active ? "border-[var(--anaphor-brand)] bg-muted/60" : "border-transparent")}>
     {note.presentation === "inline" ? <Collapsible defaultOpen={false} onOpenChange={open => { if (open) onActivate(); }}>
       <CollapsibleTrigger className="min-h-10"><CaretRight aria-hidden="true" />{title}</CollapsibleTrigger>
       <CollapsibleContent hiddenUntilFound={false}><div className="max-w-reading px-2 pb-2 text-ui">{note.body}</div></CollapsibleContent>
     </Collapsible> : <Popover onOpenChange={open => { if (open) onActivate(); }}>
-      <PopoverTrigger render={<Button type="button" nativeButton size="md" shape="square" variant="ghost" tone="neutral" loading={false} iconOnly={false} className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal text-start" />}><ButtonLabel>{title}</ButtonLabel></PopoverTrigger>
+      <PopoverTrigger render={<Button type="button" nativeButton size="md" shape="square" variant="ghost" tone="neutral" loading={false} iconOnly={false} className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal text-start" />}><Info aria-hidden="true" /><ButtonLabel>{title}</ButtonLabel></PopoverTrigger>
       <PopoverPopup side="bottom" align="start" sideOffset={8}><PopoverBody><PopoverTitle>{note.title}</PopoverTitle><div className="mt-2 text-ui">{note.body}</div></PopoverBody></PopoverPopup>
     </Popover>}
-    {unavailable && <p className="px-2 text-small text-muted-foreground">Code range unavailable in supplied source.</p>}
+    <p className="px-2 text-small text-muted-foreground">{unavailable ? "Source unavailable · Code range unavailable in supplied source." : <span className="font-mono">{note.range.side === "after" ? "After" : "Before"} · L{note.range.start}{note.range.end !== note.range.start && `–${note.range.end}`}</span>}</p>
   </div>;
 }
 

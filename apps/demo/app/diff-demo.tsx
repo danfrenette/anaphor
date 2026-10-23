@@ -82,6 +82,9 @@ const notes: DiffNote[] = [
   { id: "overlap", title: "Keep the return nearby", body: "The guard and successful return stay together.", presentation: "popover", range: { side: "after", start: 21, end: 22 } },
   { id: "label", title: "Keep the existing label", body: "The fallback title is unchanged and remains part of the reading contract.", presentation: "inline", range: { side: "after", start: 8, end: 10 } },
   { id: "old", title: "Replace implicit wrapping", body: "The old lookup restarted navigation when the current section was missing.", presentation: "inline", range: { side: "before", start: 20, end: 20 } },
+];
+
+const unavailableNotes: DiffNote[] = [
   { id: "missing", title: "Explain a missing capture", body: "This original source range was not captured. The explanation remains readable.", presentation: "inline", range: { side: "after", start: 999, end: 999 } },
 ];
 
@@ -136,10 +139,10 @@ export function DiffDemo() {
         <Diff aria-label="Navigation guard excerpt" source={excerpt} layout="unified" wrap={false} controls={false} context="collapsed" maxHeight={null} highlightedLines={highlightGuard ? { start: 20, end: 20, side: "additions" } : undefined} revealKey={highlightGuard ? reveal : undefined} notice={highlightGuard && activeNoteId !== "missing-context" ? "Highlighted line 20: the guard for a missing section." : undefined} annotations={{ notes: missingContextNotes, activeNoteId, onActiveNoteChange: setActiveNoteId, revealKey: noteReveal }} />
       </CatalogExample>
       <CatalogExample framed={false} title="Authored notes" description="Read explanations in place, or follow an external note without opening its explanation again." code={`<Diff annotations={{ notes, activeNoteId, onActiveNoteChange, revealKey }} {...settings} />`}>
-        <Text as="p" variant="caption" className="mb-2">Locate a numbered note in the code. Open its title for the explanation.</Text>
-        <ol aria-label="Change explanations" className="mb-4 flex flex-wrap gap-2">{notes.map((note, index) => <li key={note.id}>
-          <Button type="button" nativeButton size="md" shape="square" variant="ghost" tone="neutral" loading={false} iconOnly={false} aria-label={`Locate ${index + 1}: ${note.title}`} title={note.title} className="tabular-nums" onClick={() => { setActiveNoteId(note.id); setNoteReveal(previous => previous + 1); }}><ButtonLabel>{index + 1}</ButtonLabel></Button>
-        </li>)}</ol>
+        <Text as="p" variant="caption" className="mb-2">Choose a note to reveal its code. Expand a chevron for inline details, or open the information button for a short note.</Text>
+        {sourceAvailable && <ol aria-label="Change explanations" className="mb-4 grid gap-2 sm:grid-cols-2">{notes.map((note, index) => <li key={note.id}>
+          <Button type="button" nativeButton size="md" shape="square" variant={activeNoteId === note.id ? "soft" : "ghost"} tone={activeNoteId === note.id ? "accent" : "neutral"} loading={false} iconOnly={false} aria-current={activeNoteId === note.id ? "true" : undefined} aria-label={`Locate ${index + 1}: ${note.title}`} className="h-auto w-full justify-start whitespace-normal py-2 text-start" onClick={() => { setActiveNoteId(note.id); setNoteReveal(previous => previous + 1); }}><ButtonLabel><span className="flex flex-col gap-1"><span>{index + 1} · {note.title}</span><span className="font-mono text-small font-normal text-muted-foreground">{note.range.side === "after" ? "After" : "Before"} · L{note.range.start}{note.range.end !== note.range.start && `–${note.range.end}`}</span></span></ButtonLabel></Button>
+        </li>)}</ol>}
         <Diff aria-label="Annotated navigation" source={sourceAvailable ? (alternateCapture ? alternateSource : source) : { kind: "unavailable", path: "src/articles/reading-position.ts", reason: "The captured source is unavailable. Authored explanations are retained." }} layout="split" wrap controls={false} context="collapsed" maxHeight={280} annotations={{ notes, activeNoteId, onActiveNoteChange: setActiveNoteId, revealKey: noteReveal }} />
         <Collapsible className="mt-4"><CollapsibleTrigger>Source and emphasis scenarios</CollapsibleTrigger><CollapsibleContent>
         <div className="mb-4"><Button type="button" nativeButton size="md" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} onClick={() => { setSourceAvailable(value => !value); setActiveNoteId(null); }}><ButtonLabel>{sourceAvailable ? "Show unavailable source" : "Restore captured source"}</ButtonLabel></Button></div>
@@ -147,6 +150,8 @@ export function DiffDemo() {
           <Button type="button" nativeButton size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} onClick={() => setActiveNoteId("guard")}><ButtonLabel>Emphasize guard only</ButtonLabel></Button>
           <Button type="button" nativeButton size="sm" shape="square" variant="outline" tone="neutral" loading={false} iconOnly={false} onClick={() => { setSourceAvailable(true); setAlternateCapture(value => !value); setActiveNoteId("guard"); setNoteReveal(value => value + 1); }}><ButtonLabel>Replace captured source</ButtonLabel></Button>
         </div>
+        <Text as="p" variant="caption" className="mb-3">Unavailable range: the explanation remains readable, but there is no code target to locate.</Text>
+        <Diff aria-label="Unavailable annotation range" source={excerpt} layout="unified" wrap controls={false} context="collapsed" maxHeight={280} annotations={{ notes: unavailableNotes, activeNoteId, onActiveNoteChange: setActiveNoteId }} />
         </CollapsibleContent></Collapsible>
       </CatalogExample>
       <CatalogExample framed={false} title="Unchanged excerpts" description="Inspect the existing contract with original line numbers and expandable context." code={`<Diff source={{ kind: "unchanged", file, excerpts: [{ start: 8, end: 10 }] }} {...settings} />`}>
