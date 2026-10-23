@@ -31,8 +31,8 @@ function SkeletonText({ className, ...props }: SkeletonTextProps) {
 }
 
 /** Wrap media or a compact control; its real content continues to reserve space. */
-function SkeletonBox({ children, className, ...props }: ComponentProps<"div">) {
-  return <div {...props} data-slot="skeleton-box" className={cn("anaphor-skeleton-box rounded-[4px]", className)}>
+function SkeletonBox({ children, className, reveal, ...props }: ComponentProps<"div"> & { reveal?: "fade" }) {
+  return <div {...props} data-slot="skeleton-box" data-reveal={reveal} className={cn("anaphor-skeleton-box rounded-[4px]", className)}>
     <div data-slot="skeleton-box-content">{children}</div>
   </div>;
 }

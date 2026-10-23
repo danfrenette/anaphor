@@ -44,6 +44,40 @@ test("effects support keyboard selection and static reduced motion", async ({ pa
   await expect(section.locator('[data-slot="skeleton-text"]:visible').first()).toHaveCSS("animation-name", "none");
 });
 
+test("media fades into reserved space while text and interaction are immediate", async ({ page }) => {
+  await page.goto("/#skeleton");
+  const section = page.locator("#skeleton");
+  const region = section.locator('[data-slot="skeleton-region"]:visible');
+  const media = region.locator('[data-slot="skeleton-box-content"]');
+  await section.getByRole("button", { name: "Show content" }).scrollIntoViewIfNeeded();
+  const bounds = await media.boundingBox();
+  expect(bounds).not.toBeNull();
+  await section.getByRole("button", { name: "Show content" }).click();
+  const halfwayOpacity = await media.evaluate(element => {
+    const transition = element.getAnimations()[0];
+    if (!transition) return null;
+    transition.pause();
+    transition.currentTime = 100;
+    const opacity = Number(getComputedStyle(element).opacity);
+    transition.finish();
+    return opacity;
+  });
+  expect(halfwayOpacity).toBeGreaterThan(0);
+  expect(halfwayOpacity).toBeLessThan(1);
+  await expect(region.getByRole("heading", { name: "Room for the work" })).toBeVisible();
+  await expect(region.locator("[inert]")).toHaveCount(0);
+  await expect(region.locator('[data-slot="skeleton-text"]').first()).toHaveCSS("transition-duration", "0s");
+  expect(await media.boundingBox()).toEqual(bounds);
+  await expect(media).toHaveCSS("transition-duration", "0.2s");
+  await expect(media).toHaveCSS("opacity", "1");
+
+  await section.getByRole("button", { name: "Show loading" }).click();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await section.getByRole("button", { name: "Show content" }).click();
+  await expect(media).toHaveCSS("transition-duration", "0.16s");
+  await expect(media).toHaveCSS("opacity", "1");
+});
+
 
 test("skeleton catalog exposes shape and effect references with inline code", async ({ page }) => {
   await page.goto("/#skeleton");

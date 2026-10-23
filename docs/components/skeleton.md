@@ -53,7 +53,7 @@ region: browser `inert` cannot cover portaled content outside its subtree.
 | `Skeleton` | Decorative empty div; required `variant`; normal div attributes and sizing classes. No children. |
 | `SkeletonRegion` | Required `isLoading`, `variant`, and localized loading `label`; normal div attributes. Its inner wrapper owns busy state and interaction blocking. |
 | `SkeletonText` | Inline span; plain text/number children and normal span attributes. No width or line-count props. |
-| `SkeletonBox` | Div around media or controls; normal div attributes. Child content reserves all space. |
+| `SkeletonBox` | Div around media or controls; normal div attributes. Child content reserves all space. Optional `reveal="fade"` fades its content in on completion. |
 
 Use `<Skeleton variant="pulse" className="h-5 w-32" />` when an explicit shape is
 appropriate. Use the region composition when content should supply the dimensions.
@@ -68,8 +68,10 @@ Configuration is explicit, matching the system's component prop contract.
 
 The long loops communicate an ongoing wait, an explicit exception to the usual
 150–250ms interaction timing. Only opacity animates; no layout, background position,
-registered property, or filter is animated. Completion and effect-tab changes are
-immediate. Reduced motion and forced colors stop all skeleton animation. Forced
+registered property, or filter is animated. Completion is immediate by default;
+media can opt into a 200ms opacity reveal with `reveal="fade"` (160ms with reduced
+motion). Effect-tab changes are immediate. Reduced motion and forced colors stop
+loading loops. Forced
 colors uses the system GrayText color for placeholder surfaces.
 
 While loading, the content subtree is inert and hidden from assistive technology.
