@@ -51,3 +51,6 @@ failure artifacts until triage is complete.
 The Right-hand navigation example is independently interactive: select a destination,
 close and reopen the rail, and open/dismiss its mobile drawer. Neither example
 changes the other sidebar's state or the manual's navigation.
+During desktop opening, closing, and rapid reversals, its toggle keeps the same
+inset from the moving card edge and its header divider spans the card throughout.
+`e2e/sidebar-catalog.spec.ts` samples these intermediate frames.

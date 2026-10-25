@@ -75,6 +75,9 @@ card children counter-scale so text and controls keep their natural scale.
 Wrap independently centered or aligned page content in `SidebarInsetContent`
 (and put its `max-width` / auto margins on that component) to register its position.
 Content adopts its destination layout once and may rewrap at narrower widths.
+Right-aligned header actions also need a `SidebarInsetContent` wrapper so they
+stay attached to the moving card edge. The workspace header divider follows the
+card surface independently of its counter-scaled text and controls.
 Standalone sidebars retain position-only layout projection. Keyboard toggles and
 reduced-motion preferences settle positions immediately. Closed desktop panels
 are inert immediately, including while their exit is still visible.
