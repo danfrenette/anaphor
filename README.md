@@ -143,7 +143,7 @@ Group all button text inside `ButtonLabel`, including interpolated or formatted
 text. Icons sit alongside it; icon-only buttons use an accessible name.
 
 Place SVG icons as direct siblings of `ButtonLabel`. Button applies the shared
-[optical-padding rule](DESIGN.md#iconography) automatically; do not add per-call
+[optical-padding rule](docs/design/controls.md#buttons) automatically; do not add per-call
 padding corrections.
 
 ```tsx

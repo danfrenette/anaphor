@@ -3,6 +3,8 @@
 - Before changing or reviewing code, read [CODING_STANDARDS.md](CODING_STANDARDS.md)
   and its references for the affected area. For interface work, also read
   [PRODUCT.md](PRODUCT.md).
+- For animation additions or changes, follow the property-selection and
+  verification steps in [DESIGN.md — Motion](DESIGN.md#motion).
 - For setup and check commands, use [README.md](README.md#development). For cloud
   runtimes and browser dependencies, match [.github/workflows/ci.yml](.github/workflows/ci.yml).
 - After changing behavior, run the relevant recipes in
