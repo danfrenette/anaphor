@@ -59,7 +59,13 @@ function RightSidebarExample() {
     <SidebarProvider layout="workspace" side="right" mode="uncontrolled" defaultOpen={true} shortcut={null} resizable={false} className="[--anaphor-sidebar-width:12rem] [--anaphor-sidebar-min-width:10rem]">
       <Navigation selected={selected} onSelect={setSelected} label="Right-hand navigation" />
       <SidebarInset><WorkspaceCard>
-        <WorkspaceCardHeader className="justify-between gap-2"><SidebarInsetContent>{selected}</SidebarInsetContent><SidebarTrigger target="desktop" aria-label="Toggle right-hand navigation" className="hidden md:grid" /><SidebarTrigger target="mobile" aria-label="Open right-hand navigation" className="md:hidden" /></WorkspaceCardHeader>
+        <WorkspaceCardHeader className="justify-between gap-2">
+          <SidebarInsetContent>{selected}</SidebarInsetContent>
+          <SidebarInsetContent>
+            <SidebarTrigger target="desktop" aria-label="Toggle right-hand navigation" className="hidden md:grid" />
+            <SidebarTrigger target="mobile" aria-label="Open right-hand navigation" className="md:hidden" />
+          </SidebarInsetContent>
+        </WorkspaceCardHeader>
         <WorkspaceCardBody className="p-4 text-small text-muted-foreground"><SidebarInsetContent>Switch destinations or open and close navigation on the right.</SidebarInsetContent></WorkspaceCardBody>
       </WorkspaceCard></SidebarInset>
     </SidebarProvider>
