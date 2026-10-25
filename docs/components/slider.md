@@ -29,7 +29,10 @@ integration, self-hosted font tokens, and 44px control height; unused global sho
 omitted; pointer capture uses the current control; measurements use ResizeObserver
 instead of reading refs during render; editable hover resets in the pointer-leave
 handler; pointer interaction focuses the control; click springs follow the accepted
-controlled value and retarget when it changes. DialKit's slider rendering is retained.
+controlled value and retarget when it changes. The fill scales from its left edge,
+and a full-width positioning layer translates the thumb without animating width
+or left. The outer rubber-band surface retains DialKit's width morph so its labels
+and numeric value keep their natural scale.
 
 For an upstream update, unpack the target DialKit release in a temporary directory
 and compare these source-map entries and slider CSS with release 2.0.2 and our

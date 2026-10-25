@@ -10,25 +10,25 @@ const sizeStyles = {
     // Dimensions
     "[--button-size:1.75rem] [--button-icon-size:0.875rem] [--button-gap:0.375rem]",
     // Padding, typography, and coarse-pointer target
-    "px-2 text-small pointer-coarse:[--button-size:2.75rem]",
+    "[--button-padding:0.5rem] px-[var(--button-padding)] text-small pointer-coarse:[--button-size:2.75rem]",
   ),
   sm: cn(
     // Dimensions
     "[--button-size:2rem] [--button-icon-size:1rem] [--button-gap:0.5rem]",
     // Padding, typography, and coarse-pointer target
-    "px-2.5 text-ui pointer-coarse:[--button-size:2.75rem]",
+    "[--button-padding:0.625rem] px-[var(--button-padding)] text-ui pointer-coarse:[--button-size:2.75rem]",
   ),
   md: cn(
     // Dimensions
     "[--button-size:2.5rem] [--button-icon-size:1rem] [--button-gap:0.5rem]",
     // Padding, typography, and coarse-pointer target
-    "px-3.5 text-body pointer-coarse:[--button-size:2.75rem]",
+    "[--button-padding:0.875rem] px-[var(--button-padding)] text-body pointer-coarse:[--button-size:2.75rem]",
   ),
   lg: cn(
     // Dimensions
     "[--button-size:3rem] [--button-icon-size:1rem] [--button-gap:0.5rem]",
     // Padding and typography
-    "px-4 text-body",
+    "[--button-padding:1rem] px-[var(--button-padding)] text-body",
   ),
 } as const;
 
@@ -124,6 +124,13 @@ function Button({
         cn(
           baseStyles,
           sizeStyles[size],
+          // SVG siblings at the label's edges get optical padding; loaders stay separate.
+          !iconOnly && cn(
+            "ps-[var(--button-padding-start,var(--button-padding))] pe-[var(--button-padding-end,var(--button-padding))]",
+            "[&:has(>[data-slot=button-content]>svg:first-child)]:[--button-padding-start:calc(var(--button-padding)-2px)]",
+            "[&:has(>[data-slot=button-content]>svg:last-child)]:[--button-padding-end:calc(var(--button-padding)-2px)]",
+            "[&:has(>[data-slot=button-content]>svg+span[data-slot=hold-button-overlay]:last-child)]:[--button-padding-end:calc(var(--button-padding)-2px)]",
+          ),
           iconOnly && "size-[var(--button-size)] min-w-0 shrink-0 px-0",
           shape === "round" && "rounded-full",
           toneStyles[tone],

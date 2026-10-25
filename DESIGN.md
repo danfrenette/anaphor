@@ -1,5 +1,28 @@
 # Design
 
+Read this file for every interface change, then read only the references whose
+triggers match the work. Follow their component links when changing an API or
+composition. Runtime values live in package CSS; these documents own intent,
+constraints, and the reasons behind them. [PRODUCT.md](PRODUCT.md) owns audience
+and product scope.
+
+## Read for the affected area
+
+| When changing… | Read before editing |
+| --- | --- |
+| Theme palettes, color roles, danger treatment, or disabled/loading colors | [Color decisions](docs/design/color.md) |
+| Button size, icon padding, loading, input validation, or badges | [Controls](docs/design/controls.md) |
+| Menus, popovers, command palettes, tab indicators, or shared hover highlights | [Overlays](docs/design/overlays.md) |
+| Cards, copy feedback, keycaps, diff icons, skeletons, or step transitions | [Content components](docs/design/content.md) |
+| Manual branding, demo scope, sidebar feedback, or the floating controls surface | [Reference manual](docs/design/manual.md) |
+| Typography roles or article composition | [Typography](docs/components/typography.md) |
+| Workspace/editorial bounds, responsive gutters, or layout composition | [Layout recipes](docs/layout-recipes.md) |
+
+Add a rule here only when it applies across components. Put component exceptions,
+exact interaction contracts, and decision history in the matching reference and
+keep this routing table current. Update the owning rule rather than copying it
+into another document.
+
 ## Direction
 
 A light-first technical manual with Bauhaus alignment, moderated brutalist
@@ -8,54 +31,12 @@ flat; only interactive or movable objects earn rounded geometry.
 
 ## Color
 
-The inspectable `/foundations` reference and [foundation contract](docs/foundations.md)
-map public semantic names to exact shipped values, theme pairs and local exceptions.
-
-Use a restrained palette. Orange marks primary action, focus, selection, active
-navigation, and measurement traces. It never represents warning or error.
-
-Colors use OKLCH so lightness and chroma can be tuned independently. Six
-theme-aware neutrals cover `font-secondary`, `font-tertiary`, `input-disabled`,
-`input-border`, `foreground`, and `background`. The light theme keeps the quiet
-warmth of the YoRHa beige pair; the dark theme uses a cool, nearly monochrome
-charcoal ramp with a rich near-black canvas. Both themes share
-`oklch(0.6217 0.185 39.44)` as the brand and action color. The quieter
-`oklch(0.618 0.161 39.44)` value is reserved for focus.
-The Carbon direction was confirmed in the `/proto/dark-theme` study. Its six
-dark neutrals and card keyline keep surface depth restrained while preserving
-Anaphor orange for actions and focus and Crimson for danger. Warm was rejected
-for its chocolate cast; Graphite kept too much separation between surfaces;
-Ink retained more blue-violet color than desired; Geist Black made the canvas
-and action treatment too stark. The study route was removed after this decision.
-Danger elements use `oklch(0.4852 0.1691 10.14)`; danger text uses the darker
-`oklch(0.4236 0.1691 10.14)` step. Destructive buttons use the danger
-fill with a light theme-neutral label and the darker danger step on hover and
-press. Button tone (`accent`, `neutral`, or `danger`) is independent of its
-`solid`, `outline`, `ghost`, or `soft` variant. Explicitly disabled states use
-the shared neutral treatment. Soft buttons use a tinted fill; HoldButton uses
-the soft variant with its independently selected tone.
-
-The Crimson direction was confirmed in the `/proto/danger` study. Keep its
-current fill in both themes, its light-theme text step above, and the
-`oklch(0.7 0.1691 10.14)` dark-theme text step. Keep surrounding error and
-destructive surfaces neutral so the color marks the action itself. Oxide was
-rejected because its muted, warm outline made the danger signal too quiet;
-Berry was rejected because its tinted error and action surfaces made the
-warning too pervasive. The study route was removed after this decision.
-
-Components consume these ten color roles directly. Interaction states derive by
-mixing the shared brand accent toward the appropriate neutral role rather than
-adding more variables. The high-chroma orange stays clear against dark surfaces
-and vivid in light mode. Solid accent controls retain the approved
-bright-foreground visual exception.
-
-Disabled controls use `input-disabled` with `font-tertiary` for intentionally
-subdued contrast. Loading independently blocks activation, preserves focus and
-action color, and reveals a spinner while retaining the label. Combining loading
-and disabled shows the spinner with the neutral disabled treatment. Spinner entry
-and exit fade over 200ms; text buttons allocate space for the spinner immediately,
-while icon-only buttons crossfade without resizing. Reduced motion skips both
-the transition and spinner rotation.
+Use a restrained palette. Orange marks action, focus, selection, and active
+navigation; danger has its own role. Components consume shared semantic colors
+and derive interaction states from those roles. Light surfaces are warm neutrals;
+dark surfaces use the Carbon direction. Preserve the approved solid-accent
+contrast exception. Read [Color decisions](docs/design/color.md) before changing
+palette values, state colors, or their documented exceptions.
 
 ## Typography
 
@@ -96,18 +77,8 @@ heading-font use for uppercase rendering; choosing the font alone is incomplete.
 ## Iconography
 
 Use Phosphor Icons for interface symbols. Prefer the regular weight and preserve
-the library's native geometry rather than redrawing common icons. Buttons size
-icons to 14px at `xs` and 16px at `sm`, `md`, and `lg`; composed icon and text
-content shares a centered flex axis. Icon-only buttons use equal width and height:
-28px, 32px, 40px, and 48px for `xs` through `lg`, increased to at least 44px
-on coarse-pointer devices. Shape controls the corners independently.
-
-Diff reading controls use Pierre's dedicated unified/split glyphs and Octicons'
-`WrapIcon`, `UnwrapIcon`, and `CopyIcon` as a focused exception to Phosphor. These identify the code-reading
-operations at 16px; surrounding file and disclosure icons retain Phosphor. Other copy buttons retain
-their Phosphor default.
-Preserve upstream geometry and use accessible names and explanatory tooltips.
-See the [icon research](docs/research/diff-control-icons.md).
+the library's native geometry rather than redrawing common icons.
+Provide accessible names and explanatory tooltips for icon-only controls.
 
 ## Spacing And Layout
 
@@ -161,18 +132,26 @@ documented reason. Avoid animation for repeated keyboard actions and content
 already present. Prefer transform and opacity; define reduced-motion behavior
 per component.
 
-### Fluid hover
+For each added or changed animation:
 
-Dense, stationary collections of peer actions may use one shared highlight that
-follows the nearest enabled item. Use it for menus, listboxes, tabs, and compact
-action lists where every item is interactive and the pointer can cross small
-gaps. Labels and separators form boundaries; disabled items are skipped. Keep
-keyboard feedback immediate, and remove highlight travel for reduced motion.
+1. Identify the animated properties and driver, including values written by
+   JavaScript callbacks. Animate travel with `transform` and fades with `opacity`;
+   set measured geometry at state boundaries. Interpolating `top`, `left`, margins,
+   or dimensions during travel causes layout work on every frame.
+2. Use an explicit property list for transitions. Keep dimension or mask animation
+   only when document flow, surface morphing, or a reveal requires it; record the
+   reason in the affected component reference. The [tab reveal](docs/design/overlays.md#tab-selection-reveal)
+   and [slider rubber-band surface](docs/components/slider.md) are scoped examples,
+   not permission to animate unrelated layout properties.
+3. Inspect the running transition and verify its moving properties, interruption,
+   keyboard, and reduced-motion behavior with the relevant browser recipe.
+   Finish when every changed animation uses the intended properties or has a
+   documented exception. Report unverified behavior explicitly.
 
-Fluid hover is visual guidance, not permission to enlarge hit areas. Do not
-forward clicks from gaps, especially near destructive actions. Avoid the pattern
-for isolated controls, passive or mixed-interactivity cards, spacious layouts,
-reordering rows, and any collection where selecting the wrong item is costly.
+A transform does not by itself guarantee compositor execution: JavaScript frame
+callbacks still depend on the main thread. Claim frame-rate improvements only
+with a performance recording; property inspection proves the implementation,
+not performance on every device.
 
 ## Demos
 
@@ -191,183 +170,3 @@ coordinates, or state labels appears only when it explains behavior.
   reduced-motion states according to component risk.
 - Exact runtime values live in package CSS; this document governs intent and
   constraints.
-
-## Morphing control surface
-
-The control tile is 44px square with the Card's 12px corners. On desktop it
-expands from its fixed bottom-right corner to a maximum width of 360px, with
-16px screen margins and scrolling content on short screens. Below 768px, the
-adaptive surface becomes a wide bottom drawer aligned to the page gutters: 24px
-by default and 48px from 640px. The bottom edge uses the same gutter and aligns
-with the closed trigger; the resulting floating card keeps all four rounded
-corners. It is capped at 45dvh and 320px; its content scrolls independently and
-respects the bottom safe area. It opens
-only through explicit activation. Escape and Close return focus to the tile;
-an outside press dismisses it through the same motion path. It remains nonmodal.
-Both forms sit on the floating-tools layer below persistent navigation.
-
-The responsive `--anaphor-page-gutter` token positions both page content and the
-mobile morph surface, including its trigger. Card and clipped-surface shadows are
-derived from one shared set of elevation primitives.
-
-Motion is adapted from the supplied Devouring Details Morph Surface prototype:
-width and measured content height open over 270ms and close over 200ms using
-`cubic-bezier(0.65, 0, 0.35, 1)`. A changed view fades and moves into place
-over 200ms. Reduced motion or `animate={false}` makes geometry and view changes
-immediate. The persistent action bar remains available while closed; the content
-stays mounted and becomes inert immediately. The consumer chooses whether
-keyboard activation disables spatial motion through the `animate` prop.
-
-## Input feedback
-
-Inputs use the existing 10px control radius, neutral surfaces, 16px text, and
-Button-aligned heights. Focus is visible for pointer and keyboard interaction;
-invalid fields use danger feedback. Read-only values remain selectable.
-
-Validation is calm and corrective: show errors on blur or submit, clear them
-on the first edit, and wait for the next blur or submit before showing another.
-The field stays stationary. Helper and error messages share reserved space,
-wrap naturally, and switch immediately without translation or scaling. The status
-icon changes in place. Repeated editing never queues a feedback animation.
-Ordinary valid values return to neutral rather than showing a success badge.
-
-This combines coss's small Base UI wrapper structure with Devouring Details'
-interaction emphasis and Interior's stable inline feedback. Our timing policy,
-colors, typography, and restrained motion remain owned by this system.
-
-Error text uses `--anaphor-danger-text` (`text-danger-foreground`), with `oklch(0.7 0.1691 10.14)` in dark mode: only lightness changes from
-the light-theme value. Axe measures dark text contrast at 6.25:1 on the page
-and 5.07:1 on cards (normal text AA requires 4.5:1). Destructive Button hover and
-pressed backgrounds derive from `--anaphor-danger`, mixed with 12% black in
-OKLCH; they do not introduce another color token. Input outline color transitions with its border;
-focus outline geometry appears immediately.
-
-## Badges
-
-Badges describe categories, counts, and statuses with theme neutrals. Their
-20/24/28px minimum heights and 12/12/14px text keep them subordinate to controls.
-Soft is the default; solid increases emphasis and outline separates the label
-from artwork. Shape is independent: 8px corners by default, round for compact
-labels such as Study 01. Phosphor icons compose beside text. Long labels wrap.
-Badges stay server-compatible and passive, with no hover, press, loading, or
-motion behavior. The reference rationale lives in docs/components/badge.md.
-
-## Dropdown menus
-
-Dropdown menus are temporary, trigger-anchored action surfaces. Their trigger is
-an ordinary Anaphor Button; the panel uses a 10px control radius, restrained
-layered elevation, compact grouping, and 36px items that expand to 44px for
-coarse pointers. Highlight uses a quiet brand-tinted neutral, while destructive
-items use the existing danger text role.
-
-The popup enters and exits along the same path with opacity and scale from 0.95,
-using the Base UI transform origin, the shared strong ease-out curve, and 180ms
-duration. Its trigger keeps a stable outer box while pressed so anchor
-measurement cannot move the popup; press feedback scales only the trigger's
-content. Keyboard activation and Base UI instant transitions remain instant.
-Reduced motion removes scale and retains a 200ms opacity fade for pointer
-activation.
-
-Pointer hover uses one shared highlight. It fades over the fast 80ms spring and
-travels between enabled peers on the moderate 160ms critically damped spring.
-Labels and separators interrupt the path, clicks remain bound to their actual
-items, and keyboard highlighting stays immediate. Reduced motion removes travel.
-The mechanical composition follows coss Menu; visual and motion decisions remain
-local to Anaphor.
-
-## Popovers
-
-Popover composes Base UI's focus, dismissal, and positioning behavior into an
-anchored settings surface. It uses the shared control radius, neutral popup
-surface, and menu shadow. A separate padded body scrolls within the available
-height. Popovers have no caret.
-
-Opening fades and scales from 0.95 at the trigger origin over 180ms with
-the shared ease-out curve; closing takes 125ms. Pointer, touch, and keyboard
-activation share these transitions, including Escape dismissal. Typing, tabbing,
-and selection remain immediate; Base UI returns focus after exit. Reduced motion
-disables fades and scaling.
-Stable trigger geometry preserves the anchor during button press feedback.
-The component contract and examples live in docs/components/popover.md.
-
-## Card copy feedback
-
-`CardCopyButton` composes inside `CardAction` and copies its explicit `value`.
-It confirms a successful clipboard write with a 160ms opacity/scale transition
-between Phosphor Copy and Check icons, returning after two seconds. Reduced
-motion keeps only the fade. The live status announces success or a retryable
-failure without moving focus. Static Card parts remain server-compatible.
-
-## Showcase cards
-
-The default Card stays quiet and uses the shared card shadow. `variant="showcase"` places its
-sections on the page surface, with unpadded captions below the preview.
-`CardPreview` owns a double frame: a 4px inset, concentric corners, fine neutral
-outlines, and the same restrained layered shadow as the default Card. Its inner surface clips
-artwork; the outer Card never clips controls or focus rings. The default preview
-ratio is 4:5 and can be changed with `--card-preview-ratio`.
-
-CardTitle's label variant owns categorical labels: Inter medium, label sizing,
-uppercase tracking, and muted color. Consumers select the variant rather than
-assembling typography utility overrides. Semantic element selection preserves
-Text's purpose-defined weight and wrapping.
-
-## Command palette
-
-The manual header groups its mark, name, and quiet subtitle into one identity
-row, with a separate full-width search trigger. Command palettes follow a stable
-top anchor with an independently scrolling result list. Text roles own the
-heading, group labels, item labels, and hints; search text remains 16px. Shared
-pointer highlights are instant by default. `animateHighlight` opts into travel
-within groups; keyboard updates are always immediate, and
-reduced motion removes travel. The controlled package component delegates
-focus, keyboard navigation, and modal dismissal to Base UI. The reference and
-API rationale live in docs/components/command-palette.md.
-
-Command rows may render compact consumer-owned content at their inline end.
-The rail is presentational, remains stable while selection changes, and never
-owns shortcut registration. Long labels truncate before the rail. The palette
-keeps its footer-level Enter instruction but does not hardcode a per-row
-affordance.
-
-Kbd keycaps use Magda Clean Mono at its available regular weight, compact 20px
-geometry on the 4px rhythm, and a quiet background with a fine inset keyline and
-restrained bottom edge. `KbdGroup` composes keys without interpreting whether
-they form a chord or sequence. Platform formatting and shortcut behavior remain
-consumer concerns.
-
-## Demonstration scope
-
-The former Signal and Field Notes studies were removed under ANAPHOR-258.
-The reference manual, Foundations layout examples, and Carousels remain the
-demonstration surfaces. The global sidebar contains navigation only. Collapsible
-examples live in the manual; the separate Source outline playground was removed.
-
-Everyday control feedback is immediate: checkbox marks and command palette
-opening/closing do not animate. Desktop sidebar geometry changes immediately;
-the mobile panel retains its transform transition. Scrollable content has no
-edge mask. Horizontal field labels include the gap next to their control in
-their hit area. Menu elevation uses `--anaphor-shadow-menu`; dark surfaces use
-a subtle light keyline and stronger neutral shadows.
-
-The documented MorphSurface and section-navigation timing exceptions remain
-unchanged. These are deliberate examples, not defaults for application controls.
-
-## Skeletons
-
-Loading placeholders follow actual content geometry through explicit text and box
-participants. Stable shells remain visible; mock content is inert and hidden from
-assistive technology. Pulse, stationary sheen, and static variants use theme
-neutrals. Opacity-only 1.8s/2.4s loops are an ongoing-status exception to short
-interaction timings. Reduced motion stops loading effects; completion is immediate
-by default, with an optional media opacity reveal of 200ms (160ms reduced motion).
-The API, limitations, and credits live in [Skeleton](docs/components/skeleton.md).
-
-## Step transition
-
-Ordered content may travel horizontally while a measured shell changes height.
-StepTransition uses a 300ms spring with no bounce and 110% inline travel, following
-consumer-supplied direction. Measured height is a deliberate layout-motion exception
-for step and supporting-panel changes. Initial content is static; reduced motion
-or explicit animation opt-out makes changes immediate. Navigation stays outside
-the moving content, and outgoing content is inert and hidden from accessibility.

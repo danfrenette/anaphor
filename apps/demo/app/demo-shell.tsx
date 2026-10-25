@@ -146,7 +146,7 @@ function DemoSidebar({ onSearch }: { onSearch: () => void }) {
         <div className="flex min-h-11 items-center gap-2">
           <Link href="/" onNavigate={closeMobile} aria-label="Anaphor home" className="flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-md px-2 text-foreground no-underline motion-safe:transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-ring">
             <AnaphorMark className="size-9 shrink-0" />
-            <Text as="span" variant="ui" className="min-w-0 font-heading font-black uppercase tracking-tight">Anaphor</Text>
+            <Text as="span" variant="heading" className="relative top-0.5 min-w-0 uppercase">Anaphor</Text>
           </Link>
           <button type="button" aria-label="Search manual" onClick={() => { closeMobile(); onSearch(); }} className="grid size-10 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-background focus-visible:outline-2 focus-visible:outline-ring md:hidden"><MagnifyingGlass aria-hidden="true" className="size-4" /></button>
           <SidebarClose className="shrink-0" />

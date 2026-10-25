@@ -68,6 +68,13 @@ by Base UI. The demo uses the nonmodal behavior.
 ## Surface and motion
 
 Use the shared control radius, neutral surface, popup border and menu shadow.
+`PopoverPopup` automatically uses Base UI's `--transform-origin`, which follows
+its anchor and resolved placement after collision handling. No opt-in prop or
+consumer class is needed. Keep this default so scaling visually connects the
+panel to the control that opened it; a fixed center makes it appear detached.
+If a consumer overrides the origin, remove that override to restore the default.
+The playground's Scale origin control offers Trigger (default) and Center for
+comparison; Reset restores Trigger.
 Opening transitions opacity and scale from 0.95 at the trigger origin
 over 180ms with the shared ease-out curve. Closing takes 125ms. Pointer, touch,
 and keyboard activation use the same transitions, including Escape dismissal.
@@ -85,4 +92,4 @@ and automatic mobile drawer conversion are deferred.
 The component is exported from `@anaphor/system` and installable as
 `danfrenette/anaphor/popover` through the registry. It is included in the aggregate
 `ui` item. The manual's Components → Popover section has placement, alignment,
-and offset controls, with editable content and a nested menu.
+offset, and scale-origin controls, with editable content and a nested menu.
