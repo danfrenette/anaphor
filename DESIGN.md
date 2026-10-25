@@ -289,6 +289,11 @@ anchored settings surface. It uses the shared control radius, neutral popup
 surface, and menu shadow. A separate padded body scrolls within the available
 height. Popovers have no caret.
 
+PopoverPopup owns trigger-relative transform origin through Base UI’s
+`--transform-origin`. Preserve this default across sides, alignment, and collision
+flips so the panel appears to grow from its anchor. Do not hardcode a center
+origin in consumers; the demo may override it only for an explicit comparison.
+
 Opening fades and scales from 0.95 at the trigger origin over 180ms with
 the shared ease-out curve; closing takes 125ms. Pointer, touch, and keyboard
 activation share these transitions, including Escape dismissal. Typing, tabbing,

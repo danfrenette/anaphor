@@ -7,8 +7,8 @@ import { Range, Select } from "./playground-fields";
 import { PlaygroundControls } from "./playground-host";
 import { CatalogExample } from "./catalog-example";
 
-const defaults = { side: "bottom" as const, align: "center" as const, sideOffset: 8 };
-type Settings = { side: "top" | "bottom" | "left" | "right"; align: "start" | "center" | "end"; sideOffset: number };
+const defaults = { side: "bottom" as const, align: "center" as const, sideOffset: 8, origin: "Trigger" as const };
+type Settings = { side: "top" | "bottom" | "left" | "right"; align: "start" | "center" | "end"; sideOffset: number; origin: "Trigger" | "Center" };
 
 export function PopoverPreferences({ label = "Workspace settings", settings = defaults }: { label?: string; settings?: Settings }) {
   const [open, setOpen] = useState(false);
@@ -22,7 +22,7 @@ export function PopoverPreferences({ label = "Workspace settings", settings = de
               <PopoverTrigger render={<Button nativeButton type="button" variant="outline" tone="neutral" size="md" shape="square" iconOnly={false} loading={false} />}>
                 <SlidersHorizontal aria-hidden="true" /><ButtonLabel>{label}</ButtonLabel>
               </PopoverTrigger>
-              <PopoverPopup side={settings.side} align={settings.align} sideOffset={settings.sideOffset} positionerProps={{ collisionPadding: 16 }}>
+              <PopoverPopup side={settings.side} align={settings.align} sideOffset={settings.sideOffset} positionerProps={{ collisionPadding: 16 }} className={settings.origin === "Center" ? "origin-center" : undefined}>
                 <PopoverBody>
                   <PopoverTitle>{label}</PopoverTitle>
                   <PopoverDescription>Changes apply as you make them.</PopoverDescription>
@@ -48,11 +48,12 @@ export function PopoverPlayground() {
       <div className="grid grid-cols-2 gap-4">
         <Select label="Side" value={settings.side} options={["top", "bottom", "left", "right"]} onChange={side => setSettings(s => ({ ...s, side }))} />
         <Select label="Alignment" value={settings.align} options={["start", "center", "end"]} onChange={align => setSettings(s => ({ ...s, align }))} />
+        <Select label="Scale origin" value={settings.origin} options={["Trigger", "Center"]} onChange={origin => setSettings(s => ({ ...s, origin }))} />
         <Range label="Offset" value={settings.sideOffset} min={4} max={24} step={2} unit="px" onChange={sideOffset => setSettings(s => ({ ...s, sideOffset }))} />
       </div>
-      <p className="mt-3 text-small text-muted-foreground">Placement is preferred. The popup adjusts near viewport edges.</p>
+      <p className="mt-3 text-small text-muted-foreground">Trigger origin follows the anchor, including when placement flips. Center is a comparison; reduced motion disables scaling.</p>
     </PlaygroundControls>
-    <CatalogExample title="Playground" description="Use Controls to change placement, alignment, and offset. Reset restores the preview’s settings and content." code={popoverSettingsCode(settings)}>
+    <CatalogExample title="Playground" description="Use Controls to compare trigger and center origins, then change placement, alignment, and offset. Reset restores the preview’s settings and content." code={popoverSettingsCode(settings)}>
       <PopoverPreferences key={revision} settings={settings} />
     </CatalogExample>
   </>;
@@ -61,7 +62,7 @@ export function PopoverPlayground() {
 export function popoverSettingsCode(settings: Settings = defaults) {
   return `<Popover>
   <PopoverTrigger render={<Button nativeButton type="button" variant="outline" tone="neutral" size="md" shape="square" iconOnly={false} loading={false} />}>Workspace settings</PopoverTrigger>
-  <PopoverPopup side="${settings.side}" align="${settings.align}" sideOffset={${settings.sideOffset}}
+  <PopoverPopup side="${settings.side}" align="${settings.align}" sideOffset={${settings.sideOffset}}${settings.origin === "Center" ? ' className="origin-center"' : ""}
     positionerProps={{ collisionPadding: 16 }}>
     <PopoverBody>
       <PopoverTitle>Workspace settings</PopoverTitle>

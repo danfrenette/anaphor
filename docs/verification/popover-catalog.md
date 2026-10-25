@@ -3,8 +3,10 @@
 The `/#popover` catalog contains Anatomy, Interactive content, and Playground.
 Anatomy demonstrates the title, description, body, and Done action. The two settings
 examples own independent name, density, and detail preferences. Playground Controls
-configure side, alignment, and offset; Reset restores its content and placement.
-Inline code reflects the placement. Popup surfaces and motion use shared components.
+configure side, alignment, offset, and scale origin; Reset restores its content and placement.
+Inline code reflects placement and the optional center-origin override. Verify
+Trigger uses the resolved anchor origin, Center uses the popup center, and Reset
+restores Trigger. Exercise all sides and a collision flip. Popup surfaces and motion use shared components.
 
 Run `pnpm exec playwright test e2e/popover.spec.ts --workers=2`, the popover unit
 tests, lint, and typecheck. The browser suite covers keyboard entry and exit,
