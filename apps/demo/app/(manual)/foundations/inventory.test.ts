@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 import { extractInventory } from "./inventory";
 import { requireToken } from "./tokens";
 
-const css = readFileSync("packages/design-system/src/styles.css", "utf8");
+const css = readFileSync("packages/design-system/src/styles-base.css", "utf8");
 
 test("formatting does not change shipped theme inventories", () => {
   const expected = extractInventory(css);

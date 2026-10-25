@@ -6,6 +6,7 @@ import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { gzipSync } from "node:zlib";
 import { chromium, expect } from "@playwright/test";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -40,7 +41,7 @@ async function prepareRegistry() {
 
 async function serve(directory) {
   const assets = new Map();
-  const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css" };
+  const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".woff2": "font/woff2" };
   for (const file of await readdir(directory, { recursive: true, withFileTypes: true })) {
     if (!file.isFile()) continue;
     const absolute = path.join(file.parentPath, file.name);
@@ -59,10 +60,18 @@ async function serve(directory) {
   return { server, url: `http://127.0.0.1:${server.address().port}` };
 }
 
-async function checkBrowser(browser, directory, item) {
+async function checkBrowser(browser, directory, item, fontDelivery = "embedded") {
   const { server, url } = await serve(path.join(directory, "dist"));
   const page = await browser.newPage({ reducedMotion: "reduce" });
   const errors = [];
+  const fontRequests = [];
+  page.on("request", request => { if (request.resourceType() === "font" && request.url().startsWith("http")) fontRequests.push(request.url()); });
+  if (item === "font-delivery") await page.addInitScript(() => {
+    window.fontLayoutShift = 0;
+    new PerformanceObserver(list => {
+      for (const entry of list.getEntries()) if (!entry.hadRecentInput) window.fontLayoutShift += entry.value;
+    }).observe({ type: "layout-shift", buffered: true });
+  });
   page.on("pageerror", error => errors.push(error.message));
   page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
   page.on("requestfailed", request => errors.push(request.url()));
@@ -70,6 +79,16 @@ async function checkBrowser(browser, directory, item) {
   try {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(url);
+    let layoutShift;
+    if (item === "font-delivery") {
+      await expect(page.locator("[data-font-sample]")).toHaveCount(4);
+      layoutShift = await page.evaluate(async () => {
+        await document.fonts.ready;
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+        return window.fontLayoutShift;
+      });
+    }
     await expect(page.getByRole("main")).toHaveCSS("padding-top", "24px");
     await expect(page.getByRole("main")).toHaveCSS("max-width", "1536px");
     await expect(page.getByRole("main")).toHaveCSS("padding-inline-start", "48px");
@@ -100,6 +119,26 @@ async function checkBrowser(browser, directory, item) {
     await page.evaluate(() => document.documentElement.classList.add("dark"));
     const dark = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--anaphor-background"));
     assert.notEqual(light, dark, "Installed dark theme must change tokens");
+    if (item === "font-delivery") {
+      const faces = await page.evaluate(() => [...document.fonts].map(font => ({ family: font.family, style: font.style, weight: font.weight, status: font.status })).sort((a, b) => `${a.family}:${a.style}`.localeCompare(`${b.family}:${b.style}`)));
+      assert.equal(faces.length, 4, "One declaration per intended face, without embedded duplicates");
+      assert.ok(faces.every(face => face.status === "loaded"), "All four specimen faces must load");
+      assert.equal(fontRequests.length, fontDelivery === "embedded" ? 0 : 4, "Cold consumer must use exactly one font delivery path");
+      if (fontDelivery === "application") assert.ok(fontRequests.every(url => new URL(url).pathname.startsWith("/fonts/")));
+      const specimens = await page.locator("[data-font-sample]").evaluateAll(elements => elements.map(element => {
+        const style = getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        return { family: style.fontFamily, weight: style.fontWeight, style: style.fontStyle, width: rect.width, height: rect.height };
+      }));
+      const evidence = path.join(root, "test-results/registry-fonts");
+      await mkdir(evidence, { recursive: true });
+      for (const theme of ["light", "dark"]) {
+        await page.evaluate(dark => document.documentElement.classList.toggle("dark", dark), theme === "dark");
+        await page.screenshot({ path: path.join(evidence, `${fontDelivery}-${theme}.png`), fullPage: true });
+      }
+      assert.deepEqual(errors, [], "Font consumer must load without browser errors");
+      return { faces, specimens, fontRequests: fontRequests.map(url => new URL(url).pathname), layoutShift };
+    }
     if (item === "diff" || item === "ui") {
       const diff = page.getByRole("region", { name: "Diff for example.ts" });
       await expect(diff.locator("[data-line]").filter({ hasText: "const count = 2;" })).toBeVisible();
@@ -185,28 +224,66 @@ async function checkBrowser(browser, directory, item) {
   }
 }
 
+async function checkApplicationFonts(browser, consumer, baseline, items) {
+  const assetCss = async () => {
+    const assets = path.join(consumer, "dist/assets");
+    return (await Promise.all((await readdir(assets)).filter(file => file.endsWith(".css")).map(file => readFile(path.join(assets, file), "utf8")))).join("\n");
+  };
+  const before = await assetCss();
+  assert.match(before, /data:font\//, "Default consumer must retain embedded fonts");
+  const entry = path.join(consumer, "src/styles.css");
+  const appCss = (await readFile(entry, "utf8")).replace('@/components/anaphor.css', '@/components/styles-base.css')
+    + await readFile(path.join(root, "test/registry-consumer/application-fonts.css"), "utf8");
+  await writeFile(entry, appCss);
+  await mkdir(path.join(consumer, "public/fonts"), { recursive: true });
+  for (const file of ["InterVariable.woff2", "InterVariable-Italic.woff2", "BellGothicStd-Black.woff2", "MagdaCleanMono-Regular.woff2"]) {
+    await cp(path.join(root, "packages/design-system/src/fonts", file), path.join(consumer, "public/fonts", file));
+  }
+  // A real refresh can reinsert the default import. Only the app entry is normalized.
+  await run(process.execPath, [installer, "add", ...items, "--cwd", consumer, "--overwrite", "--yes"], consumer);
+  const refreshed = (await readFile(entry, "utf8")).replace(/^@import ["']@\/components\/anaphor\.css["'];\s*\n/gm, "");
+  await writeFile(entry, refreshed);
+  assert.equal((refreshed.match(/styles-base\.css/g) ?? []).length, 1);
+  assert.ok(refreshed.includes('/fonts/InterVariable.woff2'), "Refresh must preserve application font declarations");
+  for (const file of ["Inter-LICENSE.txt", "MagdaCleanMono-download-notice.txt"]) {
+    assert.equal(await readFile(path.join(consumer, "src/components/fonts", file), "utf8"), await readFile(path.join(root, "packages/design-system/src/fonts", file), "utf8"));
+  }
+  await run("pnpm", ["run", "build"], consumer);
+  const after = await assetCss();
+  assert.doesNotMatch(after, /data:font\//, "Opt-out must remove embedded font bytes from emitted CSS");
+  assert.equal((after.match(/@font-face/g) ?? []).length, 4, "Only application font faces may be emitted");
+  const application = await checkBrowser(browser, consumer, "font-delivery", "application");
+  assert.deepEqual(application.faces, baseline.faces, "Changing delivery must preserve families, weights, and styles");
+  assert.deepEqual(application.specimens, baseline.specimens, "Loaded typography must keep the same geometry");
+  const receipt = { embedded: { cssBytes: Buffer.byteLength(before), gzipBytes: gzipSync(before).length, ...baseline }, application: { cssBytes: Buffer.byteLength(after), gzipBytes: gzipSync(after).length, ...application } };
+  await writeFile(path.join(root, "test-results/registry-fonts/receipt.json"), JSON.stringify(receipt, null, 2));
+  console.log("Font delivery CSS bytes:", receipt.embedded.cssBytes, "embedded;", receipt.application.cssBytes, "application-owned");
+}
+
 let succeeded = false;
 let browser;
 try {
   console.log(`Registry verification workspace: ${temporary}`);
   await prepareRegistry();
   browser = await chromium.launch();
-  for (const item of ["button", "diff", "media-viewer", "step-transition", "ui"]) {
+  for (const item of ["button", "diff", "media-viewer", "step-transition", "ui", "font-delivery"]) {
     console.log(`\nChecking independent ${item} installation`);
     const consumer = path.join(temporary, item);
     await cp(path.join(root, "test/registry-consumer"), consumer, { recursive: true });
     await mkdir(path.join(consumer, "src"));
     await writeFile(path.join(consumer, "src/styles.css"), '@import "tailwindcss";\nbody { margin: 0; }\n');
     await run("pnpm", ["install", "--ignore-workspace"], consumer);
-    await run(process.execPath, [installer, "add", path.join(registryDirectory, `${item}.json`), "--cwd", consumer, "--yes"], consumer);
+    const items = (item === "font-delivery" ? ["card", "text", "button"] : [item]).map(name => path.join(registryDirectory, `${name}.json`));
+    await run(process.execPath, [installer, "add", ...items, "--cwd", consumer, "--yes"], consumer);
     await cp(path.join(consumer, item === "diff" ? "diff-consumer.tsx" : `${item}.tsx`), path.join(consumer, "src/main.tsx"));
     const installedCss = await readFile(path.join(consumer, "src/styles.css"), "utf8");
     assert.ok(installedCss.includes('@import "@/components/anaphor.css"'), "Installer must import the shared stylesheet");
     assert.ok(installedCss.includes("body { margin: 0; }"), "Installer must preserve application CSS");
-    await run(process.execPath, [installer, "add", path.join(registryDirectory, `${item}.json`), "--cwd", consumer, "--yes"], consumer);
+    await run(process.execPath, [installer, "add", ...items, "--cwd", consumer, "--yes"], consumer);
     assert.equal(await readFile(path.join(consumer, "src/styles.css"), "utf8"), installedCss, "Reinstalling must not duplicate the stylesheet import");
     await run("pnpm", ["run", "build"], consumer);
-    await checkBrowser(browser, consumer, item);
+    const fontBaseline = await checkBrowser(browser, consumer, item);
+    if (item === "font-delivery") await checkApplicationFonts(browser, consumer, fontBaseline, items);
     console.log(`${item}: installed source, build, interaction, themes, and fonts passed`);
   }
   succeeded = true;

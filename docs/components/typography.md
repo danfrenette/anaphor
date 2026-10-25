@@ -51,6 +51,9 @@ roles (for example caption stays muted). Wrap embedded UI in
 Bell Gothic Black is bundled as WOFF2 from the supplied local webfont. Its CSS
 uses the same embedded-font distribution as Inter and Magda so registry installs
 remain self-contained. The source font is retained under src/fonts.
+Consumers that already own font loading can choose the font-free stylesheet
+without changing Text or Prose. See [Application-owned fonts](../../README.md#application-owned-fonts)
+for imports, required face names and weights, and registry-refresh handling.
 
 ## Component-owned defaults
 

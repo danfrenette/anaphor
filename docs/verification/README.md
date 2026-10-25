@@ -8,6 +8,7 @@ commands. Each recipe names the browser actions and assertions that matter.
   real-provider preview acceptance are separate gates.
 
 - [Sidebar placement and motion](sidebar.md)
+- [Font delivery and application-owned fonts](font-delivery.md)
 - [Workspace shell composition](workspace-shell.md)
 - [File-upload selection and independent progress](file-upload.md)
 - [Rail and Deck carousels](carousels.md) — Chromium and 320px WebKit; trusted swipe coverage uses Chromium CDP. Physical touch and WebKit swipe movement remain outside the automated harness.

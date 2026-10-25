@@ -5,14 +5,16 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./styles.css": "./src/styles.css"
+    "./styles.css": "./src/styles.css",
+    "./styles-base.css": "./src/styles-base.css"
   },
   "imports": {
     "#components/*": "./src/components/*.tsx",
     "#lib/*": "./src/lib/*.ts"
   },
   "sideEffects": [
-    "./src/styles.css"
+    "./src/styles.css",
+    "./src/styles-base.css"
   ],
   "scripts": {
     "typecheck": "tsc --noEmit"
