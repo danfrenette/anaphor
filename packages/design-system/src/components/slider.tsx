@@ -63,9 +63,9 @@ export function Slider({
 
   // Motion values for imperative animation
   const fillPercent = useMotionValue(percentage);
-  const fillWidth = useTransform(fillPercent, (pct) => `${pct}%`);
-  const handleLeft = useTransform(fillPercent, (pct) =>
-    `max(5px, calc(${pct}% - 9px))`
+  const fillTransform = useTransform(fillPercent, (pct) => `scaleX(${Math.max(0, pct / 100)})`);
+  const handleTransform = useTransform(fillPercent, (pct) =>
+    `translateX(max(5px, calc(${pct}% - 9px)))`
   );
 
   // Rubber band motion values
@@ -424,27 +424,31 @@ export function Slider({
         <motion.div
           className="dialkit-slider-fill"
           style={{
-            width: fillWidth,
+            width: '100%',
+            transformOrigin: 'left',
+            transform: fillTransform,
           }}
         />
 
-        <motion.div
-          className="dialkit-slider-handle"
-          style={{
-            left: handleLeft,
-            y: '-50%',
-          }}
-          animate={{
-            opacity: handleOpacity,
-            scaleX: reduceMotion || isActive ? 1 : 0.25,
-            scaleY: !reduceMotion && isActive && valueDodge ? 0.75 : 1,
-          }}
-          transition={{
-            scaleX: { type: 'spring', visualDuration: 0.25, bounce: 0.15 },
-            scaleY: { type: 'spring', visualDuration: 0.2, bounce: 0.1 },
-            opacity: { duration: 0.15 },
-          }}
-        />
+        <motion.div className="pointer-events-none absolute inset-0" style={{ transform: handleTransform }}>
+          <motion.div
+            className="dialkit-slider-handle"
+            style={{
+              left: 0,
+              y: '-50%',
+            }}
+            animate={{
+              opacity: handleOpacity,
+              scaleX: reduceMotion || isActive ? 1 : 0.25,
+              scaleY: !reduceMotion && isActive && valueDodge ? 0.75 : 1,
+            }}
+            transition={{
+              scaleX: { type: 'spring', visualDuration: 0.25, bounce: 0.15 },
+              scaleY: { type: 'spring', visualDuration: 0.2, bounce: 0.1 },
+              opacity: { duration: 0.15 },
+            }}
+          />
+        </motion.div>
 
         <span ref={labelRef} className="dialkit-slider-label">
           {label}

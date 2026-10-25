@@ -32,7 +32,7 @@ import {
 
 type SidebarLayoutTiming = { enter: number; exit: number; ease: [number, number, number, number]; exitEase: [number, number, number, number] };
 const defaultSidebarTiming: SidebarLayoutTiming = { enter: 0.24, exit: 0.16, ease: [0.23, 1, 0.32, 1], exitEase: [0.23, 1, 0.32, 1] };
-const workspaceSidebarTiming: SidebarLayoutTiming = { ...defaultSidebarTiming, exit: 0.22, exitEase: [0.32, 0.72, 0, 1] };
+const workspaceSidebarTiming: SidebarLayoutTiming = { ...defaultSidebarTiming, exit: 0.18, exitEase: [0.32, 0.72, 0, 1] };
 
 function readSidebarTiming(element: HTMLElement): SidebarLayoutTiming {
   const styles = getComputedStyle(element);
@@ -165,7 +165,7 @@ function SidebarProvider({
           className={cn(
             "group/sidebar [--anaphor-sidebar-motion-duration:var(--anaphor-sidebar-exit-duration)]",
             layout === "workspace"
-              ? "contents md:[--anaphor-sidebar-exit-duration:220ms] md:[--anaphor-sidebar-exit-ease:cubic-bezier(0.32,0.72,0,1)]"
+              ? "contents md:[--anaphor-sidebar-exit-duration:180ms] md:[--anaphor-sidebar-exit-ease:cubic-bezier(0.32,0.72,0,1)]"
               : cn(
                   "grid min-h-svh grid-cols-[var(--anaphor-sidebar-current-width)_minmax(0,1fr)] overflow-x-clip max-md:block",
                   side === "right" && "md:grid-cols-[minmax(0,1fr)_var(--anaphor-sidebar-current-width)]",

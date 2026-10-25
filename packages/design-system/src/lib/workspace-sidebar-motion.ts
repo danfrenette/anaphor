@@ -104,7 +104,10 @@ function useWorkspaceSidebarMotion({ rootRef, enabled, open, side, duration, eas
       pendingFrame.current = requestAnimationFrame(() => {
         pendingFrame.current = null;
         animation.current = animate(0, 1, {
-          startTime: performance.now(), duration, ease, onUpdate: render,
+          // A non-bouncing spring starts gently and keeps the joined edges
+          // together. Dismissal uses the shorter, decisive exit curve.
+          ...(open ? { type: "spring", bounce: 0, duration } : { duration, ease }),
+          startTime: performance.now(), onUpdate: render,
           onComplete: () => { animation.current = null; restore(); remember(); },
         });
       });
