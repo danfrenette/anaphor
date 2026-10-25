@@ -97,6 +97,18 @@ content shares a centered flex axis. Icon-only buttons use equal width and heigh
 28px, 32px, 40px, and 48px for `xs` through `lg`, increased to at least 44px
 on coarse-pointer devices. Shape controls the corners independently.
 
+Choose button edge padding from its content. Text-only and icon-only buttons
+keep symmetric padding. For a text button with SVG icons beside `ButtonLabel`,
+reduce padding by 2px at each icon-bearing edge: start, end, or both. Icons carry
+internal whitespace, so equal box padding makes the icon side appear wider.
+The shared Button owns this correction for every size, tone, variant, and shape;
+medium buttons use 14px at a text edge and 12px at an icon edge. Compose SVG icons
+as direct siblings of `ButtonLabel`; do not repeat the correction in consumers.
+Use logical start/end padding for RTL. Keep the icon-to-label gap and resting
+padding unchanged during loading to avoid a sideways shift when the spinner
+appears. HoldButton's reveal layer must use the same resolved edge padding so
+its duplicate content stays aligned.
+
 Diff reading controls use Pierre's dedicated unified/split glyphs and Octicons'
 `WrapIcon`, `UnwrapIcon`, and `CopyIcon` as a focused exception to Phosphor. These identify the code-reading
 operations at 16px; surrounding file and disclosure icons retain Phosphor. Other copy buttons retain
@@ -309,6 +321,9 @@ Text's purpose-defined weight and wrapping.
 
 ## Command palette
 
+The manual wordmark uses the 1.5rem heading token beside the 36px mark. Center
+them vertically in the identity row, then lower the Bell Gothic wordmark by 2px
+to align its visible capitals with the mark rather than its font line box.
 The manual header groups its mark, name, and quiet subtitle into one identity
 row, with a separate full-width search trigger. Command palettes follow a stable
 top anchor with an independently scrolling result list. Text roles own the

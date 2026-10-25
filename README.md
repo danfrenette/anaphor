@@ -142,6 +142,10 @@ the hold button pairs that tone with the soft variant and a clipped reveal.
 Group all button text inside `ButtonLabel`, including interpolated or formatted
 text. Icons sit alongside it; icon-only buttons use an accessible name.
 
+Place SVG icons as direct siblings of `ButtonLabel`. Button applies the shared
+[optical-padding rule](DESIGN.md#iconography) automatically; do not add per-call
+padding corrections.
+
 ```tsx
 import { Button, ButtonLabel } from "@anaphor/system";
 

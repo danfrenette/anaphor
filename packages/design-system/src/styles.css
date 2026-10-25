@@ -358,6 +358,8 @@
 }
 
 [data-hold-button] [data-slot="hold-button-overlay"] {
+  padding-inline-start: var(--button-padding-start, var(--button-padding));
+  padding-inline-end: var(--button-padding-end, var(--button-padding));
   position: absolute;
   inset: 0;
   display: inline-flex;
