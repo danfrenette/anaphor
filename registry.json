@@ -96,6 +96,11 @@
           "target": "@components/anaphor.css"
         },
         {
+          "path": "packages/design-system/src/styles-base.css",
+          "type": "registry:file",
+          "target": "@components/styles-base.css"
+        },
+        {
           "path": "packages/design-system/src/fonts.css",
           "type": "registry:file",
           "target": "@components/fonts.css"
@@ -111,7 +116,7 @@
           "target": "@components/fonts/MagdaCleanMono-download-notice.txt"
         }
       ],
-      "docs": "The Anaphor stylesheet is imported automatically into your configured application CSS entry."
+      "docs": "The Anaphor stylesheet is imported automatically into your configured application CSS entry. For application-owned fonts, replace that entry's anaphor.css import with styles-base.css and supply the font faces in application CSS. After a refresh, remove any reinserted anaphor.css import; never edit the installed stylesheets. Font files and notices remain installed."
     },
     {
       "name": "utils",

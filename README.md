@@ -92,6 +92,39 @@ configured in `components.json`. No manual CSS edits are needed. Tailwind's
 existing application scanning and the installed stylesheet's component sources
 cover utility generation. Reinstalling does not duplicate the import.
 
+### Application-owned fonts
+
+The default `anaphor.css` registry import (or `@anaphor/system/styles.css`
+package import) includes the bundled fonts. Keep it for self-contained installs.
+Applications that already load their own fonts can instead use the font-free
+entry point:
+
+```css
+/* Registry consumer: replace the existing anaphor.css import. */
+@import "../components/styles-base.css";
+```
+
+Workspace package consumers use `@import "@anaphor/system/styles-base.css";`.
+Import only one entry point. Both provide the same tokens, themes, Tailwind
+configuration, and component styles; `styles-base.css` has no `@font-face`
+declarations or embedded font data. Supply font faces in application CSS or
+through the application's font loader. Preserve the family names `Inter Variable`
+(normal and italic, weights 100–900), `Bell Gothic Black` (900), and
+`Magda Clean Mono` (400) to retain Anaphor's typography, or intentionally configure
+the font tokens for a different design.
+
+The registry still installs the font stylesheet and license/notices. An unimported
+font stylesheet does not enter the emitted application CSS. Do not edit installed
+library files. On refresh, shadcn may reinsert the default `anaphor.css` import;
+remove it from the **application CSS entry** and keep one `styles-base.css` import
+alongside the application's font declarations. Relative paths may be used when
+the application's CSS resolver does not support `@/`.
+
+`pnpm test:registry` verifies the default and application-owned paths through real
+installation and refresh of Card, Text, and Button. It compares emitted CSS,
+cold-browser font requests, loaded typography geometry, and Light/Carbon screenshots.
+The receipt and screenshots are saved under `test-results/registry-fonts/`.
+
 The internal `@anaphor/system` workspace package powers the reference manual;
 it is private and is not published to npm.
 
@@ -279,7 +312,7 @@ file-actions example.
 
 ## Shared Tailwind tokens
 
-The library's `src/styles.css` is the Tailwind v4 configuration consumed by the
+The library's `src/styles-base.css` owns the Tailwind v4 configuration consumed by the
 manual and copied by the registry. Use semantic color utilities (`bg-background`,
 `text-muted-foreground`, `border-border`), named text sizes (`text-ui`,
 `text-body`, `text-heading`, `text-title-small`, `text-title`), and named radii

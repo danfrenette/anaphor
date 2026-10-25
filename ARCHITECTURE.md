@@ -73,8 +73,12 @@ persistence never enter the design-system package.
 
 `@anaphor/system` is private while its contract develops. Its root
 export is the only component API. Styles are exposed separately as
-`@anaphor/system/styles.css`. Each consumer imports it through its own
-stylesheet, loaded once at the application root.
+`@anaphor/system/styles.css` (bundled fonts) and
+`@anaphor/system/styles-base.css` (application-owned fonts). Each consumer imports
+one entry through its own stylesheet, loaded once at the application root.
+The base entry owns all shared styling; the default entry adds the embedded font
+stylesheet. Registry installs expose the same choice as `anaphor.css` and
+`styles-base.css`, retaining existing default imports and font notices.
 
 Do not add compatibility layers, generated entry points, or publishing
 automation before a real consumer requires them. Reference material under

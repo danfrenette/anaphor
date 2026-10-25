@@ -5,7 +5,7 @@ import { Text } from "@anaphor/system";
 import { extractInventory } from "./inventory";
 
 export async function readFoundationTokens() {
-  const css = await readFile(path.resolve(process.cwd(), "../../packages/design-system/src/styles.css"), "utf8");
+  const css = await readFile(path.resolve(process.cwd(), "../../packages/design-system/src/styles-base.css"), "utf8");
   return extractInventory(css).tokens;
 }
 
