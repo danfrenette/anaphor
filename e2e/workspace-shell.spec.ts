@@ -123,6 +123,7 @@ test("top tabs can be omitted while top controls remain", async ({ page, isMobil
 test("active tab labels stay aligned with their interactive tabs", async ({ page, isMobile }) => {
   test.skip(isMobile, "The desktop preview shows both tab labels together");
   await page.goto("/#workspace-shell");
+  await page.evaluate(() => document.fonts.ready);
   const preview = page.locator('[data-slot="workspace-shell"][aria-label="Workspace composition preview"]');
   const alignment = () => preview.evaluate(root => {
     const tabs = [...root.querySelectorAll('[data-slot="tabs-tab"]')];
@@ -139,15 +140,22 @@ test("active tab labels stay aligned with their interactive tabs", async ({ page
     expect(Math.abs(offset.x)).toBeLessThan(0.5);
     expect(Math.abs(offset.y)).toBeLessThan(0.5);
   }
-  const card = preview.locator('[data-slot="workspace-card"]');
+  // Measure within the shell: document scrolling must not look like card motion.
+  const cardBounds = () => preview.evaluate(root => {
+    const card = root.querySelector('[data-slot="workspace-card"]');
+    if (!card) throw new Error("Expected a workspace card");
+    const shell = root.getBoundingClientRect();
+    const bounds = card.getBoundingClientRect();
+    return { x: bounds.x - shell.x, y: bounds.y - shell.y, width: bounds.width, height: bounds.height };
+  });
   await preview.scrollIntoViewIfNeeded();
-  const before = await card.boundingBox();
+  const before = await cardBounds();
   await preview.getByRole("tab", { name: "Details" }).click();
   for (const offset of await alignment()) {
     expect(Math.abs(offset.x)).toBeLessThan(0.5);
     expect(Math.abs(offset.y)).toBeLessThan(0.5);
   }
-  expect(await card.boundingBox()).toEqual(before);
+  expect(await cardBounds()).toEqual(before);
 });
 
 test("workspace playground uses isolated shared sidebar motion and resets its regions", async ({ page, isMobile }) => {
