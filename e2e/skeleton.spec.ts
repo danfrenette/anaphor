@@ -51,22 +51,32 @@ test("effects support keyboard selection and static reduced motion", async ({ pa
 
 test("media fades into reserved space while text and interaction are immediate", async ({ page }) => {
   await page.goto("/#skeleton");
+  await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
   const section = page.locator("#skeleton");
   const region = section.locator('[data-slot="skeleton-region"]:visible');
   const media = region.locator('[data-slot="skeleton-box-content"]');
   await section.getByRole("button", { name: "Show content" }).scrollIntoViewIfNeeded();
   const bounds = await media.boundingBox();
   expect(bounds).not.toBeNull();
-  // Capture the real CSS transition in the browser before runner latency can
-  // consume its 200ms lifetime.
-  await media.evaluate(element => {
-    element.addEventListener("transitionrun", () => {
-      for (const animation of element.getAnimations()) {
-        if (animation instanceof CSSTransition && animation.transitionProperty === "opacity") {
-          animation.pause();
-        }
-      }
-    }, { once: true });
+  await expect(media).toHaveCSS("opacity", "0");
+  // Flush the real opacity transition when loading changes, before a slow
+  // runner can miss transitionrun. Keep the event as a browser fallback.
+  await region.evaluate(root => {
+    const element = root.querySelector('[data-slot="skeleton-box-content"]');
+    if (!element) throw new Error("Expected skeleton media content");
+    const observer = new MutationObserver(capture);
+    function capture() {
+      if (!element) return;
+      const transition = element.getAnimations().find(animation =>
+        animation instanceof CSSTransition && animation.transitionProperty === "opacity");
+      if (!transition) return;
+      transition.playbackRate = 0;
+      transition.pause();
+      observer.disconnect();
+      element.removeEventListener("transitionrun", capture);
+    }
+    observer.observe(root, { attributes: true, attributeFilter: ["data-loading"] });
+    element.addEventListener("transitionrun", capture);
   });
   await section.getByRole("button", { name: "Show content" }).click();
   await expect.poll(() => media.evaluate(element => element.getAnimations()
@@ -77,6 +87,7 @@ test("media fades into reserved space while text and interaction are immediate",
     transition.pause();
     transition.currentTime = 100;
     const opacity = Number(getComputedStyle(element).opacity);
+    transition.playbackRate = 1;
     transition.finish();
     return opacity;
   });
