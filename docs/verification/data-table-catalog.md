@@ -1,6 +1,6 @@
 # Data table catalog
 
-Visit `/#data-table`. Table treatments compares borderless, horizontal rules,
+Visit `/#data-table`. Catalog, Treatments, Density, and Advanced tabs keep examples separate and preserve their settings while switching. Treatments compares borderless, horizontal rules,
 and full grid with the same three project records. Density compares compact and
 editorial padding. Both references use native tables with scoped headers, captions,
 and focusable horizontal scroll regions. They share fixtures with Playground.
@@ -34,7 +34,7 @@ with the token on standard and high-density displays.
 
 ## Shared foundation
 
-The Shared catalog foundation example imports the public package. It exercises
+The Catalog tab imports the public package. Cards/Table tabs retain selection and paging; Records/Loading/Empty/Error tabs preview recovery without hiding state controls. Card selection is part of each raised card, using the shared Card surface and theme tokens. Check keyboard tab navigation and selection after switching examples. It exercises
 local processing, stable selection across cards/rows and pages, sort/search, and
 loading/error recovery. Run `pnpm exec playwright test e2e/data-table-foundation.spec.ts`
 for desktop Chromium and narrow WebKit, keyboard and automated accessibility.
