@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { DataTable, DataTablePagination, useDataTable, Button, ButtonLabel, Field, FieldLabel, Input, Text, Tabs, TabsList, TabsTab, TabsPanel, Card, CardHeader, CardTitle, CardDescription, CardContent, CardAction, Checkbox, Badge } from "@anaphor/system";
+import { DataTable, DataTablePagination, useDataTable, Button, ButtonLabel, Field, FieldLabel, Input, Text, Tabs, TabsList, TabsTab, TabsPanel, Card, CardHeader, CardTitle, CardDescription, CardContent, Checkbox, Badge } from "@anaphor/system";
 import { records, type RecordItem } from "./data-table-data";
 
 const columns = [{ accessorKey: "name", header: "Project" }, { accessorKey: "owner", header: "Owner" }, { accessorKey: "status", header: "Status" }];
@@ -14,18 +14,22 @@ const states: { value: CatalogState; label: string }[] = [
 ];
 
 function ProjectCard({ project, selected, onSelect }: { project: RecordItem; selected: boolean; onSelect: (checked: boolean) => void }) {
-  return <Card variant="default" className={selected ? "h-full ring-2 ring-ring" : "h-full"}>
+  return <Card variant="default" className={`flex h-full flex-col ${selected ? "ring-2 ring-ring" : ""}`}>
     <CardHeader>
+      <div className="mb-2 flex min-h-12 items-center justify-between gap-4">
+        <Badge size="sm" variant="outline" shape="round">{project.status}</Badge>
+        <Field orientation="horizontal" className="min-h-12 min-w-12 justify-center">
+          <Checkbox aria-label={`Select ${project.name}`} checked={selected} onCheckedChange={onSelect} />
+        </Field>
+      </div>
+      <CardTitle as="h3" variant="heading" className="text-balance break-words">{project.name}</CardTitle>
       <CardDescription>{project.category}</CardDescription>
-      <CardAction><Field orientation="horizontal" className="min-h-11 min-w-11 justify-center"><Checkbox aria-label={`Select ${project.name}`} checked={selected} onCheckedChange={onSelect} /></Field></CardAction>
-      <CardTitle as="h3" variant="heading" className="text-balance">{project.name}</CardTitle>
     </CardHeader>
-    <CardContent className="space-y-5">
-      <dl className="grid grid-cols-2 gap-4 text-ui">
-        <div><dt className="text-small text-muted-foreground">Owner</dt><dd className="mt-1 break-words">{project.owner}</dd></div>
-        <div className="text-end"><dt className="text-small text-muted-foreground">Budget</dt><dd className="mt-1 tabular-nums">{currency.format(project.budget)}</dd></div>
+    <CardContent className="mt-auto">
+      <dl className="flex flex-wrap justify-between gap-x-6 gap-y-4 text-ui">
+        <div className="min-w-0"><dt className="text-small text-muted-foreground">Owner</dt><dd className="mt-1 break-words">{project.owner}</dd></div>
+        <div><dt className="text-small text-muted-foreground">Budget</dt><dd className="mt-1 tabular-nums">{currency.format(project.budget)}</dd></div>
       </dl>
-      <Badge size="sm" variant="outline" shape="round">{project.status}</Badge>
     </CardContent>
   </Card>;
 }

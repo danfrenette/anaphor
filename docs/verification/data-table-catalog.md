@@ -38,6 +38,10 @@ The Catalog tab imports the public package. Cards/Table tabs retain selection an
 local processing, stable selection across cards/rows and pages, sort/search, and
 loading/error recovery. Run `pnpm exec playwright test e2e/data-table-foundation.spec.ts`
 for desktop Chromium and narrow WebKit, keyboard and automated accessibility.
+Custom cards can stretch to their grid row height; the demo keeps owner/budget
+details aligned beneath titles of different lengths without clamping text. The
+layout check covers row alignment, expanded German text, RTL, and 200% CSS
+enlargement. Native browser zoom remains a separate manual check.
 Run `pnpm test` for component behavior including manual server pagination and
 `pnpm test:registry` for an independent data-table installation. The older
 Playground continues to explore advanced controls; it is not the foundation API.

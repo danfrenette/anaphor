@@ -45,3 +45,38 @@ test("shared catalog keeps selection across layouts and exposes recovery without
     await catalog.screenshot({ path: testInfo.outputPath(`catalog-${theme}.png`) });
   }
 });
+
+test("catalog cards align by row and reflow with enlarged and translated content", async ({ page }) => {
+  await page.goto("/#data-table");
+  const catalog = page.getByRole("region", { name: "Shared catalog foundation", exact: true });
+  const cards = catalog.locator('[data-slot="card"]');
+  await expect(cards).toHaveCount(4);
+  await page.evaluate(() => document.fonts.ready);
+  const bounds = await cards.evaluateAll(elements => elements.map(element => {
+    const rect = element.getBoundingClientRect();
+    const details = element.querySelector("dl")!.getBoundingClientRect();
+    return { top: rect.top, bottom: rect.bottom, details: details.top };
+  }));
+  for (const card of bounds) {
+    for (const neighbor of bounds.filter(other => Math.abs(other.top - card.top) < 1)) {
+      expect(Math.abs(neighbor.bottom - card.bottom)).toBeLessThan(1);
+      expect(Math.abs(neighbor.details - card.details)).toBeLessThan(1);
+    }
+  }
+  await cards.first().getByRole("heading").evaluate(element => {
+    element.textContent = "[Ein ausführlicher Wegweiser durch die Nachbarschaft und ihre außergewöhnlichen Geschichten]";
+  });
+  for (const direction of ["ltr", "rtl"]) {
+    await catalog.evaluate((element, dir) => {
+      element.setAttribute("dir", dir);
+      element.style.zoom = "2";
+    }, direction);
+    for (const card of await cards.all()) {
+      expect(await card.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+      const title = await card.getByRole("heading").boundingBox();
+      const details = await card.locator("dl").boundingBox();
+      expect(title).not.toBeNull();
+      expect(details!.y).toBeGreaterThanOrEqual(title!.y + title!.height);
+    }
+  }
+});

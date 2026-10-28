@@ -68,7 +68,7 @@ function DataTableRecords<T>(props: DataTableProps<T>) {
       {selection && <div className="flex min-h-14 items-center gap-3 px-3">{selectPage}<span className="text-ui">Select this page</span></div>}
       <CheckboxGroup><ul aria-label={label} className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))] gap-4">
         {rows.map(row => <li key={row.id} className={cn("min-w-0", treatment === "grid" && "rounded-md border [border-width:var(--anaphor-border-hairline)] border-border", treatment === "rules" && border, padding, row.getIsSelected() && "bg-muted")}>
-          <div className="flex items-start gap-3">{selection && selectRow(row)}<div className="min-w-0 flex-1">
+          <div className="flex h-full items-start gap-3">{selection && selectRow(row)}<div className="min-w-0 flex-1 self-stretch">
             {renderCard ? renderCard(row) : <><div className="text-body font-medium break-words">{cellValue(row, primaryColumnId)}</div><dl className="mt-3 grid gap-2">{row.getVisibleCells().filter(cell => cell.column.id !== primaryColumnId).map(cell => <div key={cell.id} className="flex flex-wrap justify-between gap-2 text-ui"><dt className="text-muted-foreground">{typeof cell.column.columnDef.header === "string" ? cell.column.columnDef.header : cell.column.id}</dt><dd className="break-words">{flexRender(cell.column.columnDef.cell, cell.getContext())}</dd></div>)}</dl></>}
           </div>{renderActions?.(row)}</div>
         </li>)}
