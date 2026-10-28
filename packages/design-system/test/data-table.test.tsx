@@ -80,3 +80,15 @@ it("lets the consumer control selection and paging while selecting only eligible
   await user.click(screen.getByRole("button", { name: "Previous page" }));
   expect(screen.getByRole("checkbox", { name: "Select Alpha" })).toBeChecked();
 });
+
+function GroupedCatalog() {
+  const table = useDataTable({ data: records, columns: [{ id: "identity", header: "Identity", columns }], processing: "local", getRowId: row => row.id, enableRowSelection: true });
+  return <DataTable table={table} label="Grouped sources" presentation="table" density="compact" treatment="rules" selection primaryColumnId="title" getRowLabel={row => row.original.title} renderActions={row => <button>Open {row.original.title}</button>} status="ready" emptyContent="Empty" />;
+}
+it("keeps one page selector with grouped column headers", () => {
+  render(<GroupedCatalog />);
+  expect(screen.getAllByRole("checkbox", { name: "Select this page of Grouped sources" })).toHaveLength(1);
+  expect(screen.getByRole("columnheader", { name: "Select this page of Grouped sources" })).toHaveAttribute("rowspan", "2");
+  expect(screen.getByRole("columnheader", { name: "Actions" })).toHaveAttribute("rowspan", "2");
+  expect(screen.getByRole("columnheader", { name: "Identity" })).toHaveAttribute("colspan", "2");
+});
