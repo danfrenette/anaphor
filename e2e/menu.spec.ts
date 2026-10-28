@@ -3,13 +3,22 @@ import { expect, test } from "@playwright/test";
 
 test("dropdown keeps its anchor stable while the trigger is pressed", async ({ page }) => {
   await page.goto("/#dropdown-menu");
+  await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
   await page.evaluate(() => document.fonts.ready);
   const trigger = page.getByRole("button", { name: "File actions" });
+  // Isolate press geometry from scrolling and layout shifts above the example.
+  const anchorBounds = () => trigger.evaluate(element => {
+    const section = element.closest("#dropdown-menu");
+    if (!section) throw new Error("Expected the dropdown menu section");
+    const origin = section.getBoundingClientRect();
+    const bounds = element.getBoundingClientRect();
+    return { x: bounds.x - origin.x, y: bounds.y - origin.y, width: bounds.width, height: bounds.height };
+  });
   await trigger.hover();
-  const resting = await trigger.boundingBox();
+  const resting = await anchorBounds();
 
   await page.mouse.down();
-  const pressed = await trigger.boundingBox();
+  const pressed = await anchorBounds();
   await page.mouse.up();
 
   expect(resting).not.toBeNull();
@@ -69,6 +78,8 @@ test("dropdown uses one fluid pointer highlight and stops it at structure", asyn
 test("dropdown motion is restrained and reduced motion removes travel", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#dropdown-menu");
+  await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
+  await page.evaluate(() => document.fonts.ready);
   await page.getByRole("button", { name: "File actions" }).click();
   const popup = page.locator('[data-slot="menu-popup"]');
   // Base UI temporarily disables transitions while positioning the mounted popup.
@@ -95,6 +106,8 @@ test("dropdown motion is restrained and reduced motion removes travel", async ({
   await page.keyboard.press("Escape");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
+  await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
+  await page.evaluate(() => document.fonts.ready);
   await page.getByRole("button", { name: "File actions" }).click();
   await expect(popup).toHaveCSS("transition-duration", "0.2s");
   const reduced = await popup.evaluate((element) => {

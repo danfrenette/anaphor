@@ -8,8 +8,13 @@ for (const theme of ["light", "dark"] as const) {
     await section.scrollIntoViewIfNeeded();
     await page.evaluate(() => document.fonts.ready);
     const region = section.locator('[data-slot="skeleton-region"]:visible');
-    const geometry = () => region.locator('[data-slot="skeleton-text"]').evaluateAll(elements =>
-      elements.map(element => Array.from(element.getClientRects(), rect => ({ width: rect.width, height: rect.height, x: rect.x, y: rect.y }))));
+    // Preserve every wrapped line's geometry relative to its loading region,
+    // independent of the document scroll position.
+    const geometry = () => region.evaluate(root => {
+      const origin = root.getBoundingClientRect();
+      return [...root.querySelectorAll('[data-slot="skeleton-text"]')].map(element =>
+        Array.from(element.getClientRects(), rect => ({ width: rect.width, height: rect.height, x: rect.x - origin.x, y: rect.y - origin.y })));
+    });
     await section.getByRole("button", { name: "Show content" }).scrollIntoViewIfNeeded();
     const before = await geometry();
     expect(before.length).toBe(4);
@@ -52,9 +57,22 @@ test("media fades into reserved space while text and interaction are immediate",
   await section.getByRole("button", { name: "Show content" }).scrollIntoViewIfNeeded();
   const bounds = await media.boundingBox();
   expect(bounds).not.toBeNull();
+  // Capture the real CSS transition in the browser before runner latency can
+  // consume its 200ms lifetime.
+  await media.evaluate(element => {
+    element.addEventListener("transitionrun", () => {
+      for (const animation of element.getAnimations()) {
+        if (animation instanceof CSSTransition && animation.transitionProperty === "opacity") {
+          animation.pause();
+        }
+      }
+    }, { once: true });
+  });
   await section.getByRole("button", { name: "Show content" }).click();
+  await expect.poll(() => media.evaluate(element => element.getAnimations()
+    .some(animation => animation instanceof CSSTransition && animation.transitionProperty === "opacity" && animation.playState === "paused"))).toBe(true);
   const halfwayOpacity = await media.evaluate(element => {
-    const transition = element.getAnimations()[0];
+    const transition = element.getAnimations().find(animation => animation instanceof CSSTransition && animation.transitionProperty === "opacity");
     if (!transition) return null;
     transition.pause();
     transition.currentTime = 100;
