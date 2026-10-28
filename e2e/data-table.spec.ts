@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("table exploration preserves selection across pages and configures columns", async ({ page }) => {
   await page.goto("/#data-table");
+  await page.getByRole("tab", { name: "Advanced", exact: true }).click();
   const section = page.getByRole("group", { name: "Data table preview", exact: true });
   const search = section.getByRole("searchbox", { name: "Search projects" });
   await search.click();
@@ -30,19 +31,19 @@ test("table exploration preserves selection across pages and configures columns"
 
 test("table catalog compares treatments and density with accessible inline code", async ({ page }) => {
   await page.goto("/#data-table");
+  await page.getByRole("tab", { name: "Advanced", exact: true }).click();
   const section = page.locator("#data-table");
-  for (const name of ["Table treatments", "Density", "Playground"]) {
-    await expect(section.getByRole("heading", { name, exact: true })).toBeVisible();
-  }
   for (const theme of ["light", "dark"]) {
     await page.locator("html").evaluate((el, dark) => el.classList.toggle("dark", dark), theme === "dark");
     for (const label of ["Borderless", "Horizontal rules", "Full grid", "Compact", "Editorial"]) {
+      await section.getByRole("tab", { name: ["Compact", "Editorial"].includes(label) ? "Density" : "Treatments", exact: true }).click();
       const preview = section.getByRole("region", { name: `${label} table preview`, exact: true });
       await expect(preview).toHaveCSS("border-top-left-radius", "4px");
       await expect(preview.getByRole("table")).toHaveAccessibleName(`${label} project comparison`);
       await expect(preview.getByRole("row")).toHaveCount(4);
       await expect(preview.getByRole("columnheader")).toHaveCount(3);
     }
+    await section.getByRole("tab", { name: "Treatments", exact: true }).click();
     const grid = section.getByRole("region", { name: "Full grid table preview", exact: true });
     const hairline = await grid.evaluate(el => getComputedStyle(el).getPropertyValue("--anaphor-border-hairline").trim());
     await expect(grid).toHaveCSS("border-top-width", `${parseFloat(hairline)}px`);
@@ -50,11 +51,13 @@ test("table catalog compares treatments and density with accessible inline code"
     await expect(grid.getByRole("columnheader").first()).toHaveCSS("border-top-width", "0px");
     await expect(grid.getByRole("columnheader").last()).toHaveCSS("border-right-width", "0px");
     await expect(grid.getByRole("row").last().getByRole("cell").first()).toHaveCSS("border-bottom-width", "0px");
+    await section.getByRole("tab", { name: "Density", exact: true }).click();
     const rowHeight = (label: string) => section.getByRole("region", { name: `${label} table preview`, exact: true }).getByRole("row").nth(1).evaluate(el => el.getBoundingClientRect().height);
     const [compactHeight, editorialHeight] = await Promise.all([rowHeight("Compact"), rowHeight("Editorial")]);
     expect(editorialHeight).toBeGreaterThan(compactHeight);
     expect(await section.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
   }
+  await section.getByRole("tab", { name: "Treatments", exact: true }).click();
   const trigger = section.getByRole("button", { name: "Show table treatments code" });
   await trigger.press("Enter");
   await expect(section.getByLabel("Table treatments code", { exact: true })).toBeVisible();
@@ -64,6 +67,7 @@ test("table catalog compares treatments and density with accessible inline code"
 
 test("inset card hover follows the row bounds and radius", async ({ page }) => {
   await page.goto("/#data-table");
+  await page.getByRole("tab", { name: "Advanced", exact: true }).click();
   const section = page.locator("#data-table");
   await section.getByRole("button", { name: "Full grid", exact: true }).click();
   const row = section.locator("li[data-fluid-row]").first();
@@ -83,6 +87,7 @@ test("inset card hover follows the row bounds and radius", async ({ page }) => {
 
 test("table states and filter reset preserve layout", async ({ page }) => {
   await page.goto("/#data-table");
+  await page.getByRole("tab", { name: "Advanced", exact: true }).click();
   const section = page.locator("#data-table");
   const preview = section.getByRole("group", { name: "Data table preview", exact: true });
   const search = section.getByRole("searchbox", { name: "Search projects" });

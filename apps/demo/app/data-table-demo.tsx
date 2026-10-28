@@ -2,7 +2,7 @@ import { DataTableFoundation } from "./data-table-foundation";
 import { Section, Text } from "@anaphor/system";
 import { CatalogExample } from "./catalog-example";
 import { records } from "./data-table-data";
-import { DataTablePlayground } from "./data-table-playground";
+import { DataTableExamples } from "./data-table-examples";
 
 const treatments = [
   { name: "Borderless", border: "", description: "Whitespace separates the rows." },
@@ -33,9 +33,8 @@ function TableSample({ label, border, compact }: { label: string; border: string
 export function DataTableDemo() {
   return <Section id="data-table" className="border-t border-border py-12">
     <Text as="h2" variant="title">Data table</Text>
-    <Text as="p" variant="description" className="mt-3">One collection, different ways to read it. Compare the structure before choosing the details.</Text>
-    <div className="mt-10 space-y-10">
-      <DataTableFoundation />
+    <Text as="p" variant="description" className="mt-3">Explore cards, rows, and collection states. Selection stays with the collection.</Text>
+    <DataTableExamples catalog={<DataTableFoundation />} treatments={
       <CatalogExample title="Table treatments" description="The same three projects, with only the borders changed." code={`// Native table composition; apply the treatment to th and td.
 const borders = treatment === "Full grid" ? "border-e [border-inline-end-width:var(--anaphor-border-hairline)] border-b [border-bottom-width:var(--anaphor-border-hairline)] border-border last:[border-inline-end-width:0]"
   : treatment === "Horizontal rules" ? "border-b [border-bottom-width:var(--anaphor-border-hairline)] border-border" : "";
@@ -59,7 +58,7 @@ const borders = treatment === "Full grid" ? "border-e [border-inline-end-width:v
           </div>)}
         </div>
       </CatalogExample>
-      <CatalogExample title="Density" description="Compact and editorial spacing use the same records and horizontal rules." code={`const cellPadding = density === "Compact" ? "px-3 py-2" : "px-4 py-4";
+      } density={<CatalogExample title="Density" description="Compact and editorial spacing use the same records and horizontal rules." code={`const cellPadding = density === "Compact" ? "px-3 py-2" : "px-4 py-4";
 
 <td className={\`\${cellPadding} border-b [border-bottom-width:var(--anaphor-border-hairline)] border-border\`}>
   {item.name}
@@ -71,12 +70,6 @@ const borders = treatment === "Full grid" ? "border-e [border-inline-end-width:v
           </div>)}
         </div>
       </CatalogExample>
-      <div>
-        <h3 className="font-sans text-ui font-medium normal-case text-muted-foreground">Playground</h3>
-        <p className="mt-2 text-ui text-muted-foreground">Use Controls to explore configuration, density, and loading, empty, or error states. Narrow layouts can use cards or a scrolling table.</p>
-        <div className="mt-4"><DataTablePlayground /></div>
-        <p className="mt-4 text-small text-muted-foreground">This table is a demo-owned composition of native HTML and shared controls, not an exported Data Table component.</p>
-      </div>
-    </div>
+      } />
   </Section>;
 }
