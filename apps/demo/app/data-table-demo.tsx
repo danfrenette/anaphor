@@ -1,3 +1,4 @@
+import { DataTableFoundation } from "./data-table-foundation";
 import { Section, Text } from "@anaphor/system";
 import { CatalogExample } from "./catalog-example";
 import { records } from "./data-table-data";
@@ -34,6 +35,7 @@ export function DataTableDemo() {
     <Text as="h2" variant="title">Data table</Text>
     <Text as="p" variant="description" className="mt-3">One collection, different ways to read it. Compare the structure before choosing the details.</Text>
     <div className="mt-10 space-y-10">
+      <DataTableFoundation />
       <CatalogExample title="Table treatments" description="The same three projects, with only the borders changed." code={`// Native table composition; apply the treatment to th and td.
 const borders = treatment === "Full grid" ? "border-e [border-inline-end-width:var(--anaphor-border-hairline)] border-b [border-bottom-width:var(--anaphor-border-hairline)] border-border last:[border-inline-end-width:0]"
   : treatment === "Horizontal rules" ? "border-b [border-bottom-width:var(--anaphor-border-hairline)] border-border" : "";

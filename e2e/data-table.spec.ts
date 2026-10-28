@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("table exploration preserves selection across pages and configures columns", async ({ page }) => {
   await page.goto("/#data-table");
-  const section = page.locator("#data-table");
+  const section = page.getByRole("group", { name: "Data table preview", exact: true });
   const search = section.getByRole("searchbox", { name: "Search projects" });
   await search.click();
   await search.fill("waterfront");
