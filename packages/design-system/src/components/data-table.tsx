@@ -52,7 +52,7 @@ function DataTable<T>(props: DataTableProps<T>) {
 }
 
 function DataTableRecords<T>(props: DataTableProps<T>) {
-  const { table, label, presentation, density, treatment, selection, primaryColumnId, getRowLabel, renderCard, renderActions, className } = props;
+  const { table, label, presentation, density, treatment, selection, primaryColumnId, getRowLabel, renderCard, renderActions } = props;
   const rows = table.getRowModel().rows;
   const padding = density === "compact" ? "px-3 py-2" : "p-4";
   const border = treatment === "grid" ? "border-e border-b [border-width:var(--anaphor-border-hairline)] border-border last:border-e-0" : treatment === "rules" ? "border-b [border-bottom-width:var(--anaphor-border-hairline)] border-border" : "";
@@ -63,7 +63,7 @@ function DataTableRecords<T>(props: DataTableProps<T>) {
     return cell ? flexRender(cell.column.columnDef.cell, cell.getContext()) : null;
   };
 
-  return <div className={cn("min-w-0", className)}>
+  return <div className="min-w-0">
     {presentation === "cards" ? <>
       {selection && <div className="flex min-h-14 items-center gap-3 px-3">{selectPage}<span className="text-ui">Select this page</span></div>}
       <CheckboxGroup><ul aria-label={label} className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))] gap-4">
