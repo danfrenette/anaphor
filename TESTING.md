@@ -150,12 +150,12 @@ are canceled. Workflow permissions are read-only.
 
 Browser jobs use `mcr.microsoft.com/playwright:v1.63.0-noble` on Linux x86-64.
 Update that image and the exact `@playwright/test` dependency together. CI uses
-two workers, allows 60 seconds per test for slower browser/accessibility checks,
+four disjoint demo-suite shards with two workers per shard, allows 60 seconds per test for slower browser/accessibility checks,
 allows 15 seconds for individual assertions, rejects focused tests, and retries
 a failing browser test once. Geometry tests pause and seek browser animations;
 interruption tests reverse when the browser creates the closing animation,
 before it can finish, without relying on a particular rendering frame rate.
-The `playwright-report` artifact includes the HTML report, failure screenshots,
+Each `playwright-report-<shard>` artifact includes the HTML report, failure screenshots,
 and traces; download it and run `pnpm exec playwright show-report <report-path>`.
 Failed registry consumers are uploaded separately without their node_modules.
 
@@ -164,10 +164,10 @@ Linux baseline changes inside the same pinned image; never automatically accept
 screenshots during a normal CI run. A missing or changed baseline must fail.
 
 When repository branch protection is available, require **Code quality**,
-**Demo browser tests**, and **Registry consumers** on `main`, with the branch
+all four **Demo browser tests (N/4)** checks, and **Registry consumers** on `main`, with the branch
 up to date before merging. GitHub currently rejects branch protection for this
 private repository with “Upgrade to GitHub Pro or make this repository public”.
-Until that account capability changes, check all three results before merging;
+Until that account capability changes, check code quality, all four browser shard results, and registry consumers before merging;
 the workflow alone does not prevent a merge.
 
 The Vercel project `danrfrenettes-projects/anaphor` is connected to this GitHub

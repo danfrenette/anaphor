@@ -66,9 +66,13 @@ jobs:
       - run: pnpm test
 
   browser:
-    name: Demo browser tests
+    name: Demo browser tests (${{ matrix.shard }}/4)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     container:
       # Keep this version aligned with @playwright/test in package.json.
       image: mcr.microsoft.com/playwright:v1.63.0-noble
@@ -81,12 +85,12 @@ jobs:
           node-version: '24'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:browser
+      - run: pnpm test:browser --shard=${{ matrix.shard }}/4
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: failure()
         continue-on-error: true
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.shard }}
           path: |
             playwright-report/
             test-results/
