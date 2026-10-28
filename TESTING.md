@@ -85,7 +85,7 @@ fresh copies of `test/registry-consumer/` in the OS temporary directory. The
 fixture supplies only React and its TypeScript/Vite/Tailwind build environment;
 the registry must supply its own runtime dependencies and source imports.
 
-Button, Diff, and Media viewer are each installed alone so the complete UI cannot hide their missing dependencies.
+Button, DataTable, Diff, and Media viewer are each installed alone so the complete UI cannot hide their missing dependencies.
 A separate complete-UI install compiles every installed module and renders each
 advertised UI item. Chromium checks activation, input/checkbox behavior, opening
 the surface, generated Button dimensions, theme tokens, both font loads, and
@@ -131,7 +131,7 @@ and correcting that contrast must not cause a test failure.
 
 - **Code quality**: lint, strict types, and integration tests.
 - **Demo browser tests**: production build and the full Chromium/WebKit suite.
-- **Registry consumers**: fresh independent Button and complete-UI installations.
+- **Registry consumers**: fresh independent Button, DataTable, Diff, Media viewer, and complete-UI installations.
 
 **Local tour browser tests** exercises the loopback development reader without
 hosted services. It covers managed evidence, refresh, media recovery, and
