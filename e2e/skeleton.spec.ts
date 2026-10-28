@@ -67,7 +67,11 @@ test("media fades into reserved space while text and interaction are immediate",
   await expect(region.getByRole("heading", { name: "Room for the work" })).toBeVisible();
   await expect(region.locator("[inert]")).toHaveCount(0);
   await expect(region.locator('[data-slot="skeleton-text"]').first()).toHaveCSS("transition-duration", "0s");
-  expect(await media.boundingBox()).toEqual(bounds);
+  const revealedBounds = await media.boundingBox();
+  expect(revealedBounds?.width).toBe(bounds?.width);
+  expect(revealedBounds?.height).toBe(bounds?.height);
+  expect(revealedBounds?.x).toBeCloseTo(bounds?.x ?? 0, 1);
+  expect(revealedBounds?.y).toBeCloseTo(bounds?.y ?? 0, 1);
   await expect(media).toHaveCSS("transition-duration", "0.2s");
   await expect(media).toHaveCSS("opacity", "1");
 

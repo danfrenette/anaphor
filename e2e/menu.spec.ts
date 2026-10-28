@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 
 test("dropdown keeps its anchor stable while the trigger is pressed", async ({ page }) => {
   await page.goto("/#dropdown-menu");
+  await page.evaluate(() => document.fonts.ready);
   const trigger = page.getByRole("button", { name: "File actions" });
   await trigger.hover();
   const resting = await trigger.boundingBox();
