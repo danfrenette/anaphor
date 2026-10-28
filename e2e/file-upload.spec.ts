@@ -32,7 +32,7 @@ test("multiple real files retain the batch initiator through completion", async 
   const retained = page.getByRole("button", { name: "Upload files", exact: true });
   await expect(retained).toBeFocused();
   await expect(retained).toHaveAttribute("aria-disabled", "true");
-  await expect(page.getByText("Complete", { exact: true })).toHaveCount(2, { timeout: 15_000 });
+  await expect(page.getByRole("list", { name: "Selected files", exact: true }).getByText("Complete", { exact: true })).toHaveCount(2, { timeout: 15_000 });
   await expect(retained).toBeFocused();
   await page.getByRole("listitem", { name: "second.md" }).getByRole("button", { name: "Remove", exact: true }).click();
   await expect(page.getByRole("listitem", { name: "first.txt" }).getByRole("button", { name: "Uploaded", exact: true })).toBeFocused();
