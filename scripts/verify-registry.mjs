@@ -108,6 +108,14 @@ async function checkBrowser(browser, directory, item, fontDelivery = "embedded")
     await page.getByRole("button", { name: "Count 1", exact: true }).press("Enter");
     await expect(page.getByRole("button", { name: "Count 2", exact: true })).toBeVisible();
     if (item === "step-transition") await expect(page.getByText("Current step 2", { exact: true })).toBeVisible();
+    if (item === "data-table") {
+      await page.getByRole("checkbox", { name: "Select First source", exact: true }).click();
+      await expect(page.getByRole("checkbox", { name: "Select First source", exact: true })).toBeChecked();
+      await page.getByRole("button", { name: "Next page" }).click();
+      await expect(page.getByText("Second source", { exact: true })).toBeVisible();
+      await page.getByRole("button", { name: "Previous page" }).click();
+      await expect(page.getByRole("checkbox", { name: "Select First source", exact: true })).toBeChecked();
+    }
     const fonts = await page.evaluate(async () => {
       await document.fonts.ready;
       return [...document.fonts].filter(font => font.status === "loaded").map(font => font.family.replaceAll('"', ""));
@@ -266,7 +274,7 @@ try {
   console.log(`Registry verification workspace: ${temporary}`);
   await prepareRegistry();
   browser = await chromium.launch();
-  for (const item of ["button", "diff", "media-viewer", "step-transition", "ui", "font-delivery"]) {
+  for (const item of ["button", "diff", "media-viewer", "step-transition", "data-table", "ui", "font-delivery"]) {
     console.log(`\nChecking independent ${item} installation`);
     const consumer = path.join(temporary, item);
     await cp(path.join(root, "test/registry-consumer"), consumer, { recursive: true });

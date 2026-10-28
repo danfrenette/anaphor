@@ -40,6 +40,7 @@
         "danfrenette/anaphor/button",
         "danfrenette/anaphor/hold-button",
         "danfrenette/anaphor/card",
+        "danfrenette/anaphor/data-table",
         "danfrenette/anaphor/card-copy-button",
         "danfrenette/anaphor/checkbox",
         "danfrenette/anaphor/radio-group",
@@ -641,6 +642,27 @@
         {
           "path": "packages/design-system/src/components/step-transition.tsx",
           "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "data-table",
+      "type": "registry:ui",
+      "dependencies": [
+        "@tanstack/react-table@^8.21.3"
+      ],
+      "registryDependencies": [
+        "danfrenette/anaphor/button",
+        "danfrenette/anaphor/checkbox",
+        "danfrenette/anaphor/field",
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/utils"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/data-table.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table.tsx"
         }
       ]
     }

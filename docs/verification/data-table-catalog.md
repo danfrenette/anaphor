@@ -31,3 +31,13 @@ card widths. Filter reset reserves its toolbar slot even before a query is enter
 Fine table borders use `--anaphor-border-hairline`, including the full-grid perimeter;
 form control borders remain unchanged. Browser checks compare computed border width
 with the token on standard and high-density displays.
+
+## Shared foundation
+
+The Shared catalog foundation example imports the public package. It exercises
+local processing, stable selection across cards/rows and pages, sort/search, and
+loading/error recovery. Run `pnpm exec playwright test e2e/data-table-foundation.spec.ts`
+for desktop Chromium and narrow WebKit, keyboard and automated accessibility.
+Run `pnpm test` for component behavior including manual server pagination and
+`pnpm test:registry` for an independent data-table installation. The older
+Playground continues to explore advanced controls; it is not the foundation API.
