@@ -52,3 +52,31 @@ it("shows truthful loading and error content without retaining interactive recor
   expect(screen.getByRole("alert")).toHaveTextContent("Try again");
   expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
 });
+
+it("keeps the announcement region available before loading and recovery", () => {
+  const { rerender } = render(<ManualCatalog />);
+  const announcement = screen.getAllByRole("status").find(element => !element.textContent);
+  expect(announcement).toBeInTheDocument();
+  rerender(<ManualCatalog status="loading" />);
+  expect(announcement).toHaveTextContent("Loading sources");
+  expect(announcement).not.toHaveAttribute("aria-busy", "true");
+  rerender(<ManualCatalog />);
+  expect(announcement).toBeEmptyDOMElement();
+});
+
+function ControlledCatalog() {
+  const [selection, setSelection] = useState({});
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 2 });
+  const table = useDataTable({ data: records, columns, processing: "local", getRowId: row => row.id, enableRowSelection: row => row.original.id !== "b", state: { rowSelection: selection, pagination }, onRowSelectionChange: setSelection, onPaginationChange: setPagination });
+  return <><DataTable table={table} label="Controlled sources" presentation="table" density="compact" treatment="grid" selection primaryColumnId="title" getRowLabel={row => row.original.title} status="ready" emptyContent="No sources" /><DataTablePagination table={table} label="Controlled pages" /></>;
+}
+it("lets the consumer control selection and paging while selecting only eligible rows", async () => {
+  const user = userEvent.setup(); render(<ControlledCatalog />);
+  await user.click(screen.getByRole("checkbox", { name: "Select this page of Controlled sources" }));
+  expect(screen.getByRole("checkbox", { name: "Select Alpha" })).toBeChecked();
+  expect(screen.getByRole("checkbox", { name: "Select Beta" })).not.toBeChecked();
+  await user.click(screen.getByRole("button", { name: "Next page" }));
+  expect(screen.getByText("Gamma")).toBeVisible();
+  await user.click(screen.getByRole("button", { name: "Previous page" }));
+  expect(screen.getByRole("checkbox", { name: "Select Alpha" })).toBeChecked();
+});

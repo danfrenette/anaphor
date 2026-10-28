@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode } from "react";
+import { ArrowDown, ArrowUp, ArrowsDownUp } from "@phosphor-icons/react";
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable, type Row, type Table, type TableOptions } from "@tanstack/react-table";
 import { Button, ButtonLabel } from "./button";
 import { Checkbox, CheckboxGroup } from "./checkbox";
@@ -42,10 +43,17 @@ type DataTableProps<T> = {
 } & ({ status: "ready"; emptyContent: ReactNode } | { status: "loading" | "error"; statusContent: ReactNode });
 
 function DataTable<T>(props: DataTableProps<T>) {
+  const empty = props.status === "ready" && !props.table.getRowModel().rows.length;
+  return <div className={cn("min-w-0", props.className)}>
+    <div role="status">{props.status === "loading" ? props.statusContent : empty && props.status === "ready" ? props.emptyContent : null}</div>
+    <div role="alert">{props.status === "error" ? props.statusContent : null}</div>
+    {props.status === "ready" && !empty && <DataTableRecords {...props} />}
+  </div>;
+}
+
+function DataTableRecords<T>(props: DataTableProps<T>) {
   const { table, label, presentation, density, treatment, selection, primaryColumnId, getRowLabel, renderCard, renderActions, className } = props;
   const rows = table.getRowModel().rows;
-  if (props.status !== "ready") return <div className={className} role={props.status === "error" ? "alert" : "status"} aria-busy={props.status === "loading"}>{props.statusContent}</div>;
-  if (!rows.length) return <div className={className} role="status">{props.emptyContent}</div>;
   const padding = density === "compact" ? "px-3 py-2" : "p-4";
   const border = treatment === "grid" ? "border-e border-b [border-width:var(--anaphor-border-hairline)] border-border last:border-e-0" : treatment === "rules" ? "border-b [border-bottom-width:var(--anaphor-border-hairline)] border-border" : "";
   const selectPage = <Checkbox aria-label={`Select this page of ${label}`} checked={table.getIsAllPageRowsSelected()} indeterminate={table.getIsSomePageRowsSelected()} disabled={!rows.some(row => row.getCanSelect())} onCheckedChange={checked => table.toggleAllPageRowsSelected(checked)} />;
@@ -68,11 +76,11 @@ function DataTable<T>(props: DataTableProps<T>) {
     </> : <div role="region" aria-label={`${label}, scroll for more columns`} tabIndex={0} className="overflow-x-auto rounded-sm focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring">
       <CheckboxGroup><table className="w-full border-separate border-spacing-0 text-start text-ui">
         <caption className="sr-only">{label}</caption>
-        <thead className="bg-muted">{table.getHeaderGroups().map(group => <tr key={group.id}>
-          {selection && <th scope="col" className={cn(padding, border)}>{selectPage}</th>}
+        <thead className="bg-muted">{table.getHeaderGroups().map((group, index) => <tr key={group.id}>
+          {selection && index === 0 && <th scope="col" rowSpan={table.getHeaderGroups().length} className={cn(padding, border)}>{selectPage}</th>}
           {group.headers.map(header => <th key={header.id} colSpan={header.colSpan} scope="col" aria-sort={header.column.getIsSorted() === "asc" ? "ascending" : header.column.getIsSorted() === "desc" ? "descending" : undefined} className={cn("text-start font-medium", padding, border)}>
-            {!header.isPlaceholder && (header.column.getCanSort() ? <button type="button" className="min-h-11 rounded-sm px-2 text-start focus-visible:outline-2 focus-visible:outline-ring" onClick={header.column.getToggleSortingHandler()}>{flexRender(header.column.columnDef.header, header.getContext())}<span aria-hidden="true">{header.column.getIsSorted() === "asc" ? " ↑" : header.column.getIsSorted() === "desc" ? " ↓" : " ↕"}</span></button> : flexRender(header.column.columnDef.header, header.getContext()))}
-          </th>)}{renderActions && <th scope="col" className={padding}><span className="sr-only">Actions</span></th>}
+            {!header.isPlaceholder && (header.column.getCanSort() ? <button type="button" className="min-h-11 rounded-sm px-2 text-start focus-visible:outline-2 focus-visible:outline-ring" onClick={header.column.getToggleSortingHandler()}>{flexRender(header.column.columnDef.header, header.getContext())}<span className="ms-2 inline-flex align-middle" aria-hidden="true">{header.column.getIsSorted() === "asc" ? <ArrowUp size={16} /> : header.column.getIsSorted() === "desc" ? <ArrowDown size={16} /> : <ArrowsDownUp size={16} />}</span></button> : flexRender(header.column.columnDef.header, header.getContext()))}
+          </th>)}{renderActions && index === 0 && <th scope="col" rowSpan={table.getHeaderGroups().length} className={padding}><span className="sr-only">Actions</span></th>}
         </tr>)}</thead>
         <tbody>{rows.map(row => <tr key={row.id} className={row.getIsSelected() ? "bg-muted" : undefined}>
           {selection && <td className={cn(padding, border)}>{selectRow(row)}</td>}
