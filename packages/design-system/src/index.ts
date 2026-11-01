@@ -41,3 +41,5 @@ export { Diff, type DiffProps, type DiffSource, type DiffNote, type DiffAnnotati
 export { MediaViewer, type MediaViewerProps, type MediaViewerItem, type MediaViewerImage, type MediaViewerVideo, type MediaViewerTrack, type MediaViewerPanel } from "./components/media-viewer";
 export { StepTransition, type StepTransitionProps } from "./components/step-transition";
 export { DataTable, DataTablePagination, useDataTable, type DataTableOptions, type DataTableProps } from "./components/data-table";
+
+export { TagButton, type TagButtonProps } from "./components/tag-button";

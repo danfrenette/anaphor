@@ -167,6 +167,14 @@ inside the card; Card itself has no interactive behavior.
 Use `CardTitle className="font-mono"` for monospaced headings; combine it with
 `text-label tracking-[0.08em] uppercase` for the manual’s technical labels.
 
+## Tag button
+
+`TagButton` composes Button into a round, wrapping action pill. Use `ButtonLabel`
+for its text and compose decorative icons beside it. Size, tone, variant and
+loading stay explicit; shape, text-bearing layout and native non-submitting
+button semantics belong to the component. Callers own tag actions and state.
+See [Tag button](docs/components/tag-button.md) and the manual at `/#tag-button`.
+
 ## Button variants
 
 Choose `solid`, `outline`, `ghost`, or `soft` independently of the `accent`,

@@ -64,3 +64,7 @@ of invalid ones. `text.types.tsx` checks native element refs and events.
 and Radio preserve Base UI's generic value/state and rendering props; the
 indicator uses Checkbox's fixed geometry rather than adding visual configuration.
 `radio-group.types.tsx` checks value inference and public refs/composition.
+
+`TagButton` deliberately owns round shape, text-bearing layout, native rendering
+and non-submitting button type. Its remaining Button configuration (`size`,
+`tone`, `variant`, `loading`) stays explicit. See [Tag button](components/tag-button.md).

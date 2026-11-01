@@ -38,6 +38,7 @@
         "danfrenette/anaphor/adaptive-surface",
         "danfrenette/anaphor/badge",
         "danfrenette/anaphor/button",
+        "danfrenette/anaphor/tag-button",
         "danfrenette/anaphor/hold-button",
         "danfrenette/anaphor/card",
         "danfrenette/anaphor/data-table",
@@ -139,6 +140,23 @@
           "path": "packages/design-system/src/lib/motion.ts",
           "type": "registry:lib",
           "target": "@components/lib/motion.ts"
+        }
+      ]
+    },
+    {
+      "name": "tag-button",
+      "type": "registry:ui",
+      "title": "Tag button",
+      "description": "A wrapping action pill composed from Button.",
+      "registryDependencies": [
+        "danfrenette/anaphor/button",
+        "danfrenette/anaphor/utils"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/tag-button.tsx",
+          "type": "registry:ui",
+          "target": "@ui/tag-button.tsx"
         }
       ]
     },

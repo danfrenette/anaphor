@@ -68,6 +68,15 @@ import { ButtonLabel } from "@/components/ui/button";
   </CardHeader>
   <CardContent>Your content here.</CardContent>
 </Card>` },
+  "tag-button": { title: "Tag button", item: "tag-button", code: `import { X } from "@phosphor-icons/react";
+import { TagButton } from "@/components/ui/tag-button";
+import { ButtonLabel } from "@/components/ui/button";
+
+<TagButton size="xs" tone="neutral" variant="soft" loading={false}
+  aria-label="Remove Research" onClick={removeTag}>
+  <ButtonLabel>Research</ButtonLabel>
+  <X aria-hidden="true" />
+</TagButton>` },
   badge: { title: "Badge", item: "badge", code: `import { Badge } from "@/components/ui/badge";
 
 <Badge variant="soft" size="md" shape="round">
