@@ -3,6 +3,7 @@ import { DiffDemo } from "../diff-demo";
 import { CollapsibleDemo } from "../collapsible-demo";
 import { SidebarInsetContent, Section, Text, Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
 import { ButtonDemo } from "../button-demo";
+import { TagButtonDemo } from "../tag-button-demo";
 import { BadgeDemo } from "../badge-demo";
 import { NodeEdgeDemo } from "../node-edge-demo";
 import { CardDemo } from "../card-demo";
@@ -225,6 +226,7 @@ export default function HomePage() {
           <InputDemo />
           <RadioGroupDemo />
           <SliderDemo />
+          <TagButtonDemo />
           <BadgeDemo />
           <CardDemo />
           <DataTableDemo />

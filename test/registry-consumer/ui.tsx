@@ -2,6 +2,7 @@ import { MediaViewer } from "./components/ui/media-viewer";
 import { Diff } from "./components/ui/diff";
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
+import { TagButton } from "./components/ui/tag-button";
 import { Badge } from "./components/ui/badge";
 import { Button, ButtonLabel } from "./components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
@@ -47,6 +48,7 @@ function Consumer() {
     <Card variant="default">
       <CardHeader><CardTitle as="h3" variant="heading">Installed UI</CardTitle></CardHeader>
       <CardContent>
+        <TagButton size="xs" tone="neutral" variant="soft" loading={false} onClick={() => setCount(count + 1)}><ButtonLabel>Tag action</ButtonLabel></TagButton>
         <Badge size="md" variant="soft" shape="square">Ready</Badge>
         <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" onClick={() => setCount(count + 1)}><ButtonLabel>Count {count}</ButtonLabel></Button>
         <Field orientation="vertical"><FieldLabel>Email</FieldLabel><Input size="md" type="email" /><FieldFeedback hint="Your email address" error="Enter an email" invalid={false} /></Field>

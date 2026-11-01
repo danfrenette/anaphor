@@ -101,6 +101,7 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "input", label: "Input", href: "/#input", icon: Textbox },
       { id: "radio-group", label: "Radio group", href: "/#radio-group", icon: RadioButton },
       { id: "slider", label: "Slider", href: "/#slider", icon: SlidersHorizontal },
+      { id: "tag-button", label: "Tag button", href: "/#tag-button", icon: Tag },
     ],
   },
   {
