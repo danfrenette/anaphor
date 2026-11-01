@@ -3,6 +3,17 @@
 import { CardCopyButton } from "@anaphor/system";
 
 const examples: Record<string, { title: string; item: string; code: string }> = {
+  breadcrumb: { title: "Breadcrumb", item: "breadcrumb", code: `import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbCurrent, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+
+<Breadcrumb aria-label="Page path">
+  <BreadcrumbList>
+    <BreadcrumbItem><BreadcrumbLink href="/">Manual</BreadcrumbLink></BreadcrumbItem>
+    <BreadcrumbItem>
+      <BreadcrumbSeparator>/</BreadcrumbSeparator>
+      <BreadcrumbCurrent aria-current="page">Current page</BreadcrumbCurrent>
+    </BreadcrumbItem>
+  </BreadcrumbList>
+</Breadcrumb>` },
   "radio-group": { title: "Radio group", item: "radio-group", code: `import { RadioGroup, Radio } from "@/components/ui/radio-group";
 
 <RadioGroup name="frequency" defaultValue="daily" aria-label="Notification frequency">

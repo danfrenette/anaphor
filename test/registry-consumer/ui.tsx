@@ -3,6 +3,7 @@ import { Diff } from "./components/ui/diff";
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { TagButton } from "./components/ui/tag-button";
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbCurrent, BreadcrumbSeparator } from "./components/ui/breadcrumb";
 import { Badge } from "./components/ui/badge";
 import { Button, ButtonLabel } from "./components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
@@ -42,6 +43,10 @@ function Consumer() {
     <ContentSections defaultScope>
     <Section id="installed-intro" aria-label="Introduction">
     <Text as="h1" variant="title">Registry consumer</Text>
+    <Breadcrumb aria-label="Installed path"><BreadcrumbList>
+      <BreadcrumbItem><BreadcrumbLink href="#installed-intro">Introduction</BreadcrumbLink></BreadcrumbItem>
+      <BreadcrumbItem><BreadcrumbSeparator>/</BreadcrumbSeparator><BreadcrumbCurrent aria-current="location">Controls</BreadcrumbCurrent></BreadcrumbItem>
+    </BreadcrumbList></Breadcrumb>
     <Prose as="div"><p>Installed prose with <strong>emphasis</strong>.</p></Prose>
     </Section>
     <Section id="installed-controls" aria-label="Controls">

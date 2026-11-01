@@ -29,6 +29,7 @@ server started by that run.
 - [Checkbox catalog](checkbox-catalog.md) — states, selection groups, required choice, and inline code.
 - [Radio group catalog](radio-group-catalog.md) — choice states, label colors, validation, and inline code.
 - [Card catalog](card-catalog.md) — anatomy, composition, logo showcase, and playground controls.
+- [Breadcrumb](breadcrumb.md) — native link/button paths, current semantics, wrapping and focus.
 - [Tag button](tag-button.md) — native tag actions, wrapping, and Button state inheritance.
 - [Badge catalog](badge-catalog.md) — variants, sizes, icon/shape comparisons, and playground controls.
 - [Skeleton catalog](skeleton-catalog.md) — shapes, effects, content geometry, and reduced motion.

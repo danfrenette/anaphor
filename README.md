@@ -167,6 +167,13 @@ inside the card; Card itself has no interactive behavior.
 Use `CardTitle className="font-mono"` for monospaced headings; combine it with
 `text-label tracking-[0.08em] uppercase` for the manual’s technical labels.
 
+## Breadcrumb
+
+Compose `Breadcrumb`, `BreadcrumbList`, and `BreadcrumbItem` with native
+`BreadcrumbLink` or `BreadcrumbButton`. `BreadcrumbCurrent` carries explicit
+page/location semantics; `BreadcrumbSeparator` stays outside targets.
+See [Breadcrumb](docs/components/breadcrumb.md) and `/#breadcrumb`.
+
 ## Tag button
 
 `TagButton` composes Button into a round, wrapping action pill. Use `ButtonLabel`
