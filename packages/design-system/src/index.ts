@@ -43,3 +43,5 @@ export { StepTransition, type StepTransitionProps } from "./components/step-tran
 export { DataTable, DataTablePagination, useDataTable, type DataTableOptions, type DataTableProps } from "./components/data-table";
 
 export { TagButton, type TagButtonProps } from "./components/tag-button";
+
+export { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbButton, BreadcrumbCurrent, BreadcrumbSeparator, type BreadcrumbProps, type BreadcrumbLinkProps, type BreadcrumbButtonProps, type BreadcrumbCurrentProps } from "./components/breadcrumb";

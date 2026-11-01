@@ -22,6 +22,7 @@ import { StepTransitionDemo } from "../step-transition-demo";
 import { SkeletonDemo } from "../skeleton-demo";
 import { UploadDemo } from "../uploads/upload-demo";
 import { TabsDemo } from "../tabs-demo";
+import { BreadcrumbDemo } from "../breadcrumb-demo";
 import { BottomBarDemo } from "../bottom-bar-demo";
 import { SidebarDemo } from "../sidebar-demo";
 import { WorkspaceShellDemo } from "../workspace-shell-demo";
@@ -237,6 +238,7 @@ export default function HomePage() {
           <SkeletonDemo />
           <StepTransitionDemo />
           <BottomBarDemo />
+          <BreadcrumbDemo />
           <CollapsibleDemo />
           <CommandPaletteDemo />
           <DropdownMenuDemo />

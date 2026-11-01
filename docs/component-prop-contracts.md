@@ -68,3 +68,9 @@ indicator uses Checkbox's fixed geometry rather than adding visual configuration
 `TagButton` deliberately owns round shape, text-bearing layout, native rendering
 and non-submitting button type. Its remaining Button configuration (`size`,
 `tone`, `variant`, `loading`) stays explicit. See [Tag button](components/tag-button.md).
+
+`Breadcrumb` requires an accessible navigation label; `BreadcrumbLink` requires
+its href; passive `BreadcrumbCurrent` requires explicit page/location semantics.
+`BreadcrumbButton` owns the non-submitting native button type. Separators are
+explicit decorative children grouped inside their following item, outside targets.
+See [Breadcrumb](components/breadcrumb.md).

@@ -37,6 +37,7 @@
         "danfrenette/anaphor/style",
         "danfrenette/anaphor/adaptive-surface",
         "danfrenette/anaphor/badge",
+        "danfrenette/anaphor/breadcrumb",
         "danfrenette/anaphor/button",
         "danfrenette/anaphor/tag-button",
         "danfrenette/anaphor/hold-button",
@@ -140,6 +141,23 @@
           "path": "packages/design-system/src/lib/motion.ts",
           "type": "registry:lib",
           "target": "@components/lib/motion.ts"
+        }
+      ]
+    },
+    {
+      "name": "breadcrumb",
+      "type": "registry:ui",
+      "title": "Breadcrumb",
+      "description": "Composable navigation paths with native links and in-place buttons.",
+      "registryDependencies": [
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/utils"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/breadcrumb.tsx",
+          "type": "registry:ui",
+          "target": "@ui/breadcrumb.tsx"
         }
       ]
     },
