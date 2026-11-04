@@ -106,6 +106,35 @@ test("normal-motion keyboard expansion and collapse do not animate", async ({ pa
   expect(await notifications.evaluateAll(elements => elements.every(el => el.getAnimations({ subtree: true }).length === 0))).toBe(true);
 });
 
+test("F6 shows a visible focus indicator on a single notification", async ({ page }) => {
+  await page.goto("/#toast");
+  await expect(page.getByRole("button", { name: /Switch to .* theme/ })).toBeEnabled();
+  await page.getByRole("button", { name: "Archive note", exact: true }).click();
+  const notification = page.locator('[data-slot="toast"]');
+  await expect(notification).toHaveCount(1);
+  const returnTarget = page.getByRole("button", { name: "Dismiss all", exact: true });
+  await returnTarget.focus();
+  await page.keyboard.press("F6");
+  await expect(page.locator('[data-slot="toast-viewport"]')).toBeFocused();
+  await expect(notification).toHaveCSS("outline-style", "solid");
+  await expect(notification).toHaveCSS("outline-width", "2px");
+  await expect(notification).toHaveCSS("outline-offset", "3px");
+  await page.keyboard.press("Shift+Tab");
+  await expect(returnTarget).toBeFocused();
+  await expect(notification).toHaveCSS("outline-style", "none");
+});
+
+test("keyboard-created loading feedback has no animation", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/#toast");
+  await expect(page.getByRole("button", { name: /Switch to .* theme/ })).toBeEnabled();
+  const save = page.getByRole("button", { name: "Save note", exact: true });
+  await save.focus();
+  await save.press("Enter");
+  await expect(page.getByText("Saving changes", { exact: true })).toBeVisible();
+  expect(await page.locator('[data-slot="toast"]').evaluate(el => el.getAnimations({ subtree: true }).length)).toBe(0);
+});
+
 test("reduced motion disables fades, recovery and loading animation", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#toast");
@@ -312,4 +341,66 @@ test("cancelled drags recover, can be grabbed again, and settle on keyboard or r
   await cancelDrag();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect.poll(() => notification.evaluate(el => ({ animations: el.getAnimations({ subtree: true }).length, transform: el.style.transform, transition: el.style.transition }))).toEqual({ animations: 0, transform: "", transition: "" });
+});
+
+test.describe("coarse recovery geometry", () => {
+  test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } });
+
+  test("recovery retargets when a new notification changes stack geometry", async ({ page, browserName }) => {
+    test.skip(browserName !== "chromium", "Chromium coarse-pointer recovery regression.");
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto("/#toast");
+    await expect(page.getByRole("button", { name: /Switch to .* theme/ })).toBeEnabled();
+    await page.getByRole("button", { name: "Archive note", exact: true }).click();
+    const notification = page.locator('[data-slot="toast"]').filter({ hasText: "Note archived" });
+    await notification.hover();
+    await notification.evaluate(async el => { await Promise.all(el.getAnimations().map(animation => animation.finished)); });
+    const rect = (await notification.boundingBox())!;
+    const x = rect.x + 60;
+    const y = rect.y + 24;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 1, y);
+    await page.mouse.move(x + 30, y);
+    await notification.evaluate(el => {
+      window.toastRecovery = new Promise(resolve => {
+        const observer = new MutationObserver(() => {
+          if (el.hasAttribute("data-swiping")) return;
+          observer.disconnect();
+          requestAnimationFrame(() => {
+            const animation = el.getAnimations().find(item => !(item instanceof CSSTransition));
+            if (!animation) { resolve(null); return; }
+            animation.pause();
+            animation.currentTime = 0;
+            resolve(new DOMMatrix(getComputedStyle(el).transform).m41);
+          });
+        });
+        observer.observe(el, { attributes: true });
+      });
+    });
+    await notification.dispatchEvent("pointercancel", { pointerId: 1, pointerType: "mouse", clientX: x + 30, clientY: y });
+    await page.mouse.up();
+    expect(await page.evaluate(() => window.toastRecovery)).toBeGreaterThan(20);
+    await page.getByRole("button", { name: "Save note", exact: true }).click();
+    await expect(page.locator('[data-slot="toast"]')).toHaveCount(2);
+    const geometry = await notification.evaluate(async el => {
+      const animation = el.getAnimations().find(item => !(item instanceof CSSTransition));
+      if (!animation) return null;
+      const endTime = animation.effect?.getComputedTiming().endTime;
+      if (typeof endTime !== "number") return null;
+      animation.pause();
+      animation.currentTime = endTime - 1;
+      const before = new DOMMatrix(getComputedStyle(el).transform);
+      animation.finish();
+      await new Promise(requestAnimationFrame);
+      await new Promise(requestAnimationFrame);
+      const after = new DOMMatrix(getComputedStyle(el).transform);
+      return { beforeY: before.m42, afterY: after.m42, beforeScale: before.a, afterScale: after.a, inlineTransform: el.style.transform };
+    });
+    expect(geometry).not.toBeNull();
+    expect(geometry!.inlineTransform).toBe("");
+    expect(geometry!.beforeY).toBeCloseTo(geometry!.afterY, 0);
+    expect(geometry!.beforeScale).toBeCloseTo(geometry!.afterScale, 2);
+  });
+
 });

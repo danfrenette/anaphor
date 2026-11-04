@@ -45,10 +45,12 @@ validation or recovery instructions only in transient feedback.
 
 Base UI owns announcements, timeout pausing, the visible limit, dismissal,
 keyboard focus, drag tracking, and distance-based swipe dismissal. Anaphor adds
-primary-pointer ownership, short-flick dismissal, and interruptible spring recovery. F6 enters the viewport; Shift+Tab from the viewport returns to the
-previous control. Hover/focus expands the measured stack. A small hit-area bridge
+primary-pointer ownership, short-flick dismissal, and interruptible spring recovery.
+F6 enters the viewport and outlines its first available notification; Shift+Tab
+from the viewport returns to the previous control. Hover/focus expands the measured stack. A small hit-area bridge
 preserves expansion while the pointer crosses gaps. Keyboard-created, updated, or dismissed feedback and keyboard expansion/collapse
-settle immediately, including calls made outside the viewport. Pointer input
+settle immediately, including calls made outside the viewport. Keyboard-created
+loading feedback keeps its status icon static. Pointer input
 restores motion. Hover travel is enabled only for a fine pointer with hover support.
 Reduced motion disables every transition and animation, including fades, recovery,
 and spinner rotation; changing the preference during recovery settles it immediately.
@@ -58,9 +60,12 @@ release above 0.5px/ms can dismiss a short swipe of at least 8px; a pause of 100
 or an inward release does not count as a flick. Secondary pointers cannot take
 over or end the primary drag. Cancelled drags and lost pointer capture recover
 with a 250ms spring without bounce on mouse and touch. A new drag grabs the current
-visible position; keyboard input immediately settles recovery. Swipe exits continue
-beyond the released position. Normal entries travel 16px over 200ms; exits take
-150ms. Excess notifications become inert and hidden.
+visible position; keyboard input immediately settles recovery. Recovery follows new
+stack measurements, and reusing an ID cancels any held drag from its previous
+notification. Swipe exits continue
+beyond the released position. On fine pointers with hover support, normal entries
+travel 16px and fade over 200ms; coarse-pointer entries use only the fade. Normal
+exits take 150ms. Excess notifications become inert and hidden.
 
 `viewportProps` and `portalProps` forward Base UI customization, native props,
 refs and portal containers. The viewport's children belong to the renderer.
