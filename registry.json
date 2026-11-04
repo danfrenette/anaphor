@@ -56,6 +56,7 @@
         "danfrenette/anaphor/menu",
         "danfrenette/anaphor/popover",
         "danfrenette/anaphor/tooltip",
+        "danfrenette/anaphor/toast",
         "danfrenette/anaphor/sidebar",
         "danfrenette/anaphor/workspace-shell",
         "danfrenette/anaphor/bottom-bar",
@@ -699,6 +700,29 @@
           "path": "packages/design-system/src/components/data-table.tsx",
           "type": "registry:ui",
           "target": "@ui/data-table.tsx"
+        }
+      ]
+    },
+    {
+      "name": "toast",
+      "type": "registry:ui",
+      "title": "Toast",
+      "description": "Stacked notifications powered by Base UI, with actions and promise updates.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0",
+        "@phosphor-icons/react",
+        "motion"
+      ],
+      "registryDependencies": [
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/utils",
+        "danfrenette/anaphor/button"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/toast.tsx",
+          "type": "registry:ui",
+          "target": "@ui/toast.tsx"
         }
       ]
     }

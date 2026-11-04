@@ -527,3 +527,103 @@ html[data-theme-transition]::view-transition-new(root) {
     animation: none;
   }
 }
+
+/* Toasts use Base UI's measured offsets; the viewport owns one local stack. */
+.anaphor-toast-viewport {
+  --toast-gap: 12px;
+  --toast-direction: -1;
+  position: fixed;
+  z-index: var(--anaphor-z-overlay);
+  width: min(360px, calc(100vw - 32px));
+  bottom: max(24px, env(safe-area-inset-bottom));
+  right: max(16px, env(safe-area-inset-right));
+  outline: none;
+}
+.anaphor-toast-viewport[data-position$="left"] { right: auto; left: max(16px, env(safe-area-inset-left)); }
+.anaphor-toast-viewport[data-position$="center"] { right: auto; left: 50%; translate: -50% 0; }
+.anaphor-toast-viewport[data-position^="top"] {
+  --toast-direction: 1;
+  bottom: auto;
+  top: max(24px, env(safe-area-inset-top));
+}
+.anaphor-toast {
+  --toast-scale: calc(1 - var(--toast-index) * 0.04);
+  --toast-travel: calc(var(--toast-index) * 12px * var(--toast-direction));
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: var(--toast-frontmost-height, var(--toast-height));
+  z-index: calc(10 - var(--toast-index));
+  border-radius: var(--radius-card);
+  background: var(--anaphor-foreground);
+  color: var(--anaphor-font-secondary);
+  box-shadow: var(--anaphor-shadow-card);
+  transform-origin: bottom center;
+  transform: translateX(var(--toast-swipe-movement-x)) translateY(calc(var(--toast-travel) + var(--toast-swipe-movement-y))) scale(var(--toast-scale));
+  transition: opacity var(--anaphor-motion-duration-standard) var(--anaphor-ease-out);
+  touch-action: none;
+  user-select: none;
+  outline: none;
+}
+.anaphor-toast-viewport[data-position^="top"] .anaphor-toast { bottom: auto; top: 0; transform-origin: top center; }
+.anaphor-toast[data-expanded] {
+  --toast-scale: 1;
+  --toast-travel: calc((var(--toast-offset-y) + var(--toast-index) * var(--toast-gap)) * var(--toast-direction));
+  height: var(--toast-height);
+}
+.anaphor-toast[data-starting-style] {
+  opacity: 0;
+  transform: translateY(calc(-16px * var(--toast-direction)));
+}
+.anaphor-toast[data-ending-style] {
+  opacity: 0;
+  transform: translateX(var(--toast-swipe-movement-x)) translateY(calc(var(--toast-travel) + var(--toast-swipe-movement-y) - 16px * var(--toast-direction))) scale(var(--toast-scale));
+}
+.anaphor-toast[data-ending-style][data-swipe-direction="right"] { transform: translateX(calc(var(--toast-swipe-movement-x) + 100% + 32px)) translateY(calc(var(--toast-travel) + var(--toast-swipe-movement-y))); }
+.anaphor-toast[data-ending-style][data-swipe-direction="left"] { transform: translateX(calc(var(--toast-swipe-movement-x) - 100% - 32px)) translateY(calc(var(--toast-travel) + var(--toast-swipe-movement-y))); }
+.anaphor-toast[data-ending-style][data-swipe-direction="up"] { transform: translateX(var(--toast-swipe-movement-x)) translateY(calc(var(--toast-travel) + var(--toast-swipe-movement-y) - 100% - 32px)); }
+.anaphor-toast[data-ending-style][data-swipe-direction="down"] { transform: translateX(var(--toast-swipe-movement-x)) translateY(calc(var(--toast-travel) + var(--toast-swipe-movement-y) + 100% + 32px)); }
+@media (hover: hover) and (pointer: fine) {
+  .anaphor-toast { transition: transform var(--anaphor-motion-duration-standard) var(--anaphor-ease-out), opacity var(--anaphor-motion-duration-standard) var(--anaphor-ease-out); }
+}
+/* An explicit swipe retains its trajectory on touch as well as mouse. */
+.anaphor-toast[data-ending-style][data-flick],
+.anaphor-toast[data-ending-style][data-swipe-direction] { transition: transform var(--anaphor-motion-duration-standard) var(--anaphor-ease-out), opacity var(--anaphor-motion-duration-standard) var(--anaphor-ease-out); }
+.anaphor-toast:not([data-starting-style], [data-ending-style]) { transition-timing-function: var(--anaphor-ease-in-out), var(--anaphor-ease-out); }
+.anaphor-toast[data-ending-style],
+.anaphor-toast[data-ending-style][data-swipe-direction],
+.anaphor-toast[data-ending-style][data-flick] { transition-duration: 150ms; }
+.anaphor-toast[data-ending-style][data-flick] { transform: var(--toast-flick-transform); }
+.anaphor-toast[data-limited] { opacity: 0; pointer-events: none; }
+.anaphor-toast[data-swiping] { transition: none; }
+.anaphor-toast:focus-visible { outline: 2px solid var(--anaphor-focus); outline-offset: 3px; }
+.anaphor-toast-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  overflow-wrap: anywhere;
+  transition: opacity var(--anaphor-motion-duration-standard) var(--anaphor-ease-out);
+}
+.anaphor-toast-content[data-behind]:not([data-expanded]) { opacity: 0; pointer-events: none; }
+.anaphor-toast-icon { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; }
+.anaphor-toast[data-type="error"] .anaphor-toast-icon { color: var(--anaphor-danger-text); }
+.anaphor-toast[data-type="loading"] .anaphor-toast-icon { animation: anaphor-toast-spin 1s linear infinite; }
+@keyframes anaphor-toast-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .anaphor-toast-viewport .anaphor-toast,
+  .anaphor-toast-viewport .anaphor-toast[data-ending-style][data-swipe-direction],
+  .anaphor-toast-viewport .anaphor-toast[data-ending-style][data-flick],
+  .anaphor-toast-viewport .anaphor-toast-content { transition: none; }
+  .anaphor-toast-viewport .anaphor-toast:is([data-starting-style], [data-ending-style]) {
+    transform: translateX(var(--toast-swipe-movement-x)) translateY(calc(var(--toast-travel) + var(--toast-swipe-movement-y))) scale(var(--toast-scale));
+  }
+  .anaphor-toast[data-type="loading"] .anaphor-toast-icon { animation: none; }
+}
+/* Bridge the gap so moving between expanded notifications does not collapse them. */
+.anaphor-toast::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: var(--toast-gap); }
+.anaphor-toast-viewport[data-position^="top"] .anaphor-toast::after { top: auto; bottom: 100%; }
+
+/* Keep the keyboard policy through blur so collapsing is immediate too. */
+.anaphor-toast-viewport[data-keyboard-motion] .anaphor-toast,
+.anaphor-toast-viewport[data-keyboard-motion] .anaphor-toast-content { transition: none; }

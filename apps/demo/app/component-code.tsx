@@ -3,6 +3,11 @@
 import { CardCopyButton } from "@anaphor/system";
 
 const examples: Record<string, { title: string; item: string; code: string }> = {
+  toast: { title: "Toast", item: "toast", code: `import { Toaster, toast } from "@/components/ui/toast";
+
+<Toaster toastManager={toast} position="bottom-right" timeout={5000} limit={3} />
+
+toast.add({ title: "Changes saved", type: "success" });` },
   breadcrumb: { title: "Breadcrumb", item: "breadcrumb", code: `import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbCurrent, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
 <Breadcrumb aria-label="Page path">

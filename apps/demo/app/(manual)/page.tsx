@@ -12,6 +12,7 @@ import { RadioGroupDemo } from "../radio-group-demo";
 import { InputDemo } from "../input-demo";
 import { CommandPaletteDemo } from "../command-palette-demo";
 import { DropdownMenuDemo } from "../dropdown-menu-demo";
+import { ToastDemo } from "../toast-demo";
 import { TooltipDemo } from "../tooltip-demo";
 import { DataTableDemo } from "../data-table-demo";
 import { PopoverDemo } from "../popover-demo";
@@ -237,6 +238,7 @@ export default function HomePage() {
           <NodeEdgeDemo />
           <SkeletonDemo />
           <StepTransitionDemo />
+          <ToastDemo />
           <BottomBarDemo />
           <BreadcrumbDemo />
           <CollapsibleDemo />

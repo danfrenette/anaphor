@@ -1,3 +1,4 @@
+import { Toaster, toast } from "./components/ui/toast";
 import { MediaViewer } from "./components/ui/media-viewer";
 import { Diff } from "./components/ui/diff";
 import { useState } from "react";
@@ -36,6 +37,8 @@ function Consumer() {
   const [frequency, setFrequency] = useState<string | null>(null);
   return <main className="mx-auto max-w-workspace px-page-inset py-6 font-sans">
     <div data-testid="editorial-layout" className="mx-auto max-w-editorial"><p className="max-w-reading">Shared layout in an independent consumer.</p></div>
+    <Toaster toastManager={toast} position="bottom-right" timeout={5000} limit={3} />
+    <button onClick={() => toast.add({ title: "Installed toast", type: "success" })}>Show installed toast</button>
     <Diff source={{ kind: "files", before: { name: "example.ts", contents: "const count = 1;\n" }, after: { name: "example.ts", contents: "const count = 2;\n" } }} layout="unified" wrap={true} controls={false} context="collapsed" maxHeight={null} />
     <button onClick={() => setMediaOpen(true)}>Inspect registry media</button>
     <MediaViewer open={mediaOpen} onOpenChange={setMediaOpen} activeItemId="example" onActiveItemChange={() => {}} initialPanel="annotations"

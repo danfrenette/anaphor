@@ -46,3 +46,4 @@ server started by that run.
 - [Step transition](step-transition.md) — directional ordered content and measured height.
 
 - [Local change tours](local-tours.md): persistent imports, shared evidence, and explicit refresh.
+- [Toast](toast.md) — stacked notification feedback, actions, async status, and keyboard access.

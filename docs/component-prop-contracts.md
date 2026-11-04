@@ -74,3 +74,7 @@ its href; passive `BreadcrumbCurrent` requires explicit page/location semantics.
 `BreadcrumbButton` owns the non-submitting native button type. Separators are
 explicit decorative children grouped inside their following item, outside targets.
 See [Breadcrumb](components/breadcrumb.md).
+
+`Toaster` requires `toastManager`, `position`, `timeout`, and `limit`. The manager
+retains Base UI's optional content and lifecycle callbacks; viewport and portal
+props preserve native refs and composition. See [Toast](components/toast.md).

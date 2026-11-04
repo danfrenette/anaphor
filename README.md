@@ -486,3 +486,11 @@ Compose reusable disclosures and a nested Sidebar outline with controlled or ini
 The tour reader composes business cases, the shared [Diff](docs/components/diff.md), and
 [MediaViewer](docs/components/media-viewer.md). Tour adapters own pinned source, capture annotations,
 verification facts, and asset URLs. See [local tour verification](docs/verification/local-tours.md).
+
+## Toast notifications
+
+`Toaster` uses Base UI for notification state and accessibility, with an
+Anaphor stack inspired by Sonner. Mount one per manager, supplying `toastManager`,
+`position`, `timeout`, and `limit`; use `toast.add`, `update`, `close`, or `promise`
+from client code. `createToastManager` creates an isolated host. See
+[Toast](docs/components/toast.md) and the manual at `/#toast`.
