@@ -163,12 +163,10 @@ Linux screenshots are separate from the macOS baselines. Generate and review
 Linux baseline changes inside the same pinned image; never automatically accept
 screenshots during a normal CI run. A missing or changed baseline must fail.
 
-When repository branch protection is available, require **Code quality**,
-all four **Demo browser tests (N/4)** checks, and **Registry consumers** on `main`, with the branch
-up to date before merging. GitHub currently rejects branch protection for this
-private repository with “Upgrade to GitHub Pro or make this repository public”.
-Until that account capability changes, check code quality, all four browser shard results, and registry consumers before merging;
-the workflow alone does not prevent a merge.
+Configure branch protection or a ruleset on `main` to require **Code quality**,
+all four **Demo browser tests (N/4)** checks, and **Registry consumers**, with the
+branch up to date before merging. Confirm these rules in GitHub repository
+settings; a passing workflow alone does not prevent an unchecked merge.
 
 The Vercel project `danrfrenettes-projects/anaphor` is connected to this GitHub
 repository. Its Next.js root is `apps/demo`, Node is 24.x, and access to files
