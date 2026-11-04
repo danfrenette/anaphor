@@ -132,3 +132,97 @@ Final verification:
 - Full repository integration/browser suites, hosted CI, and Linux visual baselines
   were not run for this bounded correction. No PR-ready claim is made.
 - `git diff --check`: passed.
+
+## Adversarial PR review — 2026-11-04
+
+Base and merge-base: `2476f4d78471d9c7f8f781f37528c05ba0c91e0e` (`origin/main`).
+Initial reviewed head: `5f266ad98035586ea58bf1a6ea471bee1fd5d8c6`.
+Affected re-review head: `7e18fc823e26e8cc70adc1287f4e11485fe438a4`.
+Commits covered: `feat: add Base UI toast notifications with six placements`,
+then `fix: close toast keyboard and gesture lifecycle gaps`. Earlier breadcrumb
+and tag-button commits are already on main and are excluded from this branch.
+
+Accepted requirements came directly from the user: a Sonner-inspired notification
+system built on Base UI, six top/bottom × left/center/right settings, and animation
+review/fixes under the installed Emil animations guidance. That latest guidance
+requires static keyboard and reduced-motion feedback, interruptible gesture
+recovery, transform/opacity motion, and faster exits. The component contract
+supplies public configuration and lifecycle details.
+
+Four separate read-only reviewers were dispatched with `fork_turns: "none"`:
+Standards, Spec, Principles, and Execution/Concurrency/Performance. None inherited
+builder conversation or another reviewer's verdict. Each received pinned source,
+requirements, applicable repository standards and evidence locations. Reports
+separate source inspection from supplied verification. Affected reviewers checked
+the fix commit after the implementation owner reproduced and corrected findings.
+
+| Axis | Initial findings | Disposition at re-review |
+| --- | --- | --- |
+| Standards | 1: F6 focused a viewport without a visible indicator | Act on; fixed with first-available-toast focus ring and regression |
+| Spec | 2: keyboard loading still spun; docs overstated touch entry travel | Act on; static keyboard loading and accurate coarse-pointer documentation |
+| Principles | 0 unique; independently found the Standards focus defect | Duplicate cross-reference, not counted twice; resolved |
+| Execution / Concurrency | 2: held drag could dismiss a reused ID; recovery retained stale stack geometry | Act on; cancel old Base UI drag before reuse, retarget recovery and restore CSS ownership |
+| Performance | 0 | No actionable issue for supported bounded stacks |
+
+All five distinct findings are resolved; none were dismissed or deferred as
+optional hardening. Security and Migration were not triggered: the change adds no
+identity, sensitive-operation, persistence or rollout boundary. Existing upstream
+focus-sentinel accessibility limits remain documented above.
+
+Standards authority was the repository's CODING_STANDARDS router and its
+Architecture, Design, prop-contract, Testing and Vocabulary references, plus
+PRODUCT and scoped AGENTS instructions. Coverage included package/consumer and
+registry boundaries, explicit props and composition, shared appearance, keyboard
+and reduced motion, cancellation/cleanup, and observable tests. All applicable
+rules were assessed; the twelve Fowler smell heuristics produced no additional
+finding. Mechanical rules remain supported by executed checks rather than review
+opinion.
+
+Principles covered JavaScript/TypeScript, React/Next client boundaries, UI craft,
+CSS/motion, tests, JSON distribution and public documentation. Applied profiles:
+JavaScript/TypeScript, Frontend, UI craft, Motion and Refactoring UI, with their
+installed tdd, Vercel React/composition, web-design-guidelines, Emil UI/motion,
+layout/type/color/accessibility and writing references. No external aesthetic
+preference displaced repository rules. The affected pass inspected Motion mini,
+Base UI pointer cleanup, observer identity/disposal and regression design.
+
+Execution traced add/update/close/promise, closing-ID reuse, primary pointer,
+lost capture, interruption, stack geometry, keyboard/reduced-motion settlement,
+and listener disposal through installed Base UI and Motion. Both concurrency
+findings were reproduced by the implementation owner before correction. Reviewers
+ran only read-only source commands; browser and test results below are verifier
+evidence, not independent reviewer execution. Physical touch, dedicated screen
+readers and perceived motion remain outside source-only review.
+
+### PR verification results
+
+- Before the review fixes, `pnpm test` passed 241 tests (6 skipped) across 49
+  passing files (2 skipped). After the lifecycle correction, the focused Toast
+  integration suite passed all 5 tests, including held-ID reuse.
+- At `7e18fc8`, lint passed with the existing DataTable React Compiler warning;
+  recursive package/demo types passed. Root `pnpm typecheck` still fails with the
+  six existing Buffer type errors in unchanged `e2e/local-tours.spec.ts`.
+- Fresh `pnpm test:registry` passed after the Motion mini change, including
+  complete-UI source installation, compilation, theme/font and interaction checks.
+- The full production browser run built the initial reviewed head and passed
+  468 checks, skipped 48, and failed 6: Badge screenshots in Chromium/WebKit,
+  Card screenshots in Chromium/WebKit, Showcase screenshot in Chromium, and
+  WebKit MediaViewer caption-state persistence (expected disabled, got showing).
+  These are outside Toast; they were not rerun against a clean main checkout and
+  are not claimed proven baseline failures. Log: `/tmp/anaphor-toast-pr-browser.log`;
+  failure evidence: `/tmp/anaphor-toast-pr-full-failures`.
+- The final production build at `7e18fc8` passed. The combined Toast/manual-index
+  recipe passed 30 checks, skipped 5, and failed the WebKit direct-Tabs active-link
+  assertion. Within that run all 20 Toast checks passed, with 4 intentional
+  device-specific skips. The same final Toast file also passed 20/4 in an isolated
+  development-preview run. Log: `/tmp/anaphor-toast-pr-final-focused.log`.
+- Physical-device touch, dedicated screen-reader acceptance, Linux visual baselines
+  and hosted CI remain unrun. Existing focus-sentinel exclusions apply. Independent
+  Toast-only registry installation is not part of the registry recipe.
+- The PR remains draft because the complete release gate is not green. No merge-ready
+  claim is made. Main was fetched again and remained `2476f4d`; it is an ancestor
+  of the reviewed branch, so no integration conflict was present.
+- The failed direct-Tabs WebKit check passed three isolated repetitions against
+  the final production build. The initial failure is retained as intermittent
+  navigation evidence, not silently replaced with a clean combined-run result.
+  Log: `/tmp/anaphor-toast-pr-tabs-retry.log`.
