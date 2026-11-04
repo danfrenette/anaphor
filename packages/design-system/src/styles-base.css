@@ -596,6 +596,7 @@ html[data-theme-transition]::view-transition-new(root) {
 .anaphor-toast[data-ending-style][data-flick] { transform: var(--toast-flick-transform); }
 .anaphor-toast[data-limited] { opacity: 0; pointer-events: none; }
 .anaphor-toast[data-swiping] { transition: none; }
+.anaphor-toast-viewport:focus-visible > :nth-child(1 of .anaphor-toast:not([data-ending-style], [data-limited])),
 .anaphor-toast:focus-visible { outline: 2px solid var(--anaphor-focus); outline-offset: 3px; }
 .anaphor-toast-content {
   display: flex;
@@ -627,3 +628,5 @@ html[data-theme-transition]::view-transition-new(root) {
 /* Keep the keyboard policy through blur so collapsing is immediate too. */
 .anaphor-toast-viewport[data-keyboard-motion] .anaphor-toast,
 .anaphor-toast-viewport[data-keyboard-motion] .anaphor-toast-content { transition: none; }
+
+.anaphor-toast-viewport[data-keyboard-motion] .anaphor-toast[data-type="loading"] .anaphor-toast-icon { animation: none; }

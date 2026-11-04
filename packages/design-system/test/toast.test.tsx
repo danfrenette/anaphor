@@ -81,3 +81,26 @@ test("input-specific motion preserves consumer viewport event handlers", async (
   expect(pointerDown).toHaveBeenCalled();
   await waitFor(() => expect(screen.queryByText("Saved")).not.toBeInTheDocument());
 });
+
+test("replacing a held notification cancels its old pointer before reuse", async () => {
+  const user = userEvent.setup();
+  const manager = mount();
+  act(() => { manager.add({ id: "reused", title: "Original" }); });
+  const original = await screen.findByRole("dialog", { name: "Original" });
+  await user.pointer([
+    { keys: "[MouseLeft>]", target: original, coords: { clientX: 10, clientY: 10 } },
+    { target: original, coords: { clientX: 11, clientY: 10 } },
+    { target: original, coords: { clientX: 30, clientY: 10 } },
+  ]);
+  expect(original).toHaveAttribute("data-swiping", "");
+  act(() => {
+    manager.close("reused");
+    manager.add({ id: "reused", title: "Replacement" });
+  });
+  const replacement = await screen.findByRole("dialog", { name: "Replacement" });
+  await user.pointer([
+    { target: replacement, coords: { clientX: 150, clientY: 10 } },
+    { keys: "[/MouseLeft]", target: replacement, coords: { clientX: 150, clientY: 10 } },
+  ]);
+  expect(screen.getByText("Replacement")).toBeVisible();
+});

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { animate } from "motion";
+import { spring } from "motion";
+import { animate } from "motion/mini";
 import { Toast as ToastPrimitive } from "@base-ui/react/toast";
 import { CheckCircle, CircleNotch, Info, Warning, X, XCircle } from "@phosphor-icons/react";
 import { Button, ButtonLabel } from "./button";
@@ -76,6 +77,7 @@ function ToastItem({ notification, swipeDirection }: {
   const recovery = useRef<ReturnType<typeof animate> | null>(null);
   const gesture = useRef<{
     id: number;
+    pointerType: string;
     startX: number;
     startY: number;
     previous: { x: number; y: number; time: number };
@@ -87,6 +89,11 @@ function ToastItem({ notification, swipeDirection }: {
   useLayoutEffect(() => {
     if (notification.transitionStatus !== "starting") return;
     const element = root.current;
+    const pointer = gesture.current;
+    if (element && pointer) {
+      // Base UI must release its drag before a retained root starts another toast.
+      element.dispatchEvent(new PointerEvent("pointercancel", { bubbles: true, pointerId: pointer.id, pointerType: pointer.pointerType }));
+    }
     gesture.current = null;
     lifecycle.current += 1;
     if (element) {
@@ -100,23 +107,44 @@ function ToastItem({ notification, swipeDirection }: {
     if (!release || !element || notification.transitionStatus || release.lifecycle !== lifecycle.current) return;
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     if (media.matches) return;
-    // Read Base UI's settled target after its drag state resets; springs also run on touch.
-    element.style.transition = "none";
-    const target = getComputedStyle(element).transform;
-    const animation = animate(element, { transform: [release.transform, target] }, { type: "spring", duration: 0.25, bounce: 0 });
-    recovery.current = animation;
+    const viewport = element.parentElement;
+    const geometry = () => [element.style.getPropertyValue("--toast-index"), element.style.getPropertyValue("--toast-offset-y"), element.hasAttribute("data-expanded"), viewport?.getAttribute("data-position")].join(";");
+    let lastGeometry = geometry();
+    let animation: ReturnType<typeof animate>;
     const settle = () => {
       if (recovery.current !== animation) return;
       animation.cancel();
       element.style.removeProperty("transform");
       element.style.removeProperty("transition");
       recovery.current = null;
+      observer.disconnect();
     };
+    const recover = (from: string) => {
+      // Read Base UI's live CSS target with the previous animation removed.
+      element.style.transition = "none";
+      const target = getComputedStyle(element).transform;
+      const next = animate(element, { transform: [from, target] }, { type: spring, duration: 0.25, bounce: 0 });
+      animation = next;
+      recovery.current = next;
+      void next.then(() => { if (animation === next) settle(); });
+    };
+    const observer = new MutationObserver(() => {
+      const nextGeometry = geometry();
+      if (nextGeometry === lastGeometry || recovery.current !== animation) return;
+      lastGeometry = nextGeometry;
+      const from = getComputedStyle(element).transform;
+      animation.cancel();
+      element.style.removeProperty("transform");
+      recover(from);
+    });
+    observer.observe(element, { attributes: true, attributeFilter: ["style", "data-expanded"] });
+    if (viewport) observer.observe(viewport, { attributes: true, attributeFilter: ["data-position"] });
+    recover(release.transform);
     const reduce = () => { if (media.matches) settle(); };
     media.addEventListener("change", reduce);
     document.addEventListener("keydown", settle, true);
-    void animation.then(settle);
     return () => {
+      observer.disconnect();
       media.removeEventListener("change", reduce);
       document.removeEventListener("keydown", settle, true);
       settle();
@@ -174,7 +202,7 @@ function ToastItem({ notification, swipeDirection }: {
         }
         event.currentTarget.style.removeProperty("transition");
         const point = { x: event.clientX, y: event.clientY, time: event.timeStamp };
-        gesture.current = { id: event.pointerId, startX: point.x, startY: point.y, previous: point, latest: point };
+        gesture.current = { id: event.pointerId, pointerType: event.pointerType, startX: point.x, startY: point.y, previous: point, latest: point };
       }}
       onPointerMove={(event) => {
         const current = gesture.current;
