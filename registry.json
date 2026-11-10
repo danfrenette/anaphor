@@ -29,6 +29,28 @@
       ]
     },
     {
+      "name": "markdown-editor",
+      "type": "registry:ui",
+      "title": "Markdown editor",
+      "description": "Edit paragraphs, headings, bold, and italic in a Prose-styled Markdown field.",
+      "dependencies": [
+        "@tiptap/core@3.33.0",
+        "@tiptap/markdown@3.33.0",
+        "@tiptap/react@3.33.0",
+        "@tiptap/starter-kit@3.33.0"
+      ],
+      "registryDependencies": [
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/utils"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/markdown-editor.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "ui",
       "type": "registry:ui",
       "title": "Anaphor UI",
