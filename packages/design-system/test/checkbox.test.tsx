@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Checkbox, Field, FieldDescription, FieldLabel, useCheckboxPaint } from "@anaphor/system";
-import { expect, test } from "vitest";
+import { Checkbox, CheckboxGroup, Field, FieldDescription, FieldLabel, useCheckboxPaint } from "@anaphor/system";
+import { createRef } from "react";
+import { expect, test, vi } from "vitest";
 
 test("label activation updates the native form value and connects its description", async () => {
   const user = userEvent.setup();
@@ -42,21 +43,73 @@ test("read-only remains focusable while disabled is skipped", async () => {
 });
 
 
-test("a paintable ordered list keeps native checkbox keyboard activation", async () => {
-  function Choices() {
-    const paint = useCheckboxPaint();
-    return <ol aria-label="Preferences" {...paint}>
-      <li><Field orientation="horizontal"><Checkbox /><FieldLabel>Send updates</FieldLabel></Field></li>
-      <li><Field orientation="horizontal"><Checkbox /><FieldLabel>Send reminders</FieldLabel></Field></li>
-    </ol>;
-  }
+function PaintableChoices({ label }: { label: string }) {
+  const paint = useCheckboxPaint();
+  return <ol aria-label={label} {...paint}>
+    <li><Field orientation="horizontal"><Checkbox /><FieldLabel>Send updates</FieldLabel></Field></li>
+    <li><Field orientation="horizontal"><Checkbox /><FieldLabel>Send reminders</FieldLabel></Field></li>
+  </ol>;
+}
 
+test("a paintable ordered list keeps native checkbox keyboard activation", async () => {
   const user = userEvent.setup();
-  render(<Choices />);
+  render(<PaintableChoices label="Preferences" />);
   const updates = screen.getByRole("checkbox", { name: "Send updates" });
   await user.tab();
   expect(updates).toHaveFocus();
   await user.keyboard(" ");
   expect(updates).toBeChecked();
   expect(screen.getByRole("checkbox", { name: "Send reminders" })).not.toBeChecked();
+});
+
+
+test("the checkbox group forwards its root ref and lets a caller prevent painting", async () => {
+  const user = userEvent.setup();
+  const ref = createRef<HTMLDivElement>();
+  const { unmount } = render(<CheckboxGroup role="group" aria-label="Preferences" ref={ref} onPointerDown={event => event.preventDefault()}>
+    <Field orientation="horizontal"><Checkbox /><FieldLabel>Send updates</FieldLabel></Field>
+    <Field orientation="horizontal"><Checkbox /><FieldLabel>Send reminders</FieldLabel></Field>
+  </CheckboxGroup>);
+  expect(ref.current).toBe(screen.getByRole("group", { name: "Preferences" }));
+  const updates = screen.getByRole("checkbox", { name: "Send updates" });
+  const reminders = screen.getByRole("checkbox", { name: "Send reminders" });
+
+  await user.pointer([
+    { keys: "[MouseLeft>]", target: updates },
+    { target: reminders, coords: { x: 0, y: 20 } },
+    { keys: "[/MouseLeft]", target: reminders },
+  ]);
+  expect(updates).not.toBeChecked();
+  expect(reminders).not.toBeChecked();
+  unmount();
+  expect(ref.current).toBeNull();
+});
+
+test("a held pointer keeps working across rerender and releases its window listeners on unmount", async () => {
+  const user = userEvent.setup();
+  const listeners = vi.spyOn(window, "addEventListener");
+  const releaseSignals = () => listeners.mock.calls.flatMap(([type, , options]) => (
+    (type === "pointerup" || type === "pointercancel") && typeof options === "object" && options.signal ? [options.signal] : []
+  ));
+
+  try {
+    const { rerender, unmount } = render(<PaintableChoices label="Preferences" />);
+    const updates = screen.getByRole("checkbox", { name: "Send updates" });
+    await user.pointer({ keys: "[MouseLeft>]", target: updates });
+    const firstPress = releaseSignals();
+    rerender(<PaintableChoices label="Updated preferences" />);
+    expect(firstPress.map(signal => signal.aborted)).toEqual([false, false]);
+    await user.pointer("[/MouseLeft]");
+    expect(updates).toBeChecked();
+    expect(firstPress.map(signal => signal.aborted)).toEqual([true, true]);
+
+    listeners.mockClear();
+    await user.pointer({ keys: "[MouseLeft>]", target: updates });
+    const secondPress = releaseSignals();
+    expect(secondPress.map(signal => signal.aborted)).toEqual([false, false]);
+    unmount();
+    expect(secondPress.map(signal => signal.aborted)).toEqual([true, true]);
+  } finally {
+    listeners.mockRestore();
+  }
 });

@@ -21,3 +21,6 @@ alerts” row to “Send reminders,” then return to the starting choice and re
 Both enabled choices should be checked and the disabled one should stay unchecked.
 Space on “Send reminders” should then clear just that choice. The registry runner
 owns its temporary consumer, loopback server, and Chromium session.
+
+Run `pnpm exec vitest run packages/design-system/test/checkbox.test.tsx` for
+ref forwarding, consumer pointer veto, and release-listener cleanup on unmount.
