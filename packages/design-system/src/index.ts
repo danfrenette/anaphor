@@ -6,6 +6,7 @@ export { CardCopyButton, type CardCopyButtonProps } from "./components/card-copy
 export { MorphSurface, type MorphSurfaceProps } from "./components/morph-surface";
 export { AdaptiveSurfaceBackdrop, AdaptiveSurfaceClose, AdaptiveSurfacePopup, AdaptiveSurfacePortal, AdaptiveSurfaceProvider, AdaptiveSurfaceTrigger, useAdaptiveSurface, type AdaptiveSurfaceProviderProps, type AdaptiveSurfaceTriggerProps } from "./components/adaptive-surface";
 export { Input, type InputProps } from "./components/input";
+export { MarkdownEditor, useMarkdownEditor, type MarkdownEditorHandle, type MarkdownEditorProps, type UseMarkdownEditorOptions, type UseMarkdownEditorResult } from "./components/markdown-editor";
 export { FieldFeedback, type FieldFeedbackProps } from "./components/field-feedback";
 export { Field, FieldItem, FieldContent, FieldGroup, FieldLabel, FieldDescription, FieldError, type FieldProps, type FieldItemProps } from "./components/field";
 export { FileUpload, FileUploadDropzone, FileUploadTrigger, FileUploadProgress, type FileUploadProps, type FileUploadDropzoneProps, type FileUploadTriggerProps, type FileUploadProgressProps } from "./components/file-upload";
