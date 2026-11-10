@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Checkbox, Field, FieldDescription, FieldLabel } from "@anaphor/system";
+import { Checkbox, Field, FieldDescription, FieldLabel, useCheckboxPaint } from "@anaphor/system";
 import { expect, test } from "vitest";
 
 test("label activation updates the native form value and connects its description", async () => {
@@ -39,4 +39,24 @@ test("read-only remains focusable while disabled is skipped", async () => {
   expect(screen.getByRole("button", { name: "Continue" })).toHaveFocus();
   await user.click(screen.getByText("Unavailable preference"));
   expect(screen.getByRole("checkbox", { name: "Unavailable preference" })).not.toBeChecked();
+});
+
+
+test("a paintable ordered list keeps native checkbox keyboard activation", async () => {
+  function Choices() {
+    const paint = useCheckboxPaint();
+    return <ol aria-label="Preferences" {...paint}>
+      <li><Field orientation="horizontal"><Checkbox /><FieldLabel>Send updates</FieldLabel></Field></li>
+      <li><Field orientation="horizontal"><Checkbox /><FieldLabel>Send reminders</FieldLabel></Field></li>
+    </ol>;
+  }
+
+  const user = userEvent.setup();
+  render(<Choices />);
+  const updates = screen.getByRole("checkbox", { name: "Send updates" });
+  await user.tab();
+  expect(updates).toHaveFocus();
+  await user.keyboard(" ");
+  expect(updates).toBeChecked();
+  expect(screen.getByRole("checkbox", { name: "Send reminders" })).not.toBeChecked();
 });

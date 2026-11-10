@@ -142,6 +142,26 @@ The checkbox mark stays light in both themes so it contrasts with the accent
 fill. Required validation belongs to the consuming form. The demo presents the
 required state without a standalone submission flow.
 
+Use `CheckboxGroup` for a paintable `div`. Use `useCheckboxPaint()` when an
+existing element already owns the group, such as an ordered list. Spread all
+returned handlers on that element and place each `Checkbox` in its own `Field`.
+If you have handlers for the same events, call them before the paint handlers.
+
+```tsx
+const paint = useCheckboxPaint();
+return <ol {...paint}>
+  <li><Field orientation="horizontal"><Checkbox /><FieldLabel>Updates</FieldLabel></Field></li>
+  <li><Field orientation="horizontal"><Checkbox /><FieldLabel>Reminders</FieldLabel></Field></li>
+</ol>;
+```
+
+A mouse or pen drag applies the starting checkbox's next state to the enabled,
+editable checkboxes it visits. Each is painted once per gesture. Touch, keyboard,
+and single clicks retain their usual behavior. Controlled checkboxes keep using
+`checked` and `onCheckedChange`. The hook is available from `@anaphor/system`
+and the installed `checkbox` registry module. Registry consumers also install
+`field` for the `Field` and `FieldLabel` composition.
+
 ## Typography
 
 Use `Text` variants for headings, body copy, interface text, labels, captions,
