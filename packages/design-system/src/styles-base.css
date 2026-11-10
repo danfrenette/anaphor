@@ -291,6 +291,10 @@
   .anaphor-prose :where(th, td):not(:where([data-prose-exclude], [data-prose-exclude] *)) { padding: calc(var(--spacing-prose) * 0.5); border-bottom: 1px solid var(--anaphor-input-border); text-align: start; }
   .anaphor-prose > :first-child:not([data-prose-exclude]) { margin-block-start: 0; }
   .anaphor-prose > :last-child:not([data-prose-exclude]) { margin-block-end: 0; }
+
+  /* Collapse source soft newlines like rendered Markdown; typed repeated spaces remain visible. */
+  .anaphor-prose[contenteditable="true"] { white-space: normal; }
+  .anaphor-prose[contenteditable="true"] :where(pre) { white-space: pre; }
 }
 
 [data-slot="popover-popup"] {
