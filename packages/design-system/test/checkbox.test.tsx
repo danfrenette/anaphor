@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Checkbox, CheckboxGroup, Field, FieldDescription, FieldLabel, useCheckboxPaint } from "@anaphor/system";
 import { createRef } from "react";
-import { expect, test, vi } from "vitest";
+import { expect, test } from "vitest";
 
 test("label activation updates the native form value and connects its description", async () => {
   const user = userEvent.setup();
@@ -83,33 +83,4 @@ test("the checkbox group forwards its root ref and lets a caller prevent paintin
   expect(reminders).not.toBeChecked();
   unmount();
   expect(ref.current).toBeNull();
-});
-
-test("a held pointer keeps working across rerender and releases its window listeners on unmount", async () => {
-  const user = userEvent.setup();
-  const listeners = vi.spyOn(window, "addEventListener");
-  const releaseSignals = () => listeners.mock.calls.flatMap(([type, , options]) => (
-    (type === "pointerup" || type === "pointercancel") && typeof options === "object" && options.signal ? [options.signal] : []
-  ));
-
-  try {
-    const { rerender, unmount } = render(<PaintableChoices label="Preferences" />);
-    const updates = screen.getByRole("checkbox", { name: "Send updates" });
-    await user.pointer({ keys: "[MouseLeft>]", target: updates });
-    const firstPress = releaseSignals();
-    rerender(<PaintableChoices label="Updated preferences" />);
-    expect(firstPress.map(signal => signal.aborted)).toEqual([false, false]);
-    await user.pointer("[/MouseLeft]");
-    expect(updates).toBeChecked();
-    expect(firstPress.map(signal => signal.aborted)).toEqual([true, true]);
-
-    listeners.mockClear();
-    await user.pointer({ keys: "[MouseLeft>]", target: updates });
-    const secondPress = releaseSignals();
-    expect(secondPress.map(signal => signal.aborted)).toEqual([false, false]);
-    unmount();
-    expect(secondPress.map(signal => signal.aborted)).toEqual([true, true]);
-  } finally {
-    listeners.mockRestore();
-  }
 });

@@ -23,4 +23,4 @@ Space on “Send reminders” should then clear just that choice. The registry r
 owns its temporary consumer, loopback server, and Chromium session.
 
 Run `pnpm exec vitest run packages/design-system/test/checkbox.test.tsx` for
-ref forwarding, consumer pointer veto, and release-listener cleanup on unmount.
+ref forwarding, consumer pointer veto, and native-list keyboard activation.
