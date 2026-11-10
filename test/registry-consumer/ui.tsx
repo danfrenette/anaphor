@@ -11,8 +11,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
 import { CardCopyButton } from "./components/ui/card-copy-button";
 import { CommandPalette } from "./components/ui/command-palette";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./components/ui/collapsible";
-import { Checkbox } from "./components/ui/checkbox";
-import { Field, FieldContent, FieldDescription, FieldGroup, FieldItem, FieldLabel } from "./components/ui/field";
+import { Checkbox, useCheckboxPaint } from "./components/ui/checkbox";
+import { Field, FieldContent, FieldDescription, FieldItem, FieldLabel } from "./components/ui/field";
 import { Radio, RadioGroup } from "./components/ui/radio-group";
 import { FieldFeedback } from "./components/ui/field-feedback";
 import { Input } from "./components/ui/input";
@@ -35,6 +35,7 @@ function Consumer() {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState(50);
   const [frequency, setFrequency] = useState<string | null>(null);
+  const paintPreferences = useCheckboxPaint();
   return <main className="mx-auto max-w-workspace px-page-inset py-6 font-sans">
     <div data-testid="editorial-layout" className="mx-auto max-w-editorial"><p className="max-w-reading">Shared layout in an independent consumer.</p></div>
     <Toaster toastManager={toast} position="bottom-right" timeout={5000} limit={3} />
@@ -60,7 +61,11 @@ function Consumer() {
         <Badge size="md" variant="soft" shape="square">Ready</Badge>
         <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" onClick={() => setCount(count + 1)}><ButtonLabel>Count {count}</ButtonLabel></Button>
         <Field orientation="vertical"><FieldLabel>Email</FieldLabel><Input size="md" type="email" /><FieldFeedback hint="Your email address" error="Enter an email" invalid={false} /></Field>
-        <FieldGroup><Field orientation="horizontal"><Checkbox /><FieldContent><FieldLabel>Accept updates</FieldLabel><FieldDescription>Occasional product news.</FieldDescription></FieldContent></Field></FieldGroup>
+        <ol aria-label="Installed paintable choices" {...paintPreferences}>
+          <li><Field orientation="horizontal"><Checkbox /><FieldContent><FieldLabel>Accept updates</FieldLabel><FieldDescription>Occasional product news.</FieldDescription></FieldContent></Field></li>
+          <li><Field orientation="horizontal"><Checkbox disabled /><FieldLabel>Receive alerts</FieldLabel></Field></li>
+          <li><Field orientation="horizontal"><Checkbox /><FieldLabel>Send reminders</FieldLabel></Field></li>
+        </ol>
         <form aria-label="Installed notification preferences" onSubmit={event => {
           event.preventDefault();
           const value = new FormData(event.currentTarget).get("frequency");

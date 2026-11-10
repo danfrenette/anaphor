@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Checkbox, Field, FieldDescription, FieldLabel } from "@anaphor/system";
+import { Checkbox, CheckboxGroup, Field, FieldDescription, FieldLabel, useCheckboxPaint } from "@anaphor/system";
+import { createRef } from "react";
 import { expect, test } from "vitest";
 
 test("label activation updates the native form value and connects its description", async () => {
@@ -39,4 +40,47 @@ test("read-only remains focusable while disabled is skipped", async () => {
   expect(screen.getByRole("button", { name: "Continue" })).toHaveFocus();
   await user.click(screen.getByText("Unavailable preference"));
   expect(screen.getByRole("checkbox", { name: "Unavailable preference" })).not.toBeChecked();
+});
+
+
+function PaintableChoices({ label }: { label: string }) {
+  const paint = useCheckboxPaint();
+  return <ol aria-label={label} {...paint}>
+    <li><Field orientation="horizontal"><Checkbox /><FieldLabel>Send updates</FieldLabel></Field></li>
+    <li><Field orientation="horizontal"><Checkbox /><FieldLabel>Send reminders</FieldLabel></Field></li>
+  </ol>;
+}
+
+test("a paintable ordered list keeps native checkbox keyboard activation", async () => {
+  const user = userEvent.setup();
+  render(<PaintableChoices label="Preferences" />);
+  const updates = screen.getByRole("checkbox", { name: "Send updates" });
+  await user.tab();
+  expect(updates).toHaveFocus();
+  await user.keyboard(" ");
+  expect(updates).toBeChecked();
+  expect(screen.getByRole("checkbox", { name: "Send reminders" })).not.toBeChecked();
+});
+
+
+test("the checkbox group forwards its root ref and lets a caller prevent painting", async () => {
+  const user = userEvent.setup();
+  const ref = createRef<HTMLDivElement>();
+  const { unmount } = render(<CheckboxGroup role="group" aria-label="Preferences" ref={ref} onPointerDown={event => event.preventDefault()}>
+    <Field orientation="horizontal"><Checkbox /><FieldLabel>Send updates</FieldLabel></Field>
+    <Field orientation="horizontal"><Checkbox /><FieldLabel>Send reminders</FieldLabel></Field>
+  </CheckboxGroup>);
+  expect(ref.current).toBe(screen.getByRole("group", { name: "Preferences" }));
+  const updates = screen.getByRole("checkbox", { name: "Send updates" });
+  const reminders = screen.getByRole("checkbox", { name: "Send reminders" });
+
+  await user.pointer([
+    { keys: "[MouseLeft>]", target: updates },
+    { target: reminders, coords: { x: 0, y: 20 } },
+    { keys: "[/MouseLeft]", target: reminders },
+  ]);
+  expect(updates).not.toBeChecked();
+  expect(reminders).not.toBeChecked();
+  unmount();
+  expect(ref.current).toBeNull();
 });

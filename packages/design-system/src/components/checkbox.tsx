@@ -2,11 +2,12 @@
 
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox";
 import { CheckIcon, MinusIcon } from "@phosphor-icons/react";
-import { useImperativeHandle, useRef, type ComponentProps, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, type ComponentProps, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { cn } from "../lib/utils";
 
 type PaintSession = {
   pointerId: number;
+  group: HTMLElement;
   origin: HTMLElement;
   checked: boolean;
   x: number;
@@ -14,80 +15,100 @@ type PaintSession = {
   painted: Set<HTMLElement>;
   dragging: boolean;
   released: boolean;
+  releaseListeners: AbortController;
 };
 
-function CheckboxGroup({ ref, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onClickCapture, ...props }: ComponentProps<"div">) {
-  const groupRef = useRef<HTMLDivElement>(null);
+function checkboxAt(group: HTMLElement, target: EventTarget | null) {
+  if (!(target instanceof Element)) return null;
+  const field = target.closest('[data-slot="field"]');
+  const checkbox = field?.querySelector<HTMLElement>('[data-slot="checkbox"]');
+  return checkbox && group.contains(checkbox) && !checkbox.hasAttribute("data-disabled") && !checkbox.hasAttribute("data-readonly") ? checkbox : null;
+}
+
+function paint(checkbox: HTMLElement, session: PaintSession) {
+  if (session.painted.has(checkbox)) return;
+  session.painted.add(checkbox);
+  if ((checkbox.getAttribute("aria-checked") === "true") !== session.checked) checkbox.click();
+}
+
+/** Spread the handlers onto an existing container of Checkbox fields. */
+function useCheckboxPaint() {
   const sessionRef = useRef<PaintSession | null>(null);
-  useImperativeHandle(ref, () => groupRef.current!);
 
-  function checkboxAt(target: EventTarget | null) {
-    const group = groupRef.current;
-    if (!(target instanceof Element) || !group) return null;
-    const field = target.closest('[data-slot="field"]');
-    const checkbox = field?.querySelector<HTMLElement>('[data-slot="checkbox"]');
-    return checkbox && group.contains(checkbox) && !checkbox.hasAttribute("data-disabled") && !checkbox.hasAttribute("data-readonly") ? checkbox : null;
-  }
+  useEffect(() => () => {
+    sessionRef.current?.releaseListeners.abort();
+    sessionRef.current = null;
+  }, []);
 
-  function paint(checkbox: HTMLElement, session: PaintSession) {
-    if (session.painted.has(checkbox)) return;
-    session.painted.add(checkbox);
-    if ((checkbox.getAttribute("aria-checked") === "true") !== session.checked) checkbox.click();
-  }
-
-  function end() {
+  function end(event: Pick<PointerEvent, "pointerId">) {
     const session = sessionRef.current;
-    if (!session) return;
-    window.removeEventListener("pointerup", end);
-    window.removeEventListener("pointercancel", end);
+    if (!session || session.pointerId !== event.pointerId || session.released) return;
+    session.releaseListeners.abort();
+    if (!session.dragging) {
+      sessionRef.current = null;
+      return;
+    }
     session.released = true;
-    if (session.dragging) window.setTimeout(() => {
+    window.setTimeout(() => {
       if (sessionRef.current === session) sessionRef.current = null;
     }, 0);
-    else sessionRef.current = null;
   }
 
-  function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    onPointerDown?.(event);
+  function handlePointerDown(event: ReactPointerEvent<HTMLElement>) {
     // Touch keeps its native scrolling and assistive-technology gestures.
     if (event.defaultPrevented || (event.pointerType !== "mouse" && event.pointerType !== "pen") || event.button !== 0) return;
-    const origin = checkboxAt(event.target);
+    const group = event.currentTarget;
+    const origin = checkboxAt(group, event.target);
     if (!origin) return;
+    sessionRef.current?.releaseListeners.abort();
+    const releaseListeners = new AbortController();
     sessionRef.current = {
-      pointerId: event.pointerId, origin, checked: origin.getAttribute("aria-checked") !== "true",
-      x: event.clientX, y: event.clientY, painted: new Set(), dragging: false, released: false,
+      pointerId: event.pointerId, group, origin, checked: origin.getAttribute("aria-checked") !== "true",
+      x: event.clientX, y: event.clientY, painted: new Set(), dragging: false, released: false, releaseListeners,
     };
-    window.addEventListener("pointerup", end);
-    window.addEventListener("pointercancel", end);
+    window.addEventListener("pointerup", end, { signal: releaseListeners.signal });
+    window.addEventListener("pointercancel", end, { signal: releaseListeners.signal });
   }
 
-  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-    onPointerMove?.(event);
+  function handlePointerMove(event: ReactPointerEvent<HTMLElement>) {
     const session = sessionRef.current;
-    if (!session || session.pointerId !== event.pointerId || !(event.buttons & 1)) return;
+    if (!session || session.group !== event.currentTarget || session.released || session.pointerId !== event.pointerId || !(event.buttons & 1)) return;
     if (!session.dragging) {
       if (Math.hypot(event.clientX - session.x, event.clientY - session.y) < 5) return;
       session.dragging = true;
       session.origin.focus();
       paint(session.origin, session);
     }
-    const checkbox = checkboxAt(document.elementFromPoint(event.clientX, event.clientY));
+    const checkbox = checkboxAt(session.group, document.elementFromPoint(event.clientX, event.clientY));
     if (checkbox) paint(checkbox, session);
     event.preventDefault();
   }
 
-  return <div data-slot="checkbox-group" {...props} ref={groupRef}
-    onPointerDown={handlePointerDown}
-    onPointerMove={handlePointerMove}
-    onPointerUp={(event) => { onPointerUp?.(event); end(); }}
-    onPointerCancel={(event) => { onPointerCancel?.(event); end(); }}
-    onClickCapture={(event) => {
-      onClickCapture?.(event);
-      if (sessionRef.current?.dragging && sessionRef.current.released && event.detail > 0) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    }}
+  function handleClickCapture(event: ReactMouseEvent<HTMLElement>) {
+    const session = sessionRef.current;
+    if (session?.dragging && session.released && session.group === event.currentTarget && event.detail > 0) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }
+
+  return {
+    onPointerDown: handlePointerDown,
+    onPointerMove: handlePointerMove,
+    onPointerUp: end,
+    onPointerCancel: end,
+    onClickCapture: handleClickCapture,
+  };
+}
+
+function CheckboxGroup({ onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onClickCapture, ...props }: ComponentProps<"div">) {
+  const paint = useCheckboxPaint();
+  return <div data-slot="checkbox-group" {...props}
+    onPointerDown={(event) => { onPointerDown?.(event); paint.onPointerDown(event); }}
+    onPointerMove={(event) => { onPointerMove?.(event); paint.onPointerMove(event); }}
+    onPointerUp={(event) => { onPointerUp?.(event); paint.onPointerUp(event); }}
+    onPointerCancel={(event) => { onPointerCancel?.(event); paint.onPointerCancel(event); }}
+    onClickCapture={(event) => { onClickCapture?.(event); paint.onClickCapture(event); }}
   />;
 }
 
@@ -131,4 +152,4 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
   );
 }
 
-export { Checkbox, CheckboxGroup, CheckboxPrimitive };
+export { Checkbox, CheckboxGroup, CheckboxPrimitive, useCheckboxPaint };
