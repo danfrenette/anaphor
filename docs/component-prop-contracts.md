@@ -78,3 +78,12 @@ See [Breadcrumb](components/breadcrumb.md).
 `Toaster` requires `toastManager`, `position`, `timeout`, and `limit`. The manager
 retains Base UI's optional content and lifecycle callbacks; viewport and portal
 props preserve native refs and composition. See [Toast](components/toast.md).
+
+## Markdown editor
+
+`MarkdownEditor` and `useMarkdownEditor` require a starting `defaultValue` and an
+accessible name from either `aria-label` or `aria-labelledby`. The value contract
+is uncontrolled: `onChange(markdown)` is optional, and the component ref exposes
+`getMarkdown()`. There is no controlled `value` or external replacement prop in
+this slice. The hook returns the configured `editor` for a consumer-owned frame
+and the same `getMarkdown()` reader. See [Markdown editor](components/markdown-editor.md).
