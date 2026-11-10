@@ -6,12 +6,17 @@ import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useImperativeHandle, useRef, type Ref } from "react";
 import { cn } from "../lib/utils";
 
-type MarkdownEditorLabel = { "aria-label": string; "aria-labelledby"?: string } | { "aria-label"?: never; "aria-labelledby": string };
+type MarkdownEditorLabel = { "aria-label": string; "aria-labelledby"?: never } | { "aria-label"?: never; "aria-labelledby": string };
 type UseMarkdownEditorOptions = {
   defaultValue: string;
   onChange?: (markdown: string) => void;
 } & MarkdownEditorLabel;
-type UseMarkdownEditorResult = { editor: Editor | null; getMarkdown: () => string };
+type UseMarkdownEditorResult = {
+  /** Mounting/frame use only. `editor.getMarkdown()` is serializer-normalised and not byte-stable before the first edit. */
+  editor: Editor | null;
+  /** Read Markdown only here: original bytes before any edit, serializer normal form afterwards. */
+  getMarkdown: () => string;
+};
 type MarkdownEditorHandle = { getMarkdown: () => string };
 type MarkdownEditorProps = UseMarkdownEditorOptions & { ref?: Ref<MarkdownEditorHandle> };
 
@@ -65,9 +70,13 @@ function MarkdownEditor({ ref, ...options }: MarkdownEditorProps) {
   const { editor, getMarkdown } = useMarkdownEditor(options);
   useImperativeHandle(ref, () => ({ getMarkdown }), [getMarkdown]);
   return <div data-slot="markdown-editor" className={cn(
+    // Layout and surface
     "w-full min-w-0 rounded-control border border-border bg-background px-3.5 py-3",
+    // Focus state
     "focus-within:border-ring focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring",
+    // Motion
     "motion-safe:transition-[border-color,background-color,outline-color] motion-safe:duration-150",
+    // Forced colors
     "forced-colors:border-[ButtonText]",
   )}>
     <EditorContent editor={editor} />

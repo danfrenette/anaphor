@@ -11,7 +11,7 @@ function Consumer() {
     <h1>Registry consumer</h1>
     <button type="button" className="h-10" onClick={() => setCount(count + 1)}>Count {count}</button>
     <MarkdownEditor defaultValue={markdown} onChange={setMarkdown} aria-label="Registry note" />
-    <output aria-label="Registry Markdown">{markdown}</output>
+    <section aria-label="Registry Markdown">{markdown}</section>
     <p className="font-mono">Installed source</p>
   </main>;
 }

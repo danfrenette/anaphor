@@ -28,14 +28,19 @@ The editor is uncontrolled. `defaultValue` supplies its starting document;
 changing that prop does not replace the document. `onChange(markdown)` is
 optional and runs after document edits, not on mount or selection changes. The
 ref exposes `getMarkdown()`. Before the first edit it returns `defaultValue`
-byte for byte; afterwards it returns the serializer's current Markdown. A
-controlled `value` prop and external content replacement are not part of this
-slice.
+byte for byte; afterwards it returns the serializer's current Markdown. After
+any edit, including one undone back to the original content, it returns the
+serializer's normal form rather than the original bytes. For example, a
+trailing newline is dropped. A controlled `value` prop and external content
+replacement are not part of this slice.
 
 `useMarkdownEditor(options)` accepts the same value, callback, and labelling
-options. It returns `{ editor, getMarkdown }` for a consumer-owned frame using
-Tiptap's `EditorContent`. `MarkdownEditor` is the standard field frame around
-that hook. Consumers exchange Markdown strings, not Tiptap JSON or HTML.
+options. Its returned `editor` is only for mounting and frame composition with
+Tiptap's `EditorContent`. Read Markdown only through the returned
+`getMarkdown()`: `editor.getMarkdown()` is serializer-normalised even before
+the first edit and does not provide the pre-edit byte guarantee.
+`MarkdownEditor` is the standard field frame around that hook. Consumers
+exchange Markdown strings, not Tiptap JSON or HTML.
 
 The editable root has role `textbox`, `aria-multiline="true"`, and the supplied
 accessible name. Tab enters and leaves the editor. The field uses the existing
@@ -50,7 +55,8 @@ size and reading styles.
 - Italic through `*text*` or `_text_`, and Mod-I. Serialization uses `*text*`.
 - Hard line breaks through Shift+Enter or Mod-Enter, serialized as two trailing
   spaces and a newline.
-- Undo/redo history for the supported edits.
+- Undo/redo history inherited from StarterKit; conversion-undo verification
+  arrives with ANAPHOR-340.
 
 The active extensions provide only document, paragraph, text, headings, bold,
 italic, and hard breaks, plus undo/redo and Markdown conversion. HardBreak is

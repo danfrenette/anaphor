@@ -44,7 +44,14 @@ test("typed consecutive spaces stay visible and remain in Markdown", async ({ pa
     const context = document.createElement("canvas").getContext("2d");
     if (!context) throw new Error("Canvas measurement is unavailable");
     context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-    return { one: context.measureText(" ").width, two: measure(5, 2), three: measure(11, 3) };
+    const content = node.textContent ?? "";
+    const alpha = content.indexOf("Alpha");
+    const beta = content.indexOf("beta", alpha + 1);
+    const gamma = content.indexOf("gamma", beta + 1);
+    if (alpha < 0 || beta < 0 || gamma < 0) throw new Error("Whitespace measurement words are missing");
+    const firstStart = alpha + "Alpha".length;
+    const secondStart = beta + "beta".length;
+    return { one: context.measureText(" ").width, two: measure(firstStart, beta - firstStart), three: measure(secondStart, gamma - secondStart) };
   });
   expect(widths.two).toBeGreaterThan(widths.one * 1.75);
   expect(widths.three).toBeGreaterThan(widths.one * 2.75);

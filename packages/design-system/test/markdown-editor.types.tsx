@@ -13,6 +13,8 @@ expectTypeOf(ref.current?.getMarkdown()).toEqualTypeOf<string | undefined>();
 <MarkdownEditor defaultValue="Note" />;
 // @ts-expect-error The editor is uncontrolled and does not accept a controlled value.
 <MarkdownEditor defaultValue="Note" value="Replacement" aria-label="Research note" />;
+// @ts-expect-error Use either labelling prop, not both.
+<MarkdownEditor defaultValue="Note" aria-label="Research note" aria-labelledby="note-label" />;
 
 const options = { defaultValue: "# Note", "aria-label": "Research note", onChange: (markdown: string) => void markdown } satisfies UseMarkdownEditorOptions;
 function Consumer() {
