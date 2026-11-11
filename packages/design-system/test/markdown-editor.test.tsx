@@ -403,6 +403,20 @@ describe("serializer round-trip", () => {
     expect(output).toBe(input);
     expect(await serializeWithoutEdit(output)).toBe(output);
   });
+
+  test("a code block opening a list item serialises on the marker line", async () => {
+    const input = "- ```js\n  a\n  ```";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe(input);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+
+  test("a code block opening a list item keeps text after it", async () => {
+    const input = "- ```js\n  a\n  ```\n  after";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe(input);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
 });
 
 describe("fixture", () => {

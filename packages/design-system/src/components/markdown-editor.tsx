@@ -2,6 +2,8 @@
 
 import CodeBlock from "@tiptap/extension-code-block";
 import Link from "@tiptap/extension-link";
+import { getListMarker, ListItem } from "@tiptap/extension-list";
+import type { MarkdownRendererHelpers, RenderContext } from "@tiptap/core";
 import { Markdown } from "@tiptap/markdown";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -73,6 +75,59 @@ const MarkdownLink = Link.extend({
   },
 }).configure({ openOnClick: false, autolink: false, linkOnPaste: false });
 
+/** Width of a prefix in Markdown columns, where a tab runs to the next 4-column stop. */
+function columnWidth(text: string): number {
+  let width = 0;
+  for (const character of text) width = character === "\t" ? width + 4 - (width % 4) : width + 1;
+  return width;
+}
+
+/** The `- `, `1. ` (or other marker) prefix for a list item, as the stock renderer computes it. */
+function listItemPrefix(ctx: RenderContext): string {
+  if (ctx.parentType === "bulletList") return "- ";
+  if (ctx.parentType === "orderedList") {
+    const start = ctx.meta?.parentAttrs?.start || 1;
+    return getListMarker(ctx.meta?.parentAttrs?.type, start - 1 + (ctx.index || 0), ". ");
+  }
+  return "- ";
+}
+
+/** Indents a continuation line the way the stock nested-content renderer does. */
+function indentContinuationLine(line: string, prefix: string, h: MarkdownRendererHelpers, alignNestedToPrefix: boolean): string {
+  if (!alignNestedToPrefix) return h.indent(line);
+  const configured = h.indent("");
+  const prefixWidth = columnWidth(prefix);
+  return (columnWidth(configured) >= prefixWidth ? configured : " ".repeat(prefixWidth)) + line;
+}
+
+// Workaround F4: a code block that opens a list item must share the marker line.
+// The stock renderer emits an empty "- " marker line before an indented fence,
+// which re-parses outside the list item and drops the code. Delegates every other
+// shape to the parent renderer via this.parent.
+const MarkdownListItem = ListItem.extend({
+  renderMarkdown(node, h, ctx) {
+    const [first, second, ...rest] = node.content ?? [];
+    if (first?.type !== "paragraph" || first.content?.length || second?.type !== "codeBlock") {
+      return this.parent?.(node, h, ctx) ?? "";
+    }
+    const prefix = listItemPrefix(ctx);
+    const alignNestedToPrefix = ctx.parentType === "orderedList";
+    const indentLine = (line: string) => indentContinuationLine(line, prefix, h, alignNestedToPrefix);
+
+    const codeContent = h.renderChild?.(second, 1) ?? h.renderChildren([second]);
+    const codeLines = codeContent.split("\n");
+    let output = prefix + codeLines[0];
+    for (const line of codeLines.slice(1)) output += `\n${indentLine(line)}`;
+
+    rest.forEach((child, index) => {
+      const childContent = h.renderChild?.(child, index + 2) ?? h.renderChildren([child]);
+      const indented = childContent.split("\n").map(line => (line ? indentLine(line) : indentLine(""))).join("\n");
+      output += child.type === "paragraph" ? `\n\n${indented}` : `\n${indented}`;
+    });
+    return output;
+  },
+});
+
 type MarkdownEditorLabel = { "aria-label": string; "aria-labelledby"?: never } | { "aria-label"?: never; "aria-labelledby": string };
 type UseMarkdownEditorOptions = {
   defaultValue: string;
@@ -112,8 +167,11 @@ function useMarkdownEditor({ defaultValue, onChange, "aria-label": ariaLabel, "a
       // unchanged: links render as links but never open on click, never auto-link
       // while typing, and never link on paste. Clicking places the caret instead.
       link: false,
+      // Replaced below by an .extend()ed copy whose renderer keeps a leading code
+      // block on the marker line (F4).
+      listItem: false,
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-    }), MarkdownCodeBlock, MarkdownLink, Markdown],
+    }), MarkdownCodeBlock, MarkdownLink, MarkdownListItem, Markdown],
     content: defaultValue,
     contentType: "markdown",
     editorProps: { attributes: {
