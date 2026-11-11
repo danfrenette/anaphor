@@ -81,16 +81,22 @@ reading styles.
 
 - Paragraphs, including Enter between blocks.
 - Bullet and numbered lists, with nesting via Tab and un-nesting via Shift+Tab.
+  Retyping a list marker (`1. ` or `- `) at the start of a new list item that
+  Enter created leaves the marker as literal text (`1. a\n2. 1. b`). This is
+  Tiptap's default; a test pins it so an upgrade that changes it is noticed.
 - Enter on an empty list item or empty quotation line leaves the block; at the
   end of a code block, Enter inserts a newline and a triple Enter (or ArrowDown
   at the end) leaves the block. Backspace at the start of a list item or
   quotation lifts it to a paragraph.
 - One undo reverts a typed conversion to the literal characters; undo and redo
-  span typing and formatting.
+  span typing and formatting. After undoing a `> ` conversion the literal
+  characters read back as `&gt; ` in the output: that is the serializer's
+  existing entity normalisation, not a regression.
 - Links render as links and are written back as links. They do not auto-link
   while typing or on paste, and clicking places the caret rather than opening
-  the link. Link `target`/`rel` attributes are presentation-only and never
-  appear in the written Markdown.
+  the link. Rendered links carry Tiptap's default `target="_blank"`
+  `rel="noopener noreferrer nofollow"`, but those attributes never appear in the
+  written Markdown.
 
 The active extensions are StarterKit minus underline, trailing node, drop
 cursor and gap cursor, plus the Markdown extension. Document, paragraph, text,

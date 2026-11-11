@@ -3,6 +3,10 @@
 import { MarkdownEditor, Text } from "@anaphor/system";
 import { useState } from "react";
 
+// Source of truth for e2e/markdown-editor.spec.ts, which locates its constructs
+// ("Field notes", "Bullet one", "A quote", "const x = 1;"). Rename a label only
+// together with that spec; the unit fixture in markdown-editor.test.tsx is a
+// separate near-duplicate.
 const startingMarkdown = [
   "## Field notes",
   "",
