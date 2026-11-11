@@ -148,15 +148,19 @@ Each is shown as a quiet read-only block of its source in the mono face, with a
 muted foreground and a subtle surface and border. It can be selected and
 deleted as a whole; its text cannot be edited. A capitalised component is
 matched through its balanced closing tag, so blank lines and nesting inside it
-are preserved; an unclosed component falls back to stock behaviour without
-losing text. Lowercase HTML blocks follow CommonMark, so a blank line inside
-one splits it into separate opaque blocks and paragraphs.
+are preserved; an unclosed component falls back to stock behaviour, which
+escapes the tag and drops a `>` that starts a line. Lowercase HTML blocks
+follow CommonMark, so a blank line inside one splits it into separate opaque
+blocks and paragraphs.
 
 **Inline opaque spans.** Footnote references (`[^1]`) and inline HTML
 (`<b>`, `<span>`, …) are preserved as inline atomic spans in the mono face with
-a muted foreground. Inline HTML is matched with the same grammar marked uses
-for its `html` tokens, so it is preserved instead of being folded into marks
-(`<b>x</b>` stays `<b>x</b>`, not `**x**`) or dropped (`<img>`).
+a muted foreground. Footnote references are spans, not blocks, because they sit
+inside a paragraph's text and must keep their position there; turning the whole
+paragraph opaque would hide the surrounding editable prose. Inline HTML is
+matched with the same grammar marked uses for its `html` tokens, so it is
+preserved instead of being folded into marks (`<b>x</b>` stays `<b>x</b>`, not
+`**x**`) or dropped (`<img>`).
 
 **Inert rendering.** Opaque source is emitted as a text child only — never as
 `innerHTML` and never parsed into live nodes — so `<script>`, `<img onerror>`,
@@ -168,6 +172,23 @@ cannot become an opaque node.
 Blank-line separators between top-level blocks use the serializer's normal form
 from slice 339, so two adjacent `import` lines gain a blank line between them
 after an edit while each line's source stays byte-identical.
+
+**Limitations.** These are known, mostly stock Tiptap 3.33.0 behaviours, each
+pinned by a test so an upgrade that changes one is noticed:
+
+- Entities in preserved content are re-encoded, for example `&nbsp;` becomes
+  `&amp;nbsp;`.
+- MDX fragments `<>…</>` are not preserved.
+- TOML `+++` front matter is not recognised; only `---` and `...` delimiters
+  are.
+- Multi-line ESM is preserved line by line only, so a multi-line
+  `export default function` gains a blank line between its lines.
+- Text between inline tags is parsed as Markdown, per CommonMark, so it is not
+  byte-identical.
+- A component on an ordered-list continuation line drifts its indent on each
+  save and eventually leaves the item; the same drift affects plain
+  continuation text in stock 3.33.0.
+- An unclosed multi-line component whose `>` starts a line loses that `>`.
 
 ## Registry and boundaries
 
