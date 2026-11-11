@@ -130,11 +130,13 @@ const MarkdownListItem = ListItem.extend({
 
 // Workaround 13: @tiptap/extension-list@3.33.0's ordered-list tokenizer reads a
 // list item whose first content line is a code fence (e.g. `1. ```js`) as a
-// paragraph holding the fence plus an empty closing-fence code block, so the code
-// is lost on reload. Re-tokenise those items from their raw text so they parse to
-// an empty leading paragraph plus a code block, matching the bullet path. The
-// repair fires only on that exact shape; every other item shape is delegated to
-// the stock tokenizer.
+// paragraph holding the fence plus a closing-fence code block, so the code is
+// lost on reload. Re-tokenise those items from their raw text so they parse to an
+// empty leading paragraph plus the recovered blocks, matching the bullet path.
+// The repair fires only when the first token is a paragraph whose first line is a
+// valid fence opener and the second token is a code token; after the recovered
+// blocks it keeps only a nested list token. Every other item shape is delegated
+// to the stock tokenizer.
 const stockOrderedListTokenizer = OrderedList.config.markdownTokenizer!;
 
 /** True when `line` is a CommonMark fence opener: 0–3 spaces, then a run of 3+ backticks (or tildes) whose info string holds no fence character. */
@@ -154,14 +156,14 @@ const MarkdownOrderedList = OrderedList.extend({
       for (const item of items) {
         const [first, second, ...trailing] = item.tokens ?? [];
         // The bug shape: the first token is a paragraph whose first line is a
-        // valid fence opener, and the second is the tokenizer's empty
-        // closing-fence `code` token (the content was swept into the paragraph).
+        // valid fence opener, and the second is the tokenizer's closing-fence
+        // `code` token (trailing content may have been swept into either token).
         if (first?.type !== "paragraph") continue;
         const firstParagraphRaw = first.raw ?? "";
         const firstParagraphNewline = firstParagraphRaw.indexOf("\n");
         const firstParagraphLine = firstParagraphNewline === -1 ? firstParagraphRaw : firstParagraphRaw.slice(0, firstParagraphNewline);
         if (!isFenceOpener(firstParagraphLine)) continue;
-        if (second?.type !== "code" || second.text !== "") continue;
+        if (second?.type !== "code") continue;
         const raw = item.raw ?? "";
         const newline = raw.indexOf("\n");
         const firstLine = newline === -1 ? raw : raw.slice(0, newline);
@@ -171,7 +173,7 @@ const MarkdownOrderedList = OrderedList.extend({
         const contentIndent = firstLine.length - content.length;
         const dedent = (line: string) => line.slice(Math.min(line.length - line.trimStart().length, contentIndent));
         const codeSource = [content, ...rest.split("\n").map(dedent)].join("\n");
-        item.tokens = [{ type: "paragraph", raw: "", text: "", tokens: [] }, ...lexer.blockTokens(codeSource), ...trailing];
+        item.tokens = [{ type: "paragraph", raw: "", text: "", tokens: [] }, ...lexer.blockTokens(codeSource), ...trailing.filter(t => t.type === "list")];
       }
       return result;
     },
