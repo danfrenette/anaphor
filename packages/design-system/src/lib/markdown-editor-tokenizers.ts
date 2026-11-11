@@ -6,7 +6,11 @@ import type { MarkdownToken } from "@tiptap/core";
 // them stay in the component file.
 
 /** A leading `--- … ---` block at the very start of the file, held out of sight and returned byte-for-byte. */
-const FRONT_MATTER_RE = /^---[ \t]*\r?\n[\s\S]*?\r?\n(?:---|\.\.\.)[ \t]*(?:\r?\n)?/;
+// Front matter is only recognised when the first line is `---` and the block
+// runs to a closing `---` (or `...`) line with no blank lines inside, so a
+// document that merely opens with a horizontal rule is not swallowed. Empty
+// front matter (`---\n---`) is allowed, and CRLF line endings work.
+const FRONT_MATTER_RE = /^---[ \t]*\r?\n(?:(?:[^\r\n]*\S[^\r\n]*)\r?\n)*?(?:---|\.\.\.)[ \t]*(?:\r?\n)?/;
 
 function splitFrontMatter(markdown: string): { frontMatter: string; body: string } {
   const match = FRONT_MATTER_RE.exec(markdown);
