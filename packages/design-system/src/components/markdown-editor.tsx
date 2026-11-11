@@ -4,7 +4,7 @@ import CodeBlock from "@tiptap/extension-code-block";
 import Link from "@tiptap/extension-link";
 import { getListMarker, ListItem, OrderedList } from "@tiptap/extension-list";
 import { Extension, Node } from "@tiptap/core";
-import type { MarkdownRendererHelpers, RenderContext } from "@tiptap/core";
+import type { MarkdownRendererHelpers, MarkdownToken, RenderContext } from "@tiptap/core";
 import { Markdown } from "@tiptap/markdown";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -190,59 +190,90 @@ const MarkdownOrderedList = OrderedList.extend({
 // test). parseHTML matches only the editor's own data-* markup, so pasted HTML
 // never becomes an opaque node.
 
-/** Quiet mono chrome for opaque content; the attribute set in renderHTML opts out of Prose's article rules. */
-const OPAQUE_BLOCK_CLASS = "my-4 whitespace-pre-wrap break-words rounded-control border border-border bg-muted px-2.5 py-1.5 font-mono text-small text-muted-foreground";
-const OPAQUE_INLINE_CLASS = "font-mono text-[0.875em] text-muted-foreground";
+// Opaque chrome is quiet and visibly distinct, using existing tokens only. The
+// data attribute set in renderHTML opts out of Prose's article rules.
+const OPAQUE_BLOCK_CLASS = cn(
+  // Spacing and wrapping
+  "my-4 whitespace-pre-wrap break-words",
+  // Quiet surface: control radius, hairline border, subtle fill
+  "rounded-control border border-border bg-muted px-2.5 py-1.5",
+  // Mono face and muted small text
+  "font-mono text-small text-muted-foreground",
+);
+// The inline span shares the mono face and muted text; its `0.875em` matches
+// the prose code size (`--text-prose-code`) so it sits naturally beside body text.
+const OPAQUE_INLINE_CLASS = cn("font-mono text-muted-foreground", "text-[0.875em]");
+
+type OpaqueNodeOptions = {
+  name: "opaqueBlock" | "opaqueInline";
+  group: "block" | "inline";
+  inline: boolean;
+  tag: "div" | "span";
+  dataAttribute: "data-opaque-block" | "data-opaque-inline";
+  className: string;
+  /** `block` tokens include a trailing separator; `inline` tokens do not. */
+  trimTrailingNewlines: boolean;
+  match: (source: string) => MarkdownToken | undefined;
+};
+
+// Both opaque atom nodes share the same shape: a `source` attribute, a text-only
+// renderHTML, parseHTML keyed on their own data-* hook, and renderMarkdown that
+// writes the source back verbatim. Only the tag, hook, level and matcher differ.
+function createOpaqueNode({ name, group, inline, tag, dataAttribute, className, trimTrailingNewlines, match }: OpaqueNodeOptions): Node {
+  return Node.create({
+    name,
+    group,
+    inline,
+    atom: true,
+    addAttributes: () => ({ source: { default: "" } }),
+    parseHTML: () => [{ tag: `${tag}[${dataAttribute}]`, getAttrs: element => ({ source: element.textContent ?? "" }) }],
+    renderHTML: ({ node }) => [tag, { [dataAttribute]: "", "data-prose-exclude": "", class: className }, node.attrs.source ?? ""],
+    renderMarkdown: node => node.attrs?.source ?? "",
+    markdownTokenName: name,
+    parseMarkdown: (token, helpers) => helpers.createNode(name, { source: trimTrailingNewlines ? (token.raw ?? "").replace(/\n+$/, "") : (token.raw ?? "") }),
+    markdownTokenizer: {
+      name,
+      level: group,
+      // No start anchor: inline text already stops before `<` and `[`, and deriving
+      // a start by calling tokenize once corrupts marked's lexer state.
+      start: () => -1,
+      tokenize: source => match(source),
+    },
+  });
+}
 
 /** Block content the editor does not interpret: raw HTML, comments, footnotes, ESM lines, MDX components. */
-const OpaqueBlock = Node.create({
+const OpaqueBlock = createOpaqueNode({
   name: "opaqueBlock",
   group: "block",
-  atom: true,
-  addAttributes: () => ({ source: { default: "" } }),
-  parseHTML: () => [{ tag: "div[data-opaque-block]", getAttrs: element => ({ source: element.textContent ?? "" }) }],
-  renderHTML: ({ node }) => ["div", { "data-opaque-block": "", "data-prose-exclude": "", class: OPAQUE_BLOCK_CLASS }, node.attrs.source ?? ""],
-  renderMarkdown: node => node.attrs?.source ?? "",
-  markdownTokenName: "opaqueBlock",
-  parseMarkdown: (token, helpers) => helpers.createNode("opaqueBlock", { source: (token.raw ?? "").replace(/\n+$/, "") }),
-  markdownTokenizer: {
-    name: "opaqueBlock",
-    level: "block",
-    start: () => -1,
-    tokenize: source => matchOpaqueBlock(source),
-  },
+  inline: false,
+  tag: "div",
+  dataAttribute: "data-opaque-block",
+  className: OPAQUE_BLOCK_CLASS,
+  trimTrailingNewlines: true,
+  match: matchOpaqueBlock,
 });
 
 // Raw HTML blocks and comments already lex as marked `html` tokens; this
 // handler turns them into opaque blocks instead of letting the stock HTML
 // parser fold recognised tags and drop the rest. Inline HTML never reaches
 // block parsing, so only block-level tokens arrive here.
-const OpaqueHtmlBlock = Extension.create({
-  name: "opaqueHtmlBlock",
+const OpaqueHtmlTokens = Extension.create({
+  name: "opaqueHtmlTokens",
   markdownTokenName: "html",
   parseMarkdown: (token, helpers) => helpers.createNode("opaqueBlock", { source: (token.raw ?? "").replace(/\n+$/, "") }),
 });
 
 /** Inline syntax the editor does not interpret: inline HTML and footnote references. */
-const OpaqueInline = Node.create({
+const OpaqueInline = createOpaqueNode({
   name: "opaqueInline",
   group: "inline",
   inline: true,
-  atom: true,
-  addAttributes: () => ({ source: { default: "" } }),
-  parseHTML: () => [{ tag: "span[data-opaque-inline]", getAttrs: element => ({ source: element.textContent ?? "" }) }],
-  renderHTML: ({ node }) => ["span", { "data-opaque-inline": "", "data-prose-exclude": "", class: OPAQUE_INLINE_CLASS }, node.attrs.source ?? ""],
-  renderMarkdown: node => node.attrs?.source ?? "",
-  markdownTokenName: "opaqueInline",
-  parseMarkdown: (token, helpers) => helpers.createNode("opaqueInline", { source: token.raw ?? "" }),
-  markdownTokenizer: {
-    name: "opaqueInline",
-    level: "inline",
-    // No start anchor: inlineText already stops before `<` and `[`, and deriving
-    // a start by calling tokenize once corrupts marked's lexer state.
-    start: () => -1,
-    tokenize: source => matchOpaqueInline(source),
-  },
+  tag: "span",
+  dataAttribute: "data-opaque-inline",
+  className: OPAQUE_INLINE_CLASS,
+  trimTrailingNewlines: false,
+  match: matchOpaqueInline,
 });
 
 type MarkdownEditorLabel = { "aria-label": string; "aria-labelledby"?: never } | { "aria-label"?: never; "aria-labelledby": string };
@@ -292,7 +323,7 @@ function useMarkdownEditor({ defaultValue, onChange, "aria-label": ariaLabel, "a
       // that opens an ordered item as a code block (workaround 13).
       orderedList: false,
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-    }), MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, OpaqueBlock, OpaqueHtmlBlock, OpaqueInline, Markdown],
+    }), MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown],
     content: body,
     contentType: "markdown",
     editorProps: { attributes: {
