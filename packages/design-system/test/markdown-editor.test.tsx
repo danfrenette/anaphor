@@ -1,12 +1,16 @@
 import { createRef } from "react";
 import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { MarkdownEditor, type MarkdownEditorHandle } from "@anaphor/system";
 
-// Vitest runs from the repo root; the fixture path is relative to it.
-const mixedFixture = readFileSync("packages/design-system/test/fixtures/markdown-editor/mixed.md", "utf8");
+// Anchored to the test file so the path survives running Vitest from elsewhere.
+// (jsdom replaces the global URL, so new URL(relative, import.meta.url) resolves
+// against the window origin rather than the file.)
+const mixedFixture = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "fixtures", "markdown-editor", "mixed.md"), "utf8");
 
 // jsdom has no pointer hit testing or range layout; real editing geometry is covered in Playwright.
 beforeEach(() => {
@@ -698,6 +702,22 @@ describe("preserved unsupported content", () => {
     expect(await serializeWithoutEdit(output)).toBe(output);
   });
 
+  const opaqueShapes: Array<{ name: string; source: string }> = [
+    { name: "nested same-name component", source: "<Card>\n  <Card>inner</Card>\n</Card>" },
+    { name: "nested multi-line child component", source: "<Card>\n  <Inner>\n    deep\n  </Inner>\n</Card>" },
+    { name: "component with a blank line inside", source: "<Card>\n  first\n\n  second\n</Card>" },
+    { name: "raw HTML block inside a bullet item", source: "- item\n  <div>raw</div>" },
+    { name: "component inside a bullet item", source: "- item\n  <Card>\n    body\n  </Card>" },
+    { name: "raw HTML block inside a blockquote", source: "> quote\n>\n> <div>raw</div>" },
+    { name: "component inside a blockquote", source: '> quote\n> <Avatar user="a" />' },
+  ];
+
+  test.each(opaqueShapes)("$name comes back byte-identical and stable after an unrelated edit", async ({ source }) => {
+    const output = await serializeWithoutEdit(source);
+    expect(output).toBe(source);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+
   test("a paragraph with a footnote reference and inline HTML is not broken by a list", async () => {
     const source = "- item with <b>bold</b> and a note[^1]\n- second item";
     const output = await serializeWithoutEdit(source);
@@ -723,6 +743,21 @@ describe("preserved unsupported content", () => {
     expect(await serializeWithoutEdit(output)).toBe(output);
   });
 
+  test("known Tiptap 3.33.0 issue: a component on an ordered continuation line drifts its indent", async () => {
+    // The continuation line loses a leading space on each save until it leaves
+    // the item. No content is lost, and the same drift affects plain
+    // continuation text in stock 3.33.0.
+    const output = await serializeWithoutEdit('1. item\n   <Foo bar="1" />\n2. second');
+    expect(output).toBe('1. item\n <Foo bar="1" />\n2. second');
+  });
+
+  test("known Tiptap 3.33.0 issue: an unclosed multi-line component loses its leading `>`", async () => {
+    // `<Card\n  title="x"\n>` is invalid MDX and outside supported input, so it
+    // falls back to stock behaviour, which escapes the tag and drops the `>`.
+    const output = await serializeWithoutEdit('<Card\n  title="x"\n>');
+    expect(output).toBe('&lt;Card\n  title="x"\n\n');
+  });
+
   test("an opaque block shows its source quietly, opts out of Prose, and stays off the root", async () => {
     const source = '<div class="aside">Raw HTML</div>';
     setupEditor(source);
@@ -734,7 +769,9 @@ describe("preserved unsupported content", () => {
     expect(block).not.toBeNull();
     expect(block).toHaveTextContent(source);
     expect(block).toHaveAttribute("data-prose-exclude");
-    expect(block).toHaveClass("font-mono", "text-muted-foreground", "rounded-control", "bg-muted", "border");
+    // The atom node is not an editable region, so its text cannot be edited.
+    // jsdom reflects `contenteditable="false"` as an IDL property, not an attribute.
+    expect(block).toHaveProperty("contentEditable", "false");
   });
 
   test("an inline opaque span shows its source quietly", async () => {
@@ -745,7 +782,7 @@ describe("preserved unsupported content", () => {
     expect(span).not.toBeNull();
     expect(span).toHaveTextContent("<b>");
     expect(span).toHaveAttribute("data-prose-exclude");
-    expect(span).toHaveClass("font-mono", "text-muted-foreground");
+    expect(span).toHaveProperty("contentEditable", "false");
   });
 
   test("preserved HTML renders inert: no elements, no handlers", async () => {
