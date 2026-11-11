@@ -71,5 +71,7 @@ exercised. No registry server or publishing step is involved.
 
 The check requires package-registry access. Fixture tooling and the installer are
 pinned; registry-declared dependencies resolve as they would for a fresh user.
-Successful runs remove their temporary files. Failed runs print the retained
-consumer directory for inspection.
+Installer, install, and build output goes to `commands.log` in the temporary
+workspace. Successful runs remove their temporary files. Failed runs print the
+failing command's last 40 lines, the log path, and the retained consumer
+directory for inspection.
