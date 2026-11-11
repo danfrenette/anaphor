@@ -106,14 +106,14 @@ reading styles.
   written Markdown.
 
 The active extensions are StarterKit minus underline, trailing node, drop
-cursor and gap cursor, plus the Markdown extension. Document, paragraph, text,
-headings, bold, italic, strike, inline code, code block, bullet and ordered
-lists (with list item and list keymap), blockquote, horizontal rule, link,
-hard break, and undo/redo are enabled because each corresponds to supported
-Markdown. Underline has no CommonMark source, the trailing node appends an
-extra empty paragraph after a document ending in a non-paragraph block, and the
-drop cursor and gap cursor are drag/click-caret affordances this field does not
-need, so all four stay disabled.
+cursor and gap cursor, plus the Markdown extension and two opaque nodes.
+Document, paragraph, text, headings, bold, italic, strike, inline code, code
+block, bullet and ordered lists (with list item and list keymap), blockquote,
+horizontal rule, link, hard break, and undo/redo are enabled because each
+corresponds to supported Markdown. Underline has no CommonMark source, the
+trailing node appends an extra empty paragraph after a document ending in a
+non-paragraph block, and the drop cursor and gap cursor are drag/click-caret
+affordances this field does not need, so all four stay disabled.
 
 Tiptap runs with `immediatelyRender: false` and `injectCSS: false`. The
 `anaphor-prose` class is applied directly to the ProseMirror root. The shared
@@ -129,13 +129,52 @@ At 3.33.0, typing `Alpha  beta   gamma` serializes in Chromium as
 positions. These exact outputs are pinned in browser verification so a Tiptap
 upgrade makes whitespace changes visible.
 
+## Preserving unsupported Markdown
+
+Markdown the editor does not understand is kept exactly as written and never
+dropped.
+
+**Front matter.** A leading `---` … `---` (or `...`) block is split out before
+parsing and prepended byte for byte on output. It is never shown and cannot be
+edited. The blank line separating it from the body is the serializer's normal
+form, so after an edit that separator may be normalised while the front matter
+itself is untouched.
+
+**Opaque blocks.** Raw HTML blocks, HTML comments, footnote definitions (with
+indented continuation lines), MDX `import` and `export` lines, and capitalised
+MDX components (self-closing, multi-line, and nested) are held in an atomic
+opaque block that stores the original source and writes it back unchanged.
+Each is shown as a quiet read-only block of its source in the mono face, with a
+muted foreground and a subtle surface and border. It can be selected and
+deleted as a whole; its text cannot be edited. A capitalised component is
+matched through its balanced closing tag, so blank lines and nesting inside it
+are preserved; an unclosed component falls back to stock behaviour without
+losing text. Lowercase HTML blocks follow CommonMark, so a blank line inside
+one splits it into separate opaque blocks and paragraphs.
+
+**Inline opaque spans.** Footnote references (`[^1]`) and inline HTML
+(`<b>`, `<span>`, …) are preserved as inline atomic spans in the mono face with
+a muted foreground. Inline HTML is matched with the same grammar marked uses
+for its `html` tokens, so it is preserved instead of being folded into marks
+(`<b>x</b>` stays `<b>x</b>`, not `**x**`) or dropped (`<img>`).
+
+**Inert rendering.** Opaque source is emitted as a text child only — never as
+`innerHTML` and never parsed into live nodes — so `<script>`, `<img onerror>`,
+and `javascript:` links inside preserved HTML create no elements and run
+nothing. Parsing opaque nodes from HTML matches only the editor's own
+`data-opaque-block` / `data-opaque-inline` markup, so arbitrary pasted HTML
+cannot become an opaque node.
+
+Blank-line separators between top-level blocks use the serializer's normal form
+from slice 339, so two adjacent `import` lines gain a blank line between them
+after an edit while each line's source stays byte-identical.
+
 ## Registry and boundaries
 
 The standalone `markdown-editor` registry item installs the component, shared
 styles, utilities, and exact Tiptap 3.33.0 dependencies. It is not yet part of
 the complete `ui` aggregate.
 
-This slice does not support tasks, tables, images, unsupported-source
-preservation, paste handling, a selection bubble, in-place presentation,
-placeholder text, read-only or disabled states, Field integration, or external
-`setContent`. Unsupported Markdown must not be assumed to survive an edit.
+This slice does not support tasks, tables, images, paste handling, a selection
+bubble, in-place presentation, placeholder text, read-only or disabled states,
+Field integration, or external `setContent`.

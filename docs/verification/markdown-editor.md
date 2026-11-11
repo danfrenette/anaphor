@@ -28,7 +28,12 @@ a conversion, Enter and ArrowDown leaving lists/quotes/code, Backspace lifting,
 Tab nesting and Shift+Tab un-nesting, undo/redo across typing and formatting,
 the absence of underline and a trailing node, a full-construct fixture, and
 serializer round-trips for code fences holding backticks, link destinations
-needing angle brackets, and code blocks opening a list item. Type fixtures
+needing angle brackets, and code blocks opening a list item. Preserved-content
+tests cover front matter held byte for byte, opaque blocks for raw HTML,
+comments, footnote definitions, MDX import and export, and self-closing,
+multi-line and nested components, inline opaque spans for footnote references
+and inline HTML, inert rendering of `<script>`, `<img onerror>` and
+`javascript:` links, and a mixed fixture file. Type fixtures
 in `packages/design-system/test/markdown-editor.types.tsx` cover both exports
 and rejected consumer configurations. jsdom lacks pointer hit testing and
 range layout, so the component file stubs only those geometry APIs; real
@@ -75,6 +80,11 @@ from the complete-UI aggregate in this slice.
    run the keyboard/axe browser case. Repeat in light/dark and at 320px.
    Confirm the browser console and `pageerror` capture contain no hydration
    warning or other error.
+9. On the "Existing post" example, confirm the front matter is hidden and the
+   raw HTML, comment, footnote, MDX import and export, and components each
+   appear as a quiet mono block. Click one and press Delete to remove the whole
+   block. Check the emitted Markdown still opens with the original front
+   matter.
 
 Keep Playwright output and screenshots under `test-results/` with the run
 receipt. Stop only a server started for the verification run.
@@ -84,6 +94,6 @@ receipt. Stop only a server started for the verification run.
 The callback and pre-edit byte guarantee are component-test criteria. The hook
 is exercised through the component rather than through internal editor calls.
 Tests assert visible results and Markdown output, never Tiptap document JSON,
-extension arrays, or private methods. Tasks, tables, images, unsupported
-Markdown, paste, bubble/in-place presentations, form states, and external
-content replacement are outside this recipe.
+extension arrays, or private methods. Tasks, tables, images, paste,
+bubble/in-place presentations, form states, and external content replacement
+are outside this recipe.

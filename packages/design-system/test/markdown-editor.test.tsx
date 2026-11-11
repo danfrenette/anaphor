@@ -1,8 +1,12 @@
 import { createRef } from "react";
+import { readFileSync } from "node:fs";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { MarkdownEditor, type MarkdownEditorHandle } from "@anaphor/system";
+
+// Vitest runs from the repo root; the fixture path is relative to it.
+const mixedFixture = readFileSync("packages/design-system/test/fixtures/markdown-editor/mixed.md", "utf8");
 
 // jsdom has no pointer hit testing or range layout; real editing geometry is covered in Playwright.
 beforeEach(() => {
@@ -599,5 +603,128 @@ describe("fixture", () => {
     expect(markdown).toContain("A hard  \nbreak here.");
     // Stability: parsing the output again and serialising it gives the same string.
     expect(await serializeWithoutEdit(markdown)).toBe(markdown);
+  });
+});
+
+describe("preserved unsupported content", () => {
+  const preservedBlocks: Array<{ name: string; source: string }> = [
+    { name: "raw HTML block", source: '<div class="aside">\n  Raw HTML stays verbatim.\n</div>' },
+    { name: "HTML comment", source: "<!-- A comment about the post. -->" },
+    { name: "footnote definition", source: "[^1]: The note text.\n    With an indented continuation." },
+    { name: "MDX import", source: 'import Button from "./button";' },
+    { name: "MDX export", source: "export const width = 640;" },
+    { name: "self-closing component", source: '<Avatar user="alice" />' },
+    { name: "multi-line component", source: '<Card\n  title="Hello"\n>\n  Nested <Inner /> content.\n</Card>' },
+  ];
+  const preservedInline: Array<{ name: string; source: string }> = [
+    { name: "footnote reference", source: "A note[^1] here." },
+    { name: "inline HTML", source: 'Text with <b>bold</b> and <span class="tag">a span</span>.' },
+  ];
+
+  test("front matter is kept out of sight and returned byte for byte after an edit", async () => {
+    const frontMatter = '---\ntitle: "Hello: world"\ntags: [a, b]\n---\n';
+    const { user, ref } = setupEditor(`${frontMatter}\n# Body\n\nEdited elsewhere.`);
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    expect(editor).not.toHaveTextContent("Hello: world");
+    expect(editor).not.toHaveTextContent("[a, b]");
+
+    await user.click(editor);
+    await user.keyboard("!");
+
+    expect(ref.current?.getMarkdown() ?? "").toMatch(/^---\ntitle: "Hello: world"\ntags: \[a, b\]\n---\n/);
+  });
+
+  test.each(preservedBlocks)("$name comes back byte-identical after an unrelated edit", async ({ source }) => {
+    const output = await serializeWithoutEdit(source);
+    expect(output).toBe(source);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+
+  test.each(preservedInline)("$name comes back byte-identical after an unrelated edit", async ({ source }) => {
+    const output = await serializeWithoutEdit(source);
+    expect(output).toBe(source);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+
+  test("a paragraph with a footnote reference and inline HTML is not broken by a list", async () => {
+    const source = "- item with <b>bold</b> and a note[^1]\n- second item";
+    const output = await serializeWithoutEdit(source);
+    expect(output).toBe(source);
+  });
+
+  test("prose that mentions import and export is not mistaken for ESM", async () => {
+    const source = "I want to import the data from the CSV and export everything.";
+    expect(await serializeWithoutEdit(source)).toBe(source);
+  });
+
+  test("a lowercase HTML block with blank lines follows CommonMark and round-trips", async () => {
+    const source = "<div>\n\ntext\n\n</div>";
+    const output = await serializeWithoutEdit(source);
+    expect(output).toBe(source);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+
+  test("an opaque block shows its source quietly, opts out of Prose, and stays off the root", async () => {
+    const source = '<div class="aside">Raw HTML</div>';
+    setupEditor(source);
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    expect(editor).not.toHaveAttribute("data-prose-exclude");
+
+    const block = editor.querySelector("[data-opaque-block]");
+    expect(block).not.toBeNull();
+    expect(block).toHaveTextContent(source);
+    expect(block).toHaveAttribute("data-prose-exclude");
+    expect(block).toHaveClass("font-mono", "text-muted-foreground", "rounded-control", "bg-muted", "border");
+  });
+
+  test("an inline opaque span shows its source quietly", async () => {
+    setupEditor("Text <b>bold</b>");
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    const span = editor.querySelector("[data-opaque-inline]");
+    expect(span).not.toBeNull();
+    expect(span).toHaveTextContent("<b>");
+    expect(span).toHaveAttribute("data-prose-exclude");
+    expect(span).toHaveClass("font-mono", "text-muted-foreground");
+  });
+
+  test("preserved HTML renders inert: no elements, no handlers", async () => {
+    setupEditor('Text <script>window.__opaque = true</script> <img src=x onerror="window.__opaque = true"> <a href="javascript:window.__opaque = true">link</a>');
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    expect(editor.querySelector("script")).toBeNull();
+    // ProseMirror adds its own `<img class="ProseMirror-separator">` chrome;
+    // the dangerous `<img src onerror>` must not have become an element.
+    expect(editor.querySelector("img[src], img[onerror]")).toBeNull();
+    expect(editor.querySelector("a")).toBeNull();
+    expect(editor).toHaveTextContent('Text <script>window.__opaque = true</script> <img src=x onerror="window.__opaque = true"> <a href="javascript:window.__opaque = true">link</a>');
+    expect(Reflect.get(window, "__opaque")).toBeUndefined();
+  });
+
+  test("a raw HTML block holding a script renders inert", async () => {
+    setupEditor('<div>\n  <script>window.__opaque = true</script>\n  <img src=x onerror="window.__opaque = true">\n</div>');
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    expect(editor.querySelector("script")).toBeNull();
+    expect(editor.querySelector("img[src], img[onerror]")).toBeNull();
+    expect(editor.querySelector("[data-opaque-block]")).not.toBeNull();
+    expect(Reflect.get(window, "__opaque")).toBeUndefined();
+  });
+
+  test("the mixed fixture keeps every construct and is stable on re-parse", async () => {
+    const frontMatter = '---\ntitle: "A mixed post"\ntags: [markdown, editor]\n---\n';
+    const output = await serializeWithoutEdit(mixedFixture);
+
+    expect(output.startsWith(frontMatter)).toBe(true);
+    for (const { source } of preservedBlocks) expect(output).toContain(source);
+    expect(output).toContain("A paragraph with **bold**, *italic*, and a footnote reference.[^1]");
+    expect(output).toContain('Inline HTML like <b>bold</b> and <span class="tag">a span</span> stays as written.');
+    expect(output).toContain("# Existing post");
+    expect(output).toContain("- A list item\n- Another item");
+    expect(output).toContain("```ts\nconst x = 1;\n```");
+
+    expect(await serializeWithoutEdit(output)).toBe(output);
   });
 });
