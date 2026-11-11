@@ -488,6 +488,25 @@ describe("serializer round-trip", () => {
 
     expect(ref.current?.getMarkdown()).toBe("1. !text\n   ```js\n    a\n   ```");
   });
+
+  test("a code-first ordered item keeps a nested list that follows it", async () => {
+    const input = "1. ```js\n   a\n   ```\n   1. nested";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe(input);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+
+  test("an inline-code then fence does not trigger the code-first repair", async () => {
+    const input = "1. ```a```b\n   ```js\n   x\n   ```";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe("1. `a`b\n   ```js\n    x\n   ```");
+  });
+
+  test("a fence with a backtick in its info string does not trigger the code-first repair", async () => {
+    const input = "1. ```a`b\n   c\n   ```";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe("1. \\`\\`\\`a\\`b\n c\n   ```\n   \n   ```");
+  });
 });
 
 describe("fixture", () => {
