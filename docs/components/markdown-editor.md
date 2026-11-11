@@ -87,6 +87,10 @@ reading styles.
   An ordered list item that has text before a fenced code block gains a leading
   space on the code content line on each save. This is a stock Tiptap 3.33.0
   tokenizer bug; a test pins it so an upgrade that changes it is noticed.
+  An ordered list nested in an ordered list whose inner item opens with a fenced
+  code block loses the code on save, exactly as stock Tiptap 3.33.0 does, because
+  the code-first repair is top-level only; a test pins the output so an upgrade
+  that changes it is noticed.
 - Enter on an empty list item or empty quotation line leaves the block; at the
   end of a code block, Enter inserts a newline and a triple Enter (or ArrowDown
   at the end) leaves the block. Backspace at the start of a list item or
