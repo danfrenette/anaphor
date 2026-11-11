@@ -2,7 +2,7 @@
 
 import CodeBlock from "@tiptap/extension-code-block";
 import Link from "@tiptap/extension-link";
-import { getListMarker, ListItem } from "@tiptap/extension-list";
+import { getListMarker, ListItem, OrderedList } from "@tiptap/extension-list";
 import type { MarkdownRendererHelpers, RenderContext } from "@tiptap/core";
 import { Markdown } from "@tiptap/markdown";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
@@ -128,6 +128,44 @@ const MarkdownListItem = ListItem.extend({
   },
 });
 
+// Workaround 13: @tiptap/extension-list@3.33.0's ordered-list tokenizer reads a
+// list item whose first content line is a code fence (e.g. `1. ```js`) as a
+// paragraph holding the fence plus an empty code block, so the code is lost on
+// reload. Re-tokenise those items from their raw text so they parse to an empty
+// leading paragraph plus a code block, matching the bullet path. Every other item
+// shape is delegated to the stock tokenizer.
+const stockOrderedListTokenizer = OrderedList.config.markdownTokenizer!;
+
+const MarkdownOrderedList = OrderedList.extend({
+  markdownTokenizer: {
+    name: "orderedList",
+    level: "block",
+    start: stockOrderedListTokenizer.start,
+    tokenize: (source, tokens, lexer) => {
+      const result = stockOrderedListTokenizer.tokenize(source, tokens, lexer);
+      const items = result?.items;
+      if (!items) return result;
+      for (const item of items) {
+        const [first, second] = item.tokens ?? [];
+        if (first?.type !== "paragraph") continue;
+        if (!/^(`{3,}|~{3,})/.test(first.raw ?? "")) continue;
+        if (second?.type !== "code") continue;
+        const raw = item.raw ?? "";
+        const newline = raw.indexOf("\n");
+        const firstLine = newline === -1 ? raw : raw.slice(0, newline);
+        const rest = newline === -1 ? "" : raw.slice(newline + 1);
+        const content = firstLine.match(/^(\s*)(\S+?)([.)])\s+(.*)$/)?.[4];
+        if (content === undefined) continue;
+        const contentIndent = firstLine.length - content.length;
+        const dedent = (line: string) => line.slice(Math.min(line.length - line.trimStart().length, contentIndent));
+        const codeSource = [content, ...rest.split("\n").map(dedent)].join("\n");
+        item.tokens = [{ type: "paragraph", raw: "", text: "", tokens: [] }, ...lexer.blockTokens(codeSource)];
+      }
+      return result;
+    },
+  },
+});
+
 type MarkdownEditorLabel = { "aria-label": string; "aria-labelledby"?: never } | { "aria-label"?: never; "aria-labelledby": string };
 type UseMarkdownEditorOptions = {
   defaultValue: string;
@@ -170,8 +208,11 @@ function useMarkdownEditor({ defaultValue, onChange, "aria-label": ariaLabel, "a
       // Replaced below by an .extend()ed copy whose renderer keeps a leading code
       // block on the marker line (F4).
       listItem: false,
+      // Replaced below by an .extend()ed copy whose tokenizer reads a code fence
+      // that opens an ordered item as a code block (workaround 13).
+      orderedList: false,
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-    }), MarkdownCodeBlock, MarkdownLink, MarkdownListItem, Markdown],
+    }), MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, Markdown],
     content: defaultValue,
     contentType: "markdown",
     editorProps: { attributes: {
