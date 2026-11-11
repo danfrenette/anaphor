@@ -14,6 +14,6 @@ export function MarkdownEditorExample() {
       <MarkdownEditor defaultValue={startingMarkdown} onChange={setMarkdown} aria-label="Research note" />
     </div>
     <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
-    <section aria-label="Current Markdown" className="mt-3 min-h-24 whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-4 font-mono text-small">{markdown}</section>
+    <div role="group" aria-label="Current Markdown" className="mt-3 min-h-24 whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-4 font-mono text-small">{markdown}</div>
   </section>;
 }
