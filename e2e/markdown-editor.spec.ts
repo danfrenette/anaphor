@@ -105,11 +105,19 @@ test("typed formatting works in the browser", async ({ page }) => {
 test("the editor keeps keyboard focus order and passes accessibility checks", async ({ page, browserName }) => {
   await page.goto("/markdown-editor");
   const editor = page.getByRole("textbox", { name: "Research note" });
+  const existingPost = page.getByRole("textbox", { name: "Existing post" });
+  const tabForward = browserName === "webkit" && process.platform === "darwin" ? "Alt+Tab" : "Tab";
+  const tabBackward = browserName === "webkit" && process.platform === "darwin" ? "Alt+Shift+Tab" : "Shift+Tab";
   await editor.focus();
   await expect(editor).toBeFocused();
-  await editor.press(browserName === "webkit" && process.platform === "darwin" ? "Alt+Tab" : "Tab");
+  // Tab leaves the field editor to the second editor, then to the shell's help link.
+  await page.keyboard.press(tabForward);
+  await expect(existingPost).toBeFocused();
+  await page.keyboard.press(tabForward);
   await expect(page.getByRole("link", { name: "Help and documentation" })).toBeFocused();
-  await page.keyboard.press(browserName === "webkit" && process.platform === "darwin" ? "Alt+Shift+Tab" : "Shift+Tab");
+  await page.keyboard.press(tabBackward);
+  await expect(existingPost).toBeFocused();
+  await page.keyboard.press(tabBackward);
   await expect(editor).toBeFocused();
 
   const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
@@ -168,5 +176,42 @@ test("a fenced code block keeps white-space: pre and scrolls instead of wrapping
   }));
   expect(whiteSpace).toBe("pre");
   expect(scrolls).toBe(true);
+});
+
+test("the existing post hides front matter and shows opaque blocks in both themes", async ({ page }, testInfo) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Existing post" });
+
+  await expect(editor.getByRole("heading", { name: "An existing post" })).toBeVisible();
+  await expect(editor).not.toContainText('title: "An existing post"');
+  await expect(editor).not.toContainText("draft: true");
+
+  const blocks = editor.locator("[data-opaque-block]");
+  await expect(blocks).toHaveCount(7);
+  await expect(blocks.first()).toHaveText("[^1]: The note text.");
+
+  for (const dark of [false, true]) {
+    await page.locator("html").evaluate((element, value) => element.classList.toggle("dark", value), dark);
+    const fontFamily = await blocks.first().evaluate(element => getComputedStyle(element).fontFamily);
+    expect(fontFamily).toContain("mono");
+    await blocks.first().screenshot({ path: testInfo.outputPath(`opaque-block-${dark ? "dark" : "light"}.png`) });
+  }
+});
+
+test("an opaque block is selected and deleted as a whole", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Existing post" });
+  const output = page.getByLabel("Existing post Markdown", { exact: true });
+
+  const block = editor.locator("[data-opaque-block]").first();
+  await expect(block).toHaveText("[^1]: The note text.");
+  await block.click();
+  await editor.press("Delete");
+
+  await expect(editor.locator("[data-opaque-block]")).toHaveCount(6);
+  // The definition is gone as a whole; the surrounding content is untouched.
+  await expect(output).not.toContainText("[^1]: The note text.");
+  await expect(output).toContainText("Raw HTML");
+  await expect(output).toContainText("A note with a footnote.[^1]");
 });
 
