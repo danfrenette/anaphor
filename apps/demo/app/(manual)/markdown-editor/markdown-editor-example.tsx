@@ -3,13 +3,37 @@
 import { MarkdownEditor, Text } from "@anaphor/system";
 import { useState } from "react";
 
-const startingMarkdown = "## Field notes\n\nA paragraph with **bold** and *italic* text.\n\nThis soft line\nwraps like rendered Markdown.";
+const startingMarkdown = [
+  "## Field notes",
+  "",
+  "A paragraph with **bold** and *italic* text.",
+  "",
+  "This soft line",
+  "wraps like rendered Markdown.",
+  "",
+  "- Bullet one",
+  "- Bullet two",
+  "  - Nested",
+  "",
+  "1. First",
+  "2. Second",
+  "",
+  "> A quote",
+  "",
+  "~~strike~~, `code`, and a [link](https://anaphor.dev).",
+  "",
+  "```ts",
+  "const x = 1;",
+  "```",
+  "",
+  "---",
+].join("\n");
 
 export function MarkdownEditorExample() {
   const [markdown, setMarkdown] = useState(startingMarkdown);
   return <section aria-label="Field presentation" className="mt-8">
     <Text as="h2" variant="heading">Field presentation</Text>
-    <Text as="p" variant="body" className="mt-3">Type paragraphs, headings, bold, and italic. Shift+Enter inserts a line break.</Text>
+    <Text as="p" variant="body" className="mt-3">Type Markdown and watch it format. Headings, lists, quotes, code, rules, emphasis, and links all convert as you type. Shift+Enter inserts a line break.</Text>
     <div className="mt-6">
       <MarkdownEditor defaultValue={startingMarkdown} onChange={setMarkdown} aria-label="Research note" />
     </div>

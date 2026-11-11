@@ -1,6 +1,6 @@
 # Markdown editor
 
-`MarkdownEditor` edits basic Markdown in a bounded field. It uses Tiptap 3 and the
+`MarkdownEditor` edits Markdown in a bounded field. It uses Tiptap 3 and the
 official `@tiptap/markdown` extension, pinned at 3.33.0. Content uses the same
 `anaphor-prose` styling as rendered Markdown; there is no toolbar or selection
 bubble in this slice.
@@ -43,31 +43,70 @@ the first edit and does not provide the pre-edit byte guarantee.
 exchange Markdown strings, not Tiptap JSON or HTML.
 
 The editable root has role `textbox`, `aria-multiline="true"`, and the supplied
-accessible name. Tab enters and leaves the editor. The field uses the existing
-input border, radius, surface, and focus treatment; body text keeps Prose's
-size and reading styles.
+accessible name. Tab enters and leaves the editor outside lists; inside a list
+item Tab nests and Shift+Tab un-nests. The field uses the existing input
+border, radius, surface, and focus treatment; body text keeps Prose's size and
+reading styles.
 
 ## Supported Markdown and keyboard input
 
-- Paragraphs, including Enter between blocks.
-- Headings 1–6 through `# `…`###### ` and Mod-Alt-1…Mod-Alt-6.
-- Bold through `**text**` and Mod-B.
-- Italic through `*text*` or `_text_`, and Mod-I. Serialization uses `*text*`.
-- Hard line breaks through Shift+Enter or Mod-Enter, serialized as two trailing
-  spaces and a newline.
-- Undo/redo history inherited from StarterKit; conversion-undo verification
-  arrives with ANAPHOR-340.
+**Typed triggers**
 
-The active extensions provide only document, paragraph, text, headings, bold,
-italic, and hard breaks, plus undo/redo and Markdown conversion. HardBreak is
-enabled specifically for in-paragraph line breaks; UndoRedo owns the required
-editing history. Underline, lists, links, code, strike, blockquotes, horizontal
-rules, and Tiptap's trailing node are disabled.
+| Construct | Type | Serialised as |
+| --- | --- | --- |
+| Heading 1–6 | `# `…`###### ` | `# `…`###### ` |
+| Bullet list | `- ` or `* ` | `- ` (any marker normalises to `-`) |
+| Numbered list | `1. ` | `1. ` |
+| Blockquote | `> ` | `> ` |
+| Fenced code block | `` ``` `` then a space (`` ```ts `` to set the language) | ```` ``` ```` fences with the info string |
+| Horizontal rule | `---` | `---` |
+| Strikethrough | `~~text~~` | `~~text~~` |
+| Inline code | `` `text` `` | `` `text` `` |
+| Bold | `**text**` | `**text**` |
+| Italic | `*text*` or `_text_` | `*text*` |
+| Hard line break | Shift+Enter or Mod-Enter | two trailing spaces and a newline |
+
+**Keyboard shortcuts**
+
+| Action | Shortcut |
+| --- | --- |
+| Bold | Mod-B |
+| Italic | Mod-I |
+| Strikethrough | Mod-Shift-S |
+| Inline code | Mod-E |
+| Heading 1–6 | Mod-Alt-1…Mod-Alt-6 |
+| Undo / redo | Mod-Z / Mod-Shift-Z (or Mod-Y) |
+
+**Blocks and history**
+
+- Paragraphs, including Enter between blocks.
+- Bullet and numbered lists, with nesting via Tab and un-nesting via Shift+Tab.
+- Enter on an empty list item or empty quotation line leaves the block; at the
+  end of a code block, Enter inserts a newline and a triple Enter (or ArrowDown
+  at the end) leaves the block. Backspace at the start of a list item or
+  quotation lifts it to a paragraph.
+- One undo reverts a typed conversion to the literal characters; undo and redo
+  span typing and formatting.
+- Links render as links and are written back as links. They do not auto-link
+  while typing or on paste, and clicking places the caret rather than opening
+  the link. Link `target`/`rel` attributes are presentation-only and never
+  appear in the written Markdown.
+
+The active extensions are StarterKit minus underline, trailing node, drop
+cursor and gap cursor, plus the Markdown extension. Document, paragraph, text,
+headings, bold, italic, strike, inline code, code block, bullet and ordered
+lists (with list item and list keymap), blockquote, horizontal rule, link,
+hard break, and undo/redo are enabled because each corresponds to supported
+Markdown. Underline has no CommonMark source, the trailing node appends an
+extra empty paragraph after a document ending in a non-paragraph block, and the
+drop cursor and gap cursor are drag/click-caret affordances this field does not
+need, so all four stay disabled.
 
 Tiptap runs with `immediatelyRender: false` and `injectCSS: false`. The
 `anaphor-prose` class is applied directly to the ProseMirror root. The shared
 stylesheet explicitly keeps source soft newlines in normal collapsed
-whitespace and keeps `pre` content preformatted. Browsers preserve repeated
+whitespace and keeps `pre` content preformatted (`white-space: pre`), so fenced
+code never wraps and scrolls horizontally instead. Browsers preserve repeated
 typed spaces with non-breaking spaces, so they remain visible without turning
 a source soft newline into a forced visual break.
 
@@ -83,8 +122,7 @@ The standalone `markdown-editor` registry item installs the component, shared
 styles, utilities, and exact Tiptap 3.33.0 dependencies. It is not yet part of
 the complete `ui` aggregate.
 
-This slice does not support lists, quotations, code, links, strike, inline
-code, unsupported-source preservation, paste handling, images, tasks, tables,
-a selection bubble, in-place presentation, placeholder text, read-only or
-disabled states, Field integration, or external `setContent`. Unsupported
-Markdown must not be assumed to survive an edit.
+This slice does not support tasks, tables, images, unsupported-source
+preservation, paste handling, a selection bubble, in-place presentation,
+placeholder text, read-only or disabled states, Field integration, or external
+`setContent`. Unsupported Markdown must not be assumed to survive an edit.
