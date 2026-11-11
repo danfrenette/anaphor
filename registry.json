@@ -32,7 +32,7 @@
       "name": "markdown-editor",
       "type": "registry:ui",
       "title": "Markdown editor",
-      "description": "Edit paragraphs, headings, bold, and italic in a Prose-styled Markdown field.",
+      "description": "Edit Markdown blocks, lists, quotes, code, rules, and marks in a Prose-styled field.",
       "dependencies": [
         "@tiptap/core@3.33.0",
         "@tiptap/markdown@3.33.0",
