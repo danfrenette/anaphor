@@ -84,6 +84,9 @@ reading styles.
   Retyping a list marker (`1. ` or `- `) at the start of a new list item that
   Enter created leaves the marker as literal text (`1. a\n2. 1. b`). This is
   Tiptap's default; a test pins it so an upgrade that changes it is noticed.
+  An ordered list item that has text before a fenced code block gains a leading
+  space on the code content line on each save. This is a stock Tiptap 3.33.0
+  tokenizer bug; a test pins it so an upgrade that changes it is noticed.
 - Enter on an empty list item or empty quotation line leaves the block; at the
   end of a code block, Enter inserts a newline and a triple Enter (or ArrowDown
   at the end) leaves the block. Backspace at the start of a list item or
