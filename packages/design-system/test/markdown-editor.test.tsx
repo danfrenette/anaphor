@@ -476,6 +476,18 @@ describe("serializer round-trip", () => {
     expect(output).toBe(input);
     expect(await serializeWithoutEdit(output)).toBe(output);
   });
+
+  test("known Tiptap 3.33.0 issue: an ordered item's text-then-code block drifts a leading space onto the code line", async () => {
+    // The code content line gains a leading space on each save (a stock 3.33.0
+    // tokenizer bug). Pinned so a Tiptap upgrade changing this output is reviewed.
+    const { user, ref } = setupEditor("1. text\n   ```js\n   a\n   ```");
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    await user.click(editor);
+    await user.keyboard("!");
+
+    expect(ref.current?.getMarkdown()).toBe("1. !text\n   ```js\n    a\n   ```");
+  });
 });
 
 describe("fixture", () => {
