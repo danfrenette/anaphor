@@ -606,6 +606,57 @@ describe("fixture", () => {
   });
 });
 
+describe("front matter", () => {
+  test("a leading horizontal rule followed by a blank line and a paragraph is not front matter", async () => {
+    setupEditor("---\n\nParagraph\n---");
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    // Nothing is hidden: the leading rule renders and the paragraph text shows.
+    // The trailing `---` underlines the paragraph as a setext heading, which is
+    // still visible content rather than swallowed front matter.
+    expect(screen.getByRole("separator")).toBeVisible();
+    expect(screen.getByText("Paragraph")).toBeVisible();
+    expect(editor).toHaveTextContent("Paragraph");
+  });
+
+  test("empty front matter is hidden and returned byte for byte", async () => {
+    const { user, ref } = setupEditor("---\n---\n# Body");
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    expect(editor).not.toHaveTextContent("---");
+    expect(screen.getByRole("heading", { level: 1, name: "Body" })).toBeVisible();
+
+    await user.click(editor);
+    await user.keyboard("!");
+
+    expect(ref.current?.getMarkdown()).toBe("---\n---\n# !Body");
+  });
+
+  test("front matter with CRLF line endings is returned byte for byte", async () => {
+    const { user, ref } = setupEditor("---\r\ntitle: x\r\n---\r\n# Body");
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    expect(editor).not.toHaveTextContent("title: x");
+
+    await user.click(editor);
+    await user.keyboard("!");
+
+    expect(ref.current?.getMarkdown()).toBe("---\r\ntitle: x\r\n---\r\n# !Body");
+  });
+
+  test("a titled front matter block still hides its fields and keeps the body", async () => {
+    const { user, ref } = setupEditor("---\ntitle: x\n---\n# Body");
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    expect(editor).not.toHaveTextContent("title: x");
+
+    await user.click(editor);
+    await user.keyboard("!");
+
+    expect(ref.current?.getMarkdown()).toBe("---\ntitle: x\n---\n# !Body");
+  });
+});
+
 describe("preserved unsupported content", () => {
   const preservedBlocks: Array<{ name: string; source: string }> = [
     { name: "raw HTML block", source: '<div class="aside">\n  Raw HTML stays verbatim.\n</div>' },
