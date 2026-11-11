@@ -24,9 +24,11 @@ byte-stable pre-edit reads, mount versus real-edit callbacks, typed and
 shortcut headings 1–6, bold and italic input, the typed triggers and shortcuts
 for bullet and numbered lists, blockquote, fenced code blocks, horizontal
 rules, strikethrough and inline code, a starting link round-trip, undo reverting
-a conversion, Enter leaving lists/quotes/code, Backspace lifting, Tab nesting
-and Shift+Tab un-nesting, undo/redo across typing and formatting, the absence
-of underline and a trailing node, and a full-construct fixture. Type fixtures
+a conversion, Enter and ArrowDown leaving lists/quotes/code, Backspace lifting,
+Tab nesting and Shift+Tab un-nesting, undo/redo across typing and formatting,
+the absence of underline and a trailing node, a full-construct fixture, and
+serializer round-trips for code fences holding backticks, link destinations
+needing angle brackets, and code blocks opening a list item. Type fixtures
 in `packages/design-system/test/markdown-editor.types.tsx` cover both exports
 and rejected consumer configurations. jsdom lacks pointer hit testing and
 range layout, so the component file stubs only those geometry APIs; real
