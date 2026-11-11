@@ -213,5 +213,28 @@ test("an opaque block is selected and deleted as a whole", async ({ page }) => {
   await expect(output).not.toContainText("[^1]: The note text.");
   await expect(output).toContainText("Raw HTML");
   await expect(output).toContainText("A note with a footnote.[^1]");
+
+  // One undo restores the block and its exact source in the output.
+  await editor.press("ControlOrMeta+z");
+  await expect(editor.locator("[data-opaque-block]")).toHaveCount(7);
+  await expect(output).toContainText("[^1]: The note text.");
+});
+
+test("an opaque block's text cannot be edited in place", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Existing post" });
+  const output = page.getByLabel("Existing post Markdown", { exact: true });
+  const block = editor.locator("[data-opaque-block]").first();
+
+  // ProseMirror renders the atom non-editable, which Chromium reflects as an
+  // attribute, so no caret can be placed inside its text.
+  await expect(block).toHaveAttribute("contenteditable", "false");
+
+  // Clicking the block and typing replaces the whole atom instead of editing
+  // its source text: the block disappears as a unit, never a character edit.
+  await block.click();
+  await editor.press("z");
+  await expect(editor.locator("[data-opaque-block]")).toHaveCount(6);
+  await expect(output).not.toContainText("[^1]: The note text.");
 });
 
