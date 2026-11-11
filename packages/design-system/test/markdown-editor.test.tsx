@@ -455,6 +455,27 @@ describe("serializer round-trip", () => {
     expect(output).toBe(input);
     expect(await serializeWithoutEdit(output)).toBe(output);
   });
+
+  test("a code block opening an ordered list item serialises on the marker line", async () => {
+    const input = "1. ```js\n   a\n   ```";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe(input);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+
+  test("an ordered list item keeps a start marker when it opens with a code block", async () => {
+    const input = "3. ```js\n   a\n   ```";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe(input);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+
+  test("a lettered ordered list item keeps its marker when it opens with a code block", async () => {
+    const input = "a. ```js\n   a\n   ```";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe(input);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
 });
 
 describe("fixture", () => {
