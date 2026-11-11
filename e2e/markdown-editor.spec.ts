@@ -125,3 +125,48 @@ test("the manual page mounts without hydration warnings or browser errors", asyn
   await expect(page.getByRole("heading", { name: "Markdown editor", exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test("the starting fixture renders every supported construct formatted", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Research note" });
+
+  await expect(editor.getByRole("heading", { name: "Field notes" })).toBeVisible();
+  await expect(editor.getByRole("list").filter({ hasText: "Bullet one" })).toBeVisible();
+  await expect(editor.getByText("Nested", { exact: true })).toBeVisible();
+  await expect(editor.getByRole("blockquote")).toContainText("A quote");
+  await expect(editor.locator("pre code")).toContainText("const x = 1;");
+  await expect(editor.locator("pre code")).toHaveClass(/language-ts/);
+  await expect(editor.locator("hr")).toBeVisible();
+  await expect(editor.getByRole("link", { name: "link" })).toHaveAttribute("href", "https://anaphor.dev");
+  await expect(editor.getByText("strike", { exact: true })).toBeVisible();
+  await expect(editor.getByText("code", { exact: true })).toBeVisible();
+
+  const output = page.getByLabel("Current Markdown", { exact: true });
+  await expect(output).toContainText("```ts");
+  await expect(output).toContainText("> A quote");
+  await expect(output).toContainText("[link](https://anaphor.dev)");
+});
+
+test("a fenced code block keeps white-space: pre and scrolls instead of wrapping", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Research note" });
+
+  // The starting fixture's code block already proves the editable pre rule.
+  await expect(editor.locator("pre").first()).toBeVisible();
+  expect(await editor.locator("pre").first().evaluate(element => getComputedStyle(element).whiteSpace)).toBe("pre");
+
+  // A long line must overflow horizontally, not wrap.
+  await editor.click();
+  await editor.press("ControlOrMeta+A");
+  await editor.pressSequentially("``` ");
+  await editor.pressSequentially(`const x = ${"a".repeat(160)};`);
+  const pre = editor.locator("pre");
+  await expect(pre).toBeVisible();
+  const { whiteSpace, scrolls } = await pre.evaluate(element => ({
+    whiteSpace: getComputedStyle(element).whiteSpace,
+    scrolls: element.scrollWidth > element.clientWidth,
+  }));
+  expect(whiteSpace).toBe("pre");
+  expect(scrolls).toBe(true);
+});
+

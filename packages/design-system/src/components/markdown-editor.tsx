@@ -29,20 +29,17 @@ function useMarkdownEditor({ defaultValue, onChange, "aria-label": ariaLabel, "a
     immediatelyRender: false,
     injectCSS: false,
     extensions: [StarterKit.configure({
-      blockquote: false,
-      bulletList: false,
-      code: false,
-      codeBlock: false,
+      // Disabled: underline has no CommonMark source and is not in the supported
+      // set; trailingNode appends an extra empty paragraph after a document ending
+      // in a non-paragraph block; dropcursor and gapcursor are drag/click-caret
+      // affordances the field does not need.
+      underline: false,
+      trailingNode: false,
       dropcursor: false,
       gapcursor: false,
-      horizontalRule: false,
-      link: false,
-      listItem: false,
-      listKeymap: false,
-      orderedList: false,
-      strike: false,
-      trailingNode: false,
-      underline: false,
+      // Links render as links but never open on click, never auto-link while
+      // typing, and never link on paste. Clicking places the caret instead.
+      link: { openOnClick: false, autolink: false, linkOnPaste: false },
       heading: { levels: [1, 2, 3, 4, 5, 6] },
     }), Markdown],
     content: defaultValue,
