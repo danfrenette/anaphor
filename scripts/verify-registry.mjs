@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
+import { createWriteStream } from "node:fs";
 import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
@@ -14,10 +15,20 @@ const installer = path.join(root, "node_modules/shadcn/dist/index.js");
 const temporary = await mkdtemp(path.join(tmpdir(), "anaphor-registry-"));
 const registryDirectory = path.join(temporary, "registry");
 
+const commandLog = path.join(temporary, "commands.log");
+
+// Command output goes to the log; a failure prints its tail so the run stays readable.
 async function run(command, args, cwd) {
-  const child = spawn(command, args, { cwd, stdio: "inherit", timeout: 180_000 });
-  const [code, signal] = await once(child, "exit");
-  assert.equal(code, 0, `${command} ${args.join(" ")} failed (${signal ?? code})`);
+  const child = spawn(command, args, { cwd, stdio: ["ignore", "pipe", "pipe"], timeout: 180_000 });
+  const log = createWriteStream(commandLog, { flags: "a" });
+  const output = [];
+  log.write(`\n$ ${command} ${args.join(" ")}\n`);
+  for (const stream of [child.stdout, child.stderr]) stream.on("data", chunk => { output.push(chunk); log.write(chunk); });
+  const [code, signal] = await once(child, "close");
+  log.end();
+  await once(log, "finish");
+  if (code !== 0) console.error(Buffer.concat(output).toString().split("\n").slice(-40).join("\n"));
+  assert.equal(code, 0, `${command} ${args.join(" ")} failed (${signal ?? code}); full output in ${commandLog}`);
 }
 
 async function prepareRegistry() {
