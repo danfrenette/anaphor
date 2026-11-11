@@ -290,6 +290,26 @@ describe("block editing", () => {
     expect(screen.getByRole("list")).not.toHaveTextContent("After");
   });
 
+  test("retyping an ordered list marker on the line Enter created keeps it literal", async () => {
+    const { user, ref } = setupEditor();
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    await user.click(editor);
+    await user.keyboard("1. a{Enter}1. b");
+
+    expect(ref.current?.getMarkdown()).toBe("1. a\n2. 1. b");
+  });
+
+  test("retyping a bullet marker on the line Enter created keeps it literal", async () => {
+    const { user, ref } = setupEditor();
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    await user.click(editor);
+    await user.keyboard("- a{Enter}- b");
+
+    expect(ref.current?.getMarkdown()).toBe("- a\n- - b");
+  });
+
   test("Backspace at the start of a list item lifts it to a paragraph", async () => {
     const { user, ref } = setupEditor("- One");
 
