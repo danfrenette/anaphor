@@ -496,6 +496,41 @@ describe("serializer round-trip", () => {
     expect(await serializeWithoutEdit(output)).toBe(output);
   });
 
+  test("a code-first ordered item keeps trailing text after its code block", async () => {
+    const input = "1. ```js\n   a\n   ```\n   after";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe("1. ```js\n   a\n   ```\n\n   after");
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+
+  test("a code-first ordered item keeps a loose paragraph after its code block", async () => {
+    const input = "1. ```js\n   a\n   ```\n\n   para";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe(input);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+
+  test("a code-first ordered item keeps a blockquote after its code block", async () => {
+    const input = "1. ```js\n   a\n   ```\n   > q";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe(input);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+
+  test("a code-first ordered item keeps a nested bullet list after its code block", async () => {
+    const input = "1. ```js\n   a\n   ```\n   - nested";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe(input);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+
+  test("a code-first ordered item keeps a second code block after its code block", async () => {
+    const input = "1. ```js\n   a\n   ```\n   ```\n   b\n   ```";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe(input);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+
   test("an inline-code then fence does not trigger the code-first repair", async () => {
     const input = "1. ```a```b\n   ```js\n   x\n   ```";
     const output = await serializeWithoutEdit(input);
