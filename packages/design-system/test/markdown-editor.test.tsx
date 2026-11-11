@@ -396,6 +396,13 @@ describe("serializer round-trip", () => {
     expect(output).toBe(input);
     expect(await serializeWithoutEdit(output)).toBe(output);
   });
+
+  test("a link destination needing angle brackets keeps them on round-trip", async () => {
+    const input = "[a](<https://x.com/with space>)";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe(input);
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
 });
 
 describe("fixture", () => {

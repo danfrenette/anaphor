@@ -1,6 +1,7 @@
 "use client";
 
 import CodeBlock from "@tiptap/extension-code-block";
+import Link from "@tiptap/extension-link";
 import { Markdown } from "@tiptap/markdown";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -32,6 +33,20 @@ function codeFenceLength(text: string): number {
   return Math.max(3, longestBacktickRun(text) + 1);
 }
 
+/** True when a link destination must use the `<...>` form to survive a round-trip. */
+function linkDestinationNeedsAngleBrackets(href: string): boolean {
+  if (/\s/.test(href)) return true;
+  let depth = 0;
+  for (const character of href) {
+    if (character === "(") depth += 1;
+    else if (character === ")") {
+      depth -= 1;
+      if (depth < 0) return true;
+    }
+  }
+  return depth !== 0;
+}
+
 // Workaround F1: write a fence longer than the longest backtick run in the
 // content so a line of backticks inside the block cannot close the fence on
 // reload. The stock renderer writes a fixed ``` fence.
@@ -44,6 +59,19 @@ const MarkdownCodeBlock = CodeBlock.extend({
     return `${fence}${language}\n${content}\n${fence}`;
   },
 });
+
+// Workaround F3: wrap a link destination in `<...>` when it holds spaces or
+// unbalanced parentheses, which CommonMark only accepts in the bracketed form.
+// The stock renderer writes the bare href, which re-parses as a shorter link.
+const MarkdownLink = Link.extend({
+  renderMarkdown: (node, h) => {
+    const href = node.attrs?.href ?? "";
+    const title = node.attrs?.title ?? "";
+    const text = h.renderChildren(node);
+    const destination = linkDestinationNeedsAngleBrackets(href) ? `<${href}>` : href;
+    return title ? `[${text}](${destination} "${title}")` : `[${text}](${destination})`;
+  },
+}).configure({ openOnClick: false, autolink: false, linkOnPaste: false });
 
 type MarkdownEditorLabel = { "aria-label": string; "aria-labelledby"?: never } | { "aria-label"?: never; "aria-labelledby": string };
 type UseMarkdownEditorOptions = {
@@ -79,11 +107,13 @@ function useMarkdownEditor({ defaultValue, onChange, "aria-label": ariaLabel, "a
       // Replaced below by an .extend()ed copy whose renderer writes a fence long
       // enough for the content (F1).
       codeBlock: false,
-      // Links render as links but never open on click, never auto-link while
-      // typing, and never link on paste. Clicking places the caret instead.
-      link: { openOnClick: false, autolink: false, linkOnPaste: false },
+      // Replaced below by an .extend()ed copy whose renderer writes angle-bracket
+      // destinations when CommonMark requires them (F3). Interaction options are
+      // unchanged: links render as links but never open on click, never auto-link
+      // while typing, and never link on paste. Clicking places the caret instead.
+      link: false,
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-    }), MarkdownCodeBlock, Markdown],
+    }), MarkdownCodeBlock, MarkdownLink, Markdown],
     content: defaultValue,
     contentType: "markdown",
     editorProps: { attributes: {
