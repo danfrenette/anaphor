@@ -507,6 +507,19 @@ describe("serializer round-trip", () => {
     const output = await serializeWithoutEdit(input);
     expect(output).toBe("1. \\`\\`\\`a\\`b\n c\n   ```\n   \n   ```");
   });
+
+  test("known Tiptap 3.33.0 issue: an ordered list nested in an ordered list loses its code-first inner item", async () => {
+    // The inner item opens with a code fence; the repair is top-level only, so
+    // the code is lost exactly as stock 3.33.0 loses it. Pinned so a Tiptap
+    // upgrade changing this output is reviewed.
+    const { user, ref } = setupEditor("1. outer\n   1. ```js\n      a\n      ```");
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    await user.click(editor);
+    await user.keyboard("!");
+
+    expect(ref.current?.getMarkdown()).toBe("1. !outer\n   1. \\`\\`\\`js\n    a\n      ```\n      \n      ```");
+  });
 });
 
 describe("fixture", () => {
