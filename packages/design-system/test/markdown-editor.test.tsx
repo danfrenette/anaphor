@@ -23,6 +23,23 @@ function setupEditor(defaultValue = "") {
   return { user, ref };
 }
 
+// Serialises a document without changing its content: typing then undoing still
+// fires the update listener, so getMarkdown() returns the serializer's normal
+// form of the supplied input. Undo is used instead of Backspace because Backspace
+// at a list item boundary runs the list keymap rather than deleting the typed char.
+async function serializeWithoutEdit(markdown: string) {
+  const user = userEvent.setup();
+  const ref = createRef<MarkdownEditorHandle>();
+  const { unmount } = render(<MarkdownEditor ref={ref} defaultValue={markdown} aria-label="Stability check" />);
+  const editor = await screen.findByRole("textbox", { name: "Stability check" });
+  await user.click(editor);
+  await user.keyboard("x");
+  await user.keyboard("{Control>}z{/Control}");
+  const value = ref.current?.getMarkdown() ?? "";
+  unmount();
+  return value;
+}
+
 test("keeps the supplied Markdown byte for byte without announcing a mount edit", async () => {
   const onChange = vi.fn();
   const ref = createRef<MarkdownEditorHandle>();
@@ -369,6 +386,15 @@ describe("history", () => {
 
     await user.keyboard("{Control>}{Shift>}z{/Shift}{/Control}");
     expect(ref.current?.getMarkdown()).toBe("**bold**");
+  });
+});
+
+describe("serializer round-trip", () => {
+  test("a code block holding a backtick run serialises with a fence longer than the run", async () => {
+    const input = "````\n```\ninner\n```\n````";
+    const output = await serializeWithoutEdit(input);
+    expect(output).toBe(input);
+    expect(await serializeWithoutEdit(output)).toBe(output);
   });
 });
 
