@@ -658,6 +658,13 @@ describe("preserved unsupported content", () => {
     expect(await serializeWithoutEdit(source)).toBe(source);
   });
 
+  test("adjacent ESM lines keep their source but gain a blank-line separator", async () => {
+    const source = 'import A from "./a";\nimport B from "./b";';
+    const output = await serializeWithoutEdit(source);
+    expect(output).toBe('import A from "./a";\n\nimport B from "./b";');
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+
   test("a lowercase HTML block with blank lines follows CommonMark and round-trips", async () => {
     const source = "<div>\n\ntext\n\n</div>";
     const output = await serializeWithoutEdit(source);
