@@ -41,10 +41,10 @@ for (const theme of ["light", "dark"]) {
     const expected = await prose.evaluate(measure, selectors);
     console.log(JSON.stringify({ theme, actual, expected }));
     for (let i = 0; i < selectors.length; i++) {
-      expect(Math.abs(actual[i].top - expected[i].top), `${selectors[i]} top`).toBeLessThanOrEqual(1);
-      expect(Math.abs(actual[i].height - expected[i].height), `${selectors[i]} height`).toBeLessThanOrEqual(1);
+      expect(Math.abs(actual[i]!.top - expected[i]!.top), `${selectors[i]} top`).toBeLessThanOrEqual(1);
+      expect(Math.abs(actual[i]!.height - expected[i]!.height), `${selectors[i]} height`).toBeLessThanOrEqual(1);
     }
-    expect(actual[0].marginTop).toBe(expected[0].marginTop);
+    expect(actual[0]!.marginTop).toBe(expected[0]!.marginTop);
     expect(actual.at(-1)?.marginBottom).toBe(expected.at(-1)?.marginBottom);
     expect(Math.abs((await editor.boundingBox())!.height - (await prose.boundingBox())!.height)).toBeLessThanOrEqual(1);
     for (const root of [editor, prose]) {
