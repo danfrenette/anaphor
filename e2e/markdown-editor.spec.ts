@@ -1,7 +1,17 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { prepareContentSnapshot } from "./content-snapshot";
 
 for (const theme of ["light", "dark"]) {
+  test(`in-place comparison baseline: ${theme}`, async ({ page }) => {
+    await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
+    await page.goto("/markdown-editor");
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.getByRole("textbox", { name: "In-place note" })).toBeVisible();
+    await prepareContentSnapshot(page);
+    await expect(page.getByRole("region", { name: "In-place comparison" })).toHaveScreenshot(`markdown-in-place-${theme}.png`, { animations: "disabled", caret: "hide" });
+  });
+
   test(`in-place parity: ${theme}`, async ({ page }) => {
     await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
     await page.goto("/markdown-editor");
