@@ -1,6 +1,6 @@
 # Markdown editor
 
-`MarkdownEditor` edits Markdown in a bounded field. It uses Tiptap 3 and the
+`MarkdownEditor` edits Markdown in a bounded field or in place. It uses Tiptap 3 and the
 official `@tiptap/markdown` extension, pinned at 3.33.0. Content uses the same
 `anaphor-prose` styling as rendered Markdown; there is no toolbar or selection
 bubble in this slice.
@@ -8,7 +8,8 @@ bubble in this slice.
 ## Consumer contract
 
 Import the component, hook, and their types from `@anaphor/system`. Supply a
-required `defaultValue` string and either `aria-label` or `aria-labelledby`.
+required `defaultValue` string, a `presentation` of `"field"` or `"in-place"`,
+and either `aria-label` or `aria-labelledby`.
 
 ```tsx
 const editorRef = useRef<MarkdownEditorHandle>(null);
@@ -50,11 +51,11 @@ The remaining optional props compose for use inside Anaphor's field:
   `tabindex="0"`, and is announced with `aria-readonly="true"`, so text can
   still be selected and copied.
 - `disabled` — the editor is removed from the tab order (`aria-disabled="true"`
-  and no `tabindex`), ignores pointer clicks, and uses the input disabled
-  background.
+  and no `tabindex`) and ignores pointer clicks. The field uses the input
+  disabled background; in place adds no background.
 - `autoFocus` — focuses the editor on mount with the caret at the end.
-- `invalid` — announces `aria-invalid="true"` and applies the input's invalid
-  border.
+- `invalid` — announces `aria-invalid="true"`; the field also applies the
+  input's invalid border.
 - `id` and `aria-describedby` — pass through to the textbox for field
   association.
 
@@ -85,7 +86,7 @@ composition with Tiptap's `EditorContent`; read Markdown only through the
 returned `getMarkdown()` and replace it through `setMarkdown()`.
 `editor.getMarkdown()` is serializer-normalised even before the first edit and
 does not provide the pre-edit byte guarantee. `MarkdownEditor` is the standard
-field frame around that hook. Consumers exchange Markdown strings, not Tiptap
+presentation around that hook. Consumers exchange Markdown strings, not Tiptap
 JSON or HTML.
 
 The editable root has role `textbox`, `aria-multiline="true"`, and the supplied
@@ -112,6 +113,21 @@ rendered by Tiptap's Placeholder extension as a `::before` pseudo-element on
 the empty paragraph, so Prose's article rules never match it; it inherits only
 the paragraph's body metrics, keeping the empty editor exactly one Prose line
 tall, and uses the muted foreground token.
+
+## In place
+
+Use `presentation="in-place"` to edit where rendered Markdown normally sits.
+The editor adds no border, background, padding, height limit, scrolling frame,
+or focus ring. The caret and selection indicate focus. It keeps its accessible
+name and multiline textbox semantics. `invalid` still sets `aria-invalid`, but
+does not draw a border; disabled still prevents interaction without adding a
+surface. The field height tokens and padding click-to-focus do not apply.
+
+For parity with rendered Markdown, the host must give both surfaces the same
+content width or measure, load Anaphor's stylesheet and fonts, and supply the
+same theme variables. Do not add extra container padding to either surface, or
+put `data-prose-exclude` on the editor root or any ancestor. The manual compares
+the editor to the same Markdown rendered by `marked` inside `Prose`.
 
 ## Supported Markdown and keyboard input
 
@@ -269,5 +285,5 @@ The standalone `markdown-editor` registry item installs the component, shared
 styles, utilities, and exact Tiptap 3.33.0 dependencies. It is also part of the
 complete `ui` aggregate.
 
-This slice does not support tasks, tables, images, paste handling, a selection
-bubble, or the in-place presentation.
+This slice does not support tasks, tables, images, paste handling, or a selection
+bubble.
