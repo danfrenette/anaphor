@@ -407,7 +407,7 @@ function useMarkdownEditor({
       // that opens an ordered item as a code block (workaround 13).
       orderedList: false,
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-    }), CodeBlockGapCursor, MarkdownCodeBlock.configure({ HTMLAttributes: { tabindex: "0" } }), MarkdownLink, MarkdownListItem, MarkdownOrderedList, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
+    }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
     content: body,
     contentType: "markdown",
     editorProps: { attributes: {
@@ -521,6 +521,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
 
   return <div
     data-slot="markdown-editor"
+    data-presentation={presentation}
     data-invalid={invalid || undefined}
     data-disabled={disabled || undefined}
     onClick={presentation === "field" ? handleFrameClick : undefined}

@@ -331,6 +331,8 @@
   [data-slot="markdown-editor"][data-disabled] .anaphor-prose { color: var(--anaphor-font-tertiary); }
 }
 
+[data-slot="markdown-editor"][data-presentation="in-place"] .anaphor-prose[aria-readonly="true"]:focus-visible { outline: 2px solid var(--anaphor-focus); outline-offset: 2px; }
+
 [data-slot="popover-popup"] {
   transition: opacity 180ms var(--anaphor-ease-out), transform 180ms var(--anaphor-ease-out);
 }
