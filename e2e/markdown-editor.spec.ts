@@ -110,11 +110,11 @@ test("the editor keeps keyboard focus order and passes accessibility checks", as
   const tabBackward = browserName === "webkit" && process.platform === "darwin" ? "Alt+Shift+Tab" : "Shift+Tab";
   await editor.focus();
   await expect(editor).toBeFocused();
-  // Tab leaves the field editor to the second editor, then to the shell's help link.
+  // Tab leaves the field editor to the second editor, then to the field-states controls.
   await page.keyboard.press(tabForward);
   await expect(existingPost).toBeFocused();
   await page.keyboard.press(tabForward);
-  await expect(page.getByRole("link", { name: "Help and documentation" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Read-only" })).toBeFocused();
   await page.keyboard.press(tabBackward);
   await expect(existingPost).toBeFocused();
   await page.keyboard.press(tabBackward);
@@ -237,4 +237,131 @@ test("an opaque block's text cannot be edited in place", async ({ page }) => {
   await expect(editor.locator("[data-opaque-block]")).toHaveCount(6);
   await expect(output).not.toContainText("[^1]: The note text.");
 });
+
+test("the empty field shows the placeholder and keeps one Prose line of content", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  await expect(editor.locator("[data-placeholder]")).toHaveAttribute("data-placeholder", "Write a note…");
+
+  const { contentHeight, lineHeight } = await editor.evaluate(element => {
+    if (!(element instanceof HTMLElement)) throw new Error("The editor must be an HTML element");
+    return {
+      contentHeight: element.offsetHeight,
+      lineHeight: Number.parseFloat(getComputedStyle(element).lineHeight),
+    };
+  });
+  // The placeholder adds no margin: the empty editor's content is one Prose line.
+  expect(contentHeight).toBeLessThan(lineHeight * 1.5);
+
+  await editor.click();
+  await editor.pressSequentially("Draft");
+  await expect(editor.locator("[data-placeholder]")).toHaveCount(0);
+});
+
+test("the field inside Field is named by its label and associated with its feedback", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  const frame = page.locator('[data-slot="markdown-editor"]').filter({ has: editor });
+  await expect(editor).toHaveAttribute("aria-labelledby", "notes-label");
+  await expect(editor).toHaveAttribute("aria-describedby", "notes-feedback");
+
+  await page.getByRole("button", { name: "Error" }).click();
+  await expect(editor).toHaveAttribute("aria-invalid", "true");
+  await expect(frame).toHaveAttribute("aria-invalid", "true");
+});
+
+test("the field passes accessibility checks in both themes", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  for (const dark of [false, true]) {
+    await page.locator("html").evaluate((element, value) => element.classList.toggle("dark", value), dark);
+    const result = await new AxeBuilder({ page }).include('[aria-label="Field states"]').withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
+    expect(result.violations).toEqual([]);
+  }
+});
+
+test("read-only prevents typing but allows focus", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  await page.getByRole("button", { name: "Read-only" }).click();
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  await expect(editor).toHaveAttribute("aria-readonly", "true");
+
+  await editor.click();
+  await expect(editor).toBeFocused();
+  await editor.pressSequentially("ignored");
+  await expect(page.getByLabel("Field states Markdown", { exact: true })).toHaveText("");
+});
+
+test("disabled removes focus and interaction", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  await page.getByRole("button", { name: "Disabled" }).click();
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  const frame = page.locator('[data-slot="markdown-editor"]').filter({ has: editor });
+  await expect(editor).toHaveAttribute("aria-disabled", "true");
+  await expect(editor).toHaveAttribute("contenteditable", "false");
+  await expect(editor).not.toHaveAttribute("tabindex");
+
+  // A raw pointer click on the box does nothing: the editor stays unfocused.
+  const box = await frame.boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await expect(editor).not.toBeFocused();
+});
+
+test("setMarkdown loads and discards notes without firing a change", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  const output = page.getByLabel("Field states Markdown", { exact: true });
+
+  await editor.click();
+  await editor.pressSequentially("Unsaved edit");
+  await expect(output).toContainText("Unsaved edit");
+
+  await page.getByRole("button", { name: "Load another note" }).click();
+  await expect(editor.getByRole("heading", { name: "A loaded note" })).toBeVisible();
+  await expect(output).toContainText("setMarkdown");
+
+  // Undo after a replace cannot return to the previous document.
+  await editor.press("ControlOrMeta+z");
+  await expect(editor.getByRole("heading", { name: "A loaded note" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Discard edits" }).click();
+  await expect(editor.locator("[data-placeholder]")).toHaveCount(1);
+});
+
+test("the field keeps the input boundary and grows from the minimum to the maximum then scrolls", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  const frame = page.locator('[data-slot="markdown-editor"]').filter({ has: editor });
+
+  expect(await frame.evaluate(element => getComputedStyle(element).minHeight)).toBe("96px");
+  expect(await frame.evaluate(element => getComputedStyle(element).maxHeight)).toBe("288px");
+  expect(await frame.evaluate(element => element.getBoundingClientRect().height)).toBe(96);
+
+  await editor.click();
+  for (let i = 1; i <= 15; i += 1) {
+    if (i > 1) await editor.press("Enter");
+    await editor.pressSequentially(`Line ${i}`);
+  }
+  const grown = await frame.evaluate(element => ({ height: element.getBoundingClientRect().height, clientHeight: element.clientHeight, scrollHeight: element.scrollHeight }));
+  expect(grown.height).toBe(288);
+  expect(grown.scrollHeight).toBeGreaterThan(grown.clientHeight);
+});
+
+test("clicking the empty space below short content places the caret at the end", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Padding click-to-focus is a desktop pointer concern; mobile taps are covered by the field-state tests.");
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  const frame = page.locator('[data-slot="markdown-editor"]').filter({ has: editor });
+
+  await page.getByRole("button", { name: "Load another note" }).click();
+  const box = await frame.boundingBox();
+  expect(box).not.toBeNull();
+  // Click the bottom-right padding corner, below and beside the short content.
+  await page.mouse.click(box!.x + box!.width - 6, box!.y + box!.height - 6);
+  await expect(editor).toBeFocused();
+  await editor.pressSequentially("!");
+  await expect(page.getByLabel("Field states Markdown", { exact: true })).toContainText("document.!");
+});
+
+
 

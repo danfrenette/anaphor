@@ -1,7 +1,7 @@
 "use client";
 
-import { MarkdownEditor, Text } from "@anaphor/system";
-import { useState } from "react";
+import { Field, FieldFeedback, FieldLabel, MarkdownEditor, Text, type MarkdownEditorHandle } from "@anaphor/system";
+import { useRef, useState } from "react";
 
 // Source of truth for e2e/markdown-editor.spec.ts, which locates its constructs
 // ("Field notes", "Bullet one", "A quote", "const x = 1;"). Rename a label only
@@ -84,5 +84,61 @@ export function MarkdownEditorExample() {
       <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
       <div role="group" aria-label="Existing post Markdown" className="mt-3 min-h-24 whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-4 font-mono text-small">{existingPost}</div>
     </section>
+    <section aria-label="Field states" className="mt-12">
+      <FieldStatesExample />
+    </section>
   </>;
+}
+
+const otherNote = "## A loaded note\n\nThis note was loaded with `setMarkdown`, so **Undo** cannot return to the previous document.";
+
+// Demonstrates the field inside Anaphor's Field: label, description, error,
+// placeholder, read-only and disabled toggles, and imperative replace.
+function FieldStatesExample() {
+  const editorRef = useRef<MarkdownEditorHandle>(null);
+  const [readOnly, setReadOnly] = useState(false);
+  const [disabled, setDisabled] = useState(false);
+  const [invalid, setInvalid] = useState(false);
+  const [markdown, setMarkdown] = useState("");
+  return <>
+    <Text as="h2" variant="heading">Inside a field</Text>
+    <Text as="p" variant="body" className="mt-3">The same editor inside <code className="font-mono text-small">Field</code>, named by its label and associated with a description and error. The empty box shows the placeholder, which disappears on input. The field starts at <code className="font-mono text-small">6rem</code> and grows to <code className="font-mono text-small">18rem</code>, then scrolls.</Text>
+    <div className="mt-6 flex flex-wrap gap-2">
+      <ToggleButton pressed={readOnly} onToggle={setReadOnly}>Read-only</ToggleButton>
+      <ToggleButton pressed={disabled} onToggle={setDisabled}>Disabled</ToggleButton>
+      <ToggleButton pressed={invalid} onToggle={setInvalid}>Error</ToggleButton>
+      <button type="button" className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted" onClick={() => { editorRef.current?.setMarkdown(otherNote); setMarkdown(otherNote); }}>Load another note</button>
+      <button type="button" className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted" onClick={() => { editorRef.current?.setMarkdown(""); setMarkdown(""); }}>Discard edits</button>
+    </div>
+    <div className="mt-6 max-w-2xl">
+      <Field orientation="vertical" invalid={invalid}>
+        <FieldLabel id="notes-label">Notes</FieldLabel>
+        <MarkdownEditor
+          ref={editorRef}
+          defaultValue=""
+          onChange={setMarkdown}
+          aria-labelledby="notes-label"
+          aria-describedby="notes-feedback"
+          placeholder="Write a note…"
+          readOnly={readOnly}
+          disabled={disabled}
+          invalid={invalid}
+        />
+        <FieldFeedback id="notes-feedback" hint="Markdown is fine here; use setMarkdown to load or discard a note." error="This note needs your attention before you save." invalid={invalid} />
+      </Field>
+    </div>
+    <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
+    <div role="group" aria-label="Field states Markdown" className="mt-3 min-h-24 whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-4 font-mono text-small">{markdown}</div>
+  </>;
+}
+
+function ToggleButton({ pressed, onToggle, children }: { pressed: boolean; onToggle: (next: boolean) => void; children: string }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={pressed}
+      className={`rounded-md border px-3 py-1.5 text-ui ${pressed ? "border-ring bg-muted" : "border-border hover:bg-muted"}`}
+      onClick={() => onToggle(!pressed)}
+    >{children}</button>
+  );
 }

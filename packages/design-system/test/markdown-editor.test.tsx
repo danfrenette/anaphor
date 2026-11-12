@@ -1,11 +1,11 @@
-import { createRef } from "react";
+import { createRef, useLayoutEffect } from "react";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { MarkdownEditor, type MarkdownEditorHandle } from "@anaphor/system";
+import { Field, FieldDescription, FieldLabel, MarkdownEditor, type MarkdownEditorHandle } from "@anaphor/system";
 
 // Anchored to the test file so the path survives running Vitest from elsewhere.
 // (jsdom replaces the global URL, so new URL(relative, import.meta.url) resolves
@@ -873,5 +873,181 @@ describe("preserved unsupported content", () => {
     expect(output).toContain("```ts\nconst x = 1;\n```");
 
     expect(await serializeWithoutEdit(output)).toBe(output);
+  });
+});
+
+describe("field presentation", () => {
+  test("an empty editor shows the placeholder and it disappears on input", async () => {
+    const user = userEvent.setup();
+    render(<MarkdownEditor defaultValue="" placeholder="Write a note…" aria-label="Research note" />);
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    expect(editor.querySelector("[data-placeholder]")).toHaveAttribute("data-placeholder", "Write a note…");
+
+    await user.click(editor);
+    await user.keyboard("x");
+    expect(editor.querySelector("[data-placeholder]")).toBeNull();
+  });
+
+  test("read-only prevents edits but stays focusable and announced", async () => {
+    const user = userEvent.setup();
+    const ref = createRef<MarkdownEditorHandle>();
+    render(<MarkdownEditor ref={ref} defaultValue="Draft" readOnly aria-label="Research note" />);
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    expect(editor).toHaveAttribute("aria-readonly", "true");
+    expect(editor).toHaveAttribute("tabindex", "0");
+
+    await user.click(editor);
+    expect(editor).toHaveFocus();
+    await user.keyboard("x");
+    expect(ref.current?.getMarkdown()).toBe("Draft");
+  });
+
+  test("disabled is not focusable, announced, and ignores typing", async () => {
+    const user = userEvent.setup();
+    const ref = createRef<MarkdownEditorHandle>();
+    render(<MarkdownEditor ref={ref} defaultValue="Draft" disabled aria-label="Research note" />);
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    expect(editor).toHaveAttribute("aria-disabled", "true");
+    expect(editor).not.toHaveAttribute("tabindex");
+
+    await user.click(editor);
+    expect(editor).not.toHaveFocus();
+    expect(ref.current?.getMarkdown()).toBe("Draft");
+  });
+
+  test("toggling read-only after mount keeps the pre-edit bytes and does not fire onChange", async () => {
+    const onChange = vi.fn();
+    const ref = createRef<MarkdownEditorHandle>();
+    const { rerender } = render(<MarkdownEditor ref={ref} defaultValue="Draft" onChange={onChange} aria-label="Research note" />);
+    await screen.findByRole("textbox", { name: "Research note" });
+
+    rerender(<MarkdownEditor ref={ref} defaultValue="Draft" onChange={onChange} readOnly aria-label="Research note" />);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(ref.current?.getMarkdown()).toBe("Draft");
+  });
+
+  test("state attributes survive later re-renders", async () => {
+    const ref = createRef<MarkdownEditorHandle>();
+    const { rerender } = render(<MarkdownEditor ref={ref} defaultValue="Draft" readOnly aria-label="Research note" />);
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    expect(editor).toHaveAttribute("aria-readonly", "true");
+    expect(editor).toHaveAttribute("tabindex", "0");
+
+    rerender(<MarkdownEditor ref={ref} defaultValue="Draft" readOnly invalid aria-label="Research note" />);
+    expect(editor).toHaveAttribute("aria-readonly", "true");
+    expect(editor).toHaveAttribute("aria-invalid", "true");
+    expect(editor).toHaveAttribute("tabindex", "0");
+  });
+
+  test("autofocus places the caret on mount at the end", async () => {
+    const user = userEvent.setup();
+    const ref = createRef<MarkdownEditorHandle>();
+    render(<MarkdownEditor ref={ref} defaultValue="Draft" autoFocus aria-label="Research note" />);
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    await waitFor(() => expect(editor).toHaveFocus());
+    await user.keyboard("!");
+    expect(ref.current?.getMarkdown()).toBe("Draft!");
+  });
+
+  test("the label names the editor and the description is associated with it", async () => {
+    render(
+      <Field orientation="vertical">
+        <FieldLabel id="note-label">Notes</FieldLabel>
+        <MarkdownEditor defaultValue="Note" aria-labelledby="note-label" aria-describedby="note-desc" />
+        <FieldDescription id="note-desc">A helpful description of the note.</FieldDescription>
+      </Field>,
+    );
+
+    const editor = await screen.findByRole("textbox", { name: "Notes" });
+    expect(editor).toHaveAttribute("aria-labelledby", "note-label");
+    expect(editor).toHaveAttribute("aria-describedby", "note-desc");
+    expect(screen.getByText("A helpful description of the note.")).toBeVisible();
+  });
+
+  test("invalid state is announced on the textbox and reflected on the frame", async () => {
+    render(<MarkdownEditor defaultValue="Note" invalid aria-label="Research note" />);
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    expect(editor).toHaveAttribute("aria-invalid", "true");
+    const frame = editor.closest('[data-slot="markdown-editor"]');
+    expect(frame).toHaveAttribute("aria-invalid", "true");
+  });
+});
+
+describe("imperative replace", () => {
+  test("setMarkdown replaces the document and reads back byte for byte without firing onChange", async () => {
+    const onChange = vi.fn();
+    const ref = createRef<MarkdownEditorHandle>();
+    render(<MarkdownEditor ref={ref} defaultValue="Draft" onChange={onChange} aria-label="Research note" />);
+    await screen.findByRole("textbox", { name: "Research note" });
+
+    const replacement = "## Replaced\n\nNew body\n";
+    act(() => { ref.current?.setMarkdown(replacement); });
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(ref.current?.getMarkdown()).toBe(replacement);
+    expect(screen.getByRole("heading", { level: 2, name: "Replaced" })).toBeVisible();
+  });
+
+  test("setMarkdown resets undo history", async () => {
+    const { user, ref } = setupEditor("Draft");
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+
+    await user.click(editor);
+    await user.keyboard(" edit");
+    expect(ref.current?.getMarkdown()).toBe(" editDraft");
+
+    act(() => { ref.current?.setMarkdown("Replaced"); });
+    await user.keyboard("{Control>}z{/Control}");
+    expect(ref.current?.getMarkdown()).toBe("Replaced");
+  });
+
+  test("setMarkdown preserves front matter", async () => {
+    const user = userEvent.setup();
+    const ref = createRef<MarkdownEditorHandle>();
+    render(<MarkdownEditor ref={ref} defaultValue="---\ntitle: a\n---\n# Old" aria-label="Research note" />);
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+
+    act(() => { ref.current?.setMarkdown("---\ntitle: b\n---\n# New"); });
+    expect(ref.current?.getMarkdown()).toBe("---\ntitle: b\n---\n# New");
+    expect(editor).not.toHaveTextContent("title: b");
+    expect(screen.getByRole("heading", { level: 1, name: "New" })).toBeVisible();
+
+    await user.click(editor);
+    await user.keyboard("!");
+    expect(ref.current?.getMarkdown()).toBe("---\ntitle: b\n---\n# !New");
+  });
+
+  test("a real edit after setMarkdown fires onChange with the replaced document", async () => {
+    const onChange = vi.fn();
+    const ref = createRef<MarkdownEditorHandle>();
+    const user = userEvent.setup();
+    render(<MarkdownEditor ref={ref} defaultValue="Draft" onChange={onChange} aria-label="Research note" />);
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+
+    act(() => { ref.current?.setMarkdown("Replaced"); });
+    expect(onChange).not.toHaveBeenCalled();
+
+    await user.click(editor);
+    await user.keyboard("!");
+    expect(onChange).toHaveBeenLastCalledWith("!Replaced");
+    expect(ref.current?.getMarkdown()).toBe("!Replaced");
+  });
+
+  test("setMarkdown before the editor mounts wins on mount", async () => {
+    const ref = createRef<MarkdownEditorHandle>();
+    function Parent() {
+      useLayoutEffect(() => { ref.current?.setMarkdown("Replaced"); });
+      return <MarkdownEditor ref={ref} defaultValue="Draft" aria-label="Research note" />;
+    }
+    render(<Parent />);
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    await waitFor(() => expect(editor).toHaveTextContent("Replaced"));
+    expect(ref.current?.getMarkdown()).toBe("Replaced");
   });
 });

@@ -27,26 +27,91 @@ const current = editorRef.current?.getMarkdown();
 The editor is uncontrolled. `defaultValue` supplies its starting document;
 changing that prop does not replace the document. `onChange(markdown)` is
 optional and runs after document edits, not on mount or selection changes. The
-ref exposes `getMarkdown()`. Before the first edit it returns `defaultValue`
-byte for byte; afterwards it returns the serializer's current Markdown. After
-any edit, including one undone back to the original content, it returns the
-serializer's normal form rather than the original bytes. For example, a
-trailing newline is dropped. A controlled `value` prop and external content
-replacement are not part of this slice.
+ref exposes `getMarkdown()` and `setMarkdown(markdown)`. Before the first edit
+`getMarkdown()` returns `defaultValue` byte for byte; afterwards it returns the
+serializer's current Markdown. After any edit, including one undone back to the
+original content, it returns the serializer's normal form rather than the
+original bytes. For example, a trailing newline is dropped. A controlled
+`value` prop is not part of this slice.
 
-`useMarkdownEditor(options)` accepts the same value, callback, and labelling
-options. Its returned `editor` is only for mounting and frame composition with
-Tiptap's `EditorContent`. Read Markdown only through the returned
-`getMarkdown()`: `editor.getMarkdown()` is serializer-normalised even before
-the first edit and does not provide the pre-edit byte guarantee.
-`MarkdownEditor` is the standard field frame around that hook. Consumers
-exchange Markdown strings, not Tiptap JSON or HTML.
+`setMarkdown(markdown)` replaces the whole document from outside, for example
+to load another note or discard edits. It runs the new value through the same
+front-matter split and Markdown parse as the starting value, does **not** fire
+`onChange`, and resets undo history, so Undo cannot return to the previous
+document. Until the next real edit, `getMarkdown()` returns the replaced string
+byte for byte — the same contract as `defaultValue`. Called before the editor
+mounts, the replaced value wins on mount.
+
+The remaining optional props compose for use inside Anaphor's field:
+
+- `placeholder` — text shown when the editor is empty; it disappears on the
+  first input.
+- `readOnly` — typing does nothing, but the editor stays focusable, keeps
+  `tabindex="0"`, and is announced with `aria-readonly="true"`, so text can
+  still be selected and copied.
+- `disabled` — the editor is removed from the tab order (`aria-disabled="true"`
+  and no `tabindex`), ignores pointer clicks, and uses the input disabled
+  background.
+- `autoFocus` — focuses the editor on mount with the caret at the end.
+- `invalid` — announces `aria-invalid="true"` and applies the input's invalid
+  border.
+- `id` and `aria-describedby` — pass through to the textbox for field
+  association.
+
+Both state props take effect after mount without remounting, and toggling them
+never fires `onChange`.
+
+```tsx
+<Field orientation="vertical" invalid={invalid}>
+  <FieldLabel id="note-label">Notes</FieldLabel>
+  <MarkdownEditor
+    ref={editorRef}
+    defaultValue=""
+    onChange={setMarkdown}
+    aria-labelledby="note-label"
+    aria-describedby="note-feedback"
+    placeholder="Write a note…"
+    readOnly={readOnly}
+    disabled={disabled}
+    invalid={invalid}
+  />
+  <FieldFeedback id="note-feedback" hint="Markdown is fine here." error="This note needs your attention." invalid={invalid} />
+</Field>
+```
+
+`useMarkdownEditor(options)` accepts the same value, callback, state, and
+labelling options. Its returned `editor` is only for mounting and frame
+composition with Tiptap's `EditorContent`; read Markdown only through the
+returned `getMarkdown()` and replace it through `setMarkdown()`.
+`editor.getMarkdown()` is serializer-normalised even before the first edit and
+does not provide the pre-edit byte guarantee. `MarkdownEditor` is the standard
+field frame around that hook. Consumers exchange Markdown strings, not Tiptap
+JSON or HTML.
 
 The editable root has role `textbox`, `aria-multiline="true"`, and the supplied
-accessible name. Tab enters and leaves the editor outside lists; inside a list
-item Tab nests and Shift+Tab un-nests. The field uses the existing input
+accessible name. Inside a field, the label names it via `aria-labelledby` and
+the description and error are associated via `aria-describedby`; the invalid
+state is reflected with `aria-invalid` on the textbox and the input's invalid
+border on the frame. Tab enters and leaves the editor outside lists; inside a
+list item Tab nests and Shift+Tab un-nests. The field uses the existing input
 border, radius, surface, and focus treatment; body text keeps Prose's size and
 reading styles.
+
+## Field box
+
+The field starts small and grows with its content to a maximum, then scrolls.
+The heights are exposed as CSS custom properties, tuned on the reference-manual
+page:
+
+- `--anaphor-markdown-editor-min-height: 6rem`
+- `--anaphor-markdown-editor-max-height: 18rem`
+
+A click anywhere inside the box places the caret; clicks in the padding or the
+empty space below short content place it at the end. The placeholder is
+rendered by Tiptap's Placeholder extension as a `::before` pseudo-element on
+the empty paragraph, so Prose's article rules never match it; it inherits only
+the paragraph's body metrics, keeping the empty editor exactly one Prose line
+tall, and uses the muted foreground token.
 
 ## Supported Markdown and keyboard input
 
@@ -201,9 +266,8 @@ pinned by a test so an upgrade that changes one is noticed:
 ## Registry and boundaries
 
 The standalone `markdown-editor` registry item installs the component, shared
-styles, utilities, and exact Tiptap 3.33.0 dependencies. It is not yet part of
-the complete `ui` aggregate.
+styles, utilities, and exact Tiptap 3.33.0 dependencies. It is also part of the
+complete `ui` aggregate.
 
 This slice does not support tasks, tables, images, paste handling, a selection
-bubble, in-place presentation, placeholder text, read-only or disabled states,
-Field integration, or external `setContent`.
+bubble, or the in-place presentation.

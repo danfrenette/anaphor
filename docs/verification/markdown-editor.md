@@ -33,16 +33,22 @@ tests cover front matter held byte for byte, opaque blocks for raw HTML,
 comments, footnote definitions, MDX import and export, and self-closing,
 multi-line and nested components, inline opaque spans for footnote references
 and inline HTML, inert rendering of `<script>`, `<img onerror>` and
-`javascript:` links, and a mixed fixture file. Type fixtures
-in `packages/design-system/test/markdown-editor.types.tsx` cover both exports
-and rejected consumer configurations. jsdom lacks pointer hit testing and
-range layout, so the component file stubs only those geometry APIs; real
-layout and editing remain browser-owned checks.
+`javascript:` links, and a mixed fixture file. Field-presentation tests cover
+the placeholder appearing and disappearing, read-only and disabled states and
+their accessible attributes, toggling state without firing `onChange`, autofocus
+placing the caret at the end, field label/description association, invalid
+reflection, and `setMarkdown` replacing the document byte for byte, preserving
+front matter, resetting undo history, and winning when called before mount. Type
+fixtures in `packages/design-system/test/markdown-editor.types.tsx` cover both
+exports, the new props, and rejected consumer configurations. jsdom lacks
+pointer hit testing and range layout, so the component file stubs only those
+geometry APIs; real layout, click-to-focus, and editing remain browser-owned
+checks.
 
 Playwright builds and serves the manual on port 3105 in desktop Chromium and
-320px WebKit. Registry verification independently installs `markdown-editor`,
-compiles it, and edits its rendered content. The editor is intentionally absent
-from the complete-UI aggregate in this slice.
+320px WebKit. Registry verification independently installs `markdown-editor`
+and also includes it in the complete-UI aggregate; both compile and edit its
+rendered content.
 
 ## Browser recipe
 
@@ -85,6 +91,19 @@ from the complete-UI aggregate in this slice.
    appear as a quiet mono block. Click one and press Delete to remove the whole
    block. Check the emitted Markdown still opens with the original front
    matter.
+10. On "Inside a field", confirm the empty editor shows the placeholder and that
+    it disappears after typing. Confirm the label names the textbox and the
+    description and error are announced through `aria-describedby`. Toggle the
+    error and confirm `aria-invalid` and the danger border; toggle read-only
+    and confirm typing stops while selection and copy still work; toggle
+    disabled and confirm focus, interaction, and tab order are removed. Click
+    the "Load another note" and "Discard edits" controls and confirm
+    `setMarkdown` swaps the document without firing a change event; undo after
+    a load does not restore the previous note.
+11. Confirm the field's boundary, focus and invalid states match the input in
+    both themes, that the empty editor is one Prose line tall, that the field
+    starts at `6rem` and grows to `18rem` before scrolling, and that clicking
+    the padding or empty space below short content places the caret at the end.
 
 Keep Playwright output and screenshots under `test-results/` with the run
 receipt. Stop only a server started for the verification run.
@@ -94,6 +113,5 @@ receipt. Stop only a server started for the verification run.
 The callback and pre-edit byte guarantee are component-test criteria. The hook
 is exercised through the component rather than through internal editor calls.
 Tests assert visible results and Markdown output, never Tiptap document JSON,
-extension arrays, or private methods. Tasks, tables, images, paste,
-bubble/in-place presentations, form states, and external content replacement
-are outside this recipe.
+extension arrays, or private methods. Tasks, tables, images, paste, and
+bubble/in-place presentations are outside this recipe.
