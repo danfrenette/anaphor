@@ -136,9 +136,14 @@ dropped.
 
 **Front matter.** A leading `---` … `---` (or `...`) block is split out before
 parsing and prepended byte for byte on output. It is never shown and cannot be
-edited. The blank line separating it from the body is the serializer's normal
-form, so after an edit that separator may be normalised while the front matter
-itself is untouched.
+edited. The first line must be `---`, and the block either closes right away
+(empty front matter) or its first interior line is a YAML mapping key or a `#`
+comment; from there it runs, blank lines included, to the first `---` (or
+`...`) line. The blank line separating it from the body is the serializer's
+normal form, so after an edit that separator may be normalised while the front
+matter itself is untouched. A front-matter-only document with no trailing
+newline gains one before the body on output so the closing delimiter is not
+glued to typed text.
 
 **Opaque blocks.** Raw HTML blocks, HTML comments, footnote definitions (with
 indented continuation lines), MDX `import` and `export` lines, and capitalised
@@ -181,6 +186,9 @@ pinned by a test so an upgrade that changes one is noticed:
 - MDX fragments `<>…</>` are not preserved.
 - TOML `+++` front matter is not recognised; only `---` and `...` delimiters
   are.
+- Front matter is recognised only when its first interior line is a YAML
+  mapping key or a `#` comment; a document that opens with a rule, a blank
+  line, or prose is left in the body.
 - Multi-line ESM is preserved line by line only, so a multi-line
   `export default function` gains a blank line between its lines.
 - Text between inline tags is parsed as Markdown, per CommonMark, so it is not
