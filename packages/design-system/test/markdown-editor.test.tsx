@@ -21,14 +21,12 @@ beforeEach(() => {
   Object.defineProperty(Range.prototype, "getClientRects", { configurable: true, value: () => Object.assign([rect], { item: (index: number) => index === 0 ? rect : null }) });
 });
 
-// Renders the editor with a starting value and the shared accessible name. Tests
-// that need an onChange spy, a different label, or surrounding focus targets build
-// the editor themselves.
-function setupEditor(defaultValue = "") {
+// Renders the editor with a starting value and the shared accessible name.
+function setupEditor(defaultValue = "", props: { placeholder?: string; readOnly?: boolean; disabled?: boolean; autoFocus?: boolean; invalid?: boolean; onChange?: (markdown: string) => void } = {}) {
   const user = userEvent.setup();
   const ref = createRef<MarkdownEditorHandle>();
-  render(<MarkdownEditor ref={ref} defaultValue={defaultValue} aria-label="Research note" />);
-  return { user, ref };
+  const rendered = render(<MarkdownEditor ref={ref} defaultValue={defaultValue} aria-label="Research note" {...props} />);
+  return { user, ref, ...rendered };
 }
 
 // Serialises a document without changing its content: typing then undoing still
@@ -878,8 +876,7 @@ describe("preserved unsupported content", () => {
 
 describe("field presentation", () => {
   test("a retained handle remains safe after unmount", async () => {
-    const ref = createRef<MarkdownEditorHandle>();
-    const { unmount } = render(<MarkdownEditor ref={ref} defaultValue="Draft" aria-label="Research note" />);
+    const { ref, unmount } = setupEditor("Draft");
     await screen.findByRole("textbox", { name: "Research note" });
     const handle = ref.current!;
     unmount();
@@ -888,7 +885,7 @@ describe("field presentation", () => {
     expect(handle.getMarkdown()).toBe("Draft");
   });
   test("updates the placeholder after mount", async () => {
-    const { rerender } = render(<MarkdownEditor defaultValue="" placeholder="First" aria-label="Research note" />);
+    const { rerender } = setupEditor("", { placeholder: "First" });
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     rerender(<MarkdownEditor defaultValue="" placeholder="Second" aria-label="Research note" />);
     // The decoration attribute is the only observable placeholder signal in jsdom.
@@ -896,8 +893,7 @@ describe("field presentation", () => {
   });
 
   test("an empty editor shows the placeholder and it disappears on input", async () => {
-    const user = userEvent.setup();
-    render(<MarkdownEditor defaultValue="" placeholder="Write a note…" aria-label="Research note" />);
+    const { user } = setupEditor("", { placeholder: "Write a note…" });
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     // The decoration attribute is the only observable placeholder signal in jsdom.
@@ -909,9 +905,7 @@ describe("field presentation", () => {
   });
 
   test("read-only prevents edits but stays focusable and announced", async () => {
-    const user = userEvent.setup();
-    const ref = createRef<MarkdownEditorHandle>();
-    render(<MarkdownEditor ref={ref} defaultValue="Draft" readOnly aria-label="Research note" />);
+    const { user, ref } = setupEditor("Draft", { readOnly: true });
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     expect(editor).toHaveAttribute("aria-readonly", "true");
@@ -924,9 +918,7 @@ describe("field presentation", () => {
   });
 
   test("disabled is not focusable, announced, and ignores typing", async () => {
-    const user = userEvent.setup();
-    const ref = createRef<MarkdownEditorHandle>();
-    render(<MarkdownEditor ref={ref} defaultValue="Draft" disabled aria-label="Research note" />);
+    const { user, ref } = setupEditor("Draft", { disabled: true });
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     expect(editor).toHaveAttribute("aria-disabled", "true");
@@ -938,7 +930,7 @@ describe("field presentation", () => {
   });
 
   test("disabling a focused editor removes focus and tab access", async () => {
-    const { rerender } = render(<MarkdownEditor defaultValue="Draft" aria-label="Research note" />);
+    const { rerender } = setupEditor("Draft");
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     editor.focus();
     expect(editor).toHaveFocus();
@@ -949,8 +941,7 @@ describe("field presentation", () => {
 
   test("toggling read-only after mount keeps the pre-edit bytes and does not fire onChange", async () => {
     const onChange = vi.fn();
-    const ref = createRef<MarkdownEditorHandle>();
-    const { rerender } = render(<MarkdownEditor ref={ref} defaultValue="Draft" onChange={onChange} aria-label="Research note" />);
+    const { ref, rerender } = setupEditor("Draft", { onChange });
     await screen.findByRole("textbox", { name: "Research note" });
 
     rerender(<MarkdownEditor ref={ref} defaultValue="Draft" onChange={onChange} readOnly aria-label="Research note" />);
@@ -959,8 +950,7 @@ describe("field presentation", () => {
   });
 
   test("state attributes survive later re-renders", async () => {
-    const ref = createRef<MarkdownEditorHandle>();
-    const { rerender } = render(<MarkdownEditor ref={ref} defaultValue="Draft" readOnly aria-label="Research note" />);
+    const { ref, rerender } = setupEditor("Draft", { readOnly: true });
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     expect(editor).toHaveAttribute("aria-readonly", "true");
     expect(editor).toHaveAttribute("tabindex", "0");
@@ -972,9 +962,7 @@ describe("field presentation", () => {
   });
 
   test("autofocus places the caret on mount at the end", async () => {
-    const user = userEvent.setup();
-    const ref = createRef<MarkdownEditorHandle>();
-    render(<MarkdownEditor ref={ref} defaultValue="Draft" autoFocus aria-label="Research note" />);
+    const { user, ref } = setupEditor("Draft", { autoFocus: true });
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     await waitFor(() => expect(editor).toHaveFocus());
@@ -983,8 +971,7 @@ describe("field presentation", () => {
   });
 
   test("read-only autofocus and frame padding focus the editor", async () => {
-    const user = userEvent.setup();
-    const { container } = render(<MarkdownEditor defaultValue="Draft" readOnly autoFocus aria-label="Research note" />);
+    const { user, container } = setupEditor("Draft", { readOnly: true, autoFocus: true });
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     await waitFor(() => expect(editor).toHaveFocus());
     editor.blur();
@@ -1008,7 +995,7 @@ describe("field presentation", () => {
   });
 
   test("invalid state is announced on the textbox and reflected on the frame", async () => {
-    render(<MarkdownEditor defaultValue="Note" invalid aria-label="Research note" />);
+    setupEditor("Note", { invalid: true });
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     expect(editor).toHaveAttribute("aria-invalid", "true");
@@ -1021,8 +1008,7 @@ describe("field presentation", () => {
 describe("imperative replace", () => {
   test("setMarkdown replaces the document and reads back byte for byte without firing onChange", async () => {
     const onChange = vi.fn();
-    const ref = createRef<MarkdownEditorHandle>();
-    render(<MarkdownEditor ref={ref} defaultValue="Draft" onChange={onChange} aria-label="Research note" />);
+    const { ref } = setupEditor("Draft", { onChange });
     await screen.findByRole("textbox", { name: "Research note" });
 
     const replacement = "## Replaced\n\nNew body\n";
