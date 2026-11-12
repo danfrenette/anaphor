@@ -25,7 +25,7 @@ const comparisonMarkdown = [
   "> A quotation with a little context.",
   "",
   "```ts",
-  `const longLine = "${"x".repeat(120)}";`,
+  "const value = 1;",
   "```",
   "",
   "---",

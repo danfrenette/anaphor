@@ -68,7 +68,8 @@ On `/markdown-editor`, compare the In-place comparison's editable and rendered
 columns in light and dark themes, then at 320px. They should align block by
 block, with no extra final line. Focus and edit the left column: only the caret
 and selection should appear, without a field frame. Confirm the soft break stays
-on one line and the long code line scrolls rather than wraps.
+on one line. In the editable code block, type a long line and confirm it scrolls
+rather than wrapping.
 
 ## Browser recipe
 

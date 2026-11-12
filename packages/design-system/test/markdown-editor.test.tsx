@@ -39,6 +39,25 @@ test("in-place presentation does not focus when its surrounding wrapper is click
   expect(editor).toHaveFocus();
 });
 
+test("in-place presentation retains state, placeholder, and replacement behavior", async () => {
+  const ref = createRef<MarkdownEditorHandle>();
+  const onChange = vi.fn();
+  const { rerender } = render(<MarkdownEditor presentation="in-place" ref={ref} defaultValue="" placeholder="Write here" aria-label="In-place note" onChange={onChange} />);
+  const editor = await screen.findByRole("textbox", { name: "In-place note" });
+  expect(editor).toHaveAttribute("aria-multiline", "true");
+  // jsdom does not render the placeholder pseudo-element; the browser checks its visible text.
+  await waitFor(() => expect(editor.querySelector("[data-placeholder]")).toHaveAttribute("data-placeholder", "Write here"));
+  act(() => ref.current?.setMarkdown("Text\n\n<!-- preserved -->"));
+  expect(ref.current?.getMarkdown()).toBe("Text\n\n<!-- preserved -->");
+  expect(screen.getByText("<!-- preserved -->")).toBeVisible();
+  expect(onChange).not.toHaveBeenCalled();
+  rerender(<MarkdownEditor presentation="in-place" ref={ref} defaultValue="" readOnly aria-label="In-place note" />);
+  expect(editor).toHaveAttribute("aria-readonly", "true");
+  rerender(<MarkdownEditor presentation="in-place" ref={ref} defaultValue="" disabled aria-label="In-place note" />);
+  expect(editor).toHaveAttribute("aria-disabled", "true");
+  expect(editor).not.toHaveAttribute("tabindex");
+});
+
 test.each([
   ["opaque", "Before\n\n<!-- Field note -->"],
   ["code", "Before\n\n```js\nconst x = 1;\n```"],
