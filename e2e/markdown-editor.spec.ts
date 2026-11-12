@@ -2,12 +2,73 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { prepareContentSnapshot } from "./content-snapshot";
 
+test("in-place opaque block undo and keyboard gap", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "In-place opaque note" });
+  const output = page.getByLabel("In-place opaque Markdown");
+  await editor.getByText("<!-- Field note -->").click();
+  await editor.press("Delete");
+  await expect(output).not.toContainText("<!-- Field note -->");
+  await editor.press("ControlOrMeta+z");
+  await expect(output).toContainText("<!-- Field note -->");
+  await editor.getByText("<!-- Field note -->").click();
+  await editor.press("ArrowDown");
+  await page.keyboard.type("x");
+  await expect(output).toHaveText("## A loaded note\n\nLoaded with `setMarkdown`.\n\n<!-- Field note -->\n\nx");
+});
+
+test("page space below the in-place editor does not focus or move its selection", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "In-place opaque note" });
+  await editor.getByText("A loaded note").click();
+  const selection = await page.evaluate(() => ({ text: window.getSelection()?.anchorNode?.textContent, offset: window.getSelection()?.anchorOffset }));
+  await page.getByText("Space below the editor", { exact: true }).click();
+  await expect(editor).not.toBeFocused();
+  expect(await page.evaluate(() => ({ text: window.getSelection()?.anchorNode?.textContent, offset: window.getSelection()?.anchorOffset }))).toEqual(selection);
+});
+
+test("read-only in-place focus measurement", async ({ page, browserName }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Read-only in-place note" });
+  for (const dark of [false, true]) {
+    await page.locator("html").evaluate((element, value) => element.classList.toggle("dark", value), dark);
+    await page.getByRole("textbox", { name: "In-place opaque note" }).focus();
+    await page.keyboard.press(browserName === "webkit" && process.platform === "darwin" ? "Alt+Tab" : "Tab");
+    await expect(editor).toBeFocused();
+    console.log(JSON.stringify({ dark, focus: await editor.evaluate(element => ({ outline: getComputedStyle(element).outline, caret: getComputedStyle(element).caretColor, selection: window.getSelection()?.toString() })) }));
+    await editor.screenshot({ path: `/tmp/anaphor-343-fix/read-only-${browserName}-${dark ? "dark" : "light"}.png` });
+  }
+});
+
+test("comparison labels and Markdown code ending remain visible", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const section = page.getByRole("region", { name: "In-place comparison" });
+  await expect(section.getByText("Editable", { exact: true }).first()).toBeVisible();
+  await expect(section.getByText("Rendered", { exact: true }).first()).toBeVisible();
+  const editor = page.getByRole("textbox", { name: "In-place code ending" });
+  const rendered = page.getByLabel("Rendered code ending");
+  for (const root of [editor, rendered]) {
+    const code = root.locator("pre");
+    await expect(code).toContainText("x".repeat(120));
+    expect(await code.evaluate(element => ({ whiteSpace: getComputedStyle(element).whiteSpace, overflow: element.scrollWidth > element.clientWidth }))).toEqual({ whiteSpace: "pre", overflow: true });
+  }
+  await editor.locator("p").first().click();
+  await page.keyboard.press("End");
+  await page.keyboard.type("x");
+  for (const root of [editor, rendered]) await expect(root.locator(":scope > pre:last-child")).toBeVisible();
+  const heights = await Promise.all([editor, rendered].map(root => root.evaluate(element => element.getBoundingClientRect().height)));
+  console.log(JSON.stringify({ endingWithCodeHeights: heights }));
+  expect(Math.abs(heights[0]! - heights[1]!)).toBeLessThanOrEqual(1);
+  const blocks = await Promise.all([editor, rendered].map(root => root.locator("pre").evaluate(element => element.getBoundingClientRect().height)));
+  expect(Math.abs(blocks[0]! - blocks[1]!)).toBeLessThanOrEqual(1);
+});
+
 for (const theme of ["light", "dark"]) {
   test(`in-place comparison baseline: ${theme}`, async ({ page }) => {
     await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
     await page.goto("/markdown-editor");
     await page.evaluate(() => document.fonts.ready);
-    await expect(page.getByRole("textbox", { name: "In-place note" })).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "In-place note", exact: true })).toBeVisible();
     await prepareContentSnapshot(page);
     await expect(page.getByRole("region", { name: "In-place comparison" })).toHaveScreenshot(`markdown-in-place-${theme}.png`, { animations: "disabled", caret: "hide" });
   });
@@ -16,7 +77,7 @@ for (const theme of ["light", "dark"]) {
     await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
     await page.goto("/markdown-editor");
     await page.evaluate(() => document.fonts.ready);
-    const editor = page.getByRole("textbox", { name: "In-place note" });
+    const editor = page.getByRole("textbox", { name: "In-place note", exact: true });
     const prose = page.getByLabel("Rendered note");
     await expect(editor).toBeVisible();
     await editor.focus();
@@ -39,6 +100,7 @@ for (const theme of ["light", "dark"]) {
     };
     const actual = await editor.evaluate(measure, selectors);
     const expected = await prose.evaluate(measure, selectors);
+    expect((await new AxeBuilder({ page }).include('[aria-label="In-place comparison"]').withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze()).violations).toEqual([]);
     console.log(JSON.stringify({ theme, actual, expected }));
     for (let i = 0; i < selectors.length; i++) {
       expect(Math.abs(actual[i]!.top - expected[i]!.top), `${selectors[i]} top`).toBeLessThanOrEqual(1);
@@ -55,7 +117,7 @@ for (const theme of ["light", "dark"]) {
       const soft = root.getByText("A soft line continues here.");
       expect((await soft.boundingBox())!.height).toBeCloseTo(await soft.evaluate(element => parseFloat(getComputedStyle(element).lineHeight)), 0);
       const code = root.locator("pre");
-      await code.locator("code").evaluate(element => { element.textContent = "x".repeat(120); });
+      await expect(code).toContainText("x".repeat(120));
       expect(await code.evaluate(element => ({ whiteSpace: getComputedStyle(element).whiteSpace, overflows: element.scrollWidth > element.clientWidth }))).toEqual({ whiteSpace: "pre", overflows: true });
     }
   });
@@ -170,13 +232,17 @@ test("the editor keeps keyboard focus order and passes accessibility checks", as
   const tabBackward = browserName === "webkit" && process.platform === "darwin" ? "Alt+Shift+Tab" : "Shift+Tab";
   await editor.focus();
   await expect(editor).toBeFocused();
-  // Tab leaves the field editor to the second editor, then to the field-states controls.
+  // A code block is focusable so its horizontal overflow is keyboard accessible.
+  await page.keyboard.press(tabForward);
+  await expect(editor.locator("pre")).toBeFocused();
   await page.keyboard.press(tabForward);
   await expect(existingPost).toBeFocused();
   await page.keyboard.press(tabForward);
   await expect(page.getByRole("button", { name: "Read-only" })).toBeFocused();
   await page.keyboard.press(tabBackward);
   await expect(existingPost).toBeFocused();
+  await page.keyboard.press(tabBackward);
+  await expect(editor.locator("pre")).toBeFocused();
   await page.keyboard.press(tabBackward);
   await expect(editor).toBeFocused();
 

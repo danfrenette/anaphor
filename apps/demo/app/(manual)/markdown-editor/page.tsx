@@ -25,13 +25,16 @@ const comparisonMarkdown = [
   "> A quotation with a little context.",
   "",
   "```ts",
-  "const value = 1;",
+  "x".repeat(120),
   "```",
   "",
   "---",
   "",
   "The final paragraph.",
 ].join("\n");
+
+const codeEndingMarkdown = ["A paragraph before code.", "", "```ts", "x".repeat(120), "```"].join("\n");
+const renderMarkdown = (markdown: string) => marked.parse(markdown, { async: false }).replaceAll("<pre>", '<pre tabindex="0">');
 
 export default function MarkdownEditorPage() {
   return <main id="content" tabIndex={-1} className="min-w-0 px-page-inset py-12">
@@ -45,8 +48,12 @@ export default function MarkdownEditorPage() {
         <Text as="h2" variant="heading">In-place comparison</Text>
         <Text as="p" variant="body" className="mt-3">The same Markdown, editable and rendered.</Text>
         <div className="mt-6 grid min-w-0 gap-8 md:grid-cols-2">
-          <div className="min-w-0"><MarkdownEditor presentation="in-place" defaultValue={comparisonMarkdown} aria-label="In-place note" /></div>
-          <Prose as="div" aria-label="Rendered note" className="min-w-0" dangerouslySetInnerHTML={{ __html: marked.parse(comparisonMarkdown, { async: false }) }} />
+          <div className="min-w-0"><Text as="h3" variant="ui" className="mb-3 font-medium">Editable</Text><MarkdownEditor presentation="in-place" defaultValue={comparisonMarkdown} aria-label="In-place note" /></div>
+          <div className="min-w-0"><Text as="h3" variant="ui" className="mb-3 font-medium">Rendered</Text><Prose as="div" aria-label="Rendered note" dangerouslySetInnerHTML={{ __html: renderMarkdown(comparisonMarkdown) }} /></div>
+        </div>
+        <div className="mt-8 grid min-w-0 gap-8 md:grid-cols-2">
+          <div className="min-w-0"><Text as="h3" variant="ui" className="mb-3 font-medium">Editable</Text><MarkdownEditor presentation="in-place" defaultValue={codeEndingMarkdown} aria-label="In-place code ending" /></div>
+          <div className="min-w-0"><Text as="h3" variant="ui" className="mb-3 font-medium">Rendered</Text><Prose as="div" aria-label="Rendered code ending" dangerouslySetInnerHTML={{ __html: renderMarkdown(codeEndingMarkdown) }} /></div>
         </div>
       </section>
     </div>
