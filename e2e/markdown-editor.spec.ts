@@ -458,7 +458,7 @@ test("overflowing code is keyboard accessible across read-only transitions", asy
   await expect(code).toBeFocused();
   for (const dark of [false, true]) {
     await page.locator("html").evaluate((element, value) => element.classList.toggle("dark", value), dark);
-    await checkAccessibility(page, '[aria-label="Field states"]');
+    await checkAccessibility(page, '[role="textbox"][aria-readonly="true"]');
   }
   await page.getByRole("button", { name: "Read-only", exact: true }).click();
   await expect(code).not.toHaveAttribute("tabindex");
