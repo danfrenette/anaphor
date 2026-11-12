@@ -70,8 +70,12 @@ rendered content.
    formatting and the emitted Markdown.
 3. Type `- One`, Enter, `Two`, then Tab to nest and Shift+Tab to un-nest.
    Confirm the nested and flattened Markdown. On an empty list item or an empty
-   quotation line, Enter leaves the block; Backspace at the start lifts it. In
-   a code block, a single Enter inserts a newline and a triple Enter (or
+   quotation line, Enter leaves the block. For Backspace, type `- One` or
+   `> One`, move the caret to the start of `One`, pause for the selection to
+   settle, then press Backspace once: the block lifts to a paragraph. Browser
+   automation must wait for ProseMirror's selection `$from.parentOffset` to be
+   zero before pressing Backspace; DOM selection alone can update first. In a
+   code block, a single Enter inserts a newline and a triple Enter (or
    ArrowDown at the end) leaves it.
 4. Type a trigger such as `- ` and undo once: the literal characters return,
    not the conversion. Undo and redo across typing and a bold formatting step.
