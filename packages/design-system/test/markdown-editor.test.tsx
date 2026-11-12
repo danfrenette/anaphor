@@ -981,6 +981,16 @@ describe("field presentation", () => {
     expect(ref.current?.getMarkdown()).toBe("Draft!");
   });
 
+  test("read-only autofocus and frame padding focus the editor", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<MarkdownEditor defaultValue="Draft" readOnly autoFocus aria-label="Research note" />);
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    await waitFor(() => expect(editor).toHaveFocus());
+    editor.blur();
+    await user.click(container.querySelector('[data-slot="markdown-editor"]')!);
+    expect(editor).toHaveFocus();
+  });
+
   test("the label names the editor and the description is associated with it", async () => {
     render(
       <Field orientation="vertical">

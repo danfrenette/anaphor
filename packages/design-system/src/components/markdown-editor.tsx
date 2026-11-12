@@ -7,7 +7,7 @@ import { Extension, Node } from "@tiptap/core";
 import type { MarkdownRendererHelpers, MarkdownToken, RenderContext } from "@tiptap/core";
 import { Placeholder } from "@tiptap/extensions/placeholder";
 import { Markdown } from "@tiptap/markdown";
-import { EditorState } from "@tiptap/pm/state";
+import { EditorState, Selection } from "@tiptap/pm/state";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, type Ref } from "react";
@@ -399,6 +399,13 @@ function useMarkdownEditor({
     if (editor && !editor.isDestroyed) editor.view.dispatch(editor.state.tr.setMeta("placeholderRefresh", true));
   }, [editor, placeholder]);
 
+  useEffect(() => {
+    if (editor && autoFocus && readOnly && !disabled) {
+      editor.view.dispatch(editor.state.tr.setSelection(Selection.atEnd(editor.state.doc)));
+      editor.view.dom.focus();
+    }
+  }, [editor, autoFocus, readOnly, disabled]);
+
   // Replace the document without emitting an update, then clear undo history.
   const replaceContent = useCallback((nextBody: string, target: Editor) => {
     isReplacingRef.current = true;
@@ -474,6 +481,11 @@ function MarkdownEditor({ ref, ...options }: MarkdownEditorProps) {
     if (disabled || !editor) return;
     const target = event.target;
     if (target instanceof globalThis.Node && editor.view.dom.contains(target)) return;
+    if (options.readOnly) {
+      editor.view.dispatch(editor.state.tr.setSelection(Selection.atEnd(editor.state.doc)));
+      editor.view.dom.focus();
+      return;
+    }
     editor.commands.focus("end");
   };
 
