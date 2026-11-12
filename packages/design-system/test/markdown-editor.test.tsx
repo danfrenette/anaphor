@@ -926,6 +926,16 @@ describe("field presentation", () => {
     expect(ref.current?.getMarkdown()).toBe("Draft");
   });
 
+  test("disabling a focused editor removes focus and tab access", async () => {
+    const { rerender } = render(<MarkdownEditor defaultValue="Draft" aria-label="Research note" />);
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    editor.focus();
+    expect(editor).toHaveFocus();
+    rerender(<MarkdownEditor defaultValue="Draft" disabled aria-label="Research note" />);
+    await waitFor(() => expect(editor).not.toHaveFocus());
+    expect(editor).not.toHaveAttribute("tabindex");
+  });
+
   test("toggling read-only after mount keeps the pre-edit bytes and does not fire onChange", async () => {
     const onChange = vi.fn();
     const ref = createRef<MarkdownEditorHandle>();
