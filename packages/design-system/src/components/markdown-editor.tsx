@@ -503,8 +503,7 @@ function useMarkdownEditor({
   return { editor, getMarkdown, setMarkdown };
 }
 
-function MarkdownEditor({ ref, presentation: _presentation, ...options }: MarkdownEditorProps) {
-  void _presentation;
+function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) {
   const { disabled = false, invalid = false } = options;
   const { editor, getMarkdown, setMarkdown } = useMarkdownEditor(options);
   useImperativeHandle(ref, () => ({ getMarkdown, setMarkdown }), [getMarkdown, setMarkdown]);
@@ -524,8 +523,10 @@ function MarkdownEditor({ ref, presentation: _presentation, ...options }: Markdo
     data-slot="markdown-editor"
     data-invalid={invalid || undefined}
     data-disabled={disabled || undefined}
-    onClick={handleFrameClick}
+    onClick={presentation === "field" ? handleFrameClick : undefined}
     className={cn(
+      presentation === "in-place" && "min-w-0 data-disabled:pointer-events-none",
+      presentation === "field" && cn(
       // Layout and surface
       "w-full min-w-0 rounded-control border border-border bg-background px-3.5 py-3",
       // Field box: start small, grow to the maximum, then scroll.
@@ -540,6 +541,7 @@ function MarkdownEditor({ ref, presentation: _presentation, ...options }: Markdo
       "motion-safe:transition-[border-color,background-color,outline-color] motion-safe:duration-150",
       // Forced colors
       "forced-colors:border-[ButtonText]",
+      ),
     )}>
     <EditorContent editor={editor} />
   </div>;
