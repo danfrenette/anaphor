@@ -970,6 +970,19 @@ describe("field presentation", () => {
     expect(ref.current?.getMarkdown()).toBe("Draft!");
   });
 
+  test("autofocus does not steal focus when read-only or disabled changes", async () => {
+    const { user, ref, rerender } = setupEditor("Draft", { autoFocus: true });
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    await waitFor(() => expect(editor).toHaveFocus());
+    render(<button>Other control</button>);
+    const button = screen.getByRole("button", { name: "Other control" });
+    await user.click(button);
+    for (const props of [{ readOnly: true }, { readOnly: false }, { disabled: true }, { disabled: false, readOnly: true }]) {
+      rerender(<MarkdownEditor ref={ref} defaultValue="Draft" autoFocus aria-label="Research note" {...props} />);
+      expect(button).toHaveFocus();
+    }
+  });
+
   test("read-only autofocus and frame padding focus the editor", async () => {
     const { user, container } = setupEditor("Draft", { readOnly: true, autoFocus: true });
     const editor = await screen.findByRole("textbox", { name: "Research note" });
