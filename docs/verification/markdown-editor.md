@@ -47,7 +47,8 @@ checks.
 
 Playwright builds and serves the manual on port 3105 in desktop Chromium and
 320px WebKit. Browser checks also exercise read-only autofocus, padding focus,
-selection and copy, padding taps at three positions, and computed Input/frame
+selection and copy, padding taps at three positions, gap-cursor typing after
+final opaque and code blocks by pointer and keyboard, and computed Input/frame
 state and surface parity in both themes. Chromium checks the native clipboard;
 WebKit does not expose it to the test, which checks selection and an unprevented
 copy event instead. Registry verification independently installs `markdown-editor`

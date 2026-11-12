@@ -340,6 +340,7 @@ test("dragging inside a field selects text without padding focus interference", 
   await page.goto("/markdown-editor");
   await page.getByRole("button", { name: "Load another note" }).click();
   const text = page.getByRole("textbox", { name: "Notes" }).getByText("A loaded note");
+  await text.scrollIntoViewIfNeeded();
   const box = await text.boundingBox();
   if (!box) throw new Error("Text has no bounding box");
   await page.mouse.move(box.x + 2, box.y + box.height / 2);
@@ -355,17 +356,57 @@ test("an opaque block in a field is selected whole and padding focuses after it"
   const editor = page.getByRole("textbox", { name: "Notes" });
   const block = editor.getByText("<!-- Field note -->");
   const output = page.getByLabel("Field states Markdown", { exact: true });
+  await editor.focus();
   await block.click();
   await editor.press("Delete");
   await expect(output).not.toContainText("<!-- Field note -->");
   await editor.press("ControlOrMeta+z");
   await expect(output).toContainText("<!-- Field note -->");
   const frame = page.locator('[data-slot="markdown-editor"]').filter({ has: editor });
+  await frame.scrollIntoViewIfNeeded();
   const box = await frame.boundingBox();
   if (!box) throw new Error("Frame has no bounding box");
   await page.mouse.click(box.x + box.width - 5, box.y + box.height - 5);
-  await page.keyboard.type("After");
-  await expect(output).toContainText("Loaded with `setMarkdown`.After");
+  await expect(editor).toBeFocused();
+  await page.keyboard.type("x");
+  await expect(output).toHaveText("## A loaded note\n\nLoaded with `setMarkdown`.\n\n<!-- Field note -->\n\nx");
+});
+
+test("padding after a final code block starts a paragraph", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  await editor.click();
+  await editor.pressSequentially("``` ");
+  await editor.pressSequentially("code");
+  const frame = page.locator('[data-slot="markdown-editor"]').filter({ has: editor });
+  await frame.scrollIntoViewIfNeeded();
+  const box = await frame.boundingBox();
+  if (!box) throw new Error("Frame has no bounding box");
+  await page.mouse.click(box.x + box.width - 5, box.y + box.height - 5);
+  await expect(editor).toBeFocused();
+  await page.keyboard.type("x");
+  await expect(page.getByLabel("Field states Markdown", { exact: true })).toHaveText("```\ncode\n```\n\nx");
+});
+
+test("keyboard reaches the gap after a final opaque block", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  await page.getByRole("button", { name: "Load another note" }).click();
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  await editor.focus();
+  await editor.getByText("<!-- Field note -->").click();
+  await editor.press("ArrowDown");
+  await page.keyboard.type("x");
+  await expect(page.getByLabel("Field states Markdown", { exact: true })).toHaveText("## A loaded note\n\nLoaded with `setMarkdown`.\n\n<!-- Field note -->\n\nx");
+});
+
+test("keyboard reaches the gap after a final code block", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  await editor.click();
+  await editor.pressSequentially("``` code");
+  await editor.press("ArrowRight");
+  await page.keyboard.type("x");
+  await expect(page.getByLabel("Field states Markdown", { exact: true })).toHaveText("```\ncode\n```\n\nx");
 });
 
 test("frame matches Input states and surfaces in both themes", async ({ page }) => {
