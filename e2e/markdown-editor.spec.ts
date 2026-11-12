@@ -316,7 +316,8 @@ test("read-only autofocus and frame padding focus the editor", async ({ page, is
   await expect(notes).toBeFocused();
 });
 
-test("read-only text can be selected and copied", async ({ page }) => {
+test("read-only text can be selected and copied", async ({ page, context, browserName }) => {
+  if (browserName === "chromium") await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/markdown-editor");
   await page.getByRole("button", { name: "Load another note" }).click();
   await page.getByRole("button", { name: "Read-only", exact: true }).click();
@@ -324,15 +325,21 @@ test("read-only text can be selected and copied", async ({ page }) => {
   await editor.click();
   await editor.press("ControlOrMeta+a");
   expect(await page.evaluate(() => window.getSelection()?.toString())).toContain("A loaded note");
-  const copied = page.evaluate(() => new Promise<string>((resolve) => {
+  const copied = page.evaluate((nativeClipboard) => new Promise<string>((resolve) => {
     document.addEventListener("copy", (event) => {
-      event.clipboardData?.setData("text/plain", window.getSelection()?.toString() ?? "");
-      resolve(event.clipboardData?.getData("text/plain") ?? "");
-      event.preventDefault();
+      const text = window.getSelection()?.toString() ?? "";
+      if (!nativeClipboard) {
+        event.clipboardData?.setData("text/plain", text);
+        event.preventDefault();
+        resolve(event.clipboardData?.getData("text/plain") ?? "");
+      } else {
+        resolve(text);
+      }
     }, { once: true });
-  }));
+  }), browserName === "chromium");
   await editor.press("ControlOrMeta+c");
   expect(await copied).toContain("A loaded note");
+  if (browserName === "chromium") expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("A loaded note");
 });
 
 test("frame matches Input states and surfaces in both themes", async ({ page }) => {
