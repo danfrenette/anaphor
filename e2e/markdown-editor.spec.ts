@@ -51,6 +51,7 @@ for (const theme of ["light", "dark"]) {
       const soft = root.getByText("A soft line continues here.");
       expect((await soft.boundingBox())!.height).toBeCloseTo(await soft.evaluate(element => parseFloat(getComputedStyle(element).lineHeight)), 0);
       const code = root.locator("pre");
+      await code.locator("code").evaluate(element => { element.textContent = "x".repeat(120); });
       expect(await code.evaluate(element => ({ whiteSpace: getComputedStyle(element).whiteSpace, overflows: element.scrollWidth > element.clientWidth }))).toEqual({ whiteSpace: "pre", overflows: true });
     }
   });
