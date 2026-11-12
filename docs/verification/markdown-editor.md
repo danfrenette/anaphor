@@ -3,7 +3,7 @@
 ## Scope and entry
 
 The public `MarkdownEditor` and `useMarkdownEditor` support Markdown in a
-field. The manual route is `/markdown-editor`, alphabetized under Controls.
+field and in place. The manual route is `/markdown-editor`, alphabetized under Controls.
 `docs/components/markdown-editor.md` owns the public contract and this slice's
 boundaries.
 
@@ -54,6 +54,21 @@ WebKit does not expose it to the test, which checks selection and an unprevented
 copy event instead. Registry verification independently installs `markdown-editor`
 and also includes it in the complete-UI aggregate; both compile and edit its
 rendered content.
+
+The in-place parity tests compare each block's relative top and height against
+the same Markdown rendered by `marked` inside `Prose`, within 1px in both
+themes. They also check the first and last margins, total height, soft breaks,
+unwrapped code, and absence of field chrome. Screenshots cover both themes in
+desktop Chromium and 320px WebKit; Linux baselines use the pinned image in
+`TESTING.md`.
+
+## In-place browser recipe
+
+On `/markdown-editor`, compare the In-place comparison's editable and rendered
+columns in light and dark themes, then at 320px. They should align block by
+block, with no extra final line. Focus and edit the left column: only the caret
+and selection should appear, without a field frame. Confirm the soft break stays
+on one line and the long code line scrolls rather than wraps.
 
 ## Browser recipe
 
@@ -129,5 +144,5 @@ receipt. Stop only a server started for the verification run.
 The callback and pre-edit byte guarantee are component-test criteria. The hook
 is exercised through the component rather than through internal editor calls.
 Tests assert visible results and Markdown output, never Tiptap document JSON,
-extension arrays, or private methods. Tasks, tables, images, paste, and
-bubble/in-place presentations are outside this recipe.
+extension arrays, or private methods. Tasks, tables, images, paste, and the
+bubble are outside this recipe.
