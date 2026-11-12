@@ -14,6 +14,12 @@ import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, type Ref 
 import { matchOpaqueBlock, matchOpaqueInline, splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 import { cn } from "../lib/utils";
 
+declare module "@tiptap/core" {
+  interface Storage {
+    placeholderText: { placeholder: string };
+  }
+}
+
 const PlaceholderText = Extension.create({
   name: "placeholderText",
   addStorage: () => ({ placeholder: "" }),
@@ -22,6 +28,14 @@ const PlaceholderText = Extension.create({
 function updatePlaceholder(editor: Editor, placeholder: string) {
   editor.storage.placeholderText.placeholder = placeholder;
   editor.view.dispatch(editor.state.tr.setMeta("placeholderRefresh", true));
+}
+
+function focusReadOnlyEnd(editor: Editor) {
+  const selection = Selection.atEnd(editor.state.doc);
+  editor.view.dispatch(editor.state.tr.setSelection(selection));
+  editor.view.dom.focus();
+  const position = editor.view.domAtPos(selection.from);
+  window.getSelection()?.collapse(position.node, position.offset);
 }
 
 // --- Tiptap 3.33.0 serializer workarounds ---
@@ -411,8 +425,7 @@ function useMarkdownEditor({
 
   useEffect(() => {
     if (editor && autoFocus && readOnly && !disabled) {
-      editor.view.dispatch(editor.state.tr.setSelection(Selection.atEnd(editor.state.doc)));
-      editor.view.dom.focus();
+      focusReadOnlyEnd(editor);
     }
   }, [editor, autoFocus, readOnly, disabled]);
 
@@ -492,8 +505,7 @@ function MarkdownEditor({ ref, ...options }: MarkdownEditorProps) {
     const target = event.target;
     if (target instanceof globalThis.Node && editor.view.dom.contains(target)) return;
     if (options.readOnly) {
-      editor.view.dispatch(editor.state.tr.setSelection(Selection.atEnd(editor.state.doc)));
-      editor.view.dom.focus();
+      focusReadOnlyEnd(editor);
       return;
     }
     editor.commands.focus("end");
