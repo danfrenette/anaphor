@@ -25,7 +25,7 @@ beforeEach(() => {
 function setupEditor(defaultValue = "", props: { placeholder?: string; readOnly?: boolean; disabled?: boolean; autoFocus?: boolean; invalid?: boolean; onChange?: (markdown: string) => void } = {}) {
   const user = userEvent.setup();
   const ref = createRef<MarkdownEditorHandle>();
-  const rendered = render(<MarkdownEditor ref={ref} defaultValue={defaultValue} aria-label="Research note" {...props} />);
+  const rendered = render(<MarkdownEditor presentation="field" ref={ref} defaultValue={defaultValue} aria-label="Research note" {...props} />);
   return { user, ref, ...rendered };
 }
 
@@ -48,7 +48,7 @@ test.each([
 async function serializeWithoutEdit(markdown: string) {
   const user = userEvent.setup();
   const ref = createRef<MarkdownEditorHandle>();
-  const { unmount } = render(<MarkdownEditor ref={ref} defaultValue={markdown} aria-label="Stability check" />);
+  const { unmount } = render(<MarkdownEditor presentation="field" ref={ref} defaultValue={markdown} aria-label="Stability check" />);
   const editor = await screen.findByRole("textbox", { name: "Stability check" });
   await user.click(editor);
   await user.keyboard("x");
@@ -62,7 +62,7 @@ test("keeps the supplied Markdown byte for byte without announcing a mount edit"
   const onChange = vi.fn();
   const ref = createRef<MarkdownEditorHandle>();
   const startingMarkdown = "# Draft\n\nA  paragraph with  unusual spacing.\n";
-  render(<MarkdownEditor ref={ref} defaultValue={startingMarkdown} onChange={onChange} aria-label="Research note" />);
+  render(<MarkdownEditor presentation="field" ref={ref} defaultValue={startingMarkdown} onChange={onChange} aria-label="Research note" />);
 
   expect(await screen.findByRole("textbox", { name: "Research note" })).toBeInTheDocument();
   expect(ref.current?.getMarkdown()).toBe(startingMarkdown);
@@ -73,7 +73,7 @@ test("reports Markdown after a real edit", async () => {
   const user = userEvent.setup();
   const onChange = vi.fn();
   const ref = createRef<MarkdownEditorHandle>();
-  render(<MarkdownEditor ref={ref} defaultValue="Draft" onChange={onChange} aria-label="Research note" />);
+  render(<MarkdownEditor presentation="field" ref={ref} defaultValue="Draft" onChange={onChange} aria-label="Research note" />);
 
   const editor = await screen.findByRole("textbox", { name: "Research note" });
   await user.click(editor);
@@ -86,7 +86,7 @@ test("reports Markdown after a real edit", async () => {
 test("a starting Markdown link renders and writes back as a link", async () => {
   const user = userEvent.setup();
   const ref = createRef<MarkdownEditorHandle>();
-  render(<MarkdownEditor ref={ref} defaultValue="[Anaphor](https://anaphor.dev)" aria-label="Research note" />);
+  render(<MarkdownEditor presentation="field" ref={ref} defaultValue="[Anaphor](https://anaphor.dev)" aria-label="Research note" />);
 
   const link = await screen.findByRole("link", { name: "Anaphor" });
   expect(link).toBeVisible();
@@ -102,7 +102,7 @@ test("a starting Markdown link renders and writes back as a link", async () => {
 
 test("announces a labelled multiline textbox and allows Tab focus in and out", async () => {
   const user = userEvent.setup();
-  render(<><button>Before</button><span id="note-label">Research note</span><MarkdownEditor defaultValue="Note" aria-labelledby="note-label" /><button>After</button></>);
+  render(<><button>Before</button><span id="note-label">Research note</span><MarkdownEditor presentation="field" defaultValue="Note" aria-labelledby="note-label" /><button>After</button></>);
 
   const editor = await screen.findByRole("textbox", { name: "Research note" });
   expect(editor).toHaveAttribute("aria-multiline", "true");
@@ -899,7 +899,7 @@ describe("field presentation", () => {
   test("updates the placeholder after mount", async () => {
     const { rerender } = setupEditor("", { placeholder: "First" });
     const editor = await screen.findByRole("textbox", { name: "Research note" });
-    rerender(<MarkdownEditor defaultValue="" placeholder="Second" aria-label="Research note" />);
+    rerender(<MarkdownEditor presentation="field" defaultValue="" placeholder="Second" aria-label="Research note" />);
     // The decoration attribute is the only observable placeholder signal in jsdom.
     await waitFor(() => expect(editor.querySelector("[data-placeholder]")).toHaveAttribute("data-placeholder", "Second"));
   });
@@ -946,7 +946,7 @@ describe("field presentation", () => {
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     editor.focus();
     expect(editor).toHaveFocus();
-    rerender(<MarkdownEditor defaultValue="Draft" disabled aria-label="Research note" />);
+    rerender(<MarkdownEditor presentation="field" defaultValue="Draft" disabled aria-label="Research note" />);
     await waitFor(() => expect(editor).not.toHaveFocus());
     expect(editor).not.toHaveAttribute("tabindex");
   });
@@ -956,7 +956,7 @@ describe("field presentation", () => {
     const { ref, rerender } = setupEditor("Draft", { onChange });
     await screen.findByRole("textbox", { name: "Research note" });
 
-    rerender(<MarkdownEditor ref={ref} defaultValue="Draft" onChange={onChange} readOnly aria-label="Research note" />);
+    rerender(<MarkdownEditor presentation="field" ref={ref} defaultValue="Draft" onChange={onChange} readOnly aria-label="Research note" />);
     expect(onChange).not.toHaveBeenCalled();
     expect(ref.current?.getMarkdown()).toBe("Draft");
   });
@@ -967,7 +967,7 @@ describe("field presentation", () => {
     expect(editor).toHaveAttribute("aria-readonly", "true");
     expect(editor).toHaveAttribute("tabindex", "0");
 
-    rerender(<MarkdownEditor ref={ref} defaultValue="Draft" readOnly invalid aria-label="Research note" />);
+    rerender(<MarkdownEditor presentation="field" ref={ref} defaultValue="Draft" readOnly invalid aria-label="Research note" />);
     expect(editor).toHaveAttribute("aria-readonly", "true");
     expect(editor).toHaveAttribute("aria-invalid", "true");
     expect(editor).toHaveAttribute("tabindex", "0");
@@ -990,7 +990,7 @@ describe("field presentation", () => {
     const button = screen.getByRole("button", { name: "Other control" });
     await user.click(button);
     for (const props of [{ readOnly: true }, { readOnly: false }, { disabled: true }, { disabled: false, readOnly: true }]) {
-      rerender(<MarkdownEditor ref={ref} defaultValue="Draft" autoFocus aria-label="Research note" {...props} />);
+      rerender(<MarkdownEditor presentation="field" ref={ref} defaultValue="Draft" autoFocus aria-label="Research note" {...props} />);
       expect(button).toHaveFocus();
     }
   });
@@ -1008,7 +1008,7 @@ describe("field presentation", () => {
     render(
       <Field orientation="vertical">
         <FieldLabel id="note-label">Notes</FieldLabel>
-        <MarkdownEditor defaultValue="Note" aria-labelledby="note-label" aria-describedby="note-desc" />
+        <MarkdownEditor presentation="field" defaultValue="Note" aria-labelledby="note-label" aria-describedby="note-desc" />
         <FieldDescription id="note-desc">A helpful description of the note.</FieldDescription>
       </Field>,
     );
@@ -1060,7 +1060,7 @@ describe("imperative replace", () => {
   test("setMarkdown preserves front matter", async () => {
     const user = userEvent.setup();
     const ref = createRef<MarkdownEditorHandle>();
-    render(<MarkdownEditor ref={ref} defaultValue="---\ntitle: a\n---\n# Old" aria-label="Research note" />);
+    render(<MarkdownEditor presentation="field" ref={ref} defaultValue="---\ntitle: a\n---\n# Old" aria-label="Research note" />);
     const editor = await screen.findByRole("textbox", { name: "Research note" });
 
     act(() => { ref.current?.setMarkdown("---\ntitle: b\n---\n# New"); });
@@ -1077,7 +1077,7 @@ describe("imperative replace", () => {
     const onChange = vi.fn();
     const ref = createRef<MarkdownEditorHandle>();
     const user = userEvent.setup();
-    render(<MarkdownEditor ref={ref} defaultValue="Draft" onChange={onChange} aria-label="Research note" />);
+    render(<MarkdownEditor presentation="field" ref={ref} defaultValue="Draft" onChange={onChange} aria-label="Research note" />);
     const editor = await screen.findByRole("textbox", { name: "Research note" });
 
     act(() => { ref.current?.setMarkdown("Replaced"); });
@@ -1093,7 +1093,7 @@ describe("imperative replace", () => {
     const ref = createRef<MarkdownEditorHandle>();
     function Parent() {
       useLayoutEffect(() => { ref.current?.setMarkdown("Replaced"); });
-      return <MarkdownEditor ref={ref} defaultValue="Draft" aria-label="Research note" />;
+      return <MarkdownEditor presentation="field" ref={ref} defaultValue="Draft" aria-label="Research note" />;
     }
     render(<Parent />);
 

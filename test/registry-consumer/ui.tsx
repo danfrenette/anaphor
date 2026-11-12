@@ -62,7 +62,7 @@ function Consumer() {
         <Badge size="md" variant="soft" shape="square">Ready</Badge>
         <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" onClick={() => setCount(count + 1)}><ButtonLabel>Count {count}</ButtonLabel></Button>
         <Field orientation="vertical"><FieldLabel>Email</FieldLabel><Input size="md" type="email" /><FieldFeedback hint="Your email address" error="Enter an email" invalid={false} /></Field>
-        <MarkdownEditor defaultValue={editorMarkdown} onChange={setEditorMarkdown} aria-label="Registry note" />
+        <MarkdownEditor presentation="field" defaultValue={editorMarkdown} onChange={setEditorMarkdown} aria-label="Registry note" />
         <div role="group" aria-label="Registry Markdown">{editorMarkdown}</div>
         <FieldGroup><Field orientation="horizontal"><Checkbox /><FieldContent><FieldLabel>Accept updates</FieldLabel><FieldDescription>Occasional product news.</FieldDescription></FieldContent></Field></FieldGroup>
         <form aria-label="Installed notification preferences" onSubmit={event => {

@@ -356,7 +356,7 @@ type UseMarkdownEditorResult = {
   setMarkdown: (markdown: string) => void;
 };
 type MarkdownEditorHandle = { getMarkdown: () => string; setMarkdown: (markdown: string) => void };
-type MarkdownEditorProps = UseMarkdownEditorOptions & { ref?: Ref<MarkdownEditorHandle> };
+type MarkdownEditorProps = UseMarkdownEditorOptions & { presentation: "field" | "in-place"; ref?: Ref<MarkdownEditorHandle> };
 
 function useMarkdownEditor({
   defaultValue,
@@ -503,7 +503,8 @@ function useMarkdownEditor({
   return { editor, getMarkdown, setMarkdown };
 }
 
-function MarkdownEditor({ ref, ...options }: MarkdownEditorProps) {
+function MarkdownEditor({ ref, presentation: _presentation, ...options }: MarkdownEditorProps) {
+  void _presentation;
   const { disabled = false, invalid = false } = options;
   const { editor, getMarkdown, setMarkdown } = useMarkdownEditor(options);
   useImperativeHandle(ref, () => ({ getMarkdown, setMarkdown }), [getMarkdown, setMarkdown]);
