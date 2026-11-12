@@ -438,6 +438,7 @@ function useMarkdownEditor({
   // `editorProps.attributes` above, so they survive view updates.
   useEffect(() => {
     if (!editor) return;
+    if (disabled && document.activeElement === editor.view.dom) editor.view.dom.blur();
     editor.setEditable(!readOnly && !disabled, false);
   }, [editor, readOnly, disabled]);
 
