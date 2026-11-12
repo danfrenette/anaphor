@@ -1,6 +1,17 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { prepareContentSnapshot } from "./content-snapshot";
+
+async function selectEditorContents(editor: Locator) {
+  await editor.evaluate(element => {
+    const selection = window.getSelection();
+    if (!selection) throw new Error("Selection unavailable");
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  });
+}
 
 async function checkAccessibility(page: Page, include?: string) {
   const scan = () => {
@@ -165,12 +176,11 @@ test("the manual field shows starting Markdown and its current output", async ({
 
 test("typed consecutive spaces stay visible and remain in Markdown", async ({ page, browserName }, testInfo) => {
   await page.goto("/markdown-editor");
-  const editor = page.getByRole("textbox", { name: "Research note" });
+  const editor = page.getByRole("textbox", { name: "Notes" });
   await editor.click();
-  await editor.press("ControlOrMeta+A");
   await editor.pressSequentially("Alpha  beta   gamma");
 
-  const output = page.getByLabel("Current Markdown", { exact: true });
+  const output = page.getByLabel("Field states Markdown", { exact: true });
   const expected = browserName === "webkit" ? "Alpha \u00a0beta \u00a0 gamma" : "Alpha\u00a0 beta\u00a0 \u00a0gamma";
   await expect.poll(() => output.textContent()).toBe(expected);
   const widths = await editor.evaluate(element => {
@@ -204,9 +214,8 @@ test("typed consecutive spaces stay visible and remain in Markdown", async ({ pa
 
 test("a typed line break stays inside a paragraph", async ({ page, browserName }) => {
   await page.goto("/markdown-editor");
-  const editor = page.getByRole("textbox", { name: "Research note" });
+  const editor = page.getByRole("textbox", { name: "Notes" });
   await editor.click();
-  await editor.press("ControlOrMeta+A");
   await editor.pressSequentially("Alpha");
   // ProseMirror's iOS fallback redispatches Enter without Shift; Mod+Enter exercises the same HardBreak command there.
   await editor.press(browserName === "webkit" ? "ControlOrMeta+Enter" : "Shift+Enter");
@@ -216,7 +225,7 @@ test("a typed line break stays inside a paragraph", async ({ page, browserName }
     if (!(element instanceof HTMLElement)) throw new Error("The editor must be an HTML element");
     return element.innerText;
   })).toBe("Alpha\nBeta");
-  const output = page.getByLabel("Current Markdown", { exact: true });
+  const output = page.getByLabel("Field states Markdown", { exact: true });
   await expect.poll(() => output.textContent()).toBe("Alpha  \nBeta");
 });
 
@@ -235,13 +244,12 @@ test("a soft line break in starting Markdown does not force a visual break", asy
 
 test("typed formatting works in the browser", async ({ page }) => {
   await page.goto("/markdown-editor");
-  const editor = page.getByRole("textbox", { name: "Research note" });
-  const output = page.getByLabel("Current Markdown", { exact: true });
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  const output = page.getByLabel("Field states Markdown", { exact: true });
   await editor.click();
-  await editor.press("ControlOrMeta+A");
   await editor.pressSequentially("### Browser");
   await expect.poll(() => output.textContent()).toBe("### Browser");
-  await editor.press("ControlOrMeta+A");
+  await selectEditorContents(editor);
   await editor.press("ControlOrMeta+B");
   await expect.poll(() => output.textContent()).toBe("### **Browser**");
 });
@@ -314,11 +322,11 @@ test("a fenced code block keeps white-space: pre and scrolls instead of wrapping
   expect(await editor.locator("pre").first().evaluate(element => getComputedStyle(element).whiteSpace)).toBe("pre");
 
   // A long line must overflow horizontally, not wrap.
-  await editor.click();
-  await editor.press("ControlOrMeta+A");
-  await editor.pressSequentially("``` ");
-  await editor.pressSequentially(`const x = ${"a".repeat(160)};`);
-  const pre = editor.locator("pre");
+  const emptyEditor = page.getByRole("textbox", { name: "Notes" });
+  await emptyEditor.click();
+  await emptyEditor.pressSequentially("``` ");
+  await emptyEditor.pressSequentially(`const x = ${"a".repeat(160)};`);
+  const pre = emptyEditor.locator("pre");
   await expect(pre).toBeVisible();
   const { whiteSpace, scrolls } = await pre.evaluate(element => ({
     whiteSpace: getComputedStyle(element).whiteSpace,
