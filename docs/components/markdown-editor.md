@@ -170,15 +170,15 @@ tall, and uses the muted foreground token.
   `rel="noopener noreferrer nofollow"`, but those attributes never appear in the
   written Markdown.
 
-The active extensions are StarterKit minus underline, trailing node, drop
-cursor and gap cursor, plus the Markdown extension and two opaque nodes.
+The active extensions are StarterKit minus underline, trailing node and drop
+cursor, plus the Markdown extension and two opaque nodes. Gapcursor is enabled.
 Document, paragraph, text, headings, bold, italic, strike, inline code, code
 block, bullet and ordered lists (with list item and list keymap), blockquote,
 horizontal rule, link, hard break, and undo/redo are enabled because each
 corresponds to supported Markdown. Underline has no CommonMark source, the
 trailing node appends an extra empty paragraph after a document ending in a
-non-paragraph block, and the drop cursor and gap cursor are drag/click-caret
-affordances this field does not need, so all four stay disabled.
+non-paragraph block, and the drop cursor is a drag affordance this field does
+not need, so all three stay disabled.
 
 Tiptap runs with `immediatelyRender: false` and `injectCSS: false`. The
 `anaphor-prose` class is applied directly to the ProseMirror root. The shared

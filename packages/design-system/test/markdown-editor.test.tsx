@@ -29,6 +29,18 @@ function setupEditor(defaultValue = "", props: { placeholder?: string; readOnly?
   return { user, ref, ...rendered };
 }
 
+test.each([
+  ["opaque", "Before\n\n<!-- Field note -->"],
+  ["code", "Before\n\n```js\nconst x = 1;\n```"],
+])("padding places typed text after a final %s block", async (_kind, source) => {
+  const { user, ref, container } = setupEditor(source);
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(container.firstElementChild!);
+  expect(editor).toHaveFocus();
+  await user.keyboard("x");
+  expect(ref.current?.getMarkdown()).toBe(`${source}\n\nx`);
+});
+
 // Serialises a document without changing its content: typing then undoing still
 // fires the update listener, so getMarkdown() returns the serializer's normal
 // form of the supplied input. Undo is used instead of Backspace because Backspace

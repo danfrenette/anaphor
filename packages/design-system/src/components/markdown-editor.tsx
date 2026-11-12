@@ -8,6 +8,7 @@ import type { MarkdownRendererHelpers, MarkdownToken, RenderContext } from "@tip
 import { Placeholder } from "@tiptap/extensions/placeholder";
 import { Markdown } from "@tiptap/markdown";
 import { EditorState, Selection } from "@tiptap/pm/state";
+import { GapCursor } from "@tiptap/pm/gapcursor";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, type Ref } from "react";
@@ -31,11 +32,15 @@ function updatePlaceholder(editor: Editor, placeholder: string) {
 }
 
 function focusAtEnd(editor: Editor) {
-  const selection = Selection.atEnd(editor.state.doc);
-  editor.view.dispatch(editor.state.tr.setSelection(selection));
+  const end = editor.state.doc.resolve(editor.state.doc.content.size);
+  const last = editor.state.doc.lastChild;
+  const selection = last && (last.isAtom || last.type.name === "codeBlock") ? new GapCursor(end) : Selection.atEnd(editor.state.doc);
   editor.view.dom.focus();
-  const position = editor.view.domAtPos(selection.from);
-  window.getSelection()?.collapse(position.node, position.offset);
+  editor.view.dispatch(editor.state.tr.setSelection(selection));
+  if (!(selection instanceof GapCursor)) {
+    const position = editor.view.domAtPos(selection.from);
+    window.getSelection()?.collapse(position.node, position.offset);
+  }
 }
 
 // --- Tiptap 3.33.0 serializer workarounds ---
@@ -88,6 +93,13 @@ const MarkdownCodeBlock = CodeBlock.extend({
     const fence = "`".repeat(codeFenceLength(content));
     return `${fence}${language}\n${content}\n${fence}`;
   },
+});
+
+// ProseMirror's gap cursor treats textblocks as open unless their schema asks
+// for a gap, so allow the default gap-cursor plugin to move past a code block.
+const CodeBlockGapCursor = Extension.create({
+  name: "codeBlockGapCursor",
+  extendNodeSchema: extension => extension.name === "codeBlock" ? { createGapCursor: true } : {},
 });
 
 // Workaround F3: wrap a link destination in `<...>` when it holds spaces or
@@ -376,12 +388,10 @@ function useMarkdownEditor({
     extensions: [StarterKit.configure({
       // Disabled: underline has no CommonMark source and is not in the supported
       // set; trailingNode appends an extra empty paragraph after a document ending
-      // in a non-paragraph block; dropcursor and gapcursor are drag/click-caret
-      // affordances the field does not need.
+      // in a non-paragraph block; dropcursor is a drag affordance the field does not need.
       underline: false,
       trailingNode: false,
       dropcursor: false,
-      gapcursor: false,
       // Replaced below by an .extend()ed copy whose renderer writes a fence long
       // enough for the content (F1).
       codeBlock: false,
@@ -397,7 +407,7 @@ function useMarkdownEditor({
       // that opens an ordered item as a code block (workaround 13).
       orderedList: false,
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-    }), MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
+    }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
     content: body,
     contentType: "markdown",
     editorProps: { attributes: {

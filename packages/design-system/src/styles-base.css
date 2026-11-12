@@ -300,6 +300,20 @@
   .anaphor-prose[contenteditable="true"] { white-space: normal; }
   .anaphor-prose[contenteditable="true"] :where(pre) { white-space: pre; }
 
+  .ProseMirror-gapcursor { display: none; pointer-events: none; position: absolute; }
+  .ProseMirror-focused .ProseMirror-gapcursor { display: block; }
+  .ProseMirror-gapcursor::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    border-top: 1px solid currentColor;
+    animation: anaphor-gapcursor-blink 1.1s steps(2, start) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ProseMirror-gapcursor::after { animation: none; }
+  }
+  @keyframes anaphor-gapcursor-blink { to { visibility: hidden; } }
+
   /* The placeholder is a ::before pseudo-element on the empty paragraph, so it is
      never matched by Prose's article rules (which select real block elements).
      It inherits only the paragraph's body metrics, which keeps the empty editor

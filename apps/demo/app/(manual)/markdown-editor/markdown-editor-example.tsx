@@ -90,7 +90,7 @@ export function MarkdownEditorExample() {
   </>;
 }
 
-const otherNote = "## A loaded note\n\n<!-- Field note -->\n\nLoaded with `setMarkdown`.";
+const otherNote = "## A loaded note\n\nLoaded with `setMarkdown`.\n\n<!-- Field note -->";
 
 // Demonstrates the field inside Anaphor's Field: label, description, error,
 // placeholder, read-only and disabled toggles, and imperative replace.
