@@ -1,5 +1,7 @@
 # Markdown editor
 
+Code blocks are keyboard-focusable so their horizontal overflow can be scrolled.
+
 `MarkdownEditor` edits Markdown in a bounded field or in place. It uses Tiptap 3 and the
 official `@tiptap/markdown` extension, pinned at 3.33.0. Content uses the same
 `anaphor-prose` styling as rendered Markdown; there is no toolbar or selection
