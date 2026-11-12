@@ -267,7 +267,8 @@ test("the field inside Field is named by its label and associated with its feedb
 
   await page.getByRole("button", { name: "Error" }).click();
   await expect(editor).toHaveAttribute("aria-invalid", "true");
-  await expect(frame).toHaveAttribute("aria-invalid", "true");
+  await expect(frame).toHaveAttribute("data-invalid", "true");
+  await expect(frame).not.toHaveAttribute("aria-invalid");
 });
 
 test("the field passes accessibility checks in both themes", async ({ page }) => {
@@ -362,6 +363,5 @@ test("clicking the empty space below short content places the caret at the end",
   await editor.pressSequentially("!");
   await expect(page.getByLabel("Field states Markdown", { exact: true })).toContainText("document.!");
 });
-
 
 

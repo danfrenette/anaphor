@@ -1012,7 +1012,8 @@ describe("field presentation", () => {
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     expect(editor).toHaveAttribute("aria-invalid", "true");
     const frame = editor.closest('[data-slot="markdown-editor"]');
-    expect(frame).toHaveAttribute("aria-invalid", "true");
+    expect(frame).toHaveAttribute("data-invalid", "true");
+    expect(frame).not.toHaveAttribute("aria-invalid");
   });
 });
 

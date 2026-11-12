@@ -491,7 +491,7 @@ function MarkdownEditor({ ref, ...options }: MarkdownEditorProps) {
 
   return <div
     data-slot="markdown-editor"
-    aria-invalid={invalid || undefined}
+    data-invalid={invalid || undefined}
     data-disabled={disabled || undefined}
     onClick={handleFrameClick}
     className={cn(
@@ -502,7 +502,7 @@ function MarkdownEditor({ ref, ...options }: MarkdownEditorProps) {
       // Focus state
       "focus-within:border-ring focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring",
       // Invalid state
-      "aria-invalid:border-danger aria-invalid:focus-within:outline-danger",
+      "data-invalid:border-danger data-invalid:focus-within:outline-danger",
       // Disabled state
       "data-disabled:pointer-events-none data-disabled:bg-[var(--anaphor-input-disabled)]",
       // Motion
