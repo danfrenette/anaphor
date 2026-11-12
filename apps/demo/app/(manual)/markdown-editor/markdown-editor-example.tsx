@@ -70,7 +70,7 @@ export function MarkdownEditorExample() {
       <Text as="h2" variant="heading">Field presentation</Text>
       <Text as="p" variant="body" className="mt-3">Type Markdown and watch it format. Headings, lists, quotes, code, rules, emphasis, and links all convert as you type. Shift+Enter inserts a line break.</Text>
       <div className="mt-6">
-        <MarkdownEditor defaultValue={startingMarkdown} onChange={setMarkdown} aria-label="Research note" />
+        <MarkdownEditor presentation="field" defaultValue={startingMarkdown} onChange={setMarkdown} aria-label="Research note" />
       </div>
       <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
       <div role="group" aria-label="Current Markdown" className="mt-3 min-h-24 whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-4 font-mono text-small">{markdown}</div>
@@ -79,7 +79,7 @@ export function MarkdownEditorExample() {
       <Text as="h2" variant="heading">Existing post</Text>
       <Text as="p" variant="body" className="mt-3">Front matter stays out of sight, and raw HTML, footnotes, MDX import and export, and components appear as quiet read-only blocks of their source.</Text>
       <div className="mt-6">
-        <MarkdownEditor defaultValue={existingPostMarkdown} onChange={setExistingPost} aria-label="Existing post" />
+        <MarkdownEditor presentation="field" defaultValue={existingPostMarkdown} onChange={setExistingPost} aria-label="Existing post" />
       </div>
       <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
       <div role="group" aria-label="Existing post Markdown" className="mt-3 min-h-24 whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-4 font-mono text-small">{existingPost}</div>
@@ -115,11 +115,11 @@ function FieldStatesExample() {
     <div className="mt-6 max-w-2xl">
       <Input size="md" aria-label="Input comparison" aria-invalid={invalid || undefined} disabled={disabled} placeholder="Input comparison" />
     </div>
-    {showReadOnlyAutofocus && <div className="mt-6 max-w-2xl"><MarkdownEditor defaultValue="Read-only example" readOnly autoFocus aria-label="Read-only autofocus example" /></div>}
+    {showReadOnlyAutofocus && <div className="mt-6 max-w-2xl"><MarkdownEditor presentation="field" defaultValue="Read-only example" readOnly autoFocus aria-label="Read-only autofocus example" /></div>}
     <div className="mt-6 max-w-2xl">
       <Field orientation="vertical" invalid={invalid}>
         <FieldLabel id="notes-label">Notes</FieldLabel>
-        <MarkdownEditor
+        <MarkdownEditor presentation="field"
           ref={editorRef}
           defaultValue=""
           onChange={setMarkdown}

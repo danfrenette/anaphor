@@ -14,7 +14,7 @@ required `defaultValue` string and either `aria-label` or `aria-labelledby`.
 const editorRef = useRef<MarkdownEditorHandle>(null);
 const [markdown, setMarkdown] = useState(startingMarkdown);
 
-<MarkdownEditor
+<MarkdownEditor presentation="field"
   ref={editorRef}
   defaultValue={startingMarkdown}
   onChange={setMarkdown}
@@ -64,7 +64,7 @@ never fires `onChange`.
 ```tsx
 <Field orientation="vertical" invalid={invalid}>
   <FieldLabel id="note-label">Notes</FieldLabel>
-  <MarkdownEditor
+  <MarkdownEditor presentation="field"
     ref={editorRef}
     defaultValue=""
     onChange={setMarkdown}
