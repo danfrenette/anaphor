@@ -12,7 +12,7 @@ import { GapCursor } from "@tiptap/pm/gapcursor";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, type Ref } from "react";
+import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, type Ref } from "react";
 import { matchOpaqueBlock, matchOpaqueInline, splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 import { cn } from "../lib/utils";
 
@@ -496,9 +496,9 @@ function useMarkdownEditor({
   // skips the update event, so toggling state never fires `onChange` or flips
   // the pre-edit byte guarantee. The accessible attributes are declared in
   // `editorProps.attributes` above, so they survive view updates.
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!editor) return;
-    if (disabled && document.activeElement === editor.view.dom) editor.view.dom.blur();
+    if (disabled && document.activeElement instanceof HTMLElement && editor.view.dom.contains(document.activeElement)) document.activeElement.blur();
     editor.setEditable(!readOnly && !disabled, false);
   }, [editor, readOnly, disabled]);
 
