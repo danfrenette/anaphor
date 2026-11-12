@@ -958,6 +958,21 @@ describe("field presentation", () => {
     expect(ref.current?.getMarkdown()).toBe("Draft");
   });
 
+  test("disabling releases focus from a read-only code block", async () => {
+    const source = "```js\nconst x = 1;\n```";
+    const { rerender } = setupEditor(source, { readOnly: true });
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    const code = editor.querySelector("pre")!;
+    expect(code).toHaveAttribute("tabindex", "0");
+    code.focus();
+    expect(code).toHaveFocus();
+
+    rerender(<MarkdownEditor presentation="field" defaultValue={source} readOnly disabled aria-label="Research note" />);
+    expect(code).not.toHaveFocus();
+    expect(editor).not.toHaveAttribute("tabindex");
+    expect(code).not.toHaveAttribute("tabindex");
+  });
+
   test("disabled is not focusable, announced, and ignores typing", async () => {
     const { user, ref } = setupEditor("Draft", { disabled: true });
 
