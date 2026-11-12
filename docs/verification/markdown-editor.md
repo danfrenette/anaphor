@@ -48,7 +48,9 @@ checks.
 Playwright builds and serves the manual on port 3105 in desktop Chromium and
 320px WebKit. Browser checks also exercise read-only autofocus, padding focus,
 selection and copy, padding taps at three positions, and computed Input/frame
-state and surface parity in both themes. Registry verification independently installs `markdown-editor`
+state and surface parity in both themes. Chromium checks the native clipboard;
+WebKit does not expose it to the test, which checks selection and an unprevented
+copy event instead. Registry verification independently installs `markdown-editor`
 and also includes it in the complete-UI aggregate; both compile and edit its
 rendered content.
 
@@ -59,7 +61,8 @@ rendered content.
    blockquote, fenced `ts` code block, horizontal rule, strikethrough, inline
    code, and link are all formatted, and Current Markdown shows the supplied
    source. Check the Controls index and breadcrumb.
-2. Type every trigger: `# ` through `###### `, `- ` and `* `, `1. `, `> `,
+2. In Research note, select all and clear the content before each example. Type
+   every trigger: `# ` through `###### `, `- ` and `* `, `1. `, `> `,
    `` ``` `` plus a space (and `` ```ts `` for a language), `---`, `~~x~~`,
    `` `x` ``, `**bold**`, and `*italic*`/`_italic_`. Use the Mod shortcuts for
    bold, italic, strikethrough, inline code, and headings 1–6. Confirm visible
@@ -71,23 +74,24 @@ rendered content.
    ArrowDown at the end) leaves it.
 4. Type a trigger such as `- ` and undo once: the literal characters return,
    not the conversion. Undo and redo across typing and a bold formatting step.
-5. Replace the document with `Alpha  beta   gamma`. Confirm both whitespace
+5. Select all text in the Research note textbox and type `Alpha  beta   gamma`. Confirm both whitespace
    groups remain visible and the output retains them. At Tiptap 3.33.0 the
    expected serializer output is `Alpha\u00a0 beta\u00a0 \u00a0gamma` in
    Chromium and `Alpha \u00a0beta \u00a0 gamma` in WebKit. The automated test
    also measures the rendered groups against one-space width and saves
    `consecutive-spaces.png` in each project's test-output directory.
-6. Type `Alpha`, Shift+Enter, then `Beta`. Expect one visual line break and
+6. Select all and clear Research note, then type `Alpha`, Shift+Enter, then
+   `Beta`. Expect one visual line break and
    `Alpha  \nBeta` in Current Markdown. ProseMirror's iOS fallback drops Shift
    when it redispatches Enter, so mobile WebKit uses the equivalent Mod-Enter
    HardBreak shortcut; desktop Chromium verifies Shift+Enter.
-7. Replace the document with a fenced code block holding a long line. Confirm
+7. Select all text in Research note and type a fenced code block holding a long line. Confirm
    the editable `pre` keeps `white-space: pre` and scrolls horizontally instead
    of wrapping.
-8. Tab into and out of the named multiline textbox, check visible focus, and
-   run the keyboard/axe browser case. Repeat in light/dark and at 320px.
-   Confirm the browser console and `pageerror` capture contain no hydration
-   warning or other error.
+8. Tab into and out of the named multiline textbox and check visible focus.
+   Repeat in light/dark and at 320px. Open browser developer tools, reload, and
+   check the console for hydration warnings or errors. The automated browser
+   test separately runs axe and captures console and `pageerror` events.
 9. On the "Existing post" example, confirm the front matter is hidden and the
    raw HTML, comment, footnote, MDX import and export, and components each
    appear as a quiet mono block. Click one and press Delete to remove the whole
@@ -95,17 +99,22 @@ rendered content.
    matter.
 10. On "Inside a field", confirm the empty editor shows the placeholder and that
     it disappears after typing. Confirm the label names the textbox and the
-    description and error are announced through `aria-describedby`. Toggle the
+    description and error are associated by inspecting the textbox's accessible
+    description in developer tools. Toggle the
     error and confirm `aria-invalid` and the danger border; toggle read-only
     and confirm typing stops while selection and copy still work; toggle
     disabled and confirm focus, interaction, and tab order are removed. Click
-    the "Load another note" and "Discard edits" controls and confirm
-    `setMarkdown` swaps the document without firing a change event; undo after
-    a load does not restore the previous note.
-11. Confirm the field's boundary, focus and invalid states match the input in
-    both themes, that the empty editor is one Prose line tall, that the field
-    starts at `6rem` and grows to `18rem` before scrolling, and that clicking
-    the padding or empty space below short content places the caret at the end.
+    the "Load another note" and "Discard edits" controls and confirm the
+    document and displayed Markdown change; undo after a load does not restore
+    the previous note. Component test `setMarkdown replaces the document and
+    reads back byte for byte without firing onChange` checks the callback.
+11. Compare the field's boundary, focus and invalid states with the input in
+    both themes. With developer tools inspect the empty editor's line height and
+    field height. Type multiple lines until the field stops growing, then confirm
+    it scrolls. Inspect the initial and maximum heights (`6rem` and `18rem`).
+    Click the padding or empty space below short content and type to confirm the
+    caret is at the end. Load another note, drag across its heading to select
+    text, then click the comment block and press Delete to remove it as a whole.
 
 Keep Playwright output and screenshots under `test-results/` with the run
 receipt. Stop only a server started for the verification run.
