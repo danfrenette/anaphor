@@ -71,6 +71,12 @@ and selection should appear, without a field frame. Confirm the soft break stays
 on one line. In the editable code block, type a long line and confirm it scrolls
 rather than wrapping.
 
+In both themes, Tab to the read-only in-place editor: its keyboard focus must
+show the standard outline. Mouse focus on it must not show an outline, and
+editable in-place focus must not show one. With the long code block present,
+Tab through the editable in-place editor and confirm that its code block does
+not become a separate focus stop; rendered demo code remains keyboard-focusable.
+
 ## Browser recipe
 
 1. Open `/markdown-editor`. Confirm the starting heading, bold, italic,
