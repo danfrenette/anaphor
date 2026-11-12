@@ -11,7 +11,7 @@ async function checkAccessibility(page: Page, include?: string) {
   const general = await scan().withTags(tags).disableRules("scrollable-region-focusable").analyze();
   // Editable code scrolls as the caret moves; axe cannot detect that keyboard access.
   // Exclude only editor textbox code blocks from this rule, not the other rules.
-  const scrollable = await scan().exclude('[role="textbox"] pre').withRules("scrollable-region-focusable").analyze();
+  const scrollable = await scan().exclude('[data-slot="markdown-editor"] [role="textbox"] pre').withRules("scrollable-region-focusable").analyze();
   expect([...general.violations, ...scrollable.violations]).toEqual([]);
 }
 
