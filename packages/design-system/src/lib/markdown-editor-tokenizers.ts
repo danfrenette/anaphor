@@ -6,11 +6,12 @@ import type { MarkdownToken } from "@tiptap/core";
 // them stay in the component file.
 
 /** A leading `--- … ---` block at the very start of the file, held out of sight and returned byte-for-byte. */
-// Front matter is only recognised when the first line is `---` and the block
-// runs to a closing `---` (or `...`) line with no blank lines inside, so a
-// document that merely opens with a horizontal rule is not swallowed. Empty
-// front matter (`---\n---`) is allowed, and CRLF line endings work.
-const FRONT_MATTER_RE = /^---[ \t]*\r?\n(?:(?:[^\r\n]*\S[^\r\n]*)\r?\n)*?(?:---|\.\.\.)[ \t]*(?:\r?\n)?/;
+// Front matter opens with a `---` line and then either closes right away (empty
+// front matter) or its first interior line is a YAML mapping key or a `#`
+// comment. From there the block runs — blank lines included — to the first line
+// that is exactly `---` (or `...`), so a document that merely opens with a
+// horizontal rule or plain prose is not swallowed. CRLF line endings work.
+const FRONT_MATTER_RE = /^---[ \t]*\r?\n(?:(?:---|\.\.\.)[ \t]*(?:\r?\n|$)|(?:[A-Za-z0-9_"'-][^:\r\n]*:|#)[^\r\n]*\r?\n(?:[^\r\n]*\r?\n)*?(?:---|\.\.\.)[ \t]*(?:\r?\n|$))/;
 
 function splitFrontMatter(markdown: string): { frontMatter: string; body: string } {
   const match = FRONT_MATTER_RE.exec(markdown);
