@@ -877,6 +877,16 @@ describe("preserved unsupported content", () => {
 });
 
 describe("field presentation", () => {
+  test("a retained handle remains safe after unmount", async () => {
+    const ref = createRef<MarkdownEditorHandle>();
+    const { unmount } = render(<MarkdownEditor ref={ref} defaultValue="Draft" aria-label="Research note" />);
+    await screen.findByRole("textbox", { name: "Research note" });
+    const handle = ref.current!;
+    unmount();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(() => handle.setMarkdown("Other")).not.toThrow();
+    expect(handle.getMarkdown()).toBe("Draft");
+  });
   test("updates the placeholder after mount", async () => {
     const { rerender } = render(<MarkdownEditor defaultValue="" placeholder="First" aria-label="Research note" />);
     const editor = await screen.findByRole("textbox", { name: "Research note" });

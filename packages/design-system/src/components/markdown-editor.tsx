@@ -411,6 +411,7 @@ function useMarkdownEditor({
   }, []);
 
   const setMarkdown = useCallback((markdown: string) => {
+    if (editor?.isDestroyed) return;
     const { frontMatter: nextFrontMatter, body: nextBody } = splitFrontMatter(markdown);
     // Until the next real edit, reading the value returns the replaced string
     // byte for byte, the same contract as `defaultValue`.
