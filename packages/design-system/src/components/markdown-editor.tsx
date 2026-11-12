@@ -339,6 +339,8 @@ function useMarkdownEditor({
   const frontMatterRef = useRef(frontMatter);
   const currentValue = useRef(defaultValue);
   const onChangeRef = useRef(onChange);
+  const placeholderRef = useRef(placeholder);
+  placeholderRef.current = placeholder;
   useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
   const isReplacingRef = useRef(false);
   const pendingBodyRef = useRef<string | null>(null);
@@ -372,7 +374,7 @@ function useMarkdownEditor({
       // that opens an ordered item as a code block (workaround 13).
       orderedList: false,
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-    }), MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, Placeholder.configure({ placeholder: placeholder ?? "" })],
+    }), MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, Placeholder.configure({ placeholder: () => placeholderRef.current ?? "" })],
     content: body,
     contentType: "markdown",
     editorProps: { attributes: {
@@ -392,6 +394,10 @@ function useMarkdownEditor({
       ...(ariaLabel === undefined ? { "aria-labelledby": ariaLabelledBy } : { "aria-label": ariaLabel }),
     } },
   });
+
+  useEffect(() => {
+    if (editor && !editor.isDestroyed) editor.view.dispatch(editor.state.tr.setMeta("placeholderRefresh", true));
+  }, [editor, placeholder]);
 
   // Replace the document without emitting an update, then clear undo history.
   const replaceContent = useCallback((nextBody: string, target: Editor) => {

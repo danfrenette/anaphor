@@ -877,6 +877,14 @@ describe("preserved unsupported content", () => {
 });
 
 describe("field presentation", () => {
+  test("updates the placeholder after mount", async () => {
+    const { rerender } = render(<MarkdownEditor defaultValue="" placeholder="First" aria-label="Research note" />);
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    rerender(<MarkdownEditor defaultValue="" placeholder="Second" aria-label="Research note" />);
+    // The decoration attribute is the only observable placeholder signal in jsdom.
+    await waitFor(() => expect(editor.querySelector("[data-placeholder]")).toHaveAttribute("data-placeholder", "Second"));
+  });
+
   test("an empty editor shows the placeholder and it disappears on input", async () => {
     const user = userEvent.setup();
     render(<MarkdownEditor defaultValue="" placeholder="Write a note…" aria-label="Research note" />);
