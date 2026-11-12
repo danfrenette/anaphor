@@ -336,7 +336,11 @@ function useMarkdownEditor({ defaultValue, onChange, "aria-label": ariaLabel, "a
   useEffect(() => {
     if (!editor) return;
     const onUpdate = () => {
-      currentValue.current = frontMatter + editor.getMarkdown();
+      const serializedBody = editor.getMarkdown();
+      // A front-matter-only document ends without a newline on its closing `---`,
+      // so the body must be separated with one to keep the block intact on reload.
+      const needsSeparator = frontMatter !== "" && !frontMatter.endsWith("\n") && serializedBody !== "";
+      currentValue.current = frontMatter + (needsSeparator ? "\n" : "") + serializedBody;
       onChangeRef.current?.(currentValue.current);
     };
     editor.on("update", onUpdate);

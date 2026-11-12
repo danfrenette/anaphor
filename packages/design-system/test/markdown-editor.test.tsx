@@ -694,6 +694,23 @@ describe("front matter", () => {
     expect(screen.getByRole("heading", { level: 2, name: "Just prose" })).toBeVisible();
     expect(editor).toHaveTextContent("Just prose");
   });
+
+  test("typing into a front-matter-only document keeps a newline before the body", async () => {
+    const { user, ref } = setupEditor("---\ntitle: x\n---");
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    // The pre-edit read stays byte for byte.
+    expect(ref.current?.getMarkdown()).toBe("---\ntitle: x\n---");
+
+    await user.click(editor);
+    await user.keyboard("hello");
+
+    const output = "---\ntitle: x\n---\nhello";
+    expect(ref.current?.getMarkdown()).toBe(output);
+    // Re-splitting the output treats the whole block as front matter again, so
+    // the document is stable on reload.
+    expect(await serializeWithoutEdit(output)).toBe(output);
+  });
 });
 
 describe("preserved unsupported content", () => {
