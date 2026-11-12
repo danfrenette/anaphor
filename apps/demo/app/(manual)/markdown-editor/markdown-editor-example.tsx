@@ -1,6 +1,6 @@
 "use client";
 
-import { Field, FieldFeedback, FieldLabel, MarkdownEditor, Text, type MarkdownEditorHandle } from "@anaphor/system";
+import { Field, FieldFeedback, FieldLabel, Input, MarkdownEditor, Text, type MarkdownEditorHandle } from "@anaphor/system";
 import { useRef, useState } from "react";
 
 // Source of truth for e2e/markdown-editor.spec.ts, which locates its constructs
@@ -100,6 +100,7 @@ function FieldStatesExample() {
   const [disabled, setDisabled] = useState(false);
   const [invalid, setInvalid] = useState(false);
   const [markdown, setMarkdown] = useState("");
+  const [showReadOnlyAutofocus, setShowReadOnlyAutofocus] = useState(false);
   return <>
     <Text as="h2" variant="heading">Inside a field</Text>
     <Text as="p" variant="body" className="mt-3">The same editor inside <code className="font-mono text-small">Field</code>, named by its label and associated with a description and error. The empty box shows the placeholder, which disappears on input. The field starts at <code className="font-mono text-small">6rem</code> and grows to <code className="font-mono text-small">18rem</code>, then scrolls.</Text>
@@ -109,7 +110,12 @@ function FieldStatesExample() {
       <ToggleButton pressed={invalid} onToggle={setInvalid}>Error</ToggleButton>
       <button type="button" className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted" onClick={() => { editorRef.current?.setMarkdown(otherNote); setMarkdown(otherNote); }}>Load another note</button>
       <button type="button" className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted" onClick={() => { editorRef.current?.setMarkdown(""); setMarkdown(""); }}>Discard edits</button>
+      <button type="button" className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted" onClick={() => setShowReadOnlyAutofocus(!showReadOnlyAutofocus)}>Toggle autofocus example</button>
     </div>
+    <div className="mt-6 max-w-2xl">
+      <Input size="md" aria-label="Input comparison" aria-invalid={invalid || undefined} disabled={disabled} placeholder="Input comparison" />
+    </div>
+    {showReadOnlyAutofocus && <div className="mt-6 max-w-2xl"><MarkdownEditor defaultValue="Read-only example" readOnly autoFocus aria-label="Read-only autofocus example" /></div>}
     <div className="mt-6 max-w-2xl">
       <Field orientation="vertical" invalid={invalid}>
         <FieldLabel id="notes-label">Notes</FieldLabel>
