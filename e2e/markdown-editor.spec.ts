@@ -1,6 +1,51 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
+for (const theme of ["light", "dark"]) {
+  test(`in-place parity: ${theme}`, async ({ page }) => {
+    await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
+    await page.goto("/markdown-editor");
+    await page.evaluate(() => document.fonts.ready);
+    const editor = page.getByRole("textbox", { name: "In-place note" });
+    const prose = page.getByLabel("Rendered note");
+    await expect(editor).toBeVisible();
+    await editor.focus();
+    const chrome = await editor.evaluate(element => [element, element.parentElement, element.parentElement?.parentElement].filter((node): node is HTMLElement => node instanceof HTMLElement).map(node => {
+      const style = getComputedStyle(node);
+      return { background: style.backgroundColor, border: style.borderTopWidth, padding: style.padding, outline: style.outlineStyle, minHeight: style.minHeight, maxHeight: style.maxHeight, overflow: style.overflowY };
+    }));
+    for (const style of chrome) expect(style).toEqual({ background: "rgba(0, 0, 0, 0)", border: "0px", padding: "0px", outline: "none", minHeight: "0px", maxHeight: "none", overflow: "visible" });
+    await editor.blur();
+    const selectors = ["h1", ":scope > p:nth-of-type(1)", ":scope > p:nth-of-type(2)", "h2", ":scope > ul", "ul ul", ":scope > ol", "blockquote", "pre", "hr", ":scope > p:last-child"];
+    const measure = (root: Element, queries: string[]) => {
+      const rootRect = root.getBoundingClientRect();
+      return queries.map(selector => {
+        const element = root.querySelector(selector);
+        if (!element) throw new Error(`Missing ${selector}`);
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return { selector, top: rect.top - rootRect.top, height: rect.height, marginTop: style.marginTop, marginBottom: style.marginBottom };
+      });
+    };
+    const actual = await editor.evaluate(measure, selectors);
+    const expected = await prose.evaluate(measure, selectors);
+    console.log(JSON.stringify({ theme, actual, expected }));
+    for (let i = 0; i < selectors.length; i++) {
+      expect(Math.abs(actual[i].top - expected[i].top), `${selectors[i]} top`).toBeLessThanOrEqual(1);
+      expect(Math.abs(actual[i].height - expected[i].height), `${selectors[i]} height`).toBeLessThanOrEqual(1);
+    }
+    expect(actual[0].marginTop).toBe(expected[0].marginTop);
+    expect(actual.at(-1)?.marginBottom).toBe(expected.at(-1)?.marginBottom);
+    expect(Math.abs((await editor.boundingBox())!.height - (await prose.boundingBox())!.height)).toBeLessThanOrEqual(1);
+    for (const root of [editor, prose]) {
+      const soft = root.getByText("A soft line continues here.");
+      expect((await soft.boundingBox())!.height).toBeCloseTo(await soft.evaluate(element => parseFloat(getComputedStyle(element).lineHeight)), 0);
+      const code = root.locator("pre");
+      expect(await code.evaluate(element => ({ whiteSpace: getComputedStyle(element).whiteSpace, overflows: element.scrollWidth > element.clientWidth }))).toEqual({ whiteSpace: "pre", overflows: true });
+    }
+  });
+}
+
 test("the manual field shows starting Markdown and its current output", async ({ page, isMobile }) => {
   await page.goto("/markdown-editor");
 
