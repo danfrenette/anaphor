@@ -34,10 +34,10 @@ comments, footnote definitions, MDX import and export, and self-closing,
 multi-line and nested components, inline opaque spans for footnote references
 and inline HTML, inert rendering of `<script>`, `<img onerror>` and
 `javascript:` links, and a mixed fixture file. Field-presentation tests cover
-the placeholder appearing and disappearing, read-only and disabled states and
+the placeholder appearing, updating and disappearing, read-only and disabled states and
 their accessible attributes, toggling state without firing `onChange`, autofocus
 placing the caret at the end, field label/description association, invalid
-reflection, and `setMarkdown` replacing the document byte for byte, preserving
+reflection, focus removal on disable, retained handles after unmount, and `setMarkdown` replacing the document byte for byte, preserving
 front matter, resetting undo history, and winning when called before mount. Type
 fixtures in `packages/design-system/test/markdown-editor.types.tsx` cover both
 exports, the new props, and rejected consumer configurations. jsdom lacks
@@ -46,7 +46,9 @@ geometry APIs; real layout, click-to-focus, and editing remain browser-owned
 checks.
 
 Playwright builds and serves the manual on port 3105 in desktop Chromium and
-320px WebKit. Registry verification independently installs `markdown-editor`
+320px WebKit. Browser checks also exercise read-only autofocus, padding focus,
+selection and copy, padding taps at three positions, and computed Input/frame
+state and surface parity in both themes. Registry verification independently installs `markdown-editor`
 and also includes it in the complete-UI aggregate; both compile and edit its
 rendered content.
 
