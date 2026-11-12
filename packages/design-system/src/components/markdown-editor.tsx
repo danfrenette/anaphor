@@ -366,6 +366,7 @@ function useMarkdownEditor({
   useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
   const isReplacingRef = useRef(false);
   const pendingBodyRef = useRef<string | null>(null);
+  const autofocusHandled = useRef(false);
   const getMarkdown = useCallback(() => currentValue.current, []);
   const editor = useEditor({
     immediatelyRender: false,
@@ -424,8 +425,9 @@ function useMarkdownEditor({
   }, [editor, placeholder]);
 
   useEffect(() => {
-    if (editor && autoFocus && readOnly && !disabled) {
-      focusAtEnd(editor);
+    if (editor && autoFocus && !autofocusHandled.current) {
+      autofocusHandled.current = true;
+      if (readOnly && !disabled) focusAtEnd(editor);
     }
   }, [editor, autoFocus, readOnly, disabled]);
 
