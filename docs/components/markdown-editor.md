@@ -97,8 +97,9 @@ The editable root has role `textbox`, `aria-multiline="true"`, and the supplied
 accessible name. Inside a field, the label names it via `aria-labelledby` and
 the description and error are associated via `aria-describedby`; the invalid
 state is reflected with `aria-invalid` on the textbox and the input's invalid
-border on the frame. Tab enters and leaves the editor outside lists; inside a
-list item Tab nests and Shift+Tab un-nests. The field uses the existing input
+border on the frame. Tab enters and leaves the editor outside lists, with stops
+on read-only code blocks and potentially on overflowing editable code blocks in
+Chromium; inside a list item Tab nests and Shift+Tab un-nests. The field uses the existing input
 border, radius, surface, and focus treatment; body text keeps Prose's size and
 reading styles.
 
