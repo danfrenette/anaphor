@@ -241,7 +241,7 @@ test("an opaque block's text cannot be edited in place", async ({ page }) => {
 test("the empty field shows the placeholder and keeps one Prose line of content", async ({ page }) => {
   await page.goto("/markdown-editor");
   const editor = page.getByRole("textbox", { name: "Notes" });
-  await expect(editor.locator("[data-placeholder]")).toHaveAttribute("data-placeholder", "Write a note…");
+  await expect.poll(() => editor.locator("p").first().evaluate(element => getComputedStyle(element, "::before").content)).toBe('"Write a note…"');
 
   const { contentHeight, lineHeight } = await editor.evaluate(element => {
     if (!(element instanceof HTMLElement)) throw new Error("The editor must be an HTML element");
@@ -255,7 +255,7 @@ test("the empty field shows the placeholder and keeps one Prose line of content"
 
   await editor.click();
   await editor.pressSequentially("Draft");
-  await expect(editor.locator("[data-placeholder]")).toHaveCount(0);
+  await expect.poll(() => editor.locator("p").first().evaluate(element => getComputedStyle(element, "::before").content)).not.toBe('"Write a note…"');
 });
 
 test("the field inside Field is named by its label and associated with its feedback", async ({ page }) => {
@@ -326,7 +326,7 @@ test("setMarkdown loads and discards notes without firing a change", async ({ pa
   await expect(editor.getByRole("heading", { name: "A loaded note" })).toBeVisible();
 
   await page.getByRole("button", { name: "Discard edits" }).click();
-  await expect(editor.locator("[data-placeholder]")).toHaveCount(1);
+  await expect.poll(() => editor.locator("p").first().evaluate(element => getComputedStyle(element, "::before").content)).toBe('"Write a note…"');
 });
 
 test("the field keeps the input boundary and grows from the minimum to the maximum then scrolls", async ({ page }) => {
@@ -363,5 +363,3 @@ test("clicking the empty space below short content places the caret at the end",
   await editor.pressSequentially("!");
   await expect(page.getByLabel("Field states Markdown", { exact: true })).toContainText("document.!");
 });
-
-

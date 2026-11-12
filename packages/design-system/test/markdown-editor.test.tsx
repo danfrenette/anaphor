@@ -900,6 +900,7 @@ describe("field presentation", () => {
     render(<MarkdownEditor defaultValue="" placeholder="Write a note…" aria-label="Research note" />);
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
+    // The decoration attribute is the only observable placeholder signal in jsdom.
     expect(editor.querySelector("[data-placeholder]")).toHaveAttribute("data-placeholder", "Write a note…");
 
     await user.click(editor);
