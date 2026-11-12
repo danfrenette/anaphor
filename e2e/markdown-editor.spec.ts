@@ -47,6 +47,10 @@ for (const theme of ["light", "dark"]) {
     expect(actual[0]!.marginTop).toBe(expected[0]!.marginTop);
     expect(actual.at(-1)?.marginBottom).toBe(expected.at(-1)?.marginBottom);
     expect(Math.abs((await editor.boundingBox())!.height - (await prose.boundingBox())!.height)).toBeLessThanOrEqual(1);
+    await editor.getByText("The final paragraph.").click();
+    await page.keyboard.press("End");
+    await page.keyboard.type("x");
+    expect(Math.abs((await editor.boundingBox())!.height - (await prose.boundingBox())!.height)).toBeLessThanOrEqual(1);
     for (const root of [editor, prose]) {
       const soft = root.getByText("A soft line continues here.");
       expect((await soft.boundingBox())!.height).toBeCloseTo(await soft.evaluate(element => parseFloat(getComputedStyle(element).lineHeight)), 0);
