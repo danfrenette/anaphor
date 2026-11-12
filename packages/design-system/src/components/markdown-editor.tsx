@@ -5,7 +5,9 @@ import Link from "@tiptap/extension-link";
 import { getListMarker, ListItem, OrderedList } from "@tiptap/extension-list";
 import { Extension, Node } from "@tiptap/core";
 import type { MarkdownRendererHelpers, MarkdownToken, RenderContext } from "@tiptap/core";
+import { Placeholder } from "@tiptap/extensions/placeholder";
 import { Markdown } from "@tiptap/markdown";
+import { EditorState } from "@tiptap/pm/state";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, type Ref } from "react";
@@ -276,29 +278,76 @@ const OpaqueInline = createOpaqueNode({
   match: matchOpaqueInline,
 });
 
+/** Empty the editor's undo/redo history while leaving its document and selection intact. */
+function resetHistory(editor: Editor): void {
+  // Recreate the state from the current document so every plugin's state field,
+  // including the history plugin's, is re-initialised. Undo and redo start empty.
+  const state = editor.state;
+  const nextState = EditorState.create({
+    doc: state.doc,
+    selection: state.selection,
+    storedMarks: state.storedMarks,
+    plugins: state.plugins,
+  });
+  editor.view.updateState(nextState);
+}
+
 type MarkdownEditorLabel = { "aria-label": string; "aria-labelledby"?: never } | { "aria-label"?: never; "aria-labelledby": string };
 type UseMarkdownEditorOptions = {
   defaultValue: string;
   onChange?: (markdown: string) => void;
+  /** Shown in an empty editor; disappears on the first input. */
+  placeholder?: string;
+  /** Still focusable and selectable, but typing does nothing. */
+  readOnly?: boolean;
+  /** Not focusable and ignored by the pointer; styled with the input disabled tokens. */
+  disabled?: boolean;
+  /** Focus the editor on mount, with the caret at the end of the document. */
+  autoFocus?: boolean;
+  /** Marks the textbox invalid and applies the input's invalid border. */
+  invalid?: boolean;
+  /** The textbox element id, for external association. */
+  id?: string;
+  /** Ids of the description and error elements inside `Field`. */
+  "aria-describedby"?: string;
 } & MarkdownEditorLabel;
 type UseMarkdownEditorResult = {
   /** Mounting/frame use only. `editor.getMarkdown()` is serializer-normalised and not byte-stable before the first edit. */
   editor: Editor | null;
   /** Read Markdown only here: original bytes before any edit, serializer normal form afterwards. */
   getMarkdown: () => string;
+  /** Replace the document from outside. Does not fire `onChange` and resets undo history. */
+  setMarkdown: (markdown: string) => void;
 };
-type MarkdownEditorHandle = { getMarkdown: () => string };
+type MarkdownEditorHandle = { getMarkdown: () => string; setMarkdown: (markdown: string) => void };
 type MarkdownEditorProps = UseMarkdownEditorOptions & { ref?: Ref<MarkdownEditorHandle> };
 
-function useMarkdownEditor({ defaultValue, onChange, "aria-label": ariaLabel, "aria-labelledby": ariaLabelledBy }: UseMarkdownEditorOptions): UseMarkdownEditorResult {
+function useMarkdownEditor({
+  defaultValue,
+  onChange,
+  placeholder,
+  readOnly = false,
+  disabled = false,
+  autoFocus = false,
+  invalid = false,
+  id,
+  "aria-describedby": ariaDescribedBy,
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledBy,
+}: UseMarkdownEditorOptions): UseMarkdownEditorResult {
   const { frontMatter, body } = useMemo(() => splitFrontMatter(defaultValue), [defaultValue]);
+  const frontMatterRef = useRef(frontMatter);
   const currentValue = useRef(defaultValue);
   const onChangeRef = useRef(onChange);
   useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
+  const isReplacingRef = useRef(false);
+  const pendingBodyRef = useRef<string | null>(null);
   const getMarkdown = useCallback(() => currentValue.current, []);
   const editor = useEditor({
     immediatelyRender: false,
     injectCSS: false,
+    editable: !readOnly && !disabled,
+    autofocus: autoFocus ? "end" : false,
     extensions: [StarterKit.configure({
       // Disabled: underline has no CommonMark source and is not in the supported
       // set; trailingNode appends an extra empty paragraph after a document ending
@@ -323,45 +372,124 @@ function useMarkdownEditor({ defaultValue, onChange, "aria-label": ariaLabel, "a
       // that opens an ordered item as a code block (workaround 13).
       orderedList: false,
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-    }), MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown],
+    }), MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, Placeholder.configure({ placeholder: placeholder ?? "" })],
     content: body,
     contentType: "markdown",
     editorProps: { attributes: {
       class: "anaphor-prose outline-none",
       role: "textbox",
       "aria-multiline": "true",
+      ...(id !== undefined ? { id } : {}),
+      ...(ariaDescribedBy !== undefined ? { "aria-describedby": ariaDescribedBy } : {}),
+      // State attributes live here, not on an imperative effect, so ProseMirror
+      // re-applies them on every view update and toggling never drops them.
+      ...(invalid ? { "aria-invalid": "true" } : {}),
+      ...(readOnly ? { "aria-readonly": "true" } : {}),
+      ...(disabled ? { "aria-disabled": "true" } : {}),
+      // Editable and read-only are focusable; disabled is removed from the tab
+      // order. `tabindex` here wins over Tiptap's Tabindex extension.
+      ...(disabled ? {} : { tabindex: "0" }),
       ...(ariaLabel === undefined ? { "aria-labelledby": ariaLabelledBy } : { "aria-label": ariaLabel }),
     } },
   });
+
+  // Replace the document without emitting an update, then clear undo history.
+  const replaceContent = useCallback((nextBody: string, target: Editor) => {
+    isReplacingRef.current = true;
+    try {
+      target.commands.setContent(nextBody, { contentType: "markdown" });
+      resetHistory(target);
+    } finally {
+      isReplacingRef.current = false;
+    }
+  }, []);
+
+  const setMarkdown = useCallback((markdown: string) => {
+    const { frontMatter: nextFrontMatter, body: nextBody } = splitFrontMatter(markdown);
+    // Until the next real edit, reading the value returns the replaced string
+    // byte for byte, the same contract as `defaultValue`.
+    currentValue.current = markdown;
+    frontMatterRef.current = nextFrontMatter;
+    if (editor) {
+      replaceContent(nextBody, editor);
+    } else {
+      // Before the editor exists, remember the body and apply it on mount.
+      pendingBodyRef.current = nextBody;
+    }
+  }, [editor, replaceContent]);
+
+  // A replacement requested before the editor mounted wins over the starting value.
+  useEffect(() => {
+    if (!editor || pendingBodyRef.current === null) return;
+    const nextBody = pendingBodyRef.current;
+    pendingBodyRef.current = null;
+    replaceContent(nextBody, editor);
+  }, [editor, replaceContent]);
+
+  // Keep editable state in step with props after mount. `setEditable(…, false)`
+  // skips the update event, so toggling state never fires `onChange` or flips
+  // the pre-edit byte guarantee. The accessible attributes are declared in
+  // `editorProps.attributes` above, so they survive view updates.
+  useEffect(() => {
+    if (!editor) return;
+    editor.setEditable(!readOnly && !disabled, false);
+  }, [editor, readOnly, disabled]);
+
   useEffect(() => {
     if (!editor) return;
     const onUpdate = () => {
+      if (isReplacingRef.current) return;
       const serializedBody = editor.getMarkdown();
+      const currentFrontMatter = frontMatterRef.current;
       // A front-matter-only document ends without a newline on its closing `---`,
       // so the body must be separated with one to keep the block intact on reload.
-      const needsSeparator = frontMatter !== "" && !frontMatter.endsWith("\n") && serializedBody !== "";
-      currentValue.current = frontMatter + (needsSeparator ? "\n" : "") + serializedBody;
+      const needsSeparator = currentFrontMatter !== "" && !currentFrontMatter.endsWith("\n") && serializedBody !== "";
+      currentValue.current = currentFrontMatter + (needsSeparator ? "\n" : "") + serializedBody;
       onChangeRef.current?.(currentValue.current);
     };
     editor.on("update", onUpdate);
     return () => { editor.off("update", onUpdate); };
-  }, [editor, frontMatter]);
-  return { editor, getMarkdown };
+  }, [editor]);
+  return { editor, getMarkdown, setMarkdown };
 }
 
 function MarkdownEditor({ ref, ...options }: MarkdownEditorProps) {
-  const { editor, getMarkdown } = useMarkdownEditor(options);
-  useImperativeHandle(ref, () => ({ getMarkdown }), [getMarkdown]);
-  return <div data-slot="markdown-editor" className={cn(
-    // Layout and surface
-    "w-full min-w-0 rounded-control border border-border bg-background px-3.5 py-3",
-    // Focus state
-    "focus-within:border-ring focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring",
-    // Motion
-    "motion-safe:transition-[border-color,background-color,outline-color] motion-safe:duration-150",
-    // Forced colors
-    "forced-colors:border-[ButtonText]",
-  )}>
+  const { disabled = false, invalid = false } = options;
+  const { editor, getMarkdown, setMarkdown } = useMarkdownEditor(options);
+  useImperativeHandle(ref, () => ({ getMarkdown, setMarkdown }), [getMarkdown, setMarkdown]);
+
+  // A click on the frame's own surface (padding or the empty space below short
+  // content) lands outside the editor content; place the caret at the end there.
+  // Clicks inside the content are handled by ProseMirror itself, so opaque blocks
+  // keep their own click and selection behaviour.
+  const handleFrameClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (disabled || !editor) return;
+    const target = event.target;
+    if (target instanceof globalThis.Node && editor.view.dom.contains(target)) return;
+    editor.commands.focus("end");
+  };
+
+  return <div
+    data-slot="markdown-editor"
+    aria-invalid={invalid || undefined}
+    data-disabled={disabled || undefined}
+    onClick={handleFrameClick}
+    className={cn(
+      // Layout and surface
+      "w-full min-w-0 rounded-control border border-border bg-background px-3.5 py-3",
+      // Field box: start small, grow to the maximum, then scroll.
+      "min-h-[var(--anaphor-markdown-editor-min-height)] max-h-[var(--anaphor-markdown-editor-max-height)] overflow-y-auto",
+      // Focus state
+      "focus-within:border-ring focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring",
+      // Invalid state
+      "aria-invalid:border-danger aria-invalid:focus-within:outline-danger",
+      // Disabled state
+      "data-disabled:pointer-events-none data-disabled:bg-[var(--anaphor-input-disabled)]",
+      // Motion
+      "motion-safe:transition-[border-color,background-color,outline-color] motion-safe:duration-150",
+      // Forced colors
+      "forced-colors:border-[ButtonText]",
+    )}>
     <EditorContent editor={editor} />
   </div>;
 }

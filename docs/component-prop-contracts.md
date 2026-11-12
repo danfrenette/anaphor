@@ -84,6 +84,9 @@ props preserve native refs and composition. See [Toast](components/toast.md).
 `MarkdownEditor` and `useMarkdownEditor` require a starting `defaultValue` and an
 accessible name from either `aria-label` or `aria-labelledby`. The value contract
 is uncontrolled: `onChange(markdown)` is optional, and the component ref exposes
-`getMarkdown()`. There is no controlled `value` or external replacement prop in
-this slice. The hook returns the configured `editor` for a consumer-owned frame
-and the same `getMarkdown()` reader. See [Markdown editor](components/markdown-editor.md).
+`getMarkdown()` and `setMarkdown(markdown)`. There is no controlled `value` prop.
+`setMarkdown` replaces the document from outside, never fires `onChange`, and
+resets undo history. Optional props compose the editor into `Field`: `placeholder`,
+`readOnly`, `disabled`, `autoFocus`, `invalid`, `id`, and `aria-describedby`.
+The hook returns the configured `editor` for a consumer-owned frame and the same
+`getMarkdown()`/`setMarkdown()` readers. See [Markdown editor](components/markdown-editor.md).
