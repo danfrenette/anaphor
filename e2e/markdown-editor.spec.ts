@@ -10,8 +10,8 @@ async function checkAccessibility(page: Page, include?: string) {
   const tags = ["wcag2a", "wcag2aa", "wcag22aa"];
   const general = await scan().withTags(tags).disableRules("scrollable-region-focusable").analyze();
   // Editable code scrolls as the caret moves; axe cannot detect that keyboard access.
-  // Exclude only editor textbox code blocks from this rule, not the other rules.
-  const scrollable = await scan().exclude('[data-slot="markdown-editor"] [role="textbox"] pre').withRules("scrollable-region-focusable").analyze();
+  // Exclude only editable editor textbox code blocks from this rule, not the other rules.
+  const scrollable = await scan().exclude('[data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) pre').withRules("scrollable-region-focusable").analyze();
   expect([...general.violations, ...scrollable.violations]).toEqual([]);
 }
 
@@ -263,6 +263,14 @@ test("the editor keeps keyboard focus order and passes accessibility checks", as
   await page.keyboard.press(tabBackward);
   await expect(editor).toBeFocused();
 
+  // Chromium may Tab to its intrinsically focusable overflowing scroller;
+  // WebKit skips it. Neither behavior requires an authored tabindex.
+  const code = page.getByRole("textbox", { name: "In-place code ending" }).locator("pre");
+  await expect(code).not.toHaveAttribute("tabindex");
+  await page.getByRole("textbox", { name: "In-place code ending" }).focus();
+  await page.keyboard.press(tabForward);
+  console.log(`editable overflowing code focused after Tab: ${await code.evaluate(element => element === document.activeElement)}`);
+
   await checkAccessibility(page);
 });
 
@@ -431,6 +439,29 @@ test("read-only prevents typing but allows focus", async ({ page }) => {
   await expect(editor).toBeFocused();
   await editor.pressSequentially("ignored");
   await expect(page.getByLabel("Field states Markdown", { exact: true })).toHaveText("");
+});
+
+test("overflowing code is keyboard accessible across read-only transitions", async ({ page, browserName }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  await editor.click();
+  await editor.pressSequentially("```", { delay: 0 });
+  await editor.press("Enter");
+  await editor.pressSequentially("x".repeat(150), { delay: 0 });
+  const code = editor.locator("pre");
+  await expect(code).not.toHaveAttribute("tabindex");
+  expect(await code.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true);
+  await page.getByRole("button", { name: "Read-only", exact: true }).click();
+  await expect(code).toHaveAttribute("tabindex", "0");
+  await editor.focus();
+  await page.keyboard.press(browserName === "webkit" && process.platform === "darwin" ? "Alt+Tab" : "Tab");
+  await expect(code).toBeFocused();
+  for (const dark of [false, true]) {
+    await page.locator("html").evaluate((element, value) => element.classList.toggle("dark", value), dark);
+    await checkAccessibility(page, '[aria-label="Field states"]');
+  }
+  await page.getByRole("button", { name: "Read-only", exact: true }).click();
+  await expect(code).not.toHaveAttribute("tabindex");
 });
 
 test("read-only autofocus and frame padding focus the editor", async ({ page, isMobile }) => {
