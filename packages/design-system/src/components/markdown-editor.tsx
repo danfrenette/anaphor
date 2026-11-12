@@ -14,6 +14,16 @@ import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, type Ref 
 import { matchOpaqueBlock, matchOpaqueInline, splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 import { cn } from "../lib/utils";
 
+const PlaceholderText = Extension.create({
+  name: "placeholderText",
+  addStorage: () => ({ placeholder: "" }),
+});
+
+function updatePlaceholder(editor: Editor, placeholder: string) {
+  editor.storage.placeholderText.placeholder = placeholder;
+  editor.view.dispatch(editor.state.tr.setMeta("placeholderRefresh", true));
+}
+
 // --- Tiptap 3.33.0 serializer workarounds ---
 // These overrides correct serialised-Markdown data loss; they do not change
 // interaction behaviour. Each is minimal and pins a regression test in
@@ -339,8 +349,6 @@ function useMarkdownEditor({
   const frontMatterRef = useRef(frontMatter);
   const currentValue = useRef(defaultValue);
   const onChangeRef = useRef(onChange);
-  const placeholderRef = useRef(placeholder);
-  placeholderRef.current = placeholder;
   useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
   const isReplacingRef = useRef(false);
   const pendingBodyRef = useRef<string | null>(null);
@@ -374,7 +382,7 @@ function useMarkdownEditor({
       // that opens an ordered item as a code block (workaround 13).
       orderedList: false,
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-    }), MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, Placeholder.configure({ placeholder: () => placeholderRef.current ?? "" })],
+    }), MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
     content: body,
     contentType: "markdown",
     editorProps: { attributes: {
@@ -396,7 +404,9 @@ function useMarkdownEditor({
   });
 
   useEffect(() => {
-    if (editor && !editor.isDestroyed) editor.view.dispatch(editor.state.tr.setMeta("placeholderRefresh", true));
+    if (editor && !editor.isDestroyed) {
+      updatePlaceholder(editor, placeholder ?? "");
+    }
   }, [editor, placeholder]);
 
   useEffect(() => {
