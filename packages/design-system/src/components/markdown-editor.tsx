@@ -7,8 +7,9 @@ import { Extension, Node } from "@tiptap/core";
 import type { MarkdownRendererHelpers, MarkdownToken, RenderContext } from "@tiptap/core";
 import { Placeholder } from "@tiptap/extensions/placeholder";
 import { Markdown } from "@tiptap/markdown";
-import { EditorState, Selection } from "@tiptap/pm/state";
+import { EditorState, Plugin, Selection } from "@tiptap/pm/state";
 import { GapCursor } from "@tiptap/pm/gapcursor";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, type Ref } from "react";
@@ -86,6 +87,22 @@ function linkDestinationNeedsAngleBrackets(href: string): boolean {
 // content so a line of backticks inside the block cannot close the fence on
 // reload. The stock renderer writes a fixed ``` fence.
 const MarkdownCodeBlock = CodeBlock.extend({
+  addProseMirrorPlugins() {
+    const editor = this.editor;
+    return [new Plugin({
+      props: {
+        decorations(state) {
+          const attributes = editor.options.editorProps.attributes;
+          if (typeof attributes === "function" || attributes?.["aria-readonly"] !== "true" || attributes?.["aria-disabled"] === "true") return null;
+          const decorations: Decoration[] = [];
+          state.doc.descendants((node, pos) => {
+            if (node.type.name === "codeBlock") decorations.push(Decoration.node(pos, pos + node.nodeSize, { tabindex: "0" }));
+          });
+          return DecorationSet.create(state.doc, decorations);
+        },
+      },
+    })];
+  },
   renderMarkdown: (node, h) => {
     const language = node.attrs?.language || "";
     if (!node.content) return `\`\`\`${language}\n\n\`\`\``;
