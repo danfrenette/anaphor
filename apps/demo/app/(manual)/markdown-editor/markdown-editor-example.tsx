@@ -90,7 +90,7 @@ export function MarkdownEditorExample() {
   </>;
 }
 
-const otherNote = "## A loaded note\n\nThis note was loaded with `setMarkdown`, so **Undo** cannot return to the previous document.";
+const otherNote = "## A loaded note\n\n<!-- Field note -->\n\nLoaded with `setMarkdown`.";
 
 // Demonstrates the field inside Anaphor's Field: label, description, error,
 // placeholder, read-only and disabled toggles, and imperative replace.

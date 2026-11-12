@@ -325,21 +325,47 @@ test("read-only text can be selected and copied", async ({ page, context, browse
   await editor.click();
   await editor.press("ControlOrMeta+a");
   expect(await page.evaluate(() => window.getSelection()?.toString())).toContain("A loaded note");
-  const copied = page.evaluate((nativeClipboard) => new Promise<string>((resolve) => {
+  const copied = page.evaluate(() => new Promise<boolean>((resolve) => {
     document.addEventListener("copy", (event) => {
-      const text = window.getSelection()?.toString() ?? "";
-      if (!nativeClipboard) {
-        event.clipboardData?.setData("text/plain", text);
-        event.preventDefault();
-        resolve(event.clipboardData?.getData("text/plain") ?? "");
-      } else {
-        resolve(text);
-      }
+      queueMicrotask(() => resolve(event.defaultPrevented));
     }, { once: true });
-  }), browserName === "chromium");
+  }));
   await editor.press("ControlOrMeta+c");
-  expect(await copied).toContain("A loaded note");
+  expect(await copied).toBe(false);
+  // WebKit does not expose the native clipboard to this test.
   if (browserName === "chromium") expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("A loaded note");
+});
+
+test("dragging inside a field selects text without padding focus interference", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  await page.getByRole("button", { name: "Load another note" }).click();
+  const text = page.getByRole("textbox", { name: "Notes" }).getByText("A loaded note");
+  const box = await text.boundingBox();
+  if (!box) throw new Error("Text has no bounding box");
+  await page.mouse.move(box.x + 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width - 2, box.y + box.height / 2, { steps: 10 });
+  await page.mouse.up();
+  expect((await page.evaluate(() => window.getSelection()?.toString()))?.toLowerCase()).toContain("loaded note");
+});
+
+test("an opaque block in a field is selected whole and padding focuses after it", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  await page.getByRole("button", { name: "Load another note" }).click();
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  const block = editor.getByText("<!-- Field note -->");
+  const output = page.getByLabel("Field states Markdown", { exact: true });
+  await block.click();
+  await editor.press("Delete");
+  await expect(output).not.toContainText("<!-- Field note -->");
+  await editor.press("ControlOrMeta+z");
+  await expect(output).toContainText("<!-- Field note -->");
+  const frame = page.locator('[data-slot="markdown-editor"]').filter({ has: editor });
+  const box = await frame.boundingBox();
+  if (!box) throw new Error("Frame has no bounding box");
+  await page.mouse.click(box.x + box.width - 5, box.y + box.height - 5);
+  await page.keyboard.type("After");
+  await expect(output).toContainText("Loaded with `setMarkdown`.After");
 });
 
 test("frame matches Input states and surfaces in both themes", async ({ page }) => {
