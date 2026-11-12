@@ -189,6 +189,12 @@ async function checkBrowser(browser, directory, item, fontDelivery = "embedded")
       await expect(page.getByRole("button", { name: "Inspect registry media" })).toBeFocused();
     }
     if (item === "ui") {
+      const editor = page.getByRole("textbox", { name: "Registry note" });
+      await expect(editor).toBeVisible();
+      await editor.click();
+      await editor.press("ControlOrMeta+A");
+      await editor.pressSequentially("# Installed");
+      await expect.poll(() => page.getByLabel("Registry Markdown", { exact: true }).textContent()).toBe("# Installed");
       const disclosure = page.getByRole("button", { name: "Registry disclosure" });
       await disclosure.click();
       await expect(page.getByRole("button", { name: "Installed section" })).toBeVisible();
