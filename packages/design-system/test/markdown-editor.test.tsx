@@ -29,6 +29,16 @@ function setupEditor(defaultValue = "", props: { placeholder?: string; readOnly?
   return { user, ref, ...rendered };
 }
 
+test("in-place presentation does not focus when its surrounding wrapper is clicked", async () => {
+  const user = userEvent.setup();
+  const { container } = render(<MarkdownEditor presentation="in-place" defaultValue="Note" aria-label="In-place note" />);
+  const editor = await screen.findByRole("textbox", { name: "In-place note" });
+  await user.click(container.firstElementChild!);
+  expect(editor).not.toHaveFocus();
+  await user.click(editor);
+  expect(editor).toHaveFocus();
+});
+
 test.each([
   ["opaque", "Before\n\n<!-- Field note -->"],
   ["code", "Before\n\n```js\nconst x = 1;\n```"],
