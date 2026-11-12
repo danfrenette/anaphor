@@ -1,6 +1,8 @@
 # Markdown editor
 
-Code blocks are keyboard-focusable so their horizontal overflow can be scrolled.
+Editable code scrolls as the caret moves; Chromium may also make overflowing
+code focusable. Read-only code blocks are focusable for keyboard scrolling.
+Rendered demo code is separate and is also focusable.
 
 `MarkdownEditor` edits Markdown in a bounded field or in place. It uses Tiptap 3 and the
 official `@tiptap/markdown` extension, pinned at 3.33.0. Content uses the same
@@ -132,6 +134,7 @@ content width or measure, load Anaphor's stylesheet and fonts, and supply the
 same theme variables. Do not add extra container padding to either surface, or
 put `data-prose-exclude` on the editor root or any ancestor. The manual compares
 the editor to the same Markdown rendered by `marked` inside `Prose`.
+The demo gives its rendered code blocks their own keyboard focus for scrolling.
 
 ## Supported Markdown and keyboard input
 
