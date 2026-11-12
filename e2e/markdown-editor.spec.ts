@@ -22,8 +22,9 @@ test("page space below the in-place editor does not focus or move its selection"
   const editor = page.getByRole("textbox", { name: "In-place opaque note" });
   await editor.getByText("A loaded note").click();
   const selection = await page.evaluate(() => ({ text: window.getSelection()?.anchorNode?.textContent, offset: window.getSelection()?.anchorOffset }));
-  await page.getByText("Space below the editor", { exact: true }).click();
+  await page.getByLabel("Space below the editor", { exact: true }).click();
   await expect(editor).not.toBeFocused();
+  await editor.focus();
   expect(await page.evaluate(() => ({ text: window.getSelection()?.anchorNode?.textContent, offset: window.getSelection()?.anchorOffset }))).toEqual(selection);
 });
 
