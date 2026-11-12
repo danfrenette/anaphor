@@ -85,6 +85,7 @@
         "danfrenette/anaphor/file-upload",
         "danfrenette/anaphor/input",
         "danfrenette/anaphor/kbd",
+        "danfrenette/anaphor/markdown-editor",
         "danfrenette/anaphor/menu",
         "danfrenette/anaphor/popover",
         "danfrenette/anaphor/tooltip",

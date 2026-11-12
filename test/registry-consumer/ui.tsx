@@ -16,6 +16,7 @@ import { Field, FieldContent, FieldDescription, FieldGroup, FieldItem, FieldLabe
 import { Radio, RadioGroup } from "./components/ui/radio-group";
 import { FieldFeedback } from "./components/ui/field-feedback";
 import { Input } from "./components/ui/input";
+import { MarkdownEditor } from "./components/ui/markdown-editor";
 import { Kbd, KbdGroup } from "./components/ui/kbd";
 import { MorphSurface } from "./components/ui/morph-surface";
 import { Menu, MenuItem, MenuPopup, MenuTrigger } from "./components/ui/menu";
@@ -35,6 +36,7 @@ function Consumer() {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState(50);
   const [frequency, setFrequency] = useState<string | null>(null);
+  const [editorMarkdown, setEditorMarkdown] = useState("Installed **Markdown**");
   return <main className="mx-auto max-w-workspace px-page-inset py-6 font-sans">
     <div data-testid="editorial-layout" className="mx-auto max-w-editorial"><p className="max-w-reading">Shared layout in an independent consumer.</p></div>
     <Toaster toastManager={toast} position="bottom-right" timeout={5000} limit={3} />
@@ -60,6 +62,8 @@ function Consumer() {
         <Badge size="md" variant="soft" shape="square">Ready</Badge>
         <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" onClick={() => setCount(count + 1)}><ButtonLabel>Count {count}</ButtonLabel></Button>
         <Field orientation="vertical"><FieldLabel>Email</FieldLabel><Input size="md" type="email" /><FieldFeedback hint="Your email address" error="Enter an email" invalid={false} /></Field>
+        <MarkdownEditor defaultValue={editorMarkdown} onChange={setEditorMarkdown} aria-label="Registry note" />
+        <div role="group" aria-label="Registry Markdown">{editorMarkdown}</div>
         <FieldGroup><Field orientation="horizontal"><Checkbox /><FieldContent><FieldLabel>Accept updates</FieldLabel><FieldDescription>Occasional product news.</FieldDescription></FieldContent></Field></FieldGroup>
         <form aria-label="Installed notification preferences" onSubmit={event => {
           event.preventDefault();
