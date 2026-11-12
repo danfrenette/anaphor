@@ -292,6 +292,95 @@ test("read-only prevents typing but allows focus", async ({ page }) => {
   await expect(page.getByLabel("Field states Markdown", { exact: true })).toHaveText("");
 });
 
+test("read-only autofocus and frame padding focus the editor", async ({ page, isMobile }) => {
+  await page.goto("/markdown-editor");
+  await page.getByRole("button", { name: "Toggle autofocus example" }).click();
+  const editor = page.getByRole("textbox", { name: "Read-only autofocus example" });
+  await expect(editor).toBeFocused();
+  await expect.poll(() => editor.evaluate(element => {
+    const selection = window.getSelection();
+    if (!selection?.anchorNode) return "";
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    range.setEnd(selection.anchorNode, selection.anchorOffset);
+    return range.toString();
+  })).toBe("Read-only example");
+  await page.getByRole("button", { name: "Read-only", exact: true }).click();
+  const notes = page.getByRole("textbox", { name: "Notes" });
+  const frame = page.locator('[data-slot="markdown-editor"]').filter({ has: notes });
+  await frame.scrollIntoViewIfNeeded();
+  const box = await frame.boundingBox();
+  if (!box) throw new Error("Frame has no bounding box");
+  if (isMobile) await page.touchscreen.tap(box.x + 5, box.y + 5);
+  else await page.mouse.click(box.x + 5, box.y + 5);
+  await expect(notes).toBeFocused();
+});
+
+test("read-only text can be selected and copied", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  await page.getByRole("button", { name: "Load another note" }).click();
+  await page.getByRole("button", { name: "Read-only", exact: true }).click();
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  await editor.click();
+  await editor.press("ControlOrMeta+a");
+  expect(await page.evaluate(() => window.getSelection()?.toString())).toContain("A loaded note");
+  const copied = page.evaluate(() => new Promise<string>((resolve) => {
+    document.addEventListener("copy", (event) => {
+      event.clipboardData?.setData("text/plain", window.getSelection()?.toString() ?? "");
+      resolve(event.clipboardData?.getData("text/plain") ?? "");
+      event.preventDefault();
+    }, { once: true });
+  }));
+  await editor.press("ControlOrMeta+c");
+  expect(await copied).toContain("A loaded note");
+});
+
+test("frame matches Input states and surfaces in both themes", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  const frame = page.locator('[data-slot="markdown-editor"]').filter({ has: editor });
+  const input = page.getByRole("textbox", { name: "Input comparison" });
+  const styles = (element: Element) => {
+    const style = getComputedStyle(element);
+    return { border: style.borderTopColor, outline: style.outlineColor, outlineWidth: style.outlineWidth, background: style.backgroundColor };
+  };
+  for (const dark of [false, true]) {
+    await page.locator("html").evaluate((element, value) => element.classList.toggle("dark", value), dark);
+    const normal = { frame: await frame.evaluate(styles), input: await input.evaluate(styles), page: await page.locator("body").evaluate(element => getComputedStyle(element).backgroundColor) };
+    expect(normal.frame.border).toBe(normal.input.border);
+    expect(normal.frame.background).toBe(normal.input.background);
+    expect(normal.frame.background).toBe(normal.page);
+    await editor.focus();
+    const focusFrame = await frame.evaluate(styles);
+    await input.focus();
+    const focusInput = await input.evaluate(styles);
+    expect(focusFrame.border).toBe(focusInput.border);
+    expect(focusFrame.outline).toBe(focusInput.outline);
+    expect(focusFrame.outlineWidth).toBe(focusInput.outlineWidth);
+    await page.getByRole("button", { name: "Error", exact: true }).click();
+    const invalidFrame = await frame.evaluate(styles);
+    const invalidInput = await input.evaluate(styles);
+    expect(invalidFrame.border).toBe(invalidInput.border);
+    await page.getByRole("button", { name: "Error", exact: true }).click();
+    await page.getByRole("button", { name: "Disabled", exact: true }).click();
+    const disabledFrame = await frame.evaluate(styles);
+    const disabledInput = await input.evaluate(styles);
+    expect(disabledFrame.background).toBe(disabledInput.background);
+    const token = await frame.evaluate(element => {
+      const probe = document.createElement("span");
+      probe.style.backgroundColor = "var(--anaphor-input-disabled)";
+      element.append(probe);
+      const color = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return color;
+    });
+    expect(disabledFrame.background).toBe(token);
+    console.log(JSON.stringify({ theme: dark ? "dark" : "light", normal, focusFrame, focusInput, invalidFrame, invalidInput, disabledFrame, disabledInput, token }));
+    await page.getByRole("button", { name: "Disabled", exact: true }).click();
+  }
+});
+
 test("disabled removes focus and interaction", async ({ page }) => {
   await page.goto("/markdown-editor");
   await page.getByRole("button", { name: "Disabled" }).click();
@@ -348,18 +437,25 @@ test("the field keeps the input boundary and grows from the minimum to the maxim
   expect(grown.scrollHeight).toBeGreaterThan(grown.clientHeight);
 });
 
-test("clicking the empty space below short content places the caret at the end", async ({ page, isMobile }) => {
-  test.skip(isMobile, "Padding click-to-focus is a desktop pointer concern; mobile taps are covered by the field-state tests.");
+test("clicking padding places the caret at the end", async ({ page, isMobile }) => {
   await page.goto("/markdown-editor");
   const editor = page.getByRole("textbox", { name: "Notes" });
   const frame = page.locator('[data-slot="markdown-editor"]').filter({ has: editor });
 
-  await page.getByRole("button", { name: "Load another note" }).click();
-  const box = await frame.boundingBox();
-  expect(box).not.toBeNull();
-  // Click the bottom-right padding corner, below and beside the short content.
-  await page.mouse.click(box!.x + box!.width - 6, box!.y + box!.height - 6);
-  await expect(editor).toBeFocused();
-  await editor.pressSequentially("!");
-  await expect(page.getByLabel("Field states Markdown", { exact: true })).toContainText("document.!");
+  for (const position of ["top-left", "middle-right", "bottom-right"]) {
+    await page.getByRole("button", { name: "Discard edits" }).click();
+    await editor.click();
+    await page.keyboard.type("Draft");
+    await page.getByRole("button", { name: "Read-only", exact: true }).focus();
+    await frame.evaluate(element => element.scrollIntoView({ block: "center", behavior: "instant" }));
+    const box = await frame.boundingBox();
+    if (!box) throw new Error("Frame has no bounding box");
+    const x = position === "top-left" ? box.x + 5 : box.x + box.width - 5;
+    const y = position === "top-left" ? box.y + 5 : position === "middle-right" ? box.y + box.height / 2 : box.y + box.height - 5;
+    if (isMobile) await page.touchscreen.tap(x, y);
+    else await page.mouse.click(x, y);
+    await expect(editor).toBeFocused();
+    await page.keyboard.type(position);
+    await expect(page.getByLabel("Field states Markdown", { exact: true })).toHaveText(`Draft${position}`);
+  }
 });

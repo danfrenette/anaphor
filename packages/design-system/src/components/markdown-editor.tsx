@@ -30,7 +30,7 @@ function updatePlaceholder(editor: Editor, placeholder: string) {
   editor.view.dispatch(editor.state.tr.setMeta("placeholderRefresh", true));
 }
 
-function focusReadOnlyEnd(editor: Editor) {
+function focusAtEnd(editor: Editor) {
   const selection = Selection.atEnd(editor.state.doc);
   editor.view.dispatch(editor.state.tr.setSelection(selection));
   editor.view.dom.focus();
@@ -425,7 +425,7 @@ function useMarkdownEditor({
 
   useEffect(() => {
     if (editor && autoFocus && readOnly && !disabled) {
-      focusReadOnlyEnd(editor);
+      focusAtEnd(editor);
     }
   }, [editor, autoFocus, readOnly, disabled]);
 
@@ -504,11 +504,7 @@ function MarkdownEditor({ ref, ...options }: MarkdownEditorProps) {
     if (disabled || !editor) return;
     const target = event.target;
     if (target instanceof globalThis.Node && editor.view.dom.contains(target)) return;
-    if (options.readOnly) {
-      focusReadOnlyEnd(editor);
-      return;
-    }
-    editor.commands.focus("end");
+    focusAtEnd(editor);
   };
 
   return <div
