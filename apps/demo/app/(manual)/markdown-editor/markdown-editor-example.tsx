@@ -91,7 +91,7 @@ export function MarkdownEditorExample() {
     <section aria-label="In-place states" className="mt-12">
       <Text as="h2" variant="heading">In-place states</Text>
       <div className="mt-6"><MarkdownEditor presentation="in-place" defaultValue={otherNote} onChange={setInPlaceNote} aria-label="In-place opaque note" /></div>
-      <Text as="p" variant="body" className="mt-8">Space below the editor</Text>
+      <div aria-label="Space below the editor" className="h-8" />
       <div role="group" aria-label="In-place opaque Markdown" className="mt-3 whitespace-pre-wrap">{inPlaceNote}</div>
       <div className="mt-6"><MarkdownEditor presentation="in-place" defaultValue="Read-only in-place example" readOnly aria-label="Read-only in-place note" /></div>
     </section>
