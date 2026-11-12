@@ -120,7 +120,9 @@ tall, and uses the muted foreground token.
 
 Use `presentation="in-place"` to edit where rendered Markdown normally sits.
 The editor adds no border, background, padding, height limit, scrolling frame,
-or focus ring. The caret and selection indicate focus. It keeps its accessible
+or focus ring for editable content. The caret and selection indicate focus. A
+read-only editor shows the standard focus outline on keyboard focus, but not
+mouse focus, so it has a visible indicator without a caret (WCAG 2.4.7). It keeps its accessible
 name and multiline textbox semantics. `invalid` still sets `aria-invalid`, but
 does not draw a border; disabled still prevents interaction without adding a
 surface. The field height tokens and padding click-to-focus do not apply.
