@@ -659,6 +659,41 @@ describe("front matter", () => {
 
     expect(ref.current?.getMarkdown()).toBe("---\ntitle: x\n---\n# !Body");
   });
+
+  test("front matter with a YAML block scalar is hidden and returned byte for byte", async () => {
+    const { user, ref } = setupEditor("---\ndescription: |\n  a\n\n  b\n---\n# Body");
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    expect(editor).not.toHaveTextContent("description");
+    expect(screen.getByRole("heading", { level: 1, name: "Body" })).toBeVisible();
+
+    await user.click(editor);
+    await user.keyboard("!");
+
+    expect(ref.current?.getMarkdown()).toBe("---\ndescription: |\n  a\n\n  b\n---\n# !Body");
+  });
+
+  test("a blank line, paragraph, blank line and rule is still not front matter", async () => {
+    setupEditor("---\n\nParagraph\n\n---");
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    // Nothing is hidden: the paragraph shows and both `---` lines render as
+    // horizontal rules now that a blank line separates them from the paragraph.
+    expect(screen.getByText("Paragraph")).toBeVisible();
+    expect(editor).toHaveTextContent("Paragraph");
+    expect(screen.getAllByRole("separator").length).toBeGreaterThanOrEqual(1);
+  });
+
+  test("a rule followed by prose with no key is not front matter", async () => {
+    // `---` then prose with no mapping key is not front matter; the trailing
+    // `---` underlines the prose as a setext heading.
+    setupEditor("---\nJust prose\n---");
+
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    expect(screen.getByRole("separator")).toBeVisible();
+    expect(screen.getByRole("heading", { level: 2, name: "Just prose" })).toBeVisible();
+    expect(editor).toHaveTextContent("Just prose");
+  });
 });
 
 describe("preserved unsupported content", () => {
