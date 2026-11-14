@@ -29,6 +29,38 @@
       ]
     },
     {
+      "name": "markdown-editor",
+      "type": "registry:ui",
+      "title": "Markdown editor",
+      "description": "Edit Markdown blocks, lists, quotes, code, rules, and marks in a Prose-styled field.",
+      "dependencies": [
+        "@tiptap/core@3.33.0",
+        "@tiptap/extension-code-block@3.33.0",
+        "@tiptap/extension-link@3.33.0",
+        "@tiptap/extension-list@3.33.0",
+        "@tiptap/extensions@3.33.0",
+        "@tiptap/markdown@3.33.0",
+        "@tiptap/pm@3.33.0",
+        "@tiptap/react@3.33.0",
+        "@tiptap/starter-kit@3.33.0"
+      ],
+      "registryDependencies": [
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/utils"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/markdown-editor.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "packages/design-system/src/lib/markdown-editor-tokenizers.ts",
+          "type": "registry:lib",
+          "target": "@components/lib/markdown-editor-tokenizers.ts"
+        }
+      ]
+    },
+    {
       "name": "ui",
       "type": "registry:ui",
       "title": "Anaphor UI",
@@ -53,6 +85,7 @@
         "danfrenette/anaphor/file-upload",
         "danfrenette/anaphor/input",
         "danfrenette/anaphor/kbd",
+        "danfrenette/anaphor/markdown-editor",
         "danfrenette/anaphor/menu",
         "danfrenette/anaphor/popover",
         "danfrenette/anaphor/tooltip",

@@ -171,6 +171,14 @@ async function checkBrowser(browser, directory, item, fontDelivery = "embedded")
       await expect(diff.getByRole("region", { name: "Code changes: example.ts" })).toBeHidden();
       await diff.getByRole("button", { name: "Expand example.ts" }).click();
     }
+    if (item === "markdown-editor") {
+      const editor = page.getByRole("textbox", { name: "Registry note" });
+      await expect(editor).toBeVisible();
+      await editor.click();
+      await editor.press("ControlOrMeta+A");
+      await editor.pressSequentially("# Installed");
+      await expect.poll(() => page.getByLabel("Registry Markdown", { exact: true }).textContent()).toBe("# Installed");
+    }
     if (item === "media-viewer" || item === "ui") {
       await page.getByRole("button", { name: "Inspect registry media" }).click();
       const viewer = page.getByRole("dialog", { name: "Registry media" });
@@ -181,6 +189,12 @@ async function checkBrowser(browser, directory, item, fontDelivery = "embedded")
       await expect(page.getByRole("button", { name: "Inspect registry media" })).toBeFocused();
     }
     if (item === "ui") {
+      const editor = page.getByRole("textbox", { name: "Registry note" });
+      await expect(editor).toBeVisible();
+      await editor.click();
+      await editor.press("ControlOrMeta+A");
+      await editor.pressSequentially("# Installed");
+      await expect.poll(() => page.getByLabel("Registry Markdown", { exact: true }).textContent()).toBe("# Installed");
       const disclosure = page.getByRole("button", { name: "Registry disclosure" });
       await disclosure.click();
       await expect(page.getByRole("button", { name: "Installed section" })).toBeVisible();
@@ -285,7 +299,7 @@ try {
   console.log(`Registry verification workspace: ${temporary}`);
   await prepareRegistry();
   browser = await chromium.launch();
-  for (const item of ["button", "diff", "media-viewer", "step-transition", "data-table", "ui", "font-delivery"]) {
+  for (const item of ["button", "diff", "media-viewer", "markdown-editor", "step-transition", "data-table", "ui", "font-delivery"]) {
     console.log(`\nChecking independent ${item} installation`);
     const consumer = path.join(temporary, item);
     await cp(path.join(root, "test/registry-consumer"), consumer, { recursive: true });
