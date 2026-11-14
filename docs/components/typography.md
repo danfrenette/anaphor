@@ -112,6 +112,9 @@ nested layout for Tiptap's live node views (`data-type="taskList"` and
 `data-checked`), marked's plain checkbox list items, and remark-gfm's
 `contains-task-list` and `task-list-item` markup. Paragraphs in table cells
 have no extra block margin, so native rendered cells and editor cells align.
+Rendered task boxes are status indicators and retain their normal appearance
+even when the renderer marks their inputs disabled. A disabled editor instead
+uses the shared disabled treatment.
 Table wrappers scroll horizontally and retain the normal outer table rhythm.
 Renderers can put `data-prose-table` on a wrapper around a table; give a
 scrollable wrapper a name and `tabindex="0"` for keyboard access.

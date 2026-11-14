@@ -41,6 +41,27 @@ test("checked task trigger and checkbox state transitions", async ({ page }) => 
   await expect(checkbox).not.toBeFocused();
 });
 
+for (const theme of ["light", "dark"]) test(`disabled task checkbox uses disabled treatment: ${theme}`, async ({ page }) => {
+  await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  await editor.click();
+  await editor.pressSequentially("[x] Review notes");
+  const checkbox = editor.getByRole("checkbox", { name: /Review notes/i });
+  await page.getByRole("button", { name: "Disabled", exact: true }).click();
+  const colors = await checkbox.evaluate(element => {
+    const sample = document.createElement("span");
+    sample.style.cssText = "background:var(--anaphor-input-disabled);color:var(--anaphor-font-tertiary)";
+    element.parentElement!.append(sample);
+    const expected = getComputedStyle(sample);
+    const result = { background: getComputedStyle(element, "::before").backgroundColor, mark: getComputedStyle(element, "::after").borderBottomColor, disabled: expected.backgroundColor, muted: expected.color };
+    sample.remove();
+    return result;
+  });
+  expect(colors.background).toBe(colors.disabled);
+  expect(colors.mark).toBe(colors.muted);
+});
+
 test("table cells edit independently and Tab exits at both boundaries", async ({ page, browserName }) => {
   await page.goto("/markdown-editor");
   const editor = page.getByRole("textbox", { name: "Table note" });

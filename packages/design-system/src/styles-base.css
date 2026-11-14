@@ -295,11 +295,15 @@
   .anaphor-prose :where(li input[type="checkbox"]):not(:where([data-prose-exclude], [data-prose-exclude] *))::before { content: ""; grid-area: 1 / 1; width: 1em; height: 1em; border: 1px solid var(--anaphor-input-border); border-radius: var(--radius-sm); background: var(--anaphor-background); }
   .anaphor-prose :where(li input[type="checkbox"]:checked):not(:where([data-prose-exclude], [data-prose-exclude] *))::before { background: var(--anaphor-brand); border-color: var(--anaphor-brand); }
   .anaphor-prose :where(li input[type="checkbox"]:checked):not(:where([data-prose-exclude], [data-prose-exclude] *))::after { content: ""; grid-area: 1 / 1; place-self: center; width: 0.5em; height: 0.3em; border: solid var(--anaphor-checkbox-mark); border-width: 0 0 2px 2px; transform: translateY(-0.05em) rotate(-45deg); }
+  :where([data-slot="markdown-editor"][data-disabled]) .anaphor-prose :where(li input[type="checkbox"]):not(:where([data-prose-exclude], [data-prose-exclude] *))::before { background: var(--anaphor-input-disabled); border-color: var(--anaphor-input-border); }
+  :where([data-slot="markdown-editor"][data-disabled]) .anaphor-prose :where(li input[type="checkbox"]:checked):not(:where([data-prose-exclude], [data-prose-exclude] *))::after { border-color: var(--anaphor-font-tertiary); }
   .anaphor-prose :where(li input[type="checkbox"]:focus-visible):not(:where([data-prose-exclude], [data-prose-exclude] *)) { outline: 2px solid var(--anaphor-focus); outline-offset: 2px; }
   @media (forced-colors: active) {
     .anaphor-prose :where(li input[type="checkbox"]):not(:where([data-prose-exclude], [data-prose-exclude] *))::before { border-color: CanvasText; background: Canvas; }
     .anaphor-prose :where(li input[type="checkbox"]:checked):not(:where([data-prose-exclude], [data-prose-exclude] *))::before { border-color: Highlight; background: Highlight; }
     .anaphor-prose :where(li input[type="checkbox"]:checked):not(:where([data-prose-exclude], [data-prose-exclude] *))::after { border-color: HighlightText; }
+    :where([data-slot="markdown-editor"][data-disabled]) .anaphor-prose :where(li input[type="checkbox"]):not(:where([data-prose-exclude], [data-prose-exclude] *))::before { border-color: GrayText; background: Canvas; }
+    :where([data-slot="markdown-editor"][data-disabled]) .anaphor-prose :where(li input[type="checkbox"]:checked):not(:where([data-prose-exclude], [data-prose-exclude] *))::after { border-color: GrayText; }
   }
   .anaphor-prose :where(a):not(:where([data-prose-exclude], [data-prose-exclude] *)) { color: inherit; text-decoration-line: underline; text-underline-offset: 0.15em; }
   .anaphor-prose :where(strong):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-weight: var(--font-weight-bold); }
