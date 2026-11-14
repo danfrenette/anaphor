@@ -70,7 +70,7 @@ never fires `onChange`.
 
 Type `[ ] ` or `[x] ` to start a task item. Its named checkbox can be toggled
 by click or Space; the corresponding Markdown changes between `[ ]` and `[x]`.
-Task items may be nested. Tiptap splits mixed task and ordinary items into separate lists when saved, so an unsaved mixed source can have different vertical spacing from its rendered form. Read-only and disabled editors do not change when a
+Task items may be nested. Tiptap's schema displays mixed task and ordinary items as separate lists, while Markdown keeps them in one list, even after saving. Markers, indentation, and text positions match rendered Prose, but vertical spacing where the kinds meet differs. Read-only and disabled editors do not change when a
 checkbox is activated. Ctrl/Cmd+Z does not undo while focus is on the checkbox
 itself; this is browser and Tiptap default behaviour.
 
