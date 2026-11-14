@@ -66,7 +66,9 @@ desktop Chromium and 320px WebKit; Linux baselines use the pinned image in
 
 On `/markdown-editor`, compare the In-place comparison's editable and rendered
 columns in light and dark themes, then at 320px. They should align block by
-block, with no extra final line. Focus and edit the left column: only the caret
+block, with no extra final line. In mixed task and ordinary lists, markers and
+indentation should match, but vertical gaps at transitions are expected: Tiptap
+splits the kinds into separate lists while Markdown keeps one list. Focus and edit the left column: only the caret
 and selection should appear, without a field frame. Confirm the soft break stays
 on one line. In the editable code block, type a long line and confirm it scrolls
 rather than wrapping.
