@@ -1,7 +1,10 @@
+import { Toaster, toast } from "./components/ui/toast";
 import { MediaViewer } from "./components/ui/media-viewer";
 import { Diff } from "./components/ui/diff";
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
+import { TagButton } from "./components/ui/tag-button";
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbCurrent, BreadcrumbSeparator } from "./components/ui/breadcrumb";
 import { Badge } from "./components/ui/badge";
 import { Button, ButtonLabel } from "./components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
@@ -34,6 +37,8 @@ function Consumer() {
   const [frequency, setFrequency] = useState<string | null>(null);
   return <main className="mx-auto max-w-workspace px-page-inset py-6 font-sans">
     <div data-testid="editorial-layout" className="mx-auto max-w-editorial"><p className="max-w-reading">Shared layout in an independent consumer.</p></div>
+    <Toaster toastManager={toast} position="bottom-right" timeout={5000} limit={3} />
+    <button onClick={() => toast.add({ title: "Installed toast", type: "success" })}>Show installed toast</button>
     <Diff source={{ kind: "files", before: { name: "example.ts", contents: "const count = 1;\n" }, after: { name: "example.ts", contents: "const count = 2;\n" } }} layout="unified" wrap={true} controls={false} context="collapsed" maxHeight={null} />
     <button onClick={() => setMediaOpen(true)}>Inspect registry media</button>
     <MediaViewer open={mediaOpen} onOpenChange={setMediaOpen} activeItemId="example" onActiveItemChange={() => {}} initialPanel="annotations"
@@ -41,12 +46,17 @@ function Consumer() {
     <ContentSections defaultScope>
     <Section id="installed-intro" aria-label="Introduction">
     <Text as="h1" variant="title">Registry consumer</Text>
+    <Breadcrumb aria-label="Installed path"><BreadcrumbList>
+      <BreadcrumbItem><BreadcrumbLink href="#installed-intro">Introduction</BreadcrumbLink></BreadcrumbItem>
+      <BreadcrumbItem><BreadcrumbSeparator>/</BreadcrumbSeparator><BreadcrumbCurrent aria-current="location">Controls</BreadcrumbCurrent></BreadcrumbItem>
+    </BreadcrumbList></Breadcrumb>
     <Prose as="div"><p>Installed prose with <strong>emphasis</strong>.</p></Prose>
     </Section>
     <Section id="installed-controls" aria-label="Controls">
     <Card variant="default">
       <CardHeader><CardTitle as="h3" variant="heading">Installed UI</CardTitle></CardHeader>
       <CardContent>
+        <TagButton size="xs" tone="neutral" variant="soft" loading={false} onClick={() => setCount(count + 1)}><ButtonLabel>Tag action</ButtonLabel></TagButton>
         <Badge size="md" variant="soft" shape="square">Ready</Badge>
         <Button iconOnly={false} loading={false} nativeButton={true} type="button" shape="square" size="md" tone="accent" variant="solid" onClick={() => setCount(count + 1)}><ButtonLabel>Count {count}</ButtonLabel></Button>
         <Field orientation="vertical"><FieldLabel>Email</FieldLabel><Input size="md" type="email" /><FieldFeedback hint="Your email address" error="Enter an email" invalid={false} /></Field>

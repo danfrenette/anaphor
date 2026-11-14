@@ -39,7 +39,7 @@ function value(item: RecordItem, column: Column): ReactNode {
   return <Hint text={item[column]}><span className="block truncate" tabIndex={0}>{item[column]}</span></Hint>;
 }
 
-export function DataTablePlayground() {
+export function DataTablePlayground({ active = true }: { active?: boolean }) {
   const [settings, setSettings] = useState<Settings>(defaults);
   const searchRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
@@ -102,7 +102,7 @@ export function DataTablePlayground() {
   </Menu>;
 
   return <TooltipGroup delay={400} closeDelay={80} timeout={400}>
-    <PlaygroundControls sectionId="data-table" title="Data table" onReset={reset}>
+    {active && <PlaygroundControls sectionId="data-table" title="Data table" onReset={reset}>
       <div className="grid grid-cols-2 gap-4">
         <Select label="Treatment" value={settings.treatment} options={["Borderless", "Horizontal rules", "Full grid"]} onChange={treatment => setSettings(s => ({ ...s, treatment }))} />
         <Select label="Density" value={settings.density} options={["Editorial", "Compact"]} onChange={density => setSettings(s => ({ ...s, density }))} />
@@ -114,7 +114,7 @@ export function DataTablePlayground() {
         <Check label="Row actions" checked={settings.actions} onChange={actions => setSettings(s => ({ ...s, actions }))} />
         <Range label="Preview width" value={settings.width} min={280} max={840} step={20} unit="px" onChange={width => setSettings(s => ({ ...s, width }))} />
       </div>
-    </PlaygroundControls>
+    </PlaygroundControls>}
     <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Table treatment">
       {(["Borderless", "Horizontal rules", "Full grid"] as const).map(treatment => <Action iconOnly={false} key={treatment} aria-pressed={settings.treatment === treatment} className={settings.treatment === treatment ? "bg-muted" : ""} onClick={() => setSettings(s => ({ ...s, treatment }))}><ButtonLabel>{treatment}</ButtonLabel></Action>)}
     </div>

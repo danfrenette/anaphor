@@ -34,6 +34,7 @@ function useWorkspaceSidebarMotion({ rootRef, enabled, open, side, duration, eas
     const panels = [...root.querySelectorAll<HTMLElement>('[data-slot="sidebar"]')].filter(owned);
     const content = [...root.querySelectorAll<HTMLElement>('[data-slot="sidebar-inset-content"]')].filter(owned);
     const children = [...card.children].filter((element): element is HTMLElement => element instanceof HTMLElement);
+    const dividers = [...card.querySelectorAll<HTMLElement>(':scope > [data-slot="workspace-card-header"] > [data-slot="workspace-card-divider"]')];
     const measure = (element: HTMLElement): Frame => {
       const rect = element.getBoundingClientRect();
       const transform = getComputedStyle(element).transform;
@@ -46,7 +47,7 @@ function useWorkspaceSidebarMotion({ rootRef, enabled, open, side, duration, eas
     const childOffsets = new Map(children.map(child => [child, measure(child).x - target.card.x]));
     const contentParents = new Map(content.map(element => [element, [...content].reverse().find(parent => parent !== element && parent.contains(element))]));
     const before = previous.current;
-    const saved = new Map([...new Set([card, ...panels, ...content, ...children])].map(element => [element, {
+    const saved = new Map([...new Set([card, ...panels, ...content, ...children, ...dividers])].map(element => [element, {
       transform: element.style.transform,
       transformOrigin: element.style.transformOrigin,
       visibility: element.style.visibility,
@@ -72,6 +73,8 @@ function useWorkspaceSidebarMotion({ rootRef, enabled, open, side, duration, eas
           const offset = childOffsets.get(child) ?? 0;
           child.style.transform = `translate3d(${offset * (1 / scale - 1) / target.card.pixelScale}px,0,0) scaleX(${1 / scale})`;
         }
+        // The divider follows the card surface, not the counter-scaled header text.
+        for (const divider of dividers) divider.style.transform = `scaleX(${scale})`;
         const panelFrames = target.panels.map(frame => {
           const start = startFor(from.panels, frame);
           const x = interpolate(start.x, frame.x, progress);

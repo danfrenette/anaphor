@@ -224,12 +224,14 @@ test("fine-pointer hover stays continuous through the selected row", async ({ pa
 test("selection travels while reduced motion settles it immediately", async ({ page, isMobile }) => {
   test.skip(isMobile, "The desktop sidebar keeps the selection visible while navigating");
   await page.emulateMedia({ reducedMotion: "no-preference" });
+  await holdAnimations(page);
   await page.goto("/#color");
 
   await page.getByRole("link", { name: "Motion", exact: true }).click();
   const selection = page.locator('[data-slot="sidebar-menu"]').filter({ has: page.getByRole("link", { name: "Color", exact: true }) }).locator('[data-slot="sidebar-menu-selection"]');
   await expect.poll(() => selection.evaluate((element) => element.getAnimations()
     .some((animation) => Number(animation.effect?.getTiming().duration) > 0))).toBe(true);
+  await seekAnimations(selection, 1);
 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();

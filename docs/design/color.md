@@ -9,6 +9,9 @@ the specialized design constraints below; component API and usage remain in
 The inspectable `/foundations` reference and [foundation contract](../foundations.md)
 map public semantic names to exact shipped values, theme pairs and local exceptions.
 
+The inspectable `/foundations` reference and [foundation contract](../foundations.md)
+map public semantic names to exact shipped values, theme pairs and local exceptions.
+
 Use a restrained palette. Orange marks primary action, focus, selection, active
 navigation, and measurement traces. It never represents warning or error.
 

@@ -5,6 +5,7 @@ if (!process.env.TOUR_TEST_DATABASE_URL) throw new Error("Supply an isolated TOU
 
 export default defineConfig({
   ...base,
+  outputDir: "test-results/private-tours",
   testMatch: "tours.spec.ts",
   testIgnore: [],
   workers: 1,

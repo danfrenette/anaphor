@@ -1,6 +1,6 @@
 # Data table catalog
 
-Visit `/#data-table`. Table treatments compares borderless, horizontal rules,
+Visit `/#data-table`. Catalog, Treatments, Density, and Advanced tabs keep examples separate and preserve their settings while switching. Treatments compares borderless, horizontal rules,
 and full grid with the same three project records. Density compares compact and
 editorial padding. Both references use native tables with scoped headers, captions,
 and focusable horizontal scroll regions. They share fixtures with Playground.
@@ -31,3 +31,17 @@ card widths. Filter reset reserves its toolbar slot even before a query is enter
 Fine table borders use `--anaphor-border-hairline`, including the full-grid perimeter;
 form control borders remain unchanged. Browser checks compare computed border width
 with the token on standard and high-density displays.
+
+## Shared foundation
+
+The Catalog tab imports the public package. Cards/Table tabs retain selection and paging; Records/Loading/Empty/Error tabs preview recovery without hiding state controls. Card selection is part of each raised card, using the shared Card surface and theme tokens. Check keyboard tab navigation and selection after switching examples. It exercises
+local processing, stable selection across cards/rows and pages, sort/search, and
+loading/error recovery. Run `pnpm exec playwright test e2e/data-table-foundation.spec.ts`
+for desktop Chromium and narrow WebKit, keyboard and automated accessibility.
+Custom cards can stretch to their grid row height; the demo keeps owner/budget
+details aligned beneath titles of different lengths without clamping text. The
+layout check covers row alignment, expanded German text, RTL, and 200% CSS
+enlargement. Native browser zoom remains a separate manual check.
+Run `pnpm test` for component behavior including manual server pagination and
+`pnpm test:registry` for an independent data-table installation. The older
+Playground continues to explore advanced controls; it is not the foundation API.

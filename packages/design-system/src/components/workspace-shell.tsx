@@ -34,8 +34,11 @@ function WorkspaceCard({ className, ...props }: ComponentProps<"div">): ReactEle
   );
 }
 
-function WorkspaceCardHeader({ className, ...props }: ComponentProps<"div">): ReactElement {
-  return <div data-slot="workspace-card-header" className={cn("flex min-h-14 shrink-0 items-center gap-3 border-b border-border px-4", className)} {...props} />;
+function WorkspaceCardHeader({ children, className, ...props }: ComponentProps<"div">): ReactElement {
+  return <div data-slot="workspace-card-header" className={cn("relative flex min-h-14 shrink-0 items-center gap-3 border-border px-4 pb-px", className)} {...props}>
+    {children}
+    <span aria-hidden="true" data-slot="workspace-card-divider" className="pointer-events-none absolute inset-x-0 bottom-0 origin-left border-b border-inherit" />
+  </div>;
 }
 
 function WorkspaceCardBody({ className, ...props }: ComponentProps<"div">): ReactElement {

@@ -59,6 +59,6 @@ motion behavior. The reference rationale lives in [Badge](../components/badge.md
 
 ## API and composition
 
-Use [Button composition](../../README.md#button-composition),
-[Input and field feedback](../../README.md#input-and-field-feedback), and
+Use [Button composition](../component-usage.md#button-composition),
+[Input and field feedback](../component-usage.md#input-and-field-feedback), and
 [Badge](../components/badge.md) for consumer contracts and examples.

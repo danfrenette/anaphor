@@ -2,7 +2,7 @@
 
 Status: design decisions agreed on September 24, 2026. The shared Popover
 foundation is implemented; see `popover.md` for its contract. Visual explorations now live in the dedicated Data table Components section
-(`/#data-table`). The reusable DataTable implementation remains planned.
+(`/#data-table`). The reusable [DataTable foundation](data-table.md) now provides TanStack state, local/manual processing, table/card presentation, selection and pagination. Advanced column tooling, range selection and auto-scroll remain planned.
 
 ## Direction
 

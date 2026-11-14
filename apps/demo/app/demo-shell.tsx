@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbCurrent, BreadcrumbSeparator,
   CommandPalette,
   Kbd,
   KbdGroup,
@@ -101,6 +102,7 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "input", label: "Input", href: "/#input", icon: Textbox },
       { id: "radio-group", label: "Radio group", href: "/#radio-group", icon: RadioButton },
       { id: "slider", label: "Slider", href: "/#slider", icon: SlidersHorizontal },
+      { id: "tag-button", label: "Tag button", href: "/#tag-button", icon: Tag },
     ],
   },
   {
@@ -115,12 +117,14 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "node-edge-graphs", label: "Node-edge graphs", href: "/#node-edge-graphs", icon: ShareNetwork },
       { id: "skeleton", label: "Skeleton", href: "/#skeleton", icon: Rectangle },
       { id: "step-transition", label: "Step transition", href: "/#step-transition", icon: Rectangle },
+      { id: "toast", label: "Toast", href: "/#toast", icon: Rectangle },
     ],
   },
   {
     label: "Navigation",
     items: [
       { id: "bottom-bar", label: "Bottom bar", href: "/#bottom-bar", icon: Rectangle },
+      { id: "breadcrumb", label: "Breadcrumb", href: "/#breadcrumb", icon: ListDashes },
       { id: "carousels", label: "Carousels", href: "/carousels", icon: Rectangle },
       { id: "collapsible", label: "Collapsible", href: "/#collapsible", icon: ListDashes },
       { id: "command-palette", label: "Command palette", href: "/#command-palette", icon: MagnifyingGlass },
@@ -195,7 +199,10 @@ function ManualBreadcrumb() {
   const group = current?.group ?? "Manual";
   const label = current?.label ?? "Overview";
 
-  return <p className="flex items-center gap-2 text-small"><span className="text-muted-foreground">{group}</span><b className="font-normal text-border">/</b><strong className="font-medium">{label}</strong></p>;
+  return <Breadcrumb aria-label="Manual location"><BreadcrumbList>
+    <BreadcrumbItem><span className="text-small text-muted-foreground">{group}</span></BreadcrumbItem>
+    <BreadcrumbItem><BreadcrumbSeparator>/</BreadcrumbSeparator><BreadcrumbCurrent aria-current={pathname === "/" ? "location" : "page"} className="px-0 py-0">{label}</BreadcrumbCurrent></BreadcrumbItem>
+  </BreadcrumbList></Breadcrumb>;
 }
 
 function ManualTopBar({ placement }: { placement: SidebarPlacement }) {

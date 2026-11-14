@@ -3,6 +3,7 @@ import { DiffDemo } from "../diff-demo";
 import { CollapsibleDemo } from "../collapsible-demo";
 import { SidebarInsetContent, Section, Text, Card, CardContent, CardHeader, CardTitle, Separator } from "@anaphor/system";
 import { ButtonDemo } from "../button-demo";
+import { TagButtonDemo } from "../tag-button-demo";
 import { BadgeDemo } from "../badge-demo";
 import { NodeEdgeDemo } from "../node-edge-demo";
 import { CardDemo } from "../card-demo";
@@ -11,6 +12,7 @@ import { RadioGroupDemo } from "../radio-group-demo";
 import { InputDemo } from "../input-demo";
 import { CommandPaletteDemo } from "../command-palette-demo";
 import { DropdownMenuDemo } from "../dropdown-menu-demo";
+import { ToastDemo } from "../toast-demo";
 import { TooltipDemo } from "../tooltip-demo";
 import { DataTableDemo } from "../data-table-demo";
 import { PopoverDemo } from "../popover-demo";
@@ -21,6 +23,7 @@ import { StepTransitionDemo } from "../step-transition-demo";
 import { SkeletonDemo } from "../skeleton-demo";
 import { UploadDemo } from "../uploads/upload-demo";
 import { TabsDemo } from "../tabs-demo";
+import { BreadcrumbDemo } from "../breadcrumb-demo";
 import { BottomBarDemo } from "../bottom-bar-demo";
 import { SidebarDemo } from "../sidebar-demo";
 import { WorkspaceShellDemo } from "../workspace-shell-demo";
@@ -225,6 +228,7 @@ export default function HomePage() {
           <InputDemo />
           <RadioGroupDemo />
           <SliderDemo />
+          <TagButtonDemo />
           <BadgeDemo />
           <CardDemo />
           <DataTableDemo />
@@ -234,7 +238,9 @@ export default function HomePage() {
           <NodeEdgeDemo />
           <SkeletonDemo />
           <StepTransitionDemo />
+          <ToastDemo />
           <BottomBarDemo />
+          <BreadcrumbDemo />
           <CollapsibleDemo />
           <CommandPaletteDemo />
           <DropdownMenuDemo />

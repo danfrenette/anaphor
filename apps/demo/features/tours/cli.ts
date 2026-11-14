@@ -3,7 +3,7 @@ import { resolve, dirname } from "node:path";
 import axios from "axios";
 import { secureStore } from "./secure-store";
 import { z } from "zod";
-import { deviceClient, deviceScope, publicationResult, sessionLifetime, tourDocument } from "./document";
+import { deviceClient, deviceScope, sessionLifetime, tourDocument } from "./document";
 
 const credentials = z.object({ origin: z.url(), token: z.string().min(1), issuedAt: z.number(), expiresAt: z.number() }).strict();
 const tokenResponse = z.object({ access_token: z.string().min(1), token_type: z.literal("Bearer"), expires_in: z.number().positive().max(sessionLifetime), scope: z.literal(deviceScope) });
@@ -16,6 +16,11 @@ function argument(args: string[], flag: string) {
 
 async function main() {
   const [command, ...args] = process.argv.slice(2);
+  if (command === "local") {
+    const { localCli } = await import("./local-cli");
+    await localCli(args);
+    return;
+  }
   const origin = new URL(argument(args, "--origin") ?? process.env.ANAPHOR_ORIGIN ?? "https://anaphor.dev").origin;
   const url = new URL(origin);
   if (url.protocol !== "https:" && !["127.0.0.1", "localhost"].includes(url.hostname)) throw new Error("Use HTTPS outside localhost.");
@@ -90,9 +95,10 @@ async function main() {
     }
     if (parent === dirname(parent)) break;
   }
-  const document = tourDocument.parse(JSON.parse(await readFile(path, "utf8")));
   try {
-    const result = publicationResult.parse((await http.post("/api/tours", document, { headers: { "Idempotency-Key": key } })).data);
+    const { publishHostedTour } = await import("./hosted-cli");
+    const expected = argument(args, "--expected-revision");
+    const result = await publishHostedTour(http, path, key, { id: argument(args, "--id"), expectedRevision: expected ? Number(expected) : undefined });
     console.log(JSON.stringify(result));
   } catch (error) {
     if (axios.isAxiosError(error)) {

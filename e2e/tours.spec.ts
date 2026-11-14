@@ -37,8 +37,8 @@ test("a complete agent publication is readable in the built owner browser, with 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(result.url);
   await expect(page.getByRole("heading", { name: document.title })).toBeVisible();
-  await page.getByRole("link", { name: "Changed behavior", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Changed behavior" })).toBeVisible();
+  await page.getByRole("navigation", { name: "Business cases", exact: true }).getByRole("link", { name: "Changed behavior", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Changed behavior", level: 2 })).toBeVisible();
   await page.reload();
   await expect(page.getByText(document.sections[0]!.paragraphs[0]!)).toBeVisible();
   await expect(page.getByRole("button", { name: "Refresh tour" })).toBeVisible();
@@ -274,7 +274,7 @@ test("authored section IDs cannot collide with headings or the reader shell", as
   await context.addCookies([identity.cookie]);
   await page.goto((await response.json()).url);
   for (const section of sections) {
-    const link = page.getByRole("link", { name: section.title, exact: true });
+    const link = page.getByRole("navigation", { name: "Business cases", exact: true }).getByRole("link", { name: section.title, exact: true });
     await link.click();
     const target = await link.getAttribute("href");
     if (!target) throw new Error("Section navigation requires a destination.");

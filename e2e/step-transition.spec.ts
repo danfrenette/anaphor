@@ -36,6 +36,7 @@ test("forward and backward travel enter from opposite sides and outgoing content
     const before = await section.locator("h3").last().textContent();
     const restingLeft = (await section.locator("h3").last().boundingBox())!.x;
     await section.getByRole("button", { name: label, exact: true }).evaluate((button: HTMLButtonElement) => button.click());
+    await expect(section.locator('[data-slot="step-transition"] [inert]')).toHaveCount(1);
     await page.clock.runFor(100);
     return section.evaluate((element, { before, restingLeft }) => {
       const surface = element.querySelector('[data-slot="step-transition"]')!;

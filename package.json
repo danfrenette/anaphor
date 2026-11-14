@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:browser": "playwright test",
     "test:registry": "node scripts/verify-registry.mjs",
-    "test:tours": "playwright test --config playwright.tours.config.ts"
+    "test:tours": "playwright test --config playwright.tours.config.ts",
+    "test:local-tours": "playwright test --config playwright.local-tours.config.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "latest",

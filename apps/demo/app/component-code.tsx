@@ -3,6 +3,22 @@
 import { CardCopyButton } from "@anaphor/system";
 
 const examples: Record<string, { title: string; item: string; code: string }> = {
+  toast: { title: "Toast", item: "toast", code: `import { Toaster, toast } from "@/components/ui/toast";
+
+<Toaster toastManager={toast} position="bottom-right" timeout={5000} limit={3} />
+
+toast.add({ title: "Changes saved", type: "success" });` },
+  breadcrumb: { title: "Breadcrumb", item: "breadcrumb", code: `import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbCurrent, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+
+<Breadcrumb aria-label="Page path">
+  <BreadcrumbList>
+    <BreadcrumbItem><BreadcrumbLink href="/">Manual</BreadcrumbLink></BreadcrumbItem>
+    <BreadcrumbItem>
+      <BreadcrumbSeparator>/</BreadcrumbSeparator>
+      <BreadcrumbCurrent aria-current="page">Current page</BreadcrumbCurrent>
+    </BreadcrumbItem>
+  </BreadcrumbList>
+</Breadcrumb>` },
   "radio-group": { title: "Radio group", item: "radio-group", code: `import { RadioGroup, Radio } from "@/components/ui/radio-group";
 
 <RadioGroup name="frequency" defaultValue="daily" aria-label="Notification frequency">
@@ -68,6 +84,15 @@ import { ButtonLabel } from "@/components/ui/button";
   </CardHeader>
   <CardContent>Your content here.</CardContent>
 </Card>` },
+  "tag-button": { title: "Tag button", item: "tag-button", code: `import { X } from "@phosphor-icons/react";
+import { TagButton } from "@/components/ui/tag-button";
+import { ButtonLabel } from "@/components/ui/button";
+
+<TagButton size="xs" tone="neutral" variant="soft" loading={false}
+  aria-label="Remove Research" onClick={removeTag}>
+  <ButtonLabel>Research</ButtonLabel>
+  <X aria-hidden="true" />
+</TagButton>` },
   badge: { title: "Badge", item: "badge", code: `import { Badge } from "@/components/ui/badge";
 
 <Badge variant="soft" size="md" shape="round">

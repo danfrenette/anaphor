@@ -8,6 +8,7 @@ commands. Each recipe names the browser actions and assertions that matter.
   real-provider preview acceptance are separate gates.
 
 - [Sidebar placement and motion](sidebar.md)
+- [Font delivery and application-owned fonts](font-delivery.md)
 - [Workspace shell composition](workspace-shell.md)
 - [File-upload selection and independent progress](file-upload.md)
 - [Rail and Deck carousels](carousels.md) — Chromium and 320px WebKit; trusted swipe coverage uses Chromium CDP. Physical touch and WebKit swipe movement remain outside the automated harness.
@@ -28,12 +29,14 @@ server started by that run.
 - [Checkbox catalog](checkbox-catalog.md) — states, selection groups, required choice, and inline code.
 - [Radio group catalog](radio-group-catalog.md) — choice states, label colors, validation, and inline code.
 - [Card catalog](card-catalog.md) — anatomy, composition, logo showcase, and playground controls.
+- [Breadcrumb](breadcrumb.md) — native link/button paths, current semantics, wrapping and focus.
+- [Tag button](tag-button.md) — native tag actions, wrapping, and Button state inheritance.
 - [Badge catalog](badge-catalog.md) — variants, sizes, icon/shape comparisons, and playground controls.
 - [Skeleton catalog](skeleton-catalog.md) — shapes, effects, content geometry, and reduced motion.
 - [Data table catalog](data-table-catalog.md) — treatments, density, native-table references, and interactive playground.
 - [Node-edge graph catalog](node-edge-catalog.md) — node composition, pulse direction, notebook playback, and shared settings.
 - [Kbd catalog](kbd-catalog.md) — keys, chords, sequences, platform notation, and live example markup.
-- [Tabs catalog](tabs-catalog.md) — variants, sizes, orientation, disabled selection, and shared playground controls.
+- [Tabs catalog](tabs-catalog.md) — variants including lifted motion, sizes, orientation, disabled selection, and shared playground controls.
 - [Dropdown menu catalog](menu-catalog.md) — action states, radio selection, popup configuration, and simulated action feedback.
 - [Popover catalog](popover-catalog.md) — anatomy, independent settings examples, placement controls, and focus/dismissal behavior.
 - [Tooltip catalog](tooltip-catalog.md) — independent hints, instant groups, placement/timing controls, and reset.
@@ -41,3 +44,6 @@ server started by that run.
 - [Bottom bar catalog](bottom-bar-catalog.md) — appearances, local utility actions, responsive labels, and playground reset.
 - [Manual navigation order](manual-order.md) — alphabetized groups, matching section order, and keyboard/index navigation.
 - [Step transition](step-transition.md) — directional ordered content and measured height.
+
+- [Local change tours](local-tours.md): persistent imports, shared evidence, and explicit refresh.
+- [Toast](toast.md) — stacked notification feedback, actions, async status, and keyboard access.

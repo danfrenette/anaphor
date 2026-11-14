@@ -1,6 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, ButtonLabel, ThemeToggle } from "@anaphor/system";
 import { z } from "zod";
 import { storedTour } from "./document";
@@ -64,6 +65,10 @@ function AuthorizedTour({
   onLogout: () => void;
   loggingOut: boolean;
 }) {
+  const client = useQueryClient();
+  const checkAsset = useCallback(async (url: string) => {
+    await client.fetchQuery({ queryKey: ["private-tour-asset", url], staleTime: 0, queryFn: async ({ signal }) => { await http.head(url, { signal }); return true; } });
+  }, [client]);
   const tour = useQuery({
     queryKey: ["private-tour", initial.id],
     queryFn: async () =>
@@ -109,7 +114,8 @@ function AuthorizedTour({
           again.
         </p>
       )}
-      <TourReader document={tour.data.document} revision={tour.data.revision} />
+      <TourReader key={tour.dataUpdatedAt} document={tour.data.document} revision={tour.data.revision}
+        checkAsset={checkAsset} assetBaseUrl={`/api/tours/${tour.data.id}/revisions/${tour.data.revision}/assets`} />
     </>
   );
 }

@@ -39,7 +39,7 @@ function Note({ note, number, active, unavailable, onActivate }: {
   note: DiffNote; number: number; active: boolean; unavailable: boolean; onActivate: () => void;
 }) {
   const title = <><span className="shrink-0 whitespace-nowrap font-mono tabular-nums">{number}.</span>{" "}<span className="min-w-0">{note.title}</span></>;
-  return <div className={cn("min-w-0 border-l-2 px-3 py-2 font-sans text-ui [overflow-wrap:anywhere]", active ? "border-[var(--anaphor-brand)] bg-muted/60" : "border-transparent")}>
+  return <div className={cn("min-w-0 px-3 py-2 font-sans text-ui [overflow-wrap:anywhere]", active && "bg-muted/60")}>
     {note.presentation === "inline" ? <Collapsible defaultOpen={false} onOpenChange={open => { if (open) onActivate(); }}>
       <CollapsibleTrigger className="min-h-10"><CaretRight aria-hidden="true" />{title}</CollapsibleTrigger>
       <CollapsibleContent hiddenUntilFound={false}><div className="max-w-reading px-2 pb-2 text-ui">{note.body}</div></CollapsibleContent>
@@ -146,12 +146,13 @@ const diffCSS = `
   --diffs-fg-number-override: var(--anaphor-font-tertiary);
   --diffs-addition-color-override: light-dark(#176b35, #7ee29a);
   --diffs-deletion-color-override: var(--anaphor-danger-text);
-  --diffs-selection-color-override: var(--anaphor-brand);
-  --diffs-bg-selection-override: color-mix(in oklch, var(--anaphor-brand) 12%, var(--anaphor-background));
-  --diffs-bg-selection-number-override: color-mix(in oklch, var(--anaphor-brand) 18%, var(--anaphor-background));
+  --diffs-selection-base: var(--anaphor-font-secondary);
+  --diffs-bg-selection-override: color-mix(in oklch, var(--anaphor-font-secondary) 10%, var(--anaphor-background));
+  --diffs-bg-selection-number-override: color-mix(in oklch, var(--anaphor-font-secondary) 24%, var(--anaphor-background));
 }
 [data-line], [data-line] span { font-weight: 400; font-style: normal; }
-[data-line][data-selected-line] { box-shadow: inset 2px 0 var(--anaphor-brand); }
+[data-line][data-selected-line], [data-line][data-selected-line] span { color: var(--anaphor-font-secondary); }
+[data-column-number][data-selected-line] { background-color: var(--anaphor-font-secondary); color: var(--anaphor-background); }
 button:focus-visible, [role="button"]:focus-visible, code[data-code]:focus-visible { outline: 2px solid var(--anaphor-focus); outline-offset: -2px; }
 @media (pointer: coarse) { button, [role="button"] { min-height: 44px; min-width: 44px; } }
 `;

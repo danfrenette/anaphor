@@ -25,7 +25,7 @@ const tabStyles = cn(
 const activeTabStyles = cn(
   "text-foreground",
   // Line variant
-  "after:absolute after:bg-foreground group-data-[variant=default]/tabs-list:after:hidden",
+  "after:absolute after:bg-foreground group-data-[variant=default]/tabs-list:after:hidden group-data-[variant=lifted]/tabs-list:after:hidden",
   // Horizontal and vertical indicator placement
   "group-data-[orientation=horizontal]/tabs:after:inset-x-2 group-data-[orientation=horizontal]/tabs:after:-bottom-1 group-data-[orientation=horizontal]/tabs:after:h-0.5",
   "group-data-[orientation=vertical]/tabs:after:inset-y-2 group-data-[orientation=vertical]/tabs:after:-end-1 group-data-[orientation=vertical]/tabs:after:w-0.5",
@@ -93,7 +93,7 @@ function Tabs({
 
 type TabsListProps = TabsPrimitive.List.Props & {
   size?: keyof typeof sizeStyles;
-  variant?: "default" | "line";
+  variant?: "default" | "lifted" | "line";
 };
 
 function TabsList({
@@ -113,12 +113,13 @@ function TabsList({
       className={(state) => cn(
         "group/tabs-list relative isolate inline-flex w-fit items-center rounded-control p-1",
         "group-data-[orientation=vertical]/tabs:flex-col",
-        variant === "default"
-          ? "bg-muted"
-          : cn(
+        variant === "line"
+          ? cn(
               "rounded-none border-border bg-transparent",
               "group-data-[orientation=horizontal]/tabs:border-b group-data-[orientation=vertical]/tabs:border-s",
-            ),
+            )
+          : "bg-muted",
+        variant === "lifted" && "[--tabs-lifted-shadow:var(--anaphor-shadow-upload-action)]",
         sizeStyles[size],
         typeof className === "function" ? className(state) : className,
       )}
@@ -153,7 +154,7 @@ function TabsTab({ className, ...props }: TabsTabProps): ReactElement {
         tabStyles,
         "z-0 hover:not-data-disabled:text-foreground hover:not-data-disabled:bg-background/50",
         "transition-[color,background-color] duration-150 ease-out group-data-[tabs-input=keyboard]/tabs:transition-none motion-reduce:transition-none",
-        "focus-visible:z-[2] focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-ring",
+        "focus-visible:z-[2] focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring data-active:focus-visible:text-foreground",
         typeof className === "function" ? className(state) : className,
       )}
       {...props}
@@ -176,13 +177,14 @@ function TabsPanel({ className, ...props }: TabsPanelProps): ReactElement {
   );
 }
 
-function collectVisualTabs(children: ReactNode): ReactElement[] {
+function collectVisualTabs(children: ReactNode, path = ""): ReactElement[] {
   const tabs: ReactElement[] = [];
 
-  Children.forEach(children, (child) => {
+  Children.toArray(children).forEach((child) => {
     if (!isValidElement<{ children?: ReactNode }>(child)) return;
+    const key = `${path}${child.key}`;
     if (child.type === Fragment) {
-      collectVisualTabs(child.props.children).forEach((tab) => tabs.push(tab));
+      tabs.push(...collectVisualTabs(child.props.children, `${key}/`));
       return;
     }
     if (child.type !== TabsTab) return;
@@ -191,7 +193,7 @@ function collectVisualTabs(children: ReactNode): ReactElement[] {
     const props = child.props;
     tabs.push(
       <span
-        key={child.key ?? tabs.length}
+        key={key}
         data-disabled={props.disabled || undefined}
         data-slot="tabs-active-copy"
         className={cn(

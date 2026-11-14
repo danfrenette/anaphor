@@ -8,7 +8,7 @@ import { extractInventory } from "./inventory";
 export const metadata = { title: "Token reference · Anaphor" };
 
 export default async function FoundationsPage() {
-  const css = await readFile(path.resolve(process.cwd(), "../../packages/design-system/src/styles.css"), "utf8");
+  const css = await readFile(path.resolve(process.cwd(), "../../packages/design-system/src/styles-base.css"), "utf8");
   const { tokens, themes } = extractInventory(css);
   return <main id="content" tabIndex={-1} className="min-w-0 px-[var(--anaphor-page-gutter)] py-12">
     <div className="mx-auto max-w-[1040px]">

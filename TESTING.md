@@ -85,7 +85,7 @@ fresh copies of `test/registry-consumer/` in the OS temporary directory. The
 fixture supplies only React and its TypeScript/Vite/Tailwind build environment;
 the registry must supply its own runtime dependencies and source imports.
 
-Button, Diff, and Media viewer are each installed alone so the complete UI cannot hide their missing dependencies.
+Button, DataTable, Diff, and Media viewer are each installed alone so the complete UI cannot hide their missing dependencies.
 A separate complete-UI install compiles every installed module and renders each
 advertised UI item. Chromium checks activation, input/checkbox behavior, opening
 the surface, generated Button dimensions, theme tokens, both font loads, and
@@ -99,6 +99,13 @@ this check. Install Chromium with `pnpm exec playwright install chromium` on new
 machines. Package-registry access is required; dependencies declared by registry
 items intentionally resolve as in a new consumer. Failed temporary consumers
 retain their resolved lockfile and build output for diagnosis.
+
+Registry runtime dependencies must preserve the supported ranges declared by the
+workspace package when installed source relies on those versions' public types.
+The shortcut item uses `@tanstack/react-hotkeys@^0.10.0`, matching the package:
+newer pre-1.0 minor releases can change the `Hotkey` contract and require a
+separate compatibility review. Keep this bound in the registry rather than
+pinning the consumer fixture, so fresh installation verifies the shipped contract.
 
 ## Accessibility
 
@@ -124,11 +131,14 @@ and correcting that contrast must not cause a test failure.
 
 - **Code quality**: lint, strict types, and integration tests.
 - **Demo browser tests**: production build and the full Chromium/WebKit suite.
-- **Registry consumers**: fresh independent Button and complete-UI installations.
+- **Registry consumers**: fresh independent Button, DataTable, Diff, Media viewer, and complete-UI installations.
 
-**Private tour browser tests** additionally runs the tour suite against an isolated
+**Local tour browser tests** exercises the loopback development reader without
+hosted services. It covers managed evidence, refresh, media recovery, and
+Chromium/WebKit reflow. **Private tour browser tests** additionally runs the tour suite against an isolated
 Postgres service, with supported Better Auth migrations and fictional identity
-sessions. It builds the application and exercises private publication, reading
+sessions. The same job runs hosted publication/CLI integration against real
+authentication and Postgres while substituting the external Blob provider. It builds the application and exercises private publication, reading
 and device approval in Chromium/WebKit. It does not prove real OAuth-provider or
 deployed-domain acceptance; that separate gate is in
 [private tours](docs/verification/private-tours.md).
@@ -140,12 +150,12 @@ are canceled. Workflow permissions are read-only.
 
 Browser jobs use `mcr.microsoft.com/playwright:v1.63.0-noble` on Linux x86-64.
 Update that image and the exact `@playwright/test` dependency together. CI uses
-two workers, allows 60 seconds per test for slower browser/accessibility checks,
+four disjoint demo-suite shards with two workers per shard, allows 60 seconds per test for slower browser/accessibility checks,
 allows 15 seconds for individual assertions, rejects focused tests, and retries
 a failing browser test once. Geometry tests pause and seek browser animations;
 interruption tests reverse when the browser creates the closing animation,
 before it can finish, without relying on a particular rendering frame rate.
-The `playwright-report` artifact includes the HTML report, failure screenshots,
+Each `playwright-report-<shard>` artifact includes the HTML report, failure screenshots,
 and traces; download it and run `pnpm exec playwright show-report <report-path>`.
 Failed registry consumers are uploaded separately without their node_modules.
 
@@ -153,12 +163,10 @@ Linux screenshots are separate from the macOS baselines. Generate and review
 Linux baseline changes inside the same pinned image; never automatically accept
 screenshots during a normal CI run. A missing or changed baseline must fail.
 
-When repository branch protection is available, require **Code quality**,
-**Demo browser tests**, and **Registry consumers** on `main`, with the branch
-up to date before merging. GitHub currently rejects branch protection for this
-private repository with “Upgrade to GitHub Pro or make this repository public”.
-Until that account capability changes, check all three results before merging;
-the workflow alone does not prevent a merge.
+Configure branch protection or a ruleset on `main` to require **Code quality**,
+all four **Demo browser tests (N/4)** checks, and **Registry consumers**, with the
+branch up to date before merging. Confirm these rules in GitHub repository
+settings; a passing workflow alone does not prevent an unchecked merge.
 
 The Vercel project `danrfrenettes-projects/anaphor` is connected to this GitHub
 repository. Its Next.js root is `apps/demo`, Node is 24.x, and access to files

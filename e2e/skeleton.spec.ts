@@ -8,8 +8,13 @@ for (const theme of ["light", "dark"] as const) {
     await section.scrollIntoViewIfNeeded();
     await page.evaluate(() => document.fonts.ready);
     const region = section.locator('[data-slot="skeleton-region"]:visible');
-    const geometry = () => region.locator('[data-slot="skeleton-text"]').evaluateAll(elements =>
-      elements.map(element => Array.from(element.getClientRects(), rect => ({ width: rect.width, height: rect.height, x: rect.x, y: rect.y }))));
+    // Preserve every wrapped line's geometry relative to its loading region,
+    // independent of the document scroll position.
+    const geometry = () => region.evaluate(root => {
+      const origin = root.getBoundingClientRect();
+      return [...root.querySelectorAll('[data-slot="skeleton-text"]')].map(element =>
+        Array.from(element.getClientRects(), rect => ({ width: rect.width, height: rect.height, x: rect.x - origin.x, y: rect.y - origin.y })));
+    });
     await section.getByRole("button", { name: "Show content" }).scrollIntoViewIfNeeded();
     const before = await geometry();
     expect(before.length).toBe(4);
@@ -46,19 +51,43 @@ test("effects support keyboard selection and static reduced motion", async ({ pa
 
 test("media fades into reserved space while text and interaction are immediate", async ({ page }) => {
   await page.goto("/#skeleton");
+  await expect(page.locator("[data-app-shell]")).toHaveAttribute("data-hydrated", "true");
   const section = page.locator("#skeleton");
   const region = section.locator('[data-slot="skeleton-region"]:visible');
   const media = region.locator('[data-slot="skeleton-box-content"]');
   await section.getByRole("button", { name: "Show content" }).scrollIntoViewIfNeeded();
   const bounds = await media.boundingBox();
   expect(bounds).not.toBeNull();
+  await expect(media).toHaveCSS("opacity", "0");
+  // Flush the real opacity transition when loading changes, before a slow
+  // runner can miss transitionrun. Keep the event as a browser fallback.
+  await region.evaluate(root => {
+    const element = root.querySelector('[data-slot="skeleton-box-content"]');
+    if (!element) throw new Error("Expected skeleton media content");
+    const observer = new MutationObserver(capture);
+    function capture() {
+      if (!element) return;
+      const transition = element.getAnimations().find(animation =>
+        animation instanceof CSSTransition && animation.transitionProperty === "opacity");
+      if (!transition) return;
+      transition.playbackRate = 0;
+      transition.pause();
+      observer.disconnect();
+      element.removeEventListener("transitionrun", capture);
+    }
+    observer.observe(root, { attributes: true, attributeFilter: ["data-loading"] });
+    element.addEventListener("transitionrun", capture);
+  });
   await section.getByRole("button", { name: "Show content" }).click();
+  await expect.poll(() => media.evaluate(element => element.getAnimations()
+    .some(animation => animation instanceof CSSTransition && animation.transitionProperty === "opacity" && animation.playState === "paused"))).toBe(true);
   const halfwayOpacity = await media.evaluate(element => {
-    const transition = element.getAnimations()[0];
+    const transition = element.getAnimations().find(animation => animation instanceof CSSTransition && animation.transitionProperty === "opacity");
     if (!transition) return null;
     transition.pause();
     transition.currentTime = 100;
     const opacity = Number(getComputedStyle(element).opacity);
+    transition.playbackRate = 1;
     transition.finish();
     return opacity;
   });
@@ -67,7 +96,11 @@ test("media fades into reserved space while text and interaction are immediate",
   await expect(region.getByRole("heading", { name: "Room for the work" })).toBeVisible();
   await expect(region.locator("[inert]")).toHaveCount(0);
   await expect(region.locator('[data-slot="skeleton-text"]').first()).toHaveCSS("transition-duration", "0s");
-  expect(await media.boundingBox()).toEqual(bounds);
+  const revealedBounds = await media.boundingBox();
+  expect(revealedBounds?.width).toBe(bounds?.width);
+  expect(revealedBounds?.height).toBe(bounds?.height);
+  expect(revealedBounds?.x).toBeCloseTo(bounds?.x ?? 0, 1);
+  expect(revealedBounds?.y).toBeCloseTo(bounds?.y ?? 0, 1);
   await expect(media).toHaveCSS("transition-duration", "0.2s");
   await expect(media).toHaveCSS("opacity", "1");
 

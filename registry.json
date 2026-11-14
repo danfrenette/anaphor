@@ -37,9 +37,12 @@
         "danfrenette/anaphor/style",
         "danfrenette/anaphor/adaptive-surface",
         "danfrenette/anaphor/badge",
+        "danfrenette/anaphor/breadcrumb",
         "danfrenette/anaphor/button",
+        "danfrenette/anaphor/tag-button",
         "danfrenette/anaphor/hold-button",
         "danfrenette/anaphor/card",
+        "danfrenette/anaphor/data-table",
         "danfrenette/anaphor/card-copy-button",
         "danfrenette/anaphor/checkbox",
         "danfrenette/anaphor/radio-group",
@@ -53,6 +56,7 @@
         "danfrenette/anaphor/menu",
         "danfrenette/anaphor/popover",
         "danfrenette/anaphor/tooltip",
+        "danfrenette/anaphor/toast",
         "danfrenette/anaphor/sidebar",
         "danfrenette/anaphor/workspace-shell",
         "danfrenette/anaphor/bottom-bar",
@@ -96,6 +100,11 @@
           "target": "@components/anaphor.css"
         },
         {
+          "path": "packages/design-system/src/styles-base.css",
+          "type": "registry:file",
+          "target": "@components/styles-base.css"
+        },
+        {
           "path": "packages/design-system/src/fonts.css",
           "type": "registry:file",
           "target": "@components/fonts.css"
@@ -111,7 +120,7 @@
           "target": "@components/fonts/MagdaCleanMono-download-notice.txt"
         }
       ],
-      "docs": "The Anaphor stylesheet is imported automatically into your configured application CSS entry."
+      "docs": "The Anaphor stylesheet is imported automatically into your configured application CSS entry. For application-owned fonts, replace that entry's anaphor.css import with styles-base.css and supply the font faces in application CSS. After a refresh, remove any reinserted anaphor.css import; never edit the installed stylesheets. Font files and notices remain installed."
     },
     {
       "name": "utils",
@@ -133,6 +142,40 @@
           "path": "packages/design-system/src/lib/motion.ts",
           "type": "registry:lib",
           "target": "@components/lib/motion.ts"
+        }
+      ]
+    },
+    {
+      "name": "breadcrumb",
+      "type": "registry:ui",
+      "title": "Breadcrumb",
+      "description": "Composable navigation paths with native links and in-place buttons.",
+      "registryDependencies": [
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/utils"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/breadcrumb.tsx",
+          "type": "registry:ui",
+          "target": "@ui/breadcrumb.tsx"
+        }
+      ]
+    },
+    {
+      "name": "tag-button",
+      "type": "registry:ui",
+      "title": "Tag button",
+      "description": "A wrapping action pill composed from Button.",
+      "registryDependencies": [
+        "danfrenette/anaphor/button",
+        "danfrenette/anaphor/utils"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/tag-button.tsx",
+          "type": "registry:ui",
+          "target": "@ui/tag-button.tsx"
         }
       ]
     },
@@ -636,6 +679,50 @@
         {
           "path": "packages/design-system/src/components/step-transition.tsx",
           "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "data-table",
+      "type": "registry:ui",
+      "dependencies": [
+        "@tanstack/react-table@^8.21.3"
+      ],
+      "registryDependencies": [
+        "danfrenette/anaphor/button",
+        "danfrenette/anaphor/checkbox",
+        "danfrenette/anaphor/field",
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/utils"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/data-table.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table.tsx"
+        }
+      ]
+    },
+    {
+      "name": "toast",
+      "type": "registry:ui",
+      "title": "Toast",
+      "description": "Stacked notifications powered by Base UI, with actions and promise updates.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0",
+        "@phosphor-icons/react",
+        "motion"
+      ],
+      "registryDependencies": [
+        "danfrenette/anaphor/style",
+        "danfrenette/anaphor/utils",
+        "danfrenette/anaphor/button"
+      ],
+      "files": [
+        {
+          "path": "packages/design-system/src/components/toast.tsx",
+          "type": "registry:ui",
+          "target": "@ui/toast.tsx"
         }
       ]
     }
