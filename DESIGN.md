@@ -290,6 +290,17 @@ disables fades and scaling.
 Stable trigger geometry preserves the anchor during button press feedback.
 The component contract and examples live in docs/components/popover.md.
 
+## Tabs
+
+Tabs mark the active view with one surface clipped to the active tab. The
+default surface is flat; the opt-in lifted variant gives it the upload-action
+keyline and soft shadow so the selection reads as a raised control. Carbon keeps
+only the keyline. The line variant replaces the surface with an underline.
+Pointer selection moves the surface over 200ms with the shared ease-in-out
+curve; keyboard selection, reduced motion and first paint are immediate. The
+moving clip and the lifted surface share timing, so labels change colour at the
+surface edge. The contract lives in docs/components/tabs.md.
+
 ## Card copy feedback
 
 `CardCopyButton` composes inside `CardAction` and copies its explicit `value`.

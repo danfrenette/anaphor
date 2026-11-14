@@ -419,6 +419,33 @@
   transition: clip-path var(--anaphor-motion-duration-standard) var(--anaphor-ease-in-out);
 }
 
+/* The lifted surface is a positioned layer inside the clip. The clip extends by the
+   shadow's reach (1px beside and above, 5px below) so the moving edge stays sharp. */
+[data-slot="tabs-list"][data-variant="lifted"] > [data-slot="tabs-indicator"] {
+  clip-path: inset(
+    calc(var(--active-tab-top) - 1px)
+    calc(var(--active-tab-right) - 1px)
+    calc(var(--active-tab-bottom) - 5px)
+    calc(var(--active-tab-left) - 1px)
+    round calc(var(--radius-control) - var(--spacing) + 1px)
+  );
+}
+
+[data-slot="tabs-list"][data-variant="lifted"] > [data-slot="tabs-indicator"]::before {
+  content: "";
+  position: absolute;
+  inset: var(--active-tab-top) var(--active-tab-right) var(--active-tab-bottom) var(--active-tab-left);
+  border-radius: calc(var(--radius-control) - var(--spacing));
+  background: var(--anaphor-background);
+  box-shadow: var(--tabs-lifted-shadow);
+}
+
+[data-tabs-input="pointer"] [data-variant="lifted"] > [data-slot="tabs-indicator"]::before {
+  transition-property: top, right, bottom, left;
+  transition-duration: var(--anaphor-motion-duration-standard);
+  transition-timing-function: var(--anaphor-ease-in-out);
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-slot="menu-popup"] {
     transition: opacity 200ms var(--anaphor-ease-out);
@@ -440,7 +467,8 @@
     transform: none;
   }
 
-  [data-tabs-input] [data-slot="tabs-indicator"] {
+  [data-tabs-input] [data-slot="tabs-indicator"],
+  [data-tabs-input] [data-variant="lifted"] > [data-slot="tabs-indicator"]::before {
     transition: none;
   }
 }

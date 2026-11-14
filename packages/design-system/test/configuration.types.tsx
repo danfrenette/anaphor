@@ -1,5 +1,6 @@
 import { AdaptiveSurfaceTrigger, Button, CommandPalette, SidebarProvider, type ButtonProps, type SidebarProviderProps } from "@anaphor/system";
 import { Popover, PopoverPopup } from "@anaphor/system";
+import { TabsList } from "@anaphor/system";
 
 <Popover defaultOpen={false}><PopoverPopup side="bottom" align="start" sideOffset={8} positionerProps={{ collisionPadding: 16, collisionAvoidance: { side: "flip", align: "shift" } }} /></Popover>;
 <Popover open={false} onOpenChange={() => {}} />;
@@ -73,3 +74,7 @@ const commands = [
   }}
   renderTrailing={item => <span>{item.shortcut.join(" ")}</span>}
 />;
+
+<TabsList variant="lifted" size="sm" />;
+// @ts-expect-error TabsList variants are default, lifted, and line.
+<TabsList variant="raised" />;
