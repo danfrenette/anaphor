@@ -112,6 +112,21 @@ test.each([{ readOnly: true }, { disabled: true }])("non-editable task checkboxe
   expect(onChange).not.toHaveBeenCalled();
 });
 
+test("focused task checkbox follows read-only and editable transitions", async () => {
+  const onChange = vi.fn();
+  const { user, ref, rerender } = setupEditor("- [x] Review notes", { onChange });
+  const checkbox = await screen.findByRole("checkbox", { name: /Review notes/i });
+  checkbox.focus();
+  rerender(<MarkdownEditor presentation="field" ref={ref} defaultValue="- [x] Review notes" aria-label="Research note" onChange={onChange} readOnly />);
+  await user.click(checkbox);
+  expect(checkbox).toBeChecked();
+  expect(onChange).not.toHaveBeenCalled();
+  rerender(<MarkdownEditor presentation="field" ref={ref} defaultValue="- [x] Review notes" aria-label="Research note" onChange={onChange} />);
+  await user.click(checkbox);
+  expect(checkbox).not.toBeChecked();
+  expect(onChange).toHaveBeenCalledWith("- [ ] Review notes");
+});
+
 test("disabled task checkboxes are skipped by keyboard navigation", async () => {
   const user = userEvent.setup();
   render(<><button>Before</button><MarkdownEditor presentation="field" defaultValue="- [ ] Review notes" disabled aria-label="Disabled note" /><button>After</button></>);

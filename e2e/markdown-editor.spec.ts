@@ -17,6 +17,30 @@ test("typing a task item exposes a named checkbox and toggles Markdown", async (
   await expect(page.getByLabel("Field states Markdown", { exact: true })).toContainText("[ ] Review notes");
 });
 
+test("checked task trigger and checkbox state transitions", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  await editor.click();
+  await editor.pressSequentially("[x] Review notes");
+  const checkbox = editor.getByRole("checkbox", { name: /Review notes/i });
+  const output = page.getByLabel("Field states Markdown", { exact: true });
+  await expect(checkbox).toBeChecked();
+  await checkbox.focus();
+  const before = await output.textContent();
+  const readOnly = page.getByRole("button", { name: "Read-only", exact: true });
+  await readOnly.evaluate((button: HTMLButtonElement) => button.click());
+  await checkbox.click();
+  await expect(checkbox).toBeChecked();
+  await expect(output).toHaveText(before!);
+  await readOnly.evaluate((button: HTMLButtonElement) => button.click());
+  await checkbox.click();
+  await expect(checkbox).not.toBeChecked();
+  await expect(output).toContainText("[ ] Review notes");
+  await checkbox.focus();
+  await page.getByRole("button", { name: "Disabled", exact: true }).evaluate((button: HTMLButtonElement) => button.click());
+  await expect(checkbox).not.toBeFocused();
+});
+
 test("table cells edit independently and Tab exits at both boundaries", async ({ page, browserName }) => {
   await page.goto("/markdown-editor");
   const editor = page.getByRole("textbox", { name: "Table note" });
