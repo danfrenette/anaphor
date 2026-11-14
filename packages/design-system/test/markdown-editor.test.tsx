@@ -112,6 +112,25 @@ test.each([{ readOnly: true }, { disabled: true }])("non-editable task checkboxe
   expect(onChange).not.toHaveBeenCalled();
 });
 
+test("disabled task checkboxes are skipped by keyboard navigation", async () => {
+  const user = userEvent.setup();
+  render(<><button>Before</button><MarkdownEditor presentation="field" defaultValue="- [ ] Review notes" disabled aria-label="Disabled note" /><button>After</button></>);
+  await screen.findByRole("checkbox", { name: /Review notes/i });
+  screen.getByRole("button", { name: "Before" }).focus();
+  await user.tab();
+  expect(screen.getByRole("button", { name: "After" })).toHaveFocus();
+});
+
+test("replacing tasks while disabled keeps checkboxes disabled until re-enabled", async () => {
+  const { ref, rerender } = setupEditor("- [ ] First", { disabled: true });
+  await screen.findByRole("checkbox", { name: /First/i });
+  act(() => ref.current?.setMarkdown("- [x] Replacement"));
+  const checkbox = await screen.findByRole("checkbox", { name: /Replacement/i });
+  await waitFor(() => expect(checkbox).toBeDisabled());
+  rerender(<MarkdownEditor presentation="field" ref={ref} defaultValue="- [ ] First" aria-label="Research note" />);
+  expect(checkbox).toBeEnabled();
+});
+
 test("nested tasks and ordinary lists retain their content on round trip", async () => {
   const source = "- [ ] Parent\n  - [x] Child\n\n- Ordinary\n\n- [x] Final";
   expect(await serializeWithoutEdit(source)).toBe(source);

@@ -513,6 +513,19 @@ function useMarkdownEditor({
     editor.setEditable(!readOnly && !disabled, false);
   }, [editor, readOnly, disabled]);
 
+  useLayoutEffect(() => {
+    if (!editor || !disabled) return;
+    const root = editor.view.dom;
+    const disableCheckboxes = () => root.querySelectorAll<HTMLInputElement>('li[data-checked] input[type="checkbox"]').forEach(input => { input.disabled = true; });
+    disableCheckboxes();
+    const observer = new MutationObserver(disableCheckboxes);
+    observer.observe(root, { childList: true, subtree: true });
+    return () => {
+      observer.disconnect();
+      root.querySelectorAll<HTMLInputElement>('li[data-checked] input[type="checkbox"]').forEach(input => { input.disabled = false; });
+    };
+  }, [editor, disabled]);
+
   useEffect(() => {
     if (!editor) return;
     const onUpdate = () => {
