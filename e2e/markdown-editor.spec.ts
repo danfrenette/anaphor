@@ -218,6 +218,10 @@ for (const theme of ["light", "dark"]) {
       return { checked: input.checked, background: style.backgroundColor, border: style.borderColor, width: style.width, height: style.height };
     });
     expect(await editor.evaluate(checkboxStyle)).toEqual(await prose.evaluate(checkboxStyle));
+    const checkboxOffsets = (root: Element) => [...root.querySelectorAll('input[type="checkbox"]')].map(input => input.getBoundingClientRect().left - root.getBoundingClientRect().left);
+    const editorOffsets = await editor.evaluate(checkboxOffsets);
+    const proseOffsets = await prose.evaluate(checkboxOffsets);
+    for (let i = 0; i < editorOffsets.length; i++) expect(Math.abs(editorOffsets[i]! - proseOffsets[i]!)).toBeLessThanOrEqual(1);
     for (let i = 0; i < editorDetails.length; i++) {
       expect(Math.abs(editorDetails[i]!.top - proseDetails[i]!.top), `detail ${i} top`).toBeLessThanOrEqual(1);
       expect(Math.abs(editorDetails[i]!.height - proseDetails[i]!.height), `detail ${i} height`).toBeLessThanOrEqual(1);
