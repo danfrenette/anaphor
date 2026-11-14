@@ -309,6 +309,7 @@
   .anaphor-prose :where(pre code):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: inherit; }
   .anaphor-prose :where(figcaption):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block-start: calc(var(--spacing-prose) * 0.5); font-size: var(--text-small); }
   .anaphor-prose :where(table):not(:where([data-prose-exclude], [data-prose-exclude] *)) { width: 100%; border-collapse: collapse; }
+  /* .tableWrapper is Tiptap 3.33.0's live table markup. */
   .anaphor-prose :where(.tableWrapper, [data-prose-table]):not(:where([data-prose-exclude], [data-prose-exclude] *)) { overflow-x: auto; margin-block: var(--spacing-prose); }
   .anaphor-prose :where(.tableWrapper > table, [data-prose-table] > table):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: 0; }
   .anaphor-prose :where(th, td):not(:where([data-prose-exclude], [data-prose-exclude] *)) { padding: calc(var(--spacing-prose) * 0.5); border-bottom: 1px solid var(--anaphor-input-border); text-align: start; }

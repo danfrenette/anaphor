@@ -71,7 +71,8 @@ never fires `onChange`.
 Type `[ ] ` or `[x] ` to start a task item. Its named checkbox can be toggled
 by click or Space; the corresponding Markdown changes between `[ ]` and `[x]`.
 Task items may be nested. Read-only and disabled editors do not change when a
-checkbox is activated.
+checkbox is activated. Ctrl/Cmd+Z does not undo while focus is on the checkbox
+itself; this is browser and Tiptap default behaviour.
 
 Existing Markdown tables render as editable tables, including cell marks and
 column alignment. Tab and Shift+Tab move between cells. At the last or first

@@ -69,7 +69,7 @@ async function checkAccessibility(page: Page, include?: string) {
   const general = await scan().withTags(tags).disableRules("scrollable-region-focusable").analyze();
   // Editable code and table wrappers scroll with the caret; axe cannot detect that keyboard access.
   // Exclude only those editable regions from this rule, not the other rules.
-  const scrollable = await scan().exclude('[data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) pre, [data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) .tableWrapper').withRules("scrollable-region-focusable").analyze();
+  const scrollable = await scan().exclude('[data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) pre, [data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) div:has(> table)').withRules("scrollable-region-focusable").analyze();
   expect([...general.violations, ...scrollable.violations]).toEqual([]);
 }
 
