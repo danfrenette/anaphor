@@ -227,7 +227,8 @@ for (const theme of ["light", "dark"]) {
     const proseOffsets = await prose.evaluate(checkboxOffsets);
     for (let i = 0; i < editorOffsets.length; i++) expect(Math.abs(editorOffsets[i]! - proseOffsets[i]!)).toBeLessThanOrEqual(1);
     const remarkDetails = await prose.evaluate(root => {
-      const clone = root.cloneNode(true) as HTMLElement;
+      const clone = root.cloneNode(true);
+      if (!(clone instanceof HTMLElement)) throw new Error("Expected a Prose element");
       clone.style.cssText = `position: fixed; visibility: hidden; width: ${root.getBoundingClientRect().width}px;`;
       for (const input of clone.querySelectorAll('input[type="checkbox"]')) {
         input.closest("li")?.classList.add("task-list-item");
