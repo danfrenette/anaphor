@@ -110,7 +110,7 @@ edges. Lists have 1.5em outer spacing.
 Task lists use unbulleted checkboxes with matching checked, unchecked, and
 nested layout for Tiptap's live node views (`data-type="taskList"` and
 `data-checked`), marked's plain checkbox list items, and remark-gfm's
-`contains-task-list` and `task-list-item` markup. Paragraphs in table cells
+`contains-task-list` and `task-list-item` markup. A plain rendered task has a disabled checkbox as the first child of the item or its first paragraph; excluded checkboxes do not identify tasks. Enabled or later checkboxes remain ordinary list content. Paragraphs in table cells
 have no extra block margin, so native rendered cells and editor cells align.
 Rendered task boxes are status indicators and retain their normal appearance
 even when the renderer marks their inputs disabled. A disabled editor instead

@@ -46,7 +46,7 @@ const comparisonMarkdown = [
 
 const codeEndingMarkdown = ["A paragraph before code.", "", "```ts", "x".repeat(120), "```"].join("\n");
 const wideTableMarkdown = `| Identifier | Status |\n| --- | --- |\n| ${"wide".repeat(40)} | Ready |`;
-const complexTasks = "- [ ] Ordered task\n  1. Ordered child\n\nBetween.\n\n- [ ] Unordered task\n  - Unordered child\n\nBetween.\n\n- [ ] Loose task\n\n  Second paragraph\n\n- Another item";
+const complexTasks = "- [ ] Ordered task\n  1. Ordered child\n\nBetween.\n\n- [ ] Unordered task\n  - Unordered child\n\nBetween.\n\n- [ ] Loose task\n\n  Second paragraph\n\n- Another item\n\nBetween.\n\n- parent\n  - [ ] child\n\n  - other\n\nBetween.\n\n- [ ] task\n\n  1. child";
 const renderMarkdown = (markdown: string) => marked.parse(markdown, { async: false })
   .replaceAll("<pre>", '<pre tabindex="0">')
   .replaceAll('type="checkbox"', 'type="checkbox" aria-label="Task status"')

@@ -240,6 +240,21 @@ for (const theme of ["light", "dark"]) test(`comparison labels and Markdown code
   expect(Math.abs(blocks[0]! - blocks[1]!)).toBeLessThanOrEqual(1);
 });
 
+test("ordinary lists retain bullets around non-task checkboxes", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const styles = await page.getByLabel("Complex tasks rendered").evaluate(root => {
+    const container = document.createElement("div");
+    container.innerHTML = `<ul><li><p><input type="checkbox"> enabled</p></li></ul><ul><li><p data-prose-exclude><input type="checkbox" disabled> excluded</p></li></ul><ul><li><p><span>before</span> <input type="checkbox" disabled> later</p></li></ul><ul><li><input type="checkbox" disabled> task</li></ul>`;
+    root.append(container);
+    return [...container.querySelectorAll("ul")].map(list => ({ style: getComputedStyle(list).listStyleType, padding: getComputedStyle(list).paddingInlineStart }));
+  });
+  for (const item of styles.slice(0, 3)) {
+    expect(item.style).toBe("disc");
+    expect(parseFloat(item.padding)).toBeGreaterThan(0);
+  }
+  expect(styles[3]!.style).toBe("none");
+});
+
 for (const theme of ["light", "dark"]) {
   test(`complex task geometry: ${theme}`, async ({ page }) => {
     await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
@@ -269,9 +284,27 @@ for (const theme of ["light", "dark"]) {
     const editor = await page.getByRole("textbox", { name: "Complex tasks editor" }).evaluate(measure);
     const rendered = await page.getByLabel("Complex tasks rendered").evaluate(measure);
     console.log(JSON.stringify({ theme, width: page.viewportSize()?.width, editor, rendered }));
-    expect(editor).toHaveLength(3);
-    expect(rendered).toHaveLength(3);
-    for (let i = 0; i < 3; i++) {
+    expect(editor).toHaveLength(5);
+    expect(rendered).toHaveLength(5);
+    const otherPosition = (root: Element) => {
+      const origin = root.getBoundingClientRect();
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      let node: Node | null;
+      while ((node = walker.nextNode())) {
+        if (node.textContent?.trim() !== "other") continue;
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const rect = range.getBoundingClientRect();
+        return { x: rect.left - origin.left, top: rect.top - origin.top };
+      }
+      throw new Error("Missing other item");
+    };
+    const otherEditor = await page.getByRole("textbox", { name: "Complex tasks editor" }).evaluate(otherPosition);
+    const otherRendered = await page.getByLabel("Complex tasks rendered").evaluate(otherPosition);
+    console.log(JSON.stringify({ otherEditor, otherRendered }));
+    expect(Math.abs(otherEditor.x - otherRendered.x)).toBeLessThanOrEqual(1);
+    expect(Math.abs(otherEditor.top - otherRendered.top)).toBeLessThanOrEqual(1);
+    for (let i = 0; i < 5; i++) {
       for (const key of ["top", "height", "boxTop", "boxHeight", "textX", "textTop", "nestedTop", "nestedX"] as const) {
         expect(Math.abs(editor[i]![key] - rendered[i]![key]), `task ${i} ${key}`).toBeLessThanOrEqual(1);
       }
