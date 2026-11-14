@@ -302,11 +302,8 @@ pinned by a test so an upgrade that changes one is noticed:
   save and eventually leaves the item; the same drift affects plain
   continuation text in stock 3.33.0.
 - An unclosed multi-line component whose `>` starts a line loses that `>`.
-- Tables acquire serializer padding and extra blank lines. Adjacent tables also
-  acquire empty paragraphs on repeated round trips (Tiptap #8719); repeated
-  saves can grow the document, so avoid repeatedly saving adjacent tables. The
-  pinned two-table example stabilizes after its third round trip rather than
-  growing indefinitely.
+- Tables acquire serializer padding and extra blank lines. Adjacent tables keep
+  a stable separator on repeated round trips (a workaround for Tiptap #8719).
 
 ## Registry and boundaries
 

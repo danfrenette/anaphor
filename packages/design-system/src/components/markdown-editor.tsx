@@ -28,7 +28,30 @@ const PlaceholderText = Extension.create({
   addStorage: () => ({ placeholder: "" }),
 });
 
+const MarkdownStarterKit = StarterKit.extend({
+  addExtensions() {
+    return (this.parent?.() ?? []).map(extension => extension.name !== "paragraph" ? extension : extension.extend({
+      // Tiptap 3.33.0 workaround (#8719): an authored non-breaking space is content, not an empty paragraph.
+      parseMarkdown(token, helpers) {
+        if (token.tokens?.length === 1 && token.tokens[0]?.type === "text" && ["&nbsp;", "\u00a0"].includes(token.tokens[0].raw ?? "")) {
+          return helpers.createNode("paragraph", undefined, [{ type: "text", text: "\u00a0" }]);
+        }
+        return this.parent?.(token, helpers) ?? [];
+      },
+      renderMarkdown(node, helpers, context) {
+        if (node.content?.length === 1 && node.content[0]?.type === "text" && node.content[0].text === "\u00a0") return "&nbsp;";
+        return this.parent?.(node, helpers, context) ?? "";
+      },
+    }));
+  },
+});
+
 const MarkdownTable = Table.extend({
+  // Tiptap 3.33.0 workaround (#8719): don't double the separator between tables.
+  renderMarkdown(node, helpers, context) {
+    const markdown = this.parent?.(node, helpers, context) ?? "";
+    return context.previousNode?.type === "table" ? markdown.replace(/^\n/, "") : markdown;
+  },
   addKeyboardShortcuts() {
     return {
       ...this.parent?.(),
@@ -413,7 +436,7 @@ function useMarkdownEditor({
     injectCSS: false,
     editable: !readOnly && !disabled,
     autofocus: autoFocus ? "end" : false,
-    extensions: [StarterKit.configure({
+    extensions: [MarkdownStarterKit.configure({
       // Disabled: underline has no CommonMark source and is not in the supported
       // set; trailingNode appends an extra empty paragraph after a document ending
       // in a non-paragraph block; dropcursor is a drag affordance the field does not need.

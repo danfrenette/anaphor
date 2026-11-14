@@ -165,18 +165,23 @@ test.each([
   expect(thrice).toBe(twice);
 });
 
-test("adjacent tables accumulate empty paragraphs on repeated round trips", async () => {
+test("adjacent tables stay stable over five round trips", async () => {
   const source = "| A |\n| --- |\n| B |\n\n| C |\n| --- |\n| D |";
   const once = await serializeWithoutEdit(source);
-  const twice = await serializeWithoutEdit(once);
-  const thrice = await serializeWithoutEdit(twice);
-  expect(once).toBe("\n| A   |\n| --- |\n| B   |\n\n\n\n| C   |\n| --- |\n| D   |\n");
-  expect(twice).toBe("\n| A   |\n| --- |\n| B   |\n\n\n\n\n\n| C   |\n| --- |\n| D   |\n");
-  expect(thrice).toBe("\n| A   |\n| --- |\n| B   |\n\n\n\n\n&nbsp;\n\n\n| C   |\n| --- |\n| D   |\n");
-  const fourth = await serializeWithoutEdit(thrice);
-  const fifth = await serializeWithoutEdit(fourth);
-  expect(fourth).toBe(thrice);
-  expect(fifth).toBe(thrice);
+  expect(once).toBe("\n| A   |\n| --- |\n| B   |\n\n\n| C   |\n| --- |\n| D   |\n");
+  expect(once).not.toContain("&nbsp;");
+  let next = once;
+  for (let i = 1; i < 5; i++) {
+    next = await serializeWithoutEdit(next);
+    expect(next).toBe(once);
+  }
+});
+
+test.each(["A paragraph", "&nbsp;"])("paragraph %s between tables survives round trips", async paragraph => {
+  const source = `| A |\n| --- |\n| B |\n\n${paragraph}\n\n| C |\n| --- |\n| D |`;
+  const once = await serializeWithoutEdit(source);
+  expect(once).toContain(paragraph);
+  expect(await serializeWithoutEdit(once)).toBe(once);
 });
 
 test("keeps the supplied Markdown byte for byte without announcing a mount edit", async () => {
