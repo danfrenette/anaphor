@@ -246,13 +246,15 @@ test("ordinary lists retain bullets around non-task checkboxes", async ({ page }
     const container = document.createElement("div");
     container.innerHTML = `<ul><li><p><input type="checkbox"> enabled</p></li></ul><ul><li><p data-prose-exclude><input type="checkbox" disabled> excluded</p></li></ul><ul><li><p><span>before</span> <input type="checkbox" disabled> later</p></li></ul><ul><li><input type="checkbox" disabled> task</li></ul>`;
     root.append(container);
-    return [...container.querySelectorAll("ul")].map(list => ({ style: getComputedStyle(list).listStyleType, padding: getComputedStyle(list).paddingInlineStart }));
+    container.insertAdjacentHTML("beforeend", `<ul><li>before</li><li><input type="checkbox" disabled> task</li><li>after</li><li>another</li></ul>`);
+    return [...container.querySelectorAll("ul")].map(list => ({ style: getComputedStyle(list).listStyleType, padding: getComputedStyle(list).paddingInlineStart, items: [...list.children].map(item => getComputedStyle(item).listStyleType) }));
   });
   for (const item of styles.slice(0, 3)) {
     expect(item.style).toBe("disc");
     expect(parseFloat(item.padding)).toBeGreaterThan(0);
   }
-  expect(styles[3]!.style).toBe("none");
+  expect(styles[3]!.items).toEqual(["none"]);
+  expect(styles[4]!.items).toEqual(["disc", "none", "disc", "disc"]);
 });
 
 for (const theme of ["light", "dark"]) {
