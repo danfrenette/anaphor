@@ -72,7 +72,7 @@ test("table cells edit independently and Tab exits at both boundaries", async ({
   await page.keyboard.press("End");
   await page.keyboard.type("!");
   await expect(output).toContainText("Alpha!");
-  await expect(output).toHaveText(/\| Name\s+\| Value\s+\|\n\| :[-]+ \| [-]+: \|\n\| Alpha!\s+\| Beta\s+\|/);
+  await expect(output).toHaveText("\n| Name   | Value |\n| :------ | -----: |\n| Alpha! | Beta  |\n");
   await expect(cells.nth(0)).toHaveText("Name");
   await expect(cells.nth(1)).toHaveText("Value");
   await expect(cells.nth(3)).toHaveText("Beta");

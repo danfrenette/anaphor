@@ -5,7 +5,8 @@ import { fileURLToPath } from "node:url";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { Field, FieldDescription, FieldLabel, MarkdownEditor, type MarkdownEditorHandle } from "@anaphor/system";
+import { Field, FieldDescription, FieldLabel, MarkdownEditor, useMarkdownEditor, type MarkdownEditorHandle, type UseMarkdownEditorResult } from "@anaphor/system";
+import { EditorContent } from "@tiptap/react";
 
 // Anchored to the test file so the path survives running Vitest from elsewhere.
 // (jsdom replaces the global URL, so new URL(relative, import.meta.url) resolves
@@ -182,6 +183,34 @@ test.each(["A paragraph", "&nbsp;"])("paragraph %s between tables survives round
   const once = await serializeWithoutEdit(source);
   expect(once).toContain(paragraph);
   expect(await serializeWithoutEdit(once)).toBe(once);
+});
+
+test.each([
+  ["alignment", "| Left | Center | Right |\n| :--- | :---: | ---: |\n| one | two | three |", "one", "\n| Left | Center | Right |\n| :---- | :------: | -----: |\n| one! | two    | three |\n"],
+  ["inline marks", "| A | B |\n| --- | --- |\n| **bold** | *italic* |", "bold", "\n| A         | B        |\n| --------- | -------- |\n| **bold!** | *italic* |\n"],
+  ["escaped pipe", "| A | B |\n| --- | --- |\n| a\\|b | other |", "a|b", "\n| A     | B     |\n| ----- | ----- |\n| a\\|b! | other |\n"],
+  ["empty cell", "| A | B |\n| --- | --- |\n|  | other |", "other", "\n| A   | B      |\n| --- | ------ |\n|     | other! |\n"],
+  ["adjacent tables", "| A |\n| --- |\n| B |\n\n| C |\n| --- |\n| D |", "B", "\n| A   |\n| --- |\n| B!  |\n\n\n| C   |\n| --- |\n| D   |\n"],
+])("editing a table cell preserves all other content: %s", async (_name, source, target, expected) => {
+  let api: UseMarkdownEditorResult;
+  function Harness() {
+    api = useMarkdownEditor({ defaultValue: source, "aria-label": "Research note" });
+    return <EditorContent editor={api.editor} />;
+  }
+  render(<Harness />);
+  await screen.findByRole("textbox", { name: "Research note" });
+  const cells = screen.getAllByRole("cell");
+  const rows = screen.getAllByRole("row");
+  const before = rows.map(row => row.querySelectorAll("th, td").length);
+  let position = -1;
+  api!.editor!.state.doc.descendants((node, pos) => {
+    if (node.isText && node.text === target) position = pos + node.nodeSize;
+  });
+  expect(position).toBeGreaterThan(0);
+  act(() => { api!.editor!.commands.insertContentAt(position, "!"); });
+  expect(screen.getAllByRole("row").map(row => row.querySelectorAll("th, td").length)).toEqual(before);
+  expect(screen.getAllByRole("cell")).toHaveLength(cells.length);
+  expect(api!.getMarkdown()).toBe(expected);
 });
 
 test("keeps the supplied Markdown byte for byte without announcing a mount edit", async () => {
