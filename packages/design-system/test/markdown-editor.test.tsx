@@ -87,6 +87,36 @@ async function serializeWithoutEdit(markdown: string) {
   return value;
 }
 
+test("Space toggles a focused task checkbox and its Markdown", async () => {
+  const { user, ref } = setupEditor("- [ ] Review notes");
+  const checkbox = await screen.findByRole("checkbox", { name: /Review notes/i });
+  checkbox.focus();
+  await user.keyboard(" ");
+  expect(checkbox).toBeChecked();
+  expect(ref.current?.getMarkdown()).toBe("- [x] Review notes");
+  await user.keyboard(" ");
+  expect(checkbox).not.toBeChecked();
+  expect(ref.current?.getMarkdown()).toBe("- [ ] Review notes");
+});
+
+test.each([{ readOnly: true }, { disabled: true }])("non-editable task checkboxes do not change Markdown or announce edits: %o", async props => {
+  const onChange = vi.fn();
+  const source = "- [ ] Review notes";
+  const { user, ref } = setupEditor(source, { ...props, onChange });
+  const checkbox = await screen.findByRole("checkbox", { name: /Review notes/i });
+  await user.click(checkbox);
+  checkbox.focus();
+  await user.keyboard(" ");
+  expect(checkbox).not.toBeChecked();
+  expect(ref.current?.getMarkdown()).toBe(source);
+  expect(onChange).not.toHaveBeenCalled();
+});
+
+test("nested tasks and ordinary lists retain their content on round trip", async () => {
+  const source = "- [ ] Parent\n  - [x] Child\n\n- Ordinary\n\n- [x] Final";
+  expect(await serializeWithoutEdit(source)).toBe(source);
+});
+
 test("keeps the supplied Markdown byte for byte without announcing a mount edit", async () => {
   const onChange = vi.fn();
   const ref = createRef<MarkdownEditorHandle>();
