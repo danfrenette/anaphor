@@ -9,7 +9,7 @@ export { Input, type InputProps } from "./components/input";
 export { FieldFeedback, type FieldFeedbackProps } from "./components/field-feedback";
 export { Field, FieldItem, FieldContent, FieldGroup, FieldLabel, FieldDescription, FieldError, type FieldProps, type FieldItemProps } from "./components/field";
 export { FileUpload, FileUploadDropzone, FileUploadTrigger, FileUploadProgress, type FileUploadProps, type FileUploadDropzoneProps, type FileUploadTriggerProps, type FileUploadProgressProps } from "./components/file-upload";
-export { Checkbox, CheckboxGroup, CheckboxPrimitive } from "./components/checkbox";
+export { Checkbox, CheckboxGroup, CheckboxPrimitive, useCheckboxPaint } from "./components/checkbox";
 export { RadioGroup, Radio, type RadioGroupProps, type RadioProps } from "./components/radio-group";
 export { Badge, type BadgeProps } from "./components/badge";
 export { Kbd, KbdGroup } from "./components/kbd";

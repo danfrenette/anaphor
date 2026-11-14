@@ -4,7 +4,7 @@ import { type ReactNode } from "react";
 import { ArrowDown, ArrowUp, ArrowsDownUp } from "@phosphor-icons/react";
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable, type Row, type Table, type TableOptions } from "@tanstack/react-table";
 import { Button, ButtonLabel } from "./button";
-import { Checkbox, CheckboxGroup } from "./checkbox";
+import { Checkbox, CheckboxGroup, useCheckboxPaint } from "./checkbox";
 import { Field } from "./field";
 import { cn } from "../lib/utils";
 
@@ -53,6 +53,7 @@ function DataTable<T>(props: DataTableProps<T>) {
 
 function DataTableRecords<T>(props: DataTableProps<T>) {
   const { table, label, presentation, density, treatment, selection, primaryColumnId, getRowLabel, renderCard, renderActions } = props;
+  const paintCards = useCheckboxPaint();
   const rows = table.getRowModel().rows;
   const padding = density === "compact" ? "px-3 py-2" : "p-4";
   const border = treatment === "grid" ? "border-e border-b [border-width:var(--anaphor-border-hairline)] border-border last:border-e-0" : treatment === "rules" ? "border-b [border-bottom-width:var(--anaphor-border-hairline)] border-border" : "";
@@ -66,13 +67,13 @@ function DataTableRecords<T>(props: DataTableProps<T>) {
   return <div className="min-w-0">
     {presentation === "cards" ? <>
       {selection && <div className="flex min-h-14 items-center gap-3 px-3">{selectPage}<span className="text-ui">Select this page</span></div>}
-      <CheckboxGroup><ul aria-label={label} className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))] gap-4">
+      <ul {...paintCards} aria-label={label} className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))] gap-4">
         {rows.map(row => <li key={row.id} className={cn("min-w-0", treatment === "grid" && "rounded-md border [border-width:var(--anaphor-border-hairline)] border-border", treatment === "rules" && border, padding, row.getIsSelected() && "bg-muted")}>
           <div className="flex h-full items-start gap-3">{selection && selectRow(row)}<div className="min-w-0 flex-1 self-stretch">
             {renderCard ? renderCard(row) : <><div className="text-body font-medium break-words">{cellValue(row, primaryColumnId)}</div><dl className="mt-3 grid gap-2">{row.getVisibleCells().filter(cell => cell.column.id !== primaryColumnId).map(cell => <div key={cell.id} className="flex flex-wrap justify-between gap-2 text-ui"><dt className="text-muted-foreground">{typeof cell.column.columnDef.header === "string" ? cell.column.columnDef.header : cell.column.id}</dt><dd className="break-words">{flexRender(cell.column.columnDef.cell, cell.getContext())}</dd></div>)}</dl></>}
           </div>{renderActions?.(row)}</div>
         </li>)}
-      </ul></CheckboxGroup>
+      </ul>
     </> : <div role="region" aria-label={`${label}, scroll for more columns`} tabIndex={0} className="overflow-x-auto rounded-sm focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring">
       <CheckboxGroup><table className="w-full border-separate border-spacing-0 text-start text-ui">
         <caption className="sr-only">{label}</caption>
