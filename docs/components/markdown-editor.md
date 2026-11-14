@@ -66,6 +66,21 @@ The remaining optional props compose for use inside Anaphor's field:
 Both state props take effect after mount without remounting, and toggling them
 never fires `onChange`.
 
+## Task lists and tables
+
+Type `[ ] ` or `[x] ` to start a task item. Its named checkbox can be toggled
+by click or Space; the corresponding Markdown changes between `[ ]` and `[x]`.
+Task items may be nested. Read-only and disabled editors do not change when a
+checkbox is activated.
+
+Existing Markdown tables render as editable tables, including cell marks and
+column alignment. Tab and Shift+Tab move between cells. At the last or first
+cell respectively, focus leaves the editor rather than adding a row or trapping
+the keyboard. Adding rows or columns and resizing columns are not provided.
+Other Tiptap table keyboard defaults remain, including deleting a table with
+Backspace or Delete when all its cells are selected. Wide tables scroll with
+the caret; rendered scroll regions should also be keyboard focusable.
+
 ```tsx
 <Field orientation="vertical" invalid={invalid}>
   <FieldLabel id="note-label">Notes</FieldLabel>
@@ -296,5 +311,5 @@ The standalone `markdown-editor` registry item installs the component, shared
 styles, utilities, and exact Tiptap 3.33.0 dependencies. It is also part of the
 complete `ui` aggregate.
 
-This slice does not support tasks, tables, images, paste handling, or a selection
+This slice does not support images, paste handling, or a selection
 bubble.

@@ -57,7 +57,7 @@ rendered content.
 
 The in-place parity tests compare each block's relative top and height against
 the same Markdown rendered by `marked` inside `Prose`, within 1px in both
-themes. They also check the first and last margins, total height, soft breaks,
+themes, including individual task items and table rows. They also check the first and last margins, total height, soft breaks,
 unwrapped code, and absence of field chrome. Screenshots cover both themes in
 desktop Chromium and 320px WebKit; Linux baselines use the pinned image in
 `TESTING.md`.
@@ -144,6 +144,17 @@ code remains separately keyboard-focusable.
     Click the padding or empty space below short content and type to confirm the
     caret is at the end. Load another note, drag across its heading to select
     text, then click the comment block and press Delete to remove it as a whole.
+12. Type `[ ] Review` in an empty editor. Click the named checkbox and then
+    focus it and press Space; verify the check state and output Markdown both
+    toggle. Repeat with read-only and disabled states and confirm no change.
+    Check a nested task and an ordinary list alongside tasks survive a round trip.
+13. In Table editing, change a cell and confirm the other cells, alignment and
+    dimensions remain unchanged in the Markdown. Tab forward and backward
+    between cells; at the final and first cells, respectively, Tab and Shift+Tab
+    leave the editor without adding a row. At 320px, check Wide table scrolls
+    inside its box, the page does not overflow, and the rendered scroll region
+    can receive keyboard focus. Compare checked, unchecked and nested tasks and
+    table rows in both themes against rendered Markdown.
 
 Keep Playwright output and screenshots under `test-results/` with the run
 receipt. Stop only a server started for the verification run.
@@ -153,5 +164,5 @@ receipt. Stop only a server started for the verification run.
 The callback and pre-edit byte guarantee are component-test criteria. The hook
 is exercised through the component rather than through internal editor calls.
 Tests assert visible results and Markdown output, never Tiptap document JSON,
-extension arrays, or private methods. Tasks, tables, images, paste, and the
+extension arrays, or private methods. Images, paste, and the
 bubble are outside this recipe.

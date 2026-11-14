@@ -107,6 +107,14 @@ separation, nested siblings 0.375em, and nested lists use open-circle bullets an
 a 0.5em entry gap. Paragraph margins inside list items do not compound at the
 edges. Lists have 1.5em outer spacing.
 
+Task lists use unbulleted checkboxes with matching checked, unchecked, and
+nested layout for Tiptap's live node views (`data-type="taskList"` and
+`data-checked`), marked's plain checkbox list items, and remark-gfm's
+`contains-task-list` and `task-list-item` markup. Paragraphs in table cells
+have no extra block margin, so native rendered cells and editor cells align.
+Table wrappers scroll horizontally and retain the normal outer table rhythm;
+renderers should give a scrollable wrapper a name and `tabindex="0"`.
+
 Blockquotes stay body-sized with inherited reading leading and color, real Inter
 italic, a quiet 1px rule, and 1.5em inset. Their 2em outer spacing distinguishes a
 quotation from the preceding list. First/last paragraph margins are trimmed so
