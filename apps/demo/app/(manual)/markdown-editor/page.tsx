@@ -47,6 +47,7 @@ const comparisonMarkdown = [
 const codeEndingMarkdown = ["A paragraph before code.", "", "```ts", "x".repeat(120), "```"].join("\n");
 const wideTableMarkdown = `| Identifier | Status |\n| --- | --- |\n| ${"wide".repeat(40)} | Ready |`;
 const complexTasks = "- [ ] Ordered task\n  1. Ordered child\n\nBetween.\n\n- [ ] Unordered task\n  - Unordered child\n\nBetween.\n\n- [ ] Loose task\n\n  Second paragraph\n\n- Another item\n\nBetween.\n\n- parent\n  - [ ] child\n\n  - other\n\nBetween.\n\n- [ ] task\n\n  1. child";
+const mixedTasks = "- Before\n- [ ] Task\n- After";
 const renderMarkdown = (markdown: string) => marked.parse(markdown, { async: false })
   .replaceAll("<pre>", '<pre tabindex="0">')
   .replaceAll('type="checkbox"', 'type="checkbox" aria-label="Task status"')
@@ -76,6 +77,10 @@ export default function MarkdownEditorPage() {
       <section aria-label="Complex task comparison" className="mt-12 grid min-w-0 gap-8 md:grid-cols-2">
         <MarkdownEditor presentation="in-place" defaultValue={complexTasks} aria-label="Complex tasks editor" />
         <Prose as="div" aria-label="Complex tasks rendered" dangerouslySetInnerHTML={{ __html: renderMarkdown(complexTasks) }} />
+      </section>
+      <section aria-label="Mixed task comparison" className="mt-12 grid min-w-0 gap-8 md:grid-cols-2">
+        <MarkdownEditor presentation="in-place" defaultValue={mixedTasks} aria-label="Mixed tasks editor" />
+        <Prose as="div" aria-label="Mixed tasks rendered" dangerouslySetInnerHTML={{ __html: renderMarkdown(mixedTasks) }} />
       </section>
       <section aria-label="Wide table comparison" className="mt-12">
         <Text as="h2" variant="heading">Wide table</Text>

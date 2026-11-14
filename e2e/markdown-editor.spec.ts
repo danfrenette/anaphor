@@ -258,6 +258,41 @@ test("ordinary lists retain bullets around non-task checkboxes", async ({ page }
 });
 
 for (const theme of ["light", "dark"]) {
+  test(`mixed task list gap: ${theme}`, async ({ page }) => {
+    await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
+    await page.goto("/markdown-editor");
+    await page.evaluate(() => document.fonts.ready);
+    const measure = (root: Element) => {
+      const origin = root.getBoundingClientRect();
+      return [...root.querySelectorAll("li")].map(item => {
+        const text = item.querySelector(":scope > div > p") ?? item;
+        const walker = document.createTreeWalker(text, NodeFilter.SHOW_TEXT);
+        let node: Node | null;
+        while ((node = walker.nextNode())) {
+          const index = node.textContent!.search(/\S/);
+          if (index < 0) continue;
+          const range = document.createRange();
+          range.setStart(node, index);
+          range.setEnd(node, index + 1);
+          const glyph = range.getBoundingClientRect();
+          return { marker: getComputedStyle(item).listStyleType !== "none", x: glyph.left - origin.left, top: glyph.top - origin.top };
+        }
+        throw new Error("Missing item text");
+      });
+    };
+    const editor = await page.getByRole("textbox", { name: "Mixed tasks editor" }).evaluate(measure);
+    const rendered = await page.getByLabel("Mixed tasks rendered").evaluate(measure);
+    console.log(JSON.stringify({ theme, width: page.viewportSize()?.width, editor, rendered }));
+    expect(editor).toHaveLength(3);
+    expect(rendered).toHaveLength(3);
+    expect(editor.map(item => item.marker)).toEqual([true, false, true]);
+    expect(rendered.map(item => item.marker)).toEqual([true, false, true]);
+    for (let i = 0; i < 3; i++) {
+      expect(Math.abs(editor[i]!.x - rendered[i]!.x)).toBeLessThanOrEqual(1);
+      // Tiptap's schema splits mixed kinds into separate lists; the observed cumulative gap is 24px.
+      expect(Math.abs(editor[i]!.top - rendered[i]!.top)).toBeLessThanOrEqual(24);
+    }
+  });
   test(`complex task geometry: ${theme}`, async ({ page }) => {
     await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
     await page.goto("/markdown-editor");
