@@ -284,6 +284,12 @@
   .anaphor-prose :where(li > p):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: calc(var(--spacing-prose) * 0.5); }
   .anaphor-prose :where(li > p:first-child, blockquote > p:first-child):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block-start: 0; }
   .anaphor-prose :where(li > p:last-child, blockquote > p:last-child):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block-end: 0; }
+  .anaphor-prose :where(ul[data-type="taskList"], ul.contains-task-list, ul:has(> li > input[type="checkbox"])):not(:where([data-prose-exclude], [data-prose-exclude] *)) { list-style: none; padding-inline-start: 0; }
+  .anaphor-prose :where(li[data-checked]):not(:where([data-prose-exclude], [data-prose-exclude] *)) { display: flex; gap: 0.5em; align-items: baseline; }
+  .anaphor-prose :where(li[data-checked] > div):not(:where([data-prose-exclude], [data-prose-exclude] *)) { min-width: 0; }
+  .anaphor-prose :where(li[data-checked] > div > p):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: 0; }
+  .anaphor-prose :where(li[data-checked] > div > ul):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: calc(var(--spacing-prose) * 0.5) 0; }
+  .anaphor-prose :where(li > input[type="checkbox"]):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-inline-end: 0.5em; }
   .anaphor-prose :where(a):not(:where([data-prose-exclude], [data-prose-exclude] *)) { color: inherit; text-decoration-line: underline; text-underline-offset: 0.15em; }
   .anaphor-prose :where(strong):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-weight: var(--font-weight-bold); }
   .anaphor-prose :where(blockquote):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: calc(var(--spacing-prose) * 2); border-inline-start: 1px solid var(--anaphor-input-border); padding-inline-start: calc(var(--spacing-prose) * 1.5); font-style: italic; }
@@ -292,7 +298,10 @@
   .anaphor-prose :where(pre code):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: inherit; }
   .anaphor-prose :where(figcaption):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block-start: calc(var(--spacing-prose) * 0.5); font-size: var(--text-small); }
   .anaphor-prose :where(table):not(:where([data-prose-exclude], [data-prose-exclude] *)) { width: 100%; border-collapse: collapse; }
+  .anaphor-prose :where(.tableWrapper, [data-prose-table]):not(:where([data-prose-exclude], [data-prose-exclude] *)) { overflow-x: auto; margin-block: var(--spacing-prose); }
+  .anaphor-prose :where(.tableWrapper > table, [data-prose-table] > table):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: 0; }
   .anaphor-prose :where(th, td):not(:where([data-prose-exclude], [data-prose-exclude] *)) { padding: calc(var(--spacing-prose) * 0.5); border-bottom: 1px solid var(--anaphor-input-border); text-align: start; }
+  .anaphor-prose :where(th > p, td > p):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: 0; }
   .anaphor-prose > :first-child:not([data-prose-exclude]) { margin-block-start: 0; }
   .anaphor-prose > :last-child:not([data-prose-exclude]) { margin-block-end: 0; }
 

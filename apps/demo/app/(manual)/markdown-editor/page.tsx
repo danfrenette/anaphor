@@ -19,6 +19,17 @@ const comparisonMarkdown = [
   "  - Nested item",
   "  - Another nested item",
   "",
+  "Checklist:",
+  "",
+  "- [ ] Check the route",
+  "- [x] Pack supplies",
+  "  - [ ] Nested task",
+  "",
+  "| Item | Status |",
+  "| :--- | ---: |",
+  "| **Map** | Ready |",
+  "| Compass | *Packed* |",
+  "",
   "1. Ordered first",
   "2. Ordered second",
   "",
@@ -34,7 +45,12 @@ const comparisonMarkdown = [
 ].join("\n");
 
 const codeEndingMarkdown = ["A paragraph before code.", "", "```ts", "x".repeat(120), "```"].join("\n");
-const renderMarkdown = (markdown: string) => marked.parse(markdown, { async: false }).replaceAll("<pre>", '<pre tabindex="0">');
+const wideTableMarkdown = `| Identifier | Status |\n| --- | --- |\n| ${"wide".repeat(40)} | Ready |`;
+const renderMarkdown = (markdown: string) => marked.parse(markdown, { async: false })
+  .replaceAll("<pre>", '<pre tabindex="0">')
+  .replaceAll('type="checkbox"', 'type="checkbox" aria-label="Task status"')
+  .replaceAll("<table>", '<div data-prose-table tabindex="0" role="region" aria-label="Table"><table>')
+  .replaceAll("</table>", "</table></div>");
 
 export default function MarkdownEditorPage() {
   return <main id="content" tabIndex={-1} className="min-w-0 px-page-inset py-12">
@@ -55,6 +71,11 @@ export default function MarkdownEditorPage() {
           <div className="min-w-0"><Text as="h3" variant="ui" className="mb-3 font-medium">Editable</Text><MarkdownEditor presentation="in-place" defaultValue={codeEndingMarkdown} aria-label="In-place code ending" /></div>
           <div className="min-w-0"><Text as="h3" variant="ui" className="mb-3 font-medium">Rendered</Text><Prose as="div" aria-label="Rendered code ending" dangerouslySetInnerHTML={{ __html: renderMarkdown(codeEndingMarkdown) }} /></div>
         </div>
+      </section>
+      <section aria-label="Wide table comparison" className="mt-12">
+        <Text as="h2" variant="heading">Wide table</Text>
+        <MarkdownEditor presentation="in-place" defaultValue={wideTableMarkdown} aria-label="Wide table editor" />
+        <Prose as="div" aria-label="Wide table rendered" dangerouslySetInnerHTML={{ __html: renderMarkdown(wideTableMarkdown) }} />
       </section>
     </div>
   </main>;

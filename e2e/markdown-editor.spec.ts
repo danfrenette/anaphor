@@ -65,9 +65,32 @@ async function checkAccessibility(page: Page, include?: string) {
   const general = await scan().withTags(tags).disableRules("scrollable-region-focusable").analyze();
   // Editable code scrolls as the caret moves; axe cannot detect that keyboard access.
   // Exclude only editable editor textbox code blocks from this rule, not the other rules.
-  const scrollable = await scan().exclude('[data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) pre').withRules("scrollable-region-focusable").analyze();
+  const scrollable = await scan().exclude('[data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) pre, [data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) .tableWrapper').withRules("scrollable-region-focusable").analyze();
   expect([...general.violations, ...scrollable.violations]).toEqual([]);
 }
+
+test("wide tables stay within the page and remain keyboard accessible", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto("/markdown-editor");
+  const section = page.getByRole("region", { name: "Wide table comparison" });
+  const editor = page.getByRole("textbox", { name: "Wide table editor" });
+  const rendered = page.getByLabel("Wide table rendered");
+  for (const root of [editor, rendered]) {
+    const table = root.locator("table");
+    await expect(table).toBeVisible();
+    const geometry = await table.evaluate(element => {
+      const wrapper = element.parentElement!;
+      return { scrolls: wrapper.scrollWidth > wrapper.clientWidth, insideViewport: wrapper.getBoundingClientRect().right <= document.documentElement.clientWidth };
+    });
+    expect(geometry).toEqual({ scrolls: true, insideViewport: true });
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  const heights = await Promise.all([editor, rendered].map(root => root.evaluate(element => element.getBoundingClientRect().height)));
+  expect(Math.abs(heights[0]! - heights[1]!)).toBeLessThanOrEqual(1);
+  await expect(rendered.getByRole("region", { name: "Table" })).toHaveAttribute("tabindex", "0");
+  await checkAccessibility(page, '[aria-label="Wide table comparison"]');
+  await expect(section).toBeVisible();
+});
 
 test("in-place opaque block undo and keyboard gap", async ({ page }) => {
   await page.goto("/markdown-editor");
@@ -176,6 +199,24 @@ for (const theme of ["light", "dark"]) {
     };
     const actual = await editor.evaluate(measure, selectors);
     const expected = await prose.evaluate(measure, selectors);
+    const detail = (root: Element) => {
+      const top = root.getBoundingClientRect().top;
+      const items = [...root.querySelectorAll('input[type="checkbox"]')].map(input => input.closest("li")!);
+      const rows = [...root.querySelectorAll("tr")];
+      return [...items, ...rows].map(element => {
+        const rect = element.getBoundingClientRect();
+        return { top: rect.top - top, height: rect.height };
+      });
+    };
+    const editorDetails = await editor.evaluate(detail);
+    const proseDetails = await prose.evaluate(detail);
+    console.log(JSON.stringify({ theme, width: page.viewportSize()?.width, editorDetails, proseDetails }));
+    expect(editorDetails).toHaveLength(6);
+    expect(proseDetails).toHaveLength(6);
+    for (let i = 0; i < editorDetails.length; i++) {
+      expect(Math.abs(editorDetails[i]!.top - proseDetails[i]!.top), `detail ${i} top`).toBeLessThanOrEqual(1);
+      expect(Math.abs(editorDetails[i]!.height - proseDetails[i]!.height), `detail ${i} height`).toBeLessThanOrEqual(1);
+    }
     await checkAccessibility(page, '[aria-label="In-place comparison"]');
     console.log(JSON.stringify({ theme, actual, expected }));
     for (let i = 0; i < selectors.length; i++) {
