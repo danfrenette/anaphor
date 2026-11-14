@@ -252,6 +252,7 @@ test("ordinary lists retain bullets around non-task checkboxes", async ({ page }
   for (const item of styles.slice(0, 3)) {
     expect(item.style).toBe("disc");
     expect(parseFloat(item.padding)).toBeGreaterThan(0);
+    expect(item.items).toEqual(["disc"]);
   }
   expect(styles[3]!.items).toEqual(["none"]);
   expect(styles[4]!.items).toEqual(["disc", "none", "disc", "disc"]);
