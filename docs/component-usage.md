@@ -35,6 +35,13 @@ loading stay explicit; shape, text-bearing layout and native non-submitting
 button semantics belong to the component. Callers own tag actions and state.
 See [Tag button](components/tag-button.md) and the manual at `/#tag-button`.
 
+## Tabs
+
+`TabsList` takes an optional `variant` (`default`, `lifted`, or `line`) and
+`size`. `lifted` raises the active surface with a keyline and soft shadow; the
+other variants are unchanged. Truncated labels need their own line height, and
+per-tab actions stay outside the tablist. See [Tabs](components/tabs.md) and `/#tabs`.
+
 ## Button variants
 
 Choose `solid`, `outline`, `ghost`, or `soft` independently of the `accent`,

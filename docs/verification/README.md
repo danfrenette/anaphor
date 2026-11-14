@@ -36,7 +36,7 @@ server started by that run.
 - [Data table catalog](data-table-catalog.md) — treatments, density, native-table references, and interactive playground.
 - [Node-edge graph catalog](node-edge-catalog.md) — node composition, pulse direction, notebook playback, and shared settings.
 - [Kbd catalog](kbd-catalog.md) — keys, chords, sequences, platform notation, and live example markup.
-- [Tabs catalog](tabs-catalog.md) — variants, sizes, orientation, disabled selection, and shared playground controls.
+- [Tabs catalog](tabs-catalog.md) — variants including lifted motion, sizes, orientation, disabled selection, and shared playground controls.
 - [Dropdown menu catalog](menu-catalog.md) — action states, radio selection, popup configuration, and simulated action feedback.
 - [Popover catalog](popover-catalog.md) — anatomy, independent settings examples, placement controls, and focus/dismissal behavior.
 - [Tooltip catalog](tooltip-catalog.md) — independent hints, instant groups, placement/timing controls, and reset.
