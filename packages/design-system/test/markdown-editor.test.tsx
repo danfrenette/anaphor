@@ -117,6 +117,30 @@ test("nested tasks and ordinary lists retain their content on round trip", async
   expect(await serializeWithoutEdit(source)).toBe(source);
 });
 
+test.each([
+  ["alignment and marks", "| Left | Middle | Right |\n| :--- | :---: | ---: |\n| **bold** | *italic* | `code` |", "\n| Left     | Middle   | Right  |\n| :-------- | :--------: | ------: |\n| **bold** | *italic* | `code` |\n"],
+  ["escaped pipe and empty cells", "| A | B |\n| --- | --- |\n| a\\|b |  |", "\n| A    | B   |\n| ---- | --- |\n| a\\|b |     |\n"],
+  ["table first", "| A |\n| --- |\n| B |\n\nAfter", "\n| A   |\n| --- |\n| B   |\n\n\nAfter"],
+  ["table last", "Before\n\n| A |\n| --- |\n| B |", "Before\n\n\n| A   |\n| --- |\n| B   |\n"],
+])("table round-trip: %s", async (_name, source, expected) => {
+  const once = await serializeWithoutEdit(source);
+  const twice = await serializeWithoutEdit(once);
+  const thrice = await serializeWithoutEdit(twice);
+  expect(once).toBe(expected);
+  expect(twice).toBe(once);
+  expect(thrice).toBe(twice);
+});
+
+test("adjacent tables accumulate empty paragraphs on repeated round trips", async () => {
+  const source = "| A |\n| --- |\n| B |\n\n| C |\n| --- |\n| D |";
+  const once = await serializeWithoutEdit(source);
+  const twice = await serializeWithoutEdit(once);
+  const thrice = await serializeWithoutEdit(twice);
+  expect(once).toBe("\n| A   |\n| --- |\n| B   |\n\n\n\n| C   |\n| --- |\n| D   |\n");
+  expect(twice).toBe("\n| A   |\n| --- |\n| B   |\n\n\n\n\n\n| C   |\n| --- |\n| D   |\n");
+  expect(thrice).toBe("\n| A   |\n| --- |\n| B   |\n\n\n\n\n&nbsp;\n\n\n| C   |\n| --- |\n| D   |\n");
+});
+
 test("keeps the supplied Markdown byte for byte without announcing a mount edit", async () => {
   const onChange = vi.fn();
   const ref = createRef<MarkdownEditorHandle>();
