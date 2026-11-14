@@ -2,6 +2,17 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { prepareContentSnapshot } from "./content-snapshot";
 
+test("typing a task item exposes a named checkbox and toggles Markdown", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  await editor.click();
+  await editor.pressSequentially("[ ] Review notes");
+  const checkbox = editor.getByRole("checkbox", { name: /Review notes/i });
+  await expect(checkbox).not.toBeChecked();
+  await checkbox.check();
+  await expect(page.getByLabel("Field states Markdown", { exact: true })).toContainText("[x] Review notes");
+});
+
 async function selectEditorContents(editor: Locator) {
   await editor.evaluate(element => {
     const selection = window.getSelection();
