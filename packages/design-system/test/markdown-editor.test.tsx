@@ -185,6 +185,24 @@ test.each(["A paragraph", "&nbsp;"])("paragraph %s between tables survives round
   expect(await serializeWithoutEdit(once)).toBe(once);
 });
 
+test("authored NBSP paragraph outside tables survives five round trips", async () => {
+  const source = "before\n\n&nbsp;\n\nafter";
+  let markdown = source;
+  for (let i = 0; i < 5; i++) {
+    markdown = await serializeWithoutEdit(markdown);
+    expect(markdown).toBe(source);
+  }
+  expect(await serializeWithoutEdit("before\n\n\u00a0\n\nafter")).toBe(source);
+});
+
+test("typed empty paragraph follows the stock serializer", async () => {
+  const { user, ref } = setupEditor();
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  await user.keyboard("before{Enter}{Enter}after");
+  expect(ref.current?.getMarkdown()).toBe("before\n\n\n\nafter");
+});
+
 test.each([
   ["alignment", "| Left | Center | Right |\n| :--- | :---: | ---: |\n| one | two | three |", "one", "\n| Left | Center | Right |\n| :---- | :------: | -----: |\n| one! | two    | three |\n"],
   ["inline marks", "| A | B |\n| --- | --- |\n| **bold** | *italic* |", "bold", "\n| A         | B        |\n| --------- | -------- |\n| **bold!** | *italic* |\n"],

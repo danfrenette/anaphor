@@ -31,7 +31,8 @@ const PlaceholderText = Extension.create({
 const MarkdownStarterKit = StarterKit.extend({
   addExtensions() {
     return (this.parent?.() ?? []).map(extension => extension.name !== "paragraph" ? extension : extension.extend({
-      // Tiptap 3.33.0 workaround (#8719): an authored non-breaking space is content, not an empty paragraph.
+      // Tiptap 3.33.0 workaround: preserve authored NBSP-only paragraphs anywhere;
+      // stock serialization loses their visible gap on reparse, including #8719's authored separator.
       parseMarkdown(token, helpers) {
         if (token.tokens?.length === 1 && token.tokens[0]?.type === "text" && ["&nbsp;", "\u00a0"].includes(token.tokens[0].raw ?? "")) {
           return helpers.createNode("paragraph", undefined, [{ type: "text", text: "\u00a0" }]);

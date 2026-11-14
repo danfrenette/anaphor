@@ -241,6 +241,42 @@ for (const theme of ["light", "dark"]) test(`comparison labels and Markdown code
 });
 
 for (const theme of ["light", "dark"]) {
+  test(`complex task geometry: ${theme}`, async ({ page }) => {
+    await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
+    await page.goto("/markdown-editor");
+    await page.evaluate(() => document.fonts.ready);
+    const measure = (root: Element) => {
+      const origin = root.getBoundingClientRect();
+      return [...root.querySelectorAll('input[type="checkbox"]')].map(input => {
+        const item = input.closest("li")!;
+        const box = input.getBoundingClientRect();
+        const itemBox = item.getBoundingClientRect();
+        const walker = document.createTreeWalker(item.querySelector(":scope > div > p") ?? item, NodeFilter.SHOW_TEXT);
+        let node: Node | null;
+        while ((node = walker.nextNode())) {
+          const index = node.textContent!.search(/\S/);
+          if (index < 0) continue;
+          const range = document.createRange();
+          range.setStart(node, index);
+          range.setEnd(node, index + 1);
+          const glyph = range.getBoundingClientRect();
+          const nested = item.querySelector("ol, ul, p + p")?.getBoundingClientRect();
+          return { top: itemBox.top - origin.top, height: itemBox.height, boxTop: box.top - origin.top, boxHeight: box.height, textX: glyph.left - origin.left, textTop: glyph.top - origin.top, nestedTop: nested ? nested.top - origin.top : -1, nestedX: nested ? nested.left - origin.left : -1 };
+        }
+        throw new Error("Missing task text");
+      });
+    };
+    const editor = await page.getByRole("textbox", { name: "Complex tasks editor" }).evaluate(measure);
+    const rendered = await page.getByLabel("Complex tasks rendered").evaluate(measure);
+    console.log(JSON.stringify({ theme, width: page.viewportSize()?.width, editor, rendered }));
+    expect(editor).toHaveLength(3);
+    expect(rendered).toHaveLength(3);
+    for (let i = 0; i < 3; i++) {
+      for (const key of ["top", "height", "boxTop", "boxHeight", "textX", "textTop", "nestedTop", "nestedX"] as const) {
+        expect(Math.abs(editor[i]![key] - rendered[i]![key]), `task ${i} ${key}`).toBeLessThanOrEqual(1);
+      }
+    }
+  });
   test(`in-place comparison baseline: ${theme}`, async ({ page }) => {
     await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
     await page.goto("/markdown-editor");
@@ -318,6 +354,17 @@ for (const theme of ["light", "dark"]) {
     const editorOffsets = await editor.evaluate(checkboxOffsets);
     const proseOffsets = await prose.evaluate(checkboxOffsets);
     for (let i = 0; i < editorOffsets.length; i++) expect(Math.abs(editorOffsets[i]! - proseOffsets[i]!)).toBeLessThanOrEqual(1);
+    const checkboxVertical = (root: Element) => [...root.querySelectorAll('input[type="checkbox"]')].map(input => {
+      const rect = input.getBoundingClientRect();
+      return { top: rect.top - root.getBoundingClientRect().top, height: rect.height };
+    });
+    const editorVertical = await editor.evaluate(checkboxVertical);
+    const proseVertical = await prose.evaluate(checkboxVertical);
+    console.log(JSON.stringify({ theme, width: page.viewportSize()?.width, editorVertical, proseVertical }));
+    for (let i = 0; i < editorVertical.length; i++) {
+      expect(Math.abs(editorVertical[i]!.top - proseVertical[i]!.top)).toBeLessThanOrEqual(1);
+      expect(Math.abs(editorVertical[i]!.height - proseVertical[i]!.height)).toBeLessThanOrEqual(1);
+    }
     const taskGlyphs = (root: Element) => [...root.querySelectorAll('input[type="checkbox"]')].map(input => {
       const item = input.closest("li")!;
       const walker = document.createTreeWalker(item.querySelector(":scope > div > p") ?? item, NodeFilter.SHOW_TEXT);

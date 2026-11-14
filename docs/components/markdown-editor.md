@@ -304,6 +304,9 @@ pinned by a test so an upgrade that changes one is noticed:
 - An unclosed multi-line component whose `>` starts a line loses that `>`.
 - Tables acquire serializer padding and extra blank lines. Adjacent tables keep
   a stable separator on repeated round trips (a workaround for Tiptap #8719).
+- Authored NBSP-only paragraphs are preserved anywhere in a document, including
+  between tables; a literal non-breaking space serializes as `&nbsp;`. Typed
+  empty paragraphs retain Tiptap's normal serialization.
 
 ## Registry and boundaries
 
