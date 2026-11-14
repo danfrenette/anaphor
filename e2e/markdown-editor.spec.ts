@@ -304,6 +304,10 @@ for (const theme of ["light", "dark"]) {
     console.log(JSON.stringify({ otherEditor, otherRendered }));
     expect(Math.abs(otherEditor.x - otherRendered.x)).toBeLessThanOrEqual(1);
     expect(Math.abs(otherEditor.top - otherRendered.top)).toBeLessThanOrEqual(1);
+    for (const item of [editor[4]!, rendered[4]!]) {
+      expect(Math.abs(item.boxTop - item.textTop)).toBeLessThanOrEqual(3);
+      expect(item.nestedTop).toBeGreaterThan(item.textTop + item.boxHeight);
+    }
     for (let i = 0; i < 5; i++) {
       for (const key of ["top", "height", "boxTop", "boxHeight", "textX", "textTop", "nestedTop", "nestedX"] as const) {
         expect(Math.abs(editor[i]![key] - rendered[i]![key]), `task ${i} ${key}`).toBeLessThanOrEqual(1);
