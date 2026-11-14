@@ -63,8 +63,8 @@ async function checkAccessibility(page: Page, include?: string) {
   };
   const tags = ["wcag2a", "wcag2aa", "wcag22aa"];
   const general = await scan().withTags(tags).disableRules("scrollable-region-focusable").analyze();
-  // Editable code scrolls as the caret moves; axe cannot detect that keyboard access.
-  // Exclude only editable editor textbox code blocks from this rule, not the other rules.
+  // Editable code and table wrappers scroll with the caret; axe cannot detect that keyboard access.
+  // Exclude only those editable regions from this rule, not the other rules.
   const scrollable = await scan().exclude('[data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) pre, [data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) .tableWrapper').withRules("scrollable-region-focusable").analyze();
   expect([...general.violations, ...scrollable.violations]).toEqual([]);
 }
@@ -213,6 +213,11 @@ for (const theme of ["light", "dark"]) {
     console.log(JSON.stringify({ theme, width: page.viewportSize()?.width, editorDetails, proseDetails }));
     expect(editorDetails).toHaveLength(6);
     expect(proseDetails).toHaveLength(6);
+    const checkboxStyle = (root: Element) => [...root.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')].map(input => {
+      const style = getComputedStyle(input);
+      return { checked: input.checked, background: style.backgroundColor, border: style.borderColor, width: style.width, height: style.height };
+    });
+    expect(await editor.evaluate(checkboxStyle)).toEqual(await prose.evaluate(checkboxStyle));
     for (let i = 0; i < editorDetails.length; i++) {
       expect(Math.abs(editorDetails[i]!.top - proseDetails[i]!.top), `detail ${i} top`).toBeLessThanOrEqual(1);
       expect(Math.abs(editorDetails[i]!.height - proseDetails[i]!.height), `detail ${i} height`).toBeLessThanOrEqual(1);
