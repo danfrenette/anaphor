@@ -289,6 +289,25 @@ for (const theme of ["light", "dark"]) {
     const editorOffsets = await editor.evaluate(checkboxOffsets);
     const proseOffsets = await prose.evaluate(checkboxOffsets);
     for (let i = 0; i < editorOffsets.length; i++) expect(Math.abs(editorOffsets[i]! - proseOffsets[i]!)).toBeLessThanOrEqual(1);
+    const taskGlyphs = (root: Element) => [...root.querySelectorAll('input[type="checkbox"]')].map(input => {
+      const item = input.closest("li")!;
+      const walker = document.createTreeWalker(item.querySelector(":scope > div > p") ?? item, NodeFilter.SHOW_TEXT);
+      let text: Node | null;
+      while ((text = walker.nextNode())) {
+        const index = text.textContent!.search(/\S/);
+        if (index >= 0) {
+          const range = document.createRange();
+          range.setStart(text, index);
+          range.setEnd(text, index + 1);
+          return range.getBoundingClientRect().left - root.getBoundingClientRect().left;
+        }
+      }
+      throw new Error("Missing task text");
+    });
+    const editorGlyphs = await editor.evaluate(taskGlyphs);
+    const proseGlyphs = await prose.evaluate(taskGlyphs);
+    console.log(JSON.stringify({ theme, width: page.viewportSize()?.width, editorGlyphs, proseGlyphs }));
+    for (let i = 0; i < editorGlyphs.length; i++) expect(Math.abs(editorGlyphs[i]! - proseGlyphs[i]!)).toBeLessThanOrEqual(1);
     const remarkDetails = await prose.evaluate(root => {
       const clone = root.cloneNode(true);
       if (!(clone instanceof HTMLElement)) throw new Error("Expected a Prose element");
@@ -301,8 +320,21 @@ for (const theme of ["light", "dark"]) {
       const top = clone.getBoundingClientRect().top;
       const left = clone.getBoundingClientRect().left;
       const result = [...clone.querySelectorAll('input[type="checkbox"]')].map(input => {
-        const rect = input.closest("li")!.getBoundingClientRect();
-        return { top: rect.top - top, height: rect.height, checkboxLeft: input.getBoundingClientRect().left - left };
+        const item = input.closest("li")!;
+        const rect = item.getBoundingClientRect();
+        const walker = document.createTreeWalker(item, NodeFilter.SHOW_TEXT);
+        let text: Node | null;
+        let glyphLeft = NaN;
+        while ((text = walker.nextNode())) {
+          const index = text.textContent!.search(/\S/);
+          if (index < 0) continue;
+          const range = document.createRange();
+          range.setStart(text, index);
+          range.setEnd(text, index + 1);
+          glyphLeft = range.getBoundingClientRect().left - left;
+          break;
+        }
+        return { top: rect.top - top, height: rect.height, checkboxLeft: input.getBoundingClientRect().left - left, glyphLeft };
       });
       clone.remove();
       return result;
@@ -311,6 +343,7 @@ for (const theme of ["light", "dark"]) {
       expect(Math.abs(remarkDetails[i]!.top - proseDetails[i]!.top)).toBeLessThanOrEqual(1);
       expect(Math.abs(remarkDetails[i]!.height - proseDetails[i]!.height)).toBeLessThanOrEqual(1);
       expect(Math.abs(remarkDetails[i]!.checkboxLeft - proseOffsets[i]!)).toBeLessThanOrEqual(1);
+      expect(Math.abs(remarkDetails[i]!.glyphLeft - editorGlyphs[i]!)).toBeLessThanOrEqual(1);
     }
     for (let i = 0; i < editorDetails.length; i++) {
       expect(Math.abs(editorDetails[i]!.top - proseDetails[i]!.top), `detail ${i} top`).toBeLessThanOrEqual(1);

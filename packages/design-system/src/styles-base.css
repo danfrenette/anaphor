@@ -287,11 +287,12 @@
   .anaphor-prose :where(ul[data-type="taskList"], ul.contains-task-list, ul:has(> li > input[type="checkbox"])):not(:where([data-prose-exclude], [data-prose-exclude] *)) { list-style: none; padding-inline-start: 0; }
   .anaphor-prose :where(li > ul.contains-task-list, li > ul:has(> li > input[type="checkbox"])):not(:where([data-prose-exclude], [data-prose-exclude] *)) { padding-inline-start: 1.5em; }
   .anaphor-prose :where(li[data-checked]):not(:where([data-prose-exclude], [data-prose-exclude] *)) { display: flex; gap: 0.5em; align-items: baseline; }
+  .anaphor-prose :where(li:has(> input[type="checkbox"])):not(:where([data-prose-exclude], [data-prose-exclude] *)) { display: flex; flex-wrap: wrap; column-gap: 0.5em; align-items: baseline; }
+  .anaphor-prose :where(li:has(> input[type="checkbox"]) > ul):not(:where([data-prose-exclude], [data-prose-exclude] *)) { flex-basis: 100%; }
   .anaphor-prose :where(li[data-checked] > div):not(:where([data-prose-exclude], [data-prose-exclude] *)) { min-width: 0; }
   .anaphor-prose :where(li[data-checked] > div > p):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: 0; }
   .anaphor-prose :where(li[data-checked] > div > ul):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: calc(var(--spacing-prose) * 0.5) 0; }
   .anaphor-prose :where(li input[type="checkbox"]):not(:where([data-prose-exclude], [data-prose-exclude] *)) { appearance: none; display: inline-grid; place-content: center; width: 1.5em; height: 1.5em; margin: -0.25em; vertical-align: -0.35em; opacity: 1; }
-  .anaphor-prose :where(li > input[type="checkbox"]):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-inline-end: 0.25em; }
   .anaphor-prose :where(li input[type="checkbox"]):not(:where([data-prose-exclude], [data-prose-exclude] *))::before { content: ""; grid-area: 1 / 1; width: 1em; height: 1em; border: 1px solid var(--anaphor-input-border); border-radius: var(--radius-sm); background: var(--anaphor-background); }
   .anaphor-prose :where(li input[type="checkbox"]:checked):not(:where([data-prose-exclude], [data-prose-exclude] *))::before { background: var(--anaphor-brand); border-color: var(--anaphor-brand); }
   .anaphor-prose :where(li input[type="checkbox"]:checked):not(:where([data-prose-exclude], [data-prose-exclude] *))::after { content: ""; grid-area: 1 / 1; place-self: center; width: 0.5em; height: 0.3em; border: solid var(--anaphor-checkbox-mark); border-width: 0 0 2px 2px; transform: translateY(-0.05em) rotate(-45deg); }
