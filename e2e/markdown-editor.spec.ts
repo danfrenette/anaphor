@@ -259,6 +259,24 @@ for (const theme of ["light", "dark"]) {
     };
     const editorDetails = await editor.evaluate(detail);
     const proseDetails = await prose.evaluate(detail);
+    const cellPositions = (root: Element) => [...root.querySelectorAll("th, td")].map(cell => {
+      const walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
+      const text = walker.nextNode();
+      if (!text) throw new Error("Missing cell text");
+      const range = document.createRange();
+      range.selectNodeContents(text);
+      const left = root.getBoundingClientRect().left;
+      const bounds = cell.getBoundingClientRect();
+      return { align: getComputedStyle(cell).textAlign, left: bounds.left - left, right: bounds.right - left, text: range.getBoundingClientRect().left - left };
+    });
+    const editorCells = await editor.evaluate(cellPositions);
+    const proseCells = await prose.evaluate(cellPositions);
+    console.log(JSON.stringify({ theme, width: page.viewportSize()?.width, editorCells, proseCells }));
+    expect(editorCells).toHaveLength(9);
+    for (let i = 0; i < editorCells.length; i++) {
+      expect(proseCells[i]!.align).toBe(editorCells[i]!.align);
+      for (const key of ["left", "right", "text"] as const) expect(Math.abs(editorCells[i]![key] - proseCells[i]![key])).toBeLessThanOrEqual(1);
+    }
     console.log(JSON.stringify({ theme, width: page.viewportSize()?.width, editorDetails, proseDetails }));
     expect(editorDetails).toHaveLength(6);
     expect(proseDetails).toHaveLength(6);
