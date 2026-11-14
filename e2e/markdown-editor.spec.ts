@@ -60,6 +60,35 @@ for (const theme of ["light", "dark"]) test(`disabled task checkbox uses disable
   });
   expect(colors.background).toBe(colors.disabled);
   expect(colors.mark).toBe(colors.muted);
+  await page.getByRole("button", { name: "Disabled", exact: true }).click();
+  await checkbox.uncheck();
+  await page.getByRole("button", { name: "Disabled", exact: true }).click();
+  const unchecked = await checkbox.evaluate(element => ({ background: getComputedStyle(element, "::before").backgroundColor, mark: getComputedStyle(element, "::after").content }));
+  expect(unchecked.background).toBe(colors.disabled);
+  expect(unchecked.mark).toBe("none");
+});
+
+for (const theme of ["light", "dark"]) test(`read-only task marks match rendered status indicators: ${theme}`, async ({ page }) => {
+  await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  await editor.click();
+  await editor.pressSequentially("[x] Review notes");
+  const checkbox = editor.getByRole("checkbox", { name: /Review notes/i });
+  const readOnly = page.getByRole("button", { name: "Read-only", exact: true });
+  const rendered = page.getByLabel("Rendered note");
+  const paint = (element: Element) => {
+    const box = getComputedStyle(element, "::before");
+    const mark = getComputedStyle(element, "::after");
+    return { fill: box.backgroundColor, border: box.borderColor, mark: mark.content, markColor: mark.borderBottomColor };
+  };
+  for (const checked of [true, false]) {
+    if (!checked) await checkbox.uncheck();
+    await readOnly.click();
+    const staticBox = rendered.locator(`input[type="checkbox"]${checked ? ":checked" : ":not(:checked)"}`).first();
+    expect(await checkbox.evaluate(paint)).toEqual(await staticBox.evaluate(paint));
+    await readOnly.click();
+  }
 });
 
 test("table cells edit independently and Tab exits at both boundaries", async ({ page, browserName }) => {
