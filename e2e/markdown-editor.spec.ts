@@ -11,6 +11,10 @@ test("typing a task item exposes a named checkbox and toggles Markdown", async (
   await expect(checkbox).not.toBeChecked();
   await checkbox.check();
   await expect(page.getByLabel("Field states Markdown", { exact: true })).toContainText("[x] Review notes");
+  await checkbox.focus();
+  await page.keyboard.press("Space");
+  await expect(checkbox).not.toBeChecked();
+  await expect(page.getByLabel("Field states Markdown", { exact: true })).toContainText("[ ] Review notes");
 });
 
 test("table cells edit independently and Tab exits at both boundaries", async ({ page, browserName }) => {
@@ -222,6 +226,28 @@ for (const theme of ["light", "dark"]) {
     const editorOffsets = await editor.evaluate(checkboxOffsets);
     const proseOffsets = await prose.evaluate(checkboxOffsets);
     for (let i = 0; i < editorOffsets.length; i++) expect(Math.abs(editorOffsets[i]! - proseOffsets[i]!)).toBeLessThanOrEqual(1);
+    const remarkDetails = await prose.evaluate(root => {
+      const clone = root.cloneNode(true) as HTMLElement;
+      clone.style.cssText = `position: fixed; visibility: hidden; width: ${root.getBoundingClientRect().width}px;`;
+      for (const input of clone.querySelectorAll('input[type="checkbox"]')) {
+        input.closest("li")?.classList.add("task-list-item");
+        input.closest("ul")?.classList.add("contains-task-list");
+      }
+      document.body.append(clone);
+      const top = clone.getBoundingClientRect().top;
+      const left = clone.getBoundingClientRect().left;
+      const result = [...clone.querySelectorAll('input[type="checkbox"]')].map(input => {
+        const rect = input.closest("li")!.getBoundingClientRect();
+        return { top: rect.top - top, height: rect.height, checkboxLeft: input.getBoundingClientRect().left - left };
+      });
+      clone.remove();
+      return result;
+    });
+    for (let i = 0; i < remarkDetails.length; i++) {
+      expect(Math.abs(remarkDetails[i]!.top - proseDetails[i]!.top)).toBeLessThanOrEqual(1);
+      expect(Math.abs(remarkDetails[i]!.height - proseDetails[i]!.height)).toBeLessThanOrEqual(1);
+      expect(Math.abs(remarkDetails[i]!.checkboxLeft - proseOffsets[i]!)).toBeLessThanOrEqual(1);
+    }
     for (let i = 0; i < editorDetails.length; i++) {
       expect(Math.abs(editorDetails[i]!.top - proseDetails[i]!.top), `detail ${i} top`).toBeLessThanOrEqual(1);
       expect(Math.abs(editorDetails[i]!.height - proseDetails[i]!.height), `detail ${i} height`).toBeLessThanOrEqual(1);
