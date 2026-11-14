@@ -139,6 +139,10 @@ test("adjacent tables accumulate empty paragraphs on repeated round trips", asyn
   expect(once).toBe("\n| A   |\n| --- |\n| B   |\n\n\n\n| C   |\n| --- |\n| D   |\n");
   expect(twice).toBe("\n| A   |\n| --- |\n| B   |\n\n\n\n\n\n| C   |\n| --- |\n| D   |\n");
   expect(thrice).toBe("\n| A   |\n| --- |\n| B   |\n\n\n\n\n&nbsp;\n\n\n| C   |\n| --- |\n| D   |\n");
+  const fourth = await serializeWithoutEdit(thrice);
+  const fifth = await serializeWithoutEdit(fourth);
+  expect(fourth).toBe(thrice);
+  expect(fifth).toBe(thrice);
 });
 
 test("keeps the supplied Markdown byte for byte without announcing a mount edit", async () => {

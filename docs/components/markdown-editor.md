@@ -303,7 +303,9 @@ pinned by a test so an upgrade that changes one is noticed:
 - An unclosed multi-line component whose `>` starts a line loses that `>`.
 - Tables acquire serializer padding and extra blank lines. Adjacent tables also
   acquire empty paragraphs on repeated round trips (Tiptap #8719); repeated
-  saves can grow the document, so avoid repeatedly saving adjacent tables.
+  saves can grow the document, so avoid repeatedly saving adjacent tables. The
+  pinned two-table example stabilizes after its third round trip rather than
+  growing indefinitely.
 
 ## Registry and boundaries
 
