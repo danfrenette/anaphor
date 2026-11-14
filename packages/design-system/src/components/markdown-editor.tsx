@@ -28,6 +28,16 @@ const PlaceholderText = Extension.create({
   addStorage: () => ({ placeholder: "" }),
 });
 
+const MarkdownTable = Table.extend({
+  addKeyboardShortcuts() {
+    return {
+      ...this.parent?.(),
+      // The editor spec excludes adding rows: at the last cell, allow native Tab to leave.
+      Tab: () => this.editor.commands.goToNextCell(),
+    };
+  },
+});
+
 function updatePlaceholder(editor: Editor, placeholder: string) {
   editor.storage.placeholderText.placeholder = placeholder;
   editor.view.dispatch(editor.state.tr.setMeta("placeholderRefresh", true));
@@ -425,7 +435,7 @@ function useMarkdownEditor({
       // that opens an ordered item as a code block (workaround 13).
       orderedList: false,
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-    }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, TaskList, TaskItem.configure({ nested: true }), Table, TableRow, TableHeader, TableCell, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
+    }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, TaskList, TaskItem.configure({ nested: true }), MarkdownTable, TableRow, TableHeader, TableCell, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
     content: body,
     contentType: "markdown",
     editorProps: { attributes: {

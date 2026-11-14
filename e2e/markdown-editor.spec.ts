@@ -13,6 +13,38 @@ test("typing a task item exposes a named checkbox and toggles Markdown", async (
   await expect(page.getByLabel("Field states Markdown", { exact: true })).toContainText("[x] Review notes");
 });
 
+test("table cells edit independently and Tab exits at both boundaries", async ({ page, browserName }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Table note" });
+  const output = page.getByLabel("Table Markdown");
+  const cells = editor.locator("th, td");
+  await expect(cells).toHaveCount(4);
+  await cells.nth(2).click();
+  await page.keyboard.press("End");
+  await page.keyboard.type("!");
+  await expect(output).toContainText("Alpha!");
+  await expect(output).toHaveText(/\| Name\s+\| Value\s+\|\n\| :[-]+ \| [-]+: \|\n\| Alpha!\s+\| Beta\s+\|/);
+  await expect(cells.nth(0)).toHaveText("Name");
+  await expect(cells.nth(1)).toHaveText("Value");
+  await expect(cells.nth(3)).toHaveText("Beta");
+  await page.keyboard.press("Tab");
+  expect(await page.evaluate(() => window.getSelection()?.anchorNode?.parentElement?.closest("td")?.textContent)).toBe("Beta");
+  await page.keyboard.press("Shift+Tab");
+  expect(await page.evaluate(() => window.getSelection()?.anchorNode?.parentElement?.closest("td")?.textContent)).toBe("Alpha!");
+  await page.keyboard.press("Tab");
+  await page.keyboard.press(browserName === "webkit" && process.platform === "darwin" ? "Alt+Tab" : "Tab");
+  await expect(editor.locator("tr")).toHaveCount(2);
+  await expect(page.getByRole("button", { name: "After table" })).toBeFocused();
+  await cells.last().click();
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Shift+Tab");
+  expect(await page.evaluate(() => window.getSelection()?.anchorNode?.parentElement?.closest("th")?.textContent)).toBe("Name");
+  await page.keyboard.press(browserName === "webkit" && process.platform === "darwin" ? "Alt+Shift+Tab" : "Shift+Tab");
+  await expect(editor.locator("tr")).toHaveCount(2);
+  await expect(page.getByRole("button", { name: "Before table" })).toBeFocused();
+});
+
 async function selectEditorContents(editor: Locator) {
   await editor.evaluate(element => {
     const selection = window.getSelection();

@@ -66,6 +66,7 @@ export function MarkdownEditorExample() {
   const [markdown, setMarkdown] = useState(startingMarkdown);
   const [existingPost, setExistingPost] = useState(existingPostMarkdown);
   const [inPlaceNote, setInPlaceNote] = useState(otherNote);
+  const [tableNote, setTableNote] = useState("| Name | Value |\n| :--- | ---: |\n| Alpha | Beta |");
   return <>
     <section aria-label="Field presentation" className="mt-8">
       <Text as="h2" variant="heading">Field presentation</Text>
@@ -94,6 +95,13 @@ export function MarkdownEditorExample() {
       <div role="group" aria-label="Space below the editor" className="h-8" />
       <div role="group" aria-label="In-place opaque Markdown" className="mt-3 whitespace-pre-wrap">{inPlaceNote}</div>
       <div className="mt-6"><MarkdownEditor presentation="in-place" defaultValue="Read-only in-place example" readOnly aria-label="Read-only in-place note" /></div>
+    </section>
+    <section aria-label="Table editing" className="mt-12">
+      <Text as="h2" variant="heading">Table editing</Text>
+      <button type="button">Before table</button>
+      <MarkdownEditor presentation="field" defaultValue={"| Name | Value |\n| :--- | ---: |\n| Alpha | Beta |"} onChange={setTableNote} aria-label="Table note" />
+      <button type="button">After table</button>
+      <div role="group" aria-label="Table Markdown" className="whitespace-pre-wrap">{tableNote}</div>
     </section>
   </>;
 }
