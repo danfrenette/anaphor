@@ -29,12 +29,38 @@ async function setupPasteEditor(value = "", options: { readOnly?: boolean; disab
 const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "paste");
 
 test.each([
+  ["anaphor-manual", "# Typography\n\nReading, navigation, and literal values share a small kit. Document structure chooses the heading level; purpose chooses its appearance."],
   ["google-docs", "Quarterly **report**\n\nPlain text and *emphasis*."],
   ["blog", "## Field notes\n\nRead [the report](https://example.com) and **remember**.\n\n> Take care.\n\n- First\n- Second"],
 ])("pasting %s HTML keeps semantic formatting", async (name, expected) => {
   const api = await setupPasteEditor();
   act(() => { api.editor!.view.pasteHTML(readFileSync(join(fixtureDir, `${name}.html`), "utf8")); });
   expect(api.getMarkdown()).toBe(expected);
+});
+
+test("unsupported form controls paste as unformatted text", async () => {
+  const api = await setupPasteEditor();
+  act(() => { api.editor!.view.pasteHTML("<form><strong>Label</strong><button><em>Submit</em></button></form>"); });
+  expect(api.getMarkdown()).toBe("LabelSubmit");
+});
+
+test("pasted table cells keep all their text", async () => {
+  const api = await setupPasteEditor();
+  act(() => { api.editor!.view.pasteHTML("<table><tr><th>Head</th></tr><tr><td><p>First</p><p>Second</p></td></tr></table>"); });
+  expect(api.getMarkdown()).toBe("\n| Head            |\n| --------------- |\n| First<br>Second |\n");
+});
+
+test("pasted task lists retain checkbox states", async () => {
+  const api = await setupPasteEditor();
+  act(() => { api.editor!.view.pasteHTML('<ul data-type="taskList"><li data-type="taskItem" data-checked="true"><label><input type="checkbox" checked></label><div><p>Done</p></div></li><li data-type="taskItem" data-checked="false"><label><input type="checkbox"></label><div><p>Next</p></div></li></ul>'); });
+  expect(api.getMarkdown()).toBe("- [x] Done\n- [ ] Next");
+});
+
+test("pasted HTML cannot create opaque nodes", async () => {
+  const api = await setupPasteEditor();
+  act(() => { api.editor!.view.pasteHTML('<div data-opaque-block=""><strong>Visible</strong></div>'); });
+  expect(api.getMarkdown()).toBe("**Visible**");
+  expect(api.editor!.view.dom.querySelector("[data-opaque-block]")).toBeNull();
 });
 
 test("Markdown syntax pasted inside code stays literal", async () => {

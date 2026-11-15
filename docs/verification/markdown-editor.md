@@ -157,6 +157,17 @@ code remains separately keyboard-focusable.
     inside its box, the page does not overflow, and the rendered scroll region
     can receive keyboard focus. Compare checked, unchecked and nested tasks and
     table rows in both themes against rendered Markdown.
+14. In an empty Notes editor, paste styled web content containing a heading,
+    link, and bold text. Confirm the structure and marks remain, the page's
+    colours and fonts do not, and one undo removes the whole paste. The
+    Chromium clipboard smoke test exercises HTML from the actual clipboard;
+    WebKit is skipped there because Playwright cannot grant clipboard access.
+15. Paste Markdown including a heading, list, and a link; confirm formatting and
+    emitted Markdown. Paste ordinary text, a four-space-indented line, and a
+    bare URL. Confirm the first two remain text and the URL becomes a link.
+    Paste a URL over selected text and confirm it links the selection. Paste
+    Markdown syntax into a code block and confirm it remains literal. Repeat
+    a paste with read-only and disabled toggled and confirm no edit occurs.
 
 Keep Playwright output and screenshots under `test-results/` with the run
 receipt. Stop only a server started for the verification run.
@@ -166,5 +177,5 @@ receipt. Stop only a server started for the verification run.
 The callback and pre-edit byte guarantee are component-test criteria. The hook
 is exercised through the component rather than through internal editor calls.
 Tests assert visible results and Markdown output, never Tiptap document JSON,
-extension arrays, or private methods. Images, paste, and the
-bubble are outside this recipe.
+extension arrays, or private methods. Images and the bubble are outside this
+recipe.

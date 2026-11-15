@@ -66,6 +66,29 @@ The remaining optional props compose for use inside Anaphor's field:
 Both state props take effect after mount without remounting, and toggling them
 never fires `onChange`.
 
+## Paste
+
+Pasting web content retains supported headings, paragraphs, lists, task lists,
+tables, links, emphasis, code, quotations, and rules. Page fonts, colours,
+sizes, classes, and inline styles are discarded. Unsupported controls are
+reduced to their text. Images in pasted HTML are dropped; image support is
+planned separately.
+
+Plain text is parsed as Markdown when the Markdown lexer finds a supported
+heading, list, quote, fenced code block, table, rule, emphasis, inline code, or
+explicit link. A bare URL is handled as a link rather than as Markdown. Text
+without those constructs uses the normal plain-text paste, including its line
+break handling. Four-space indentation alone is not a code fence; underscores
+within words, arithmetic asterisks, a hash without a following space, and a
+single numbered sentence beginning with four or more digits are treated as
+ordinary text. Paste inside a code block is always literal.
+
+Pasted raw HTML, footnotes, and front matter are text, not preserved opaque
+nodes. A URL pasted over a selection links the selected text; without a
+selection it links the URL itself. Unsafe protocols such as `javascript:` and
+`data:` do not create links. One undo removes a paste, and read-only and
+disabled editors do not accept it.
+
 ## Task lists and tables
 
 Type `[ ] ` or `[x] ` to start a task item. Its named checkbox can be toggled

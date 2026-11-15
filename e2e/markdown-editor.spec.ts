@@ -2,6 +2,26 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { prepareContentSnapshot } from "./content-snapshot";
 
+test("Chromium pastes real clipboard HTML and undoes it in one step", async ({ page, browserName, context }) => {
+  test.skip(browserName !== "chromium", "WebKit cannot grant clipboard permissions in Playwright.");
+  await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: "http://127.0.0.1:3105" });
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  const output = page.getByLabel("Field states Markdown", { exact: true });
+  await page.evaluate(async () => {
+    await navigator.clipboard.write([new ClipboardItem({
+      "text/html": new Blob(['<h2 style="font-weight:900">Clipboard heading</h2><p>Text with <strong>bold</strong>.</p>'], { type: "text/html" }),
+      "text/plain": new Blob(["Clipboard heading\nText with bold."], { type: "text/plain" }),
+    })]);
+  });
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+V");
+  await expect(editor.getByRole("heading", { name: "Clipboard heading" })).toBeVisible();
+  await expect(output).toHaveText("## Clipboard heading\n\nText with **bold**.");
+  await page.keyboard.press("ControlOrMeta+Z");
+  await expect(output).toHaveText("");
+});
+
 test("typing a task item exposes a named checkbox and toggles Markdown", async ({ page }) => {
   await page.goto("/markdown-editor");
   const editor = page.getByRole("textbox", { name: "Notes" });

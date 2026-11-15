@@ -36,7 +36,7 @@ function cleanPastedHtml(html: string): string {
       element.remove();
       continue;
     }
-    if (element.matches("button, input:not([type=checkbox]), textarea, select, iframe, script, style")) {
+    if (element.matches("form, button, input:not([type=checkbox]), textarea, select, iframe, script, style")) {
       element.replaceWith(document.createTextNode(element.textContent ?? ""));
       continue;
     }
