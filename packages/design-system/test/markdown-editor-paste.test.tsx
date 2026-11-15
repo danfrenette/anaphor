@@ -173,6 +173,17 @@ test("four-digit ordinary sentences stay paragraphs", async () => {
   expect(api.dom.querySelector("ol")).toBeNull();
 });
 
+test("four-digit sentences retain inline links without becoming lists", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.dom.focus();
+  await user.paste("2026. [a link](https://example.com)");
+  expect(api.getMarkdown()).toBe("2026. [a link](https://example.com)");
+  expect(api.dom.textContent).toBe("2026. a link");
+  expect(api.dom.querySelector("a")).toHaveAttribute("href", "https://example.com");
+  expect(api.dom.querySelector("ol")).toBeNull();
+});
+
 test("pasted Markdown preserves unsupported syntax as literal text", async () => {
   const user = userEvent.setup();
   const api = await setupPasteEditor();

@@ -97,13 +97,11 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
     return editor.chain().command(({ tr }) => { tr.setMeta("uiEvent", "paste"); return true; }).setLink({ href: text }).run();
   }
   if (event.clipboardData?.getData("text/html")) return false;
-  if (/^\d{4,}[.)] [^\n]+$/.test(text)) {
-    view.dispatch(view.state.tr.insertText(text).setMeta("uiEvent", "paste").scrollIntoView());
-    return true;
-  }
-  const { frontMatter, body } = splitFrontMatter(text);
+  // Spec requirement (AC-3): a four-digit sentence is not an ordered list.
+  const source = text.replace(/^( {0,3}\d{4,})([.)])(?=\s)/, "$1\\$2");
+  const { frontMatter, body } = splitFrontMatter(source);
   const document = editor.markdown.parse(body);
-  if (!containsMarkdown(document, body)) return false;
+  if (source === text && !containsMarkdown(document, body)) return false;
   const parsed = literalPasteNodes(document);
   const prefix = frontMatter ? [literalPasteNodes({ type: "opaqueBlock", attrs: { source: frontMatter.replace(/\r?\n$/, "") } })] : [];
   const nodes = [...prefix, ...(parsed.content ?? [])];
