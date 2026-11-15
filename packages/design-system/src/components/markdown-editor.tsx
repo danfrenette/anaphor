@@ -1,7 +1,7 @@
 "use client";
 
 import CodeBlock from "@tiptap/extension-code-block";
-import Link from "@tiptap/extension-link";
+import Link, { isAllowedUri } from "@tiptap/extension-link";
 import { getListMarker, ListItem, OrderedList, TaskItem, TaskList } from "@tiptap/extension-list";
 import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import { Extension, Node } from "@tiptap/core";
@@ -76,7 +76,13 @@ function literalPasteNodes(node: JSONContent): JSONContent {
       ...(line ? [{ type: "text", text: line }] : []),
     ]) };
   }
-  return { ...node, ...(node.content ? { content: node.content.map(literalPasteNodes) } : {}) };
+  const unsafeLink = node.marks?.find(mark => mark.type === "link" && !isAllowedUri(mark.attrs?.href));
+  return {
+    ...node,
+    ...(unsafeLink && node.text ? { text: `[${node.text}](${unsafeLink.attrs?.href ?? ""})` } : {}),
+    ...(node.marks ? { marks: node.marks.filter(mark => mark !== unsafeLink) } : {}),
+    ...(node.content ? { content: node.content.map(literalPasteNodes) } : {}),
+  };
 }
 
 const MarkdownStarterKit = StarterKit.extend({
@@ -520,6 +526,9 @@ function useMarkdownEditor({
     editorProps: { transformPastedHTML: cleanPastedHtml, handlePaste: (view, event) => {
       const text = event.clipboardData?.getData("text/plain");
       if (!text || event.clipboardData?.getData("text/html") || view.state.selection.$from.parent.type.spec.code || !editor?.markdown) return false;
+      if (!view.state.selection.empty && /^[a-z][a-z\d+.-]*:/i.test(text) && URL.canParse(text) && isAllowedUri(text)) {
+        return editor.commands.setLink({ href: text });
+      }
       if (/^\d{4,}[.)] [^\n]+$/.test(text)) {
         view.dispatch(view.state.tr.insertText(text).scrollIntoView());
         return true;

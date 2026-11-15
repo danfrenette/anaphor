@@ -93,6 +93,41 @@ test("pasted inline HTML and footnotes stay literal beside Markdown", async () =
   expect(api.editor!.view.dom.querySelector("[data-opaque-block], [data-opaque-inline]")).toBeNull();
 });
 
+test("pasting a URL over selected text links the selection", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor("selected");
+  act(() => { api.editor!.commands.selectAll(); });
+  api.editor!.view.dom.focus();
+  await user.paste("https://example.com");
+  expect(api.getMarkdown()).toBe("[selected](https://example.com)");
+  expect(api.editor!.view.dom.querySelector("a")).toHaveAttribute("href", "https://example.com");
+});
+
+test.each(["javascript:alert(1)", "data:text/html,evil"])("unsafe Markdown URL stays text: %s", async url => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.editor!.view.dom.focus();
+  await user.paste(`[label](${url})`);
+  expect(api.getMarkdown()).toBe(`\\[label\\](${url})`);
+  expect(api.editor!.view.dom.querySelector("a")).toBeNull();
+});
+
+test.each(["javascript:alert(1)", "data:text/html,evil"])("unsafe URLs are never pasted as HTML links: %s", async url => {
+  const api = await setupPasteEditor();
+  act(() => { api.editor!.view.pasteHTML(`<p><a href="${url}">Unsafe</a></p>`); });
+  expect(api.getMarkdown()).toBe("Unsafe");
+  expect(api.editor!.view.dom.querySelector("a")).toBeNull();
+});
+
+test.each(["https://example.com", "mailto:reader@example.com"])("a pasted URL links itself: %s", async url => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.editor!.view.dom.focus();
+  await user.paste(url);
+  expect(api.getMarkdown()).toBe(`[${url}](${url})`);
+  expect(api.editor!.view.dom.querySelector("a")).toHaveAttribute("href", url);
+});
+
 test("pasting web styling and unsupported controls does not import formatting", async () => {
   const api = await setupPasteEditor();
   act(() => { api.editor!.view.pasteHTML('<h2 style="font-weight:900">Heading</h2><p><span style="font-weight:700;color:red">Plain</span> and <strong>bold</strong></p><button><em>Button</em></button>'); });
