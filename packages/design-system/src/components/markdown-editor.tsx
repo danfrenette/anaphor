@@ -172,6 +172,7 @@ const MarkdownLink = Link.extend({
     const destination = linkDestinationNeedsAngleBrackets(href) ? `<${href}>` : href;
     return title ? `[${text}](${destination} "${title}")` : `[${text}](${destination})`;
   },
+// Spec requirement (AC-4): paste linking is handled by the safety-checked adapter.
 }).configure({ openOnClick: false, autolink: false, linkOnPaste: false });
 
 /** Width of a prefix in Markdown columns, where a tab runs to the next 4-column stop. */
