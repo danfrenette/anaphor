@@ -12,13 +12,6 @@ beforeEach(() => {
 });
 
 test.each([
-  ["heading", "# Heading", "# Heading"],
-  ["list", "- One\n- Two", "- One\n\n- Two"],
-  ["quote", "> Quote", "&gt; Quote"],
-  ["fence", "```\ncode\n```", "\\`\\`\\`\n\ncode\n\n\\`\\`\\`"],
-  ["emphasis", "**bold** and *italic*", "**bold** and *italic*"],
-  ["link", "[label](https://example.com)", "\\[label\\]([https://example.com](https://example.com))"],
-  ["table", "| A | B |\n| --- | --- |\n| C | D |", "| A | B |\n\n| --- | --- |\n\n| C | D |"],
   ["snake case", "snake_case_names", "snake\\_case\\_names"],
   ["arithmetic", "2 * 3 = 6", "2 \\* 3 = 6"],
   ["indented text", "    indented", "    indented"],

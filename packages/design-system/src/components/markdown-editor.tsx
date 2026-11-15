@@ -53,6 +53,19 @@ function cleanPastedHtml(html: string): string {
   return document.body.innerHTML;
 }
 
+// Spec requirement: only recognizable Markdown syntax changes plain-text paste.
+function containsMarkdown(tokens: unknown[]): boolean {
+  return tokens.some(value => {
+    if (!value || typeof value !== "object") return false;
+    const token = value as { type?: string; raw?: string; tokens?: unknown[]; items?: unknown[] };
+    if (token.type === "code") return /^ {0,3}(?:`{3,}|~{3,})/.test(token.raw ?? "");
+    if (token.type === "list" && /^ {0,3}\d{4,}[.)]\s/.test(token.raw ?? "")) return false;
+    if (token.type === "link" && !/^!?\[/.test(token.raw ?? "")) return false;
+    if (["heading", "list", "blockquote", "table", "hr", "strong", "em", "del", "codespan", "link"].includes(token.type ?? "")) return true;
+    return containsMarkdown([...(token.tokens ?? []), ...(token.items ?? [])]);
+  });
+}
+
 const MarkdownStarterKit = StarterKit.extend({
   addExtensions() {
     return (this.parent?.() ?? []).map(extension => extension.name !== "paragraph" ? extension : extension.extend({
@@ -487,7 +500,16 @@ function useMarkdownEditor({
     }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, TaskList, TaskItem.configure({ nested: true }), MarkdownTable, TableRow, TableHeader, TableCell, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
     content: body,
     contentType: "markdown",
-    editorProps: { transformPastedHTML: cleanPastedHtml, attributes: {
+    editorProps: { transformPastedHTML: cleanPastedHtml, handlePaste: (view, event) => {
+      const text = event.clipboardData?.getData("text/plain");
+      if (!text || event.clipboardData?.getData("text/html") || view.state.selection.$from.parent.type.spec.code || !editor?.markdown) return false;
+      if (/^\d{4,}[.)] [^\n]+$/.test(text)) {
+        view.dispatch(view.state.tr.insertText(text).scrollIntoView());
+        return true;
+      }
+      if (!containsMarkdown(editor.markdown.instance.lexer(text))) return false;
+      return editor.commands.insertContent(text, { contentType: "markdown" });
+    }, attributes: {
       class: "anaphor-prose outline-none",
       role: "textbox",
       "aria-multiline": "true",

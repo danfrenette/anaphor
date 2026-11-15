@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { act, render, waitFor } from "@testing-library/react";
 import { EditorContent } from "@tiptap/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, test, vi } from "vitest";
 import { useMarkdownEditor, type UseMarkdownEditorResult } from "@anaphor/system";
 
@@ -36,8 +37,51 @@ test.each([
   expect(api.getMarkdown()).toBe(expected);
 });
 
+test("Markdown syntax pasted inside code stays literal", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor("```\ncode\n```");
+  act(() => { api.editor!.commands.setTextSelection(5); });
+  api.editor!.view.dom.focus();
+  await user.paste("# literal\n**bold**");
+  expect(api.getMarkdown()).toBe("```\ncode# literal\n**bold**\n```");
+});
+
+test("pasted Markdown tables become tables", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.editor!.view.dom.focus();
+  await user.paste("| A | B |\n| --- | --- |\n| C | D |");
+  expect(api.getMarkdown()).toBe("\n| A   | B   |\n| --- | --- |\n| C   | D   |\n");
+  expect(api.editor!.view.dom.querySelector("table")).not.toBeNull();
+});
+
+test.each(["snake_case_names", "2 * 3 = 6", "    indented", "#heading", "2026. A year."])("ordinary text stays a paragraph: %s", async text => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.editor!.view.dom.focus();
+  await user.paste(text);
+  expect(api.editor!.view.dom.textContent).toBe(text);
+  expect(api.editor!.view.dom.querySelector("pre,ol,ul,h1,h2,strong,em")).toBeNull();
+});
+
 test("pasting web styling and unsupported controls does not import formatting", async () => {
   const api = await setupPasteEditor();
   act(() => { api.editor!.view.pasteHTML('<h2 style="font-weight:900">Heading</h2><p><span style="font-weight:700;color:red">Plain</span> and <strong>bold</strong></p><button><em>Button</em></button>'); });
   expect(api.getMarkdown()).toBe("## Heading\n\nPlain and **bold**\n\nButton");
+});
+
+test.each([
+  ["heading", "# Heading", "# Heading", "h1"],
+  ["list", "- One\n- Two", "- One\n- Two", "ul"],
+  ["quote", "> Quote", "> Quote", "blockquote"],
+  ["fence", "```\ncode\n```", "```\ncode\n```", "pre"],
+  ["emphasis", "**bold**", "**bold**", "strong"],
+  ["link", "[label](https://example.com)", "[label](https://example.com)", "a"],
+])("plain-text paste formats Markdown %s", async (_name, text, expected, format) => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.editor!.view.dom.focus();
+  await user.paste(text);
+  expect(api.getMarkdown()).toBe(expected);
+  expect(api.editor!.view.dom.querySelector(format)).not.toBeNull();
 });
