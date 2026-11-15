@@ -13,7 +13,9 @@ Run:
 
 ```sh
 pnpm exec vitest run packages/design-system/test/markdown-editor.test.tsx
-pnpm typecheck
+pnpm exec vitest run packages/design-system/test/markdown-editor-paste*.test.tsx
+npx tsc --noEmit -p tsconfig.json --typeRoots ./node_modules/@types
+pnpm --recursive typecheck
 pnpm test:browser e2e/markdown-editor.spec.ts e2e/manual-index-review.spec.ts e2e/sections.spec.ts e2e/manual.spec.ts
 pnpm test:registry
 pnpm build
