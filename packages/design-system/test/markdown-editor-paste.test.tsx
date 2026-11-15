@@ -475,3 +475,37 @@ test("a paragraph whose ordinal is bold survives reparse", async () => {
   expect(api.dom.querySelector("ol")).toBeNull();
   expect(await marked.parse(saved)).toContain("<strong>3. text</strong>");
 });
+
+test("setMarkdown keeps an escaped ordinal paragraph unchanged", async () => {
+  const api = await setupPasteEditor();
+  const source = "2026\\. A year.";
+  act(() => { api.setMarkdown(source); });
+  expect(api.getMarkdown()).toBe(source);
+  expect(api.dom.textContent).toBe("2026. A year.");
+  expect(api.dom.querySelector("ol")).toBeNull();
+  act(() => { api.setMarkdown(api.getMarkdown()); });
+  expect(api.dom.textContent).toBe("2026. A year.");
+  expect(api.dom.querySelector("ol")).toBeNull();
+});
+
+test.each([
+  ["formatted paragraph", "2026\\. **Important**", "2026. Important", "strong"],
+  ["blockquote", "> 3\\. quoted", "3. quoted", "blockquote"],
+  ["list item", "- 3\\. item", "3. item", "ul"],
+  ["ordered list", "1. a\n2. b", "ab", "ol"],
+])("setMarkdown preserves %s after an unrelated edit and reparse", async (_name, body, visible, element) => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  act(() => { api.setMarkdown(`before\n\n${body}`); });
+  expect(api.getMarkdown()).toBe(`before\n\n${body}`);
+  await selectText(api.dom, 6);
+  await user.keyboard("!");
+  const saved = api.getMarkdown();
+  expect(saved).toBe(`before!\n\n${body}`);
+  expect(api.dom.textContent).toBe(`before!${visible}`);
+  act(() => { api.setMarkdown(saved); });
+  expect(api.getMarkdown()).toBe(saved);
+  expect(api.dom.textContent).toBe(`before!${visible}`);
+  expect(api.dom.querySelector(element)).not.toBeNull();
+  expect(api.dom.querySelectorAll("ol")).toHaveLength(element === "ol" ? 1 : 0);
+});
