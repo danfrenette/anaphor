@@ -156,6 +156,17 @@ test("pasting a URL over selected text links the selection", async () => {
   expect(api.editor!.view.dom.querySelector("a")).toHaveAttribute("href", "https://example.com");
 });
 
+test("pasting a rich clipboard URL links selected text", async () => {
+  const api = await setupPasteEditor("selected");
+  act(() => { api.editor!.commands.selectAll(); });
+  api.editor!.view.dom.focus();
+  const event = new Event("paste", { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "clipboardData", { value: { getData: (type: string) => type === "text/plain" ? "https://example.com" : type === "text/html" ? '<a href="https://example.com">example</a>' : "", files: [], types: ["text/plain", "text/html"] } });
+  act(() => { api.editor!.view.dom.dispatchEvent(event); });
+  expect(api.getMarkdown()).toBe("[selected](https://example.com)");
+  expect(api.editor!.view.dom.textContent).toBe("selected");
+});
+
 test.each(["javascript:alert(1)", "data:text/html,evil"])("unsafe Markdown URL stays text: %s", async url => {
   const user = userEvent.setup();
   const api = await setupPasteEditor();

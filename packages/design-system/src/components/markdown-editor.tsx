@@ -579,10 +579,11 @@ function useMarkdownEditor({
     contentType: "markdown",
     editorProps: { transformPastedHTML: cleanPastedHtml, handlePaste: (view, event): boolean => {
       const text = event.clipboardData?.getData("text/plain");
-      if (!text || event.clipboardData?.getData("text/html") || view.state.selection.$from.parent.type.spec.code || !editor?.markdown) return false;
+      if (!text || view.state.selection.$from.parent.type.spec.code || !editor?.markdown) return false;
       if (!view.state.selection.empty && /^[a-z][a-z\d+.-]*:/i.test(text) && URL.canParse(text) && isSafePasteUri(text)) {
         return editor.chain().command(({ tr }) => { tr.setMeta("uiEvent", "paste"); return true; }).setLink({ href: text }).run();
       }
+      if (event.clipboardData?.getData("text/html")) return false;
       if (/^\d{4,}[.)] [^\n]+$/.test(text)) {
         view.dispatch(view.state.tr.insertText(text).setMeta("uiEvent", "paste").scrollIntoView());
         return true;
