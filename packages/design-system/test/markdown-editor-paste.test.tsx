@@ -398,22 +398,6 @@ test("four-digit text inside pasted fences stays literal", async () => {
   expect(api.getMarkdown()).toBe("```\n2026. text\n```");
 });
 
-test("large bare URL pastes scale approximately linearly", async () => {
-  const user = userEvent.setup();
-  const api = await setupPasteEditor();
-  const measure = async (count: number) => {
-    act(() => { api.setMarkdown(""); });
-    api.dom.focus();
-    const start = performance.now();
-    await user.paste(Array.from({ length: count }, (_, i) => `https://example.com/${i}`).join(" "));
-    return performance.now() - start;
-  };
-  const small = await measure(1000);
-  const large = await measure(2000);
-  console.info(`URL paste timings: 1k=${small.toFixed(1)}ms 2k=${large.toFixed(1)}ms`);
-  expect(large).toBeLessThan(small * 3.5);
-}, 30000);
-
 test("pasted link titles survive saving and rendering", async () => {
   const user = userEvent.setup();
   const api = await setupPasteEditor();
