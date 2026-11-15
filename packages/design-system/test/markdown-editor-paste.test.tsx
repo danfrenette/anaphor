@@ -64,6 +64,35 @@ test.each(["snake_case_names", "2 * 3 = 6", "    indented", "#heading", "2026. A
   expect(api.editor!.view.dom.querySelector("pre,ol,ul,h1,h2,strong,em")).toBeNull();
 });
 
+test("pasted Markdown preserves unsupported syntax as literal text", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.editor!.view.dom.focus();
+  await user.paste("# Heading\n\n<Widget>hello</Widget>\n\n[^n]: note");
+  expect(api.getMarkdown()).toBe("# Heading\n\n&lt;Widget&gt;hello&lt;/Widget&gt;\n\n\\[^n\\]: note");
+  expect(api.editor!.view.dom.textContent).toBe("Heading<Widget>hello</Widget>[^n]: note");
+  expect(api.editor!.view.dom.querySelector("[data-opaque-block], [data-opaque-inline]")).toBeNull();
+});
+
+test("pasted front matter remains visible literal text", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.editor!.view.dom.focus();
+  await user.paste("---\ntitle: Draft\n---\n\n# Heading");
+  expect(api.editor!.view.dom.textContent).toBe("---title: Draft---Heading");
+  expect(api.editor!.view.dom.querySelector("[data-opaque-block], [data-opaque-inline]")).toBeNull();
+  expect(api.getMarkdown()).toBe("\\---  \ntitle: Draft  \n\\---\n\n# Heading");
+});
+
+test("pasted inline HTML and footnotes stay literal beside Markdown", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.editor!.view.dom.focus();
+  await user.paste("**Bold** <b>text</b> [^note]");
+  expect(api.getMarkdown()).toBe("**Bold** &lt;b&gt;text&lt;/b&gt; \\[^note\\]");
+  expect(api.editor!.view.dom.querySelector("[data-opaque-block], [data-opaque-inline]")).toBeNull();
+});
+
 test("pasting web styling and unsupported controls does not import formatting", async () => {
   const api = await setupPasteEditor();
   act(() => { api.editor!.view.pasteHTML('<h2 style="font-weight:900">Heading</h2><p><span style="font-weight:700;color:red">Plain</span> and <strong>bold</strong></p><button><em>Button</em></button>'); });

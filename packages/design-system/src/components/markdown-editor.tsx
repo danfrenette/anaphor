@@ -5,7 +5,7 @@ import Link from "@tiptap/extension-link";
 import { getListMarker, ListItem, OrderedList, TaskItem, TaskList } from "@tiptap/extension-list";
 import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import { Extension, Node } from "@tiptap/core";
-import type { MarkdownRendererHelpers, MarkdownToken, RenderContext } from "@tiptap/core";
+import type { JSONContent, MarkdownRendererHelpers, MarkdownToken, RenderContext } from "@tiptap/core";
 import { Placeholder } from "@tiptap/extensions/placeholder";
 import { Markdown } from "@tiptap/markdown";
 import { EditorState, Plugin, Selection } from "@tiptap/pm/state";
@@ -66,9 +66,25 @@ function containsMarkdown(tokens: unknown[]): boolean {
   });
 }
 
+// Spec requirement: opaque preservation is only for loaded documents, not paste.
+function literalPasteNodes(node: JSONContent): JSONContent {
+  if (node.type === "opaqueInline") return { type: "text", text: node.attrs?.source ?? "" };
+  if (node.type === "opaqueBlock") {
+    const lines = String(node.attrs?.source ?? "").split("\n");
+    return { type: "paragraph", attrs: { pasteLiteral: true }, content: lines.flatMap((line, index) => [
+      ...(index ? [{ type: "hardBreak" }] : []),
+      ...(line ? [{ type: "text", text: line }] : []),
+    ]) };
+  }
+  return { ...node, ...(node.content ? { content: node.content.map(literalPasteNodes) } : {}) };
+}
+
 const MarkdownStarterKit = StarterKit.extend({
   addExtensions() {
     return (this.parent?.() ?? []).map(extension => extension.name !== "paragraph" ? extension : extension.extend({
+      addAttributes() {
+        return { ...this.parent?.(), pasteLiteral: { default: false, parseHTML: () => false, renderHTML: () => ({}) } };
+      },
       // Tiptap 3.33.0 workaround: preserve authored NBSP-only paragraphs anywhere;
       // stock serialization loses their visible gap on reparse, including #8719's authored separator.
       parseMarkdown(token, helpers) {
@@ -79,7 +95,8 @@ const MarkdownStarterKit = StarterKit.extend({
       },
       renderMarkdown(node, helpers, context) {
         if (node.content?.length === 1 && node.content[0]?.type === "text" && node.content[0].text === "\u00a0") return "&nbsp;";
-        return this.parent?.(node, helpers, context) ?? "";
+        const markdown = this.parent?.(node, helpers, context) ?? "";
+        return node.attrs?.pasteLiteral ? markdown.replace(/^( {0,3})(?=-{3,}(?:\s|$))/gm, "$1\\") : markdown;
       },
     }));
   },
@@ -508,7 +525,10 @@ function useMarkdownEditor({
         return true;
       }
       if (!containsMarkdown(editor.markdown.instance.lexer(text))) return false;
-      return editor.commands.insertContent(text, { contentType: "markdown" });
+      const { frontMatter, body } = splitFrontMatter(text);
+      const parsed = literalPasteNodes(editor.markdown.parse(body));
+      const prefix = frontMatter ? [literalPasteNodes({ type: "opaqueBlock", attrs: { source: frontMatter.replace(/\r?\n$/, "") } })] : [];
+      return editor.commands.insertContent([...prefix, ...(parsed.content ?? [])]);
     }, attributes: {
       class: "anaphor-prose outline-none",
       role: "textbox",
