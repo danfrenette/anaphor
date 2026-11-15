@@ -100,9 +100,11 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
   }
   if (event.clipboardData?.getData("text/html")) return false;
   // Spec requirement (AC-3): a four-digit sentence is not an ordered list.
-  const source = editor.markdown.instance.lexer(text).map(token => token.type === "list"
-    ? token.raw.replace(/^( {0,3}\d{4,})([.)])(?=\s)/, "$1\\$2")
-    : token.raw).join("");
+  const source = /^( {0,3}\d{4,})[.)](?=\s)/m.test(text)
+    ? editor.markdown.instance.lexer(text).map(token => token.type === "list"
+      ? token.raw.replace(/^( {0,3}\d{4,})([.)])(?=\s)/, "$1\\$2")
+      : token.raw).join("")
+    : text;
   const { frontMatter, body } = splitFrontMatter(source);
   const document = editor.markdown.parse(body);
   if (!frontMatter && source === text && !containsMarkdown(document, body, /\[[^\]\n]+\]/.test(body))) return false;

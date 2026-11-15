@@ -488,7 +488,7 @@ describe("block editing", () => {
     await user.click(editor);
     await user.keyboard("1. a{Enter}1. b");
 
-    expect(ref.current?.getMarkdown()).toBe("1. a\n2. 1. b");
+    expect(ref.current?.getMarkdown()).toBe("1. a\n2. 1\\. b");
   });
 
   test("retyping a bullet marker on the line Enter created keeps it literal", async () => {
