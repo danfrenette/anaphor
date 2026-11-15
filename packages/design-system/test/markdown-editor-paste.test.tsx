@@ -40,8 +40,8 @@ test.each([
   await user.paste(`[label](${destination})`);
   const html = await marked.parse(api.getMarkdown());
   const rendered = new DOMParser().parseFromString(html, "text/html");
-  expect([...rendered.querySelectorAll("a[href]")].map(link => (link as HTMLAnchorElement).protocol)).not.toContain("javascript:");
-  expect([...rendered.querySelectorAll("a[href]")].map(link => (link as HTMLAnchorElement).protocol)).not.toContain("data:");
+  expect([...rendered.querySelectorAll<HTMLAnchorElement>("a[href]")].map(link => link.protocol)).not.toContain("javascript:");
+  expect([...rendered.querySelectorAll<HTMLAnchorElement>("a[href]")].map(link => link.protocol)).not.toContain("data:");
   expect(api.editor!.view.dom.textContent).toContain("label");
 });
 
