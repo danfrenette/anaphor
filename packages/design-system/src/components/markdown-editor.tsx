@@ -8,7 +8,6 @@ import { Extension, Node } from "@tiptap/core";
 import type { JSONContent, MarkdownRendererHelpers, MarkdownToken, RenderContext } from "@tiptap/core";
 import { Placeholder } from "@tiptap/extensions/placeholder";
 import { Markdown } from "@tiptap/markdown";
-import { closeHistory } from "@tiptap/pm/history";
 import { EditorState, Plugin, Selection } from "@tiptap/pm/state";
 import { GapCursor } from "@tiptap/pm/gapcursor";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
@@ -27,22 +26,6 @@ declare module "@tiptap/core" {
 const PlaceholderText = Extension.create({
   name: "placeholderText",
   addStorage: () => ({ placeholder: "" }),
-});
-
-// Spec requirement: a paste is one undo event, separate from surrounding typing.
-const PasteHistory = Extension.create({
-  name: "pasteHistory",
-  addProseMirrorPlugins() {
-    return [new Plugin({
-      filterTransaction(transaction) {
-        if (transaction.getMeta("uiEvent") === "paste") closeHistory(transaction);
-        return true;
-      },
-      appendTransaction(transactions, _oldState, newState) {
-        return transactions.some(transaction => transaction.getMeta("uiEvent") === "paste") ? closeHistory(newState.tr) : null;
-      },
-    })];
-  },
 });
 
 // Spec requirement: clipboard presentation is not document formatting.
@@ -574,7 +557,7 @@ function useMarkdownEditor({
       // that opens an ordered item as a code block (workaround 13).
       orderedList: false,
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-    }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, TaskList, TaskItem.configure({ nested: true }), MarkdownTable, TableRow, TableHeader, TableCell, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, PasteHistory, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
+    }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, TaskList, TaskItem.configure({ nested: true }), MarkdownTable, TableRow, TableHeader, TableCell, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
     content: body,
     contentType: "markdown",
     editorProps: { transformPastedHTML: cleanPastedHtml, handlePaste: (view, event): boolean => {

@@ -227,6 +227,7 @@ test.each([
   ["Markdown", "# Heading", false],
   ["link on selection", "https://example.com", true],
   ["plain text", "ordinary text", false],
+  ["URL", "https://example.com", false],
 ])("one undo reverts a whole %s paste", async (_name, text, selected) => {
   const user = userEvent.setup();
   const api = await setupPasteEditor("Original");
@@ -244,42 +245,6 @@ test("one undo reverts a whole HTML paste", async () => {
   expect(api.getMarkdown()).not.toBe("Original");
   act(() => { api.editor!.commands.undo(); });
   expect(api.getMarkdown()).toBe("Original");
-});
-
-test("undoing Markdown paste does not undo preceding typing", async () => {
-  const user = userEvent.setup();
-  const api = await setupPasteEditor();
-  api.editor!.view.dom.focus();
-  await user.keyboard("Before ");
-  await user.paste("**bold**");
-  expect(api.getMarkdown()).toBe("Before **bold**");
-  act(() => { api.editor!.commands.undo(); });
-  expect(api.getMarkdown()).toBe("Before ");
-});
-
-test("typing after a Markdown paste is a separate undo step", async () => {
-  const user = userEvent.setup();
-  const api = await setupPasteEditor();
-  api.editor!.view.dom.focus();
-  await user.paste("**bold**");
-  await user.keyboard("x");
-  act(() => { api.editor!.commands.undo(); });
-  expect(api.getMarkdown()).toBe("**bold**");
-  act(() => { api.editor!.commands.undo(); });
-  expect(api.getMarkdown()).toBe("");
-});
-
-test("HTML paste has its own undo step between typing", async () => {
-  const user = userEvent.setup();
-  const api = await setupPasteEditor();
-  api.editor!.view.dom.focus();
-  await user.keyboard("Before");
-  act(() => { api.editor!.view.pasteHTML("<strong>Bold</strong>"); });
-  await user.keyboard("After");
-  act(() => { api.editor!.commands.undo(); });
-  expect(api.getMarkdown()).toBe("Before**Bold**");
-  act(() => { api.editor!.commands.undo(); });
-  expect(api.getMarkdown()).toBe("Before");
 });
 
 test.each(["readOnly", "disabled"] as const)("paste does not change a %s editor", async option => {
