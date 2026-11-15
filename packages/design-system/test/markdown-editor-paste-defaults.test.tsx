@@ -30,5 +30,6 @@ test.each([
   editor.focus();
   await user.paste(text);
   expect(ref.current?.getMarkdown()).toBe(expected);
+  expect(editor.textContent).toBe(text.replace("\n", ""));
   unmount();
 });
