@@ -94,8 +94,10 @@ already collapsed visually in the editor.
 Pasted raw HTML, footnotes, and front matter are text, not preserved opaque
 nodes. A URL pasted over a selection links the selected text; without a
 selection it links the URL itself. Unsafe protocols such as `javascript:` and
-`data:` do not create links. One undo removes a paste, and read-only and
-disabled editors do not accept it.
+`data:` do not create links. One undo removes the whole paste. Undo follows
+Tiptap's default grouping, which joins edits made within a moment of each other.
+For example, a paste immediately after typing a code fence can be undone together
+with that typing. Read-only and disabled editors do not accept paste.
 
 ## Task lists and tables
 
@@ -345,5 +347,4 @@ The standalone `markdown-editor` registry item installs the component, shared
 styles, utilities, and exact Tiptap 3.33.0 dependencies. It is also part of the
 complete `ui` aggregate.
 
-This slice does not support images, paste handling, or a selection
-bubble.
+This slice does not support images or a selection bubble.
