@@ -138,6 +138,16 @@ test.each(["javascript:alert(1)", "data:text/html,evil"])("unsafe Markdown URL s
   expect(api.editor!.view.dom.querySelector("a")).toBeNull();
 });
 
+test("unsafe Markdown links with mixed formatting retain one literal destination", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.editor!.view.dom.focus();
+  await user.paste("[hello **world**](javascript:alert(1))");
+  expect(api.editor!.view.dom.textContent).toBe("[hello world](javascript:alert(1))");
+  expect(api.editor!.view.dom.querySelector("a")).toBeNull();
+  expect(api.getMarkdown()).toBe("\\[hello world\\](javascript:alert(1))");
+});
+
 test.each(["javascript:alert(1)", "data:text/html,evil"])("unsafe URLs are never pasted as HTML links: %s", async url => {
   const api = await setupPasteEditor();
   act(() => { api.editor!.view.pasteHTML(`<p><a href="${url}">Unsafe</a></p>`); });

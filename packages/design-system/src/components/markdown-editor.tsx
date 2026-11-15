@@ -71,6 +71,11 @@ function containsMarkdown(tokens: unknown[]): boolean {
 }
 
 // Spec requirement: opaque preservation is only for loaded documents, not paste.
+function unsafePasteLink(node: JSONContent): string | undefined {
+  const href = node.marks?.find(mark => mark.type === "link" && !isAllowedUri(mark.attrs?.href))?.attrs?.href;
+  return typeof href === "string" ? href : undefined;
+}
+
 function literalPasteNodes(node: JSONContent): JSONContent {
   if (node.type === "opaqueInline") return { type: "text", text: node.attrs?.source ?? "" };
   if (node.type === "opaqueBlock") {
@@ -80,12 +85,32 @@ function literalPasteNodes(node: JSONContent): JSONContent {
       ...(line ? [{ type: "text", text: line }] : []),
     ]) };
   }
+  const content: JSONContent[] = [];
+  let pendingHref: string | undefined;
+  let pendingText = "";
+  const flush = () => {
+    if (pendingHref) content.push({ type: "text", text: `[${pendingText}](${pendingHref})` });
+    pendingHref = undefined;
+    pendingText = "";
+  };
+  for (const child of node.content ?? []) {
+    const href = unsafePasteLink(child);
+    if (href && child.type === "text") {
+      if (pendingHref !== href) flush();
+      pendingHref = href;
+      pendingText += child.text ?? "";
+    } else {
+      flush();
+      content.push(literalPasteNodes(child));
+    }
+  }
+  flush();
   const unsafeLink = node.marks?.find(mark => mark.type === "link" && !isAllowedUri(mark.attrs?.href));
   return {
     ...node,
     ...(unsafeLink && node.text ? { text: `[${node.text}](${unsafeLink.attrs?.href ?? ""})` } : {}),
     ...(node.marks ? { marks: node.marks.filter(mark => mark !== unsafeLink) } : {}),
-    ...(node.content ? { content: node.content.map(literalPasteNodes) } : {}),
+    ...(node.content ? { content } : {}),
   };
 }
 
