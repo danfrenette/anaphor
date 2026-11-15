@@ -128,8 +128,12 @@ test("pasting blocks splits a heading with a leading space in its saved form", a
   await selectText(api.dom, 5);
   api.dom.focus();
   await user.paste("# head\n\n- list");
-  expect(api.getMarkdown()).toBe("# hello\n\n# head\n\n- list\n\n#  world");
+  const saved = api.getMarkdown();
+  expect(saved).toBe("# hello\n\n# head\n\n- list\n\n#  world");
   expect(api.dom.textContent).toBe("helloheadlist world");
+  act(() => { api.setMarkdown(saved); });
+  expect(api.dom.textContent).toBe("helloheadlistworld");
+  expect(api.getMarkdown()).toBe(saved);
 });
 
 test("pasted Markdown tables become tables", async () => {
