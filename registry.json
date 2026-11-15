@@ -55,6 +55,11 @@
           "type": "registry:ui"
         },
         {
+          "path": "packages/design-system/src/lib/markdown-editor-paste.ts",
+          "type": "registry:lib",
+          "target": "@components/lib/markdown-editor-paste.ts"
+        },
+        {
           "path": "packages/design-system/src/lib/markdown-editor-tokenizers.ts",
           "type": "registry:lib",
           "target": "@components/lib/markdown-editor-tokenizers.ts"
