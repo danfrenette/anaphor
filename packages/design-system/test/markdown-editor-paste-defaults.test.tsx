@@ -33,3 +33,18 @@ test.each([
   expect(editor.textContent).toBe(text.replace("\n", ""));
   unmount();
 });
+
+test("pasting 50k characters of realistic Markdown completes promptly", async () => {
+  const user = userEvent.setup();
+  const ref = createRef<MarkdownEditorHandle>();
+  render(<MarkdownEditor presentation="field" ref={ref} defaultValue="" aria-label="Paste performance" />);
+  const editor = await screen.findByRole("textbox", { name: "Paste performance" });
+  editor.focus();
+  const text = "# Heading\n\n- One\n- Two\n\nA paragraph of realistic Markdown content.\n\n".repeat(750);
+  const start = performance.now();
+  await user.paste(text);
+  const elapsed = performance.now() - start;
+  expect(elapsed).toBeLessThan(10000);
+  expect(ref.current?.getMarkdown()).toContain("# Heading");
+  expect(editor).toHaveTextContent("A paragraph of realistic Markdown content.");
+}, 15000);

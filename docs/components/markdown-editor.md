@@ -83,6 +83,10 @@ within words, arithmetic asterisks, a hash without a following space, and a
 single numbered sentence beginning with four or more digits are treated as
 ordinary text. Paste inside a code block is always literal.
 
+Markdown parsing uses marked's lexer. Pathological inputs with many unmatched
+formatting delimiters can take disproportionately longer to parse, both on
+paste and when loading a document; there is no paste-size cap.
+
 Pasted raw HTML, footnotes, and front matter are text, not preserved opaque
 nodes. A URL pasted over a selection links the selected text; without a
 selection it links the URL itself. Unsafe protocols such as `javascript:` and
