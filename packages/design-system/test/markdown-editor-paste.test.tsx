@@ -15,10 +15,10 @@ beforeEach(() => {
   Object.defineProperty(window, "scrollBy", { configurable: true, value: () => {} });
 });
 
-async function setupPasteEditor(value = "") {
+async function setupPasteEditor(value = "", options: { readOnly?: boolean; disabled?: boolean; onChange?: (value: string) => void } = {}) {
   let api: UseMarkdownEditorResult;
   function Harness() {
-    api = useMarkdownEditor({ defaultValue: value, "aria-label": "Paste editor" });
+    api = useMarkdownEditor({ defaultValue: value, "aria-label": "Paste editor", ...options });
     return <EditorContent editor={api.editor} />;
   }
   render(<Harness />);
@@ -126,6 +126,39 @@ test.each(["https://example.com", "mailto:reader@example.com"])("a pasted URL li
   await user.paste(url);
   expect(api.getMarkdown()).toBe(`[${url}](${url})`);
   expect(api.editor!.view.dom.querySelector("a")).toHaveAttribute("href", url);
+});
+
+test.each([
+  ["Markdown", "# Heading", false],
+  ["link on selection", "https://example.com", true],
+  ["plain text", "ordinary text", false],
+])("one undo reverts a whole %s paste", async (_name, text, selected) => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor("Original");
+  act(() => { if (selected) api.editor!.commands.selectAll(); else api.editor!.commands.setTextSelection(9); });
+  api.editor!.view.dom.focus();
+  await user.paste(text);
+  expect(api.getMarkdown()).not.toBe("Original");
+  act(() => { api.editor!.commands.undo(); });
+  expect(api.getMarkdown()).toBe("Original");
+});
+
+test("one undo reverts a whole HTML paste", async () => {
+  const api = await setupPasteEditor("Original");
+  act(() => { api.editor!.commands.setTextSelection(9); api.editor!.view.pasteHTML('<p><strong>New</strong> text</p>'); });
+  expect(api.getMarkdown()).not.toBe("Original");
+  act(() => { api.editor!.commands.undo(); });
+  expect(api.getMarkdown()).toBe("Original");
+});
+
+test.each(["readOnly", "disabled"] as const)("paste does not change a %s editor", async option => {
+  const user = userEvent.setup();
+  const onChange = vi.fn();
+  const api = await setupPasteEditor("Original", { [option]: true, onChange });
+  api.editor!.view.dom.focus();
+  await user.paste("# Heading");
+  expect(api.getMarkdown()).toBe("Original");
+  expect(onChange).not.toHaveBeenCalled();
 });
 
 test("pasting web styling and unsupported controls does not import formatting", async () => {
