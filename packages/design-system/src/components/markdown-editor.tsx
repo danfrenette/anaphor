@@ -469,6 +469,7 @@ function useMarkdownEditor({
     }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, TaskList, TaskItem.configure({ nested: true }), MarkdownTable, TableRow, TableHeader, TableCell, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
     content: body,
     contentType: "markdown",
+    // Spec requirement (AC-1–5, AC-7): clean and classify pasted content.
     editorProps: { transformPastedHTML: cleanPastedHtml, handlePaste: (view, event): boolean => {
       return handleMarkdownPaste(view, event, editor);
     }, attributes: {

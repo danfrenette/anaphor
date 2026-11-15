@@ -4,7 +4,7 @@ import type { EditorView } from "@tiptap/pm/view";
 import type { Editor } from "@tiptap/react";
 import { splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 
-// Spec requirement: clipboard presentation is not document formatting.
+// Spec requirement (AC-1, AC-2): clipboard presentation is not document formatting.
 function cleanPastedHtml(html: string): string {
   const document = new DOMParser().parseFromString(html, "text/html");
   for (const element of Array.from(document.body.querySelectorAll("*"))) {
@@ -38,7 +38,7 @@ function containsMarkdown(node: JSONContent, source: string): boolean {
   return node.content?.some(child => containsMarkdown(child, source)) ?? false;
 }
 
-// Spec requirement: opaque preservation is only for loaded documents, not paste.
+// Spec requirement (AC-4): validate destinations after HTML entity decoding.
 function isSafePasteUri(uri: unknown): boolean {
   if (typeof uri !== "string") return false;
   const textarea = document.createElement("textarea");
@@ -51,6 +51,7 @@ function unsafePasteLink(node: JSONContent): string | undefined {
   return typeof href === "string" ? href : undefined;
 }
 
+// Spec requirement (AC-4, AC-7): unsafe links and unsupported pasted syntax stay literal.
 function literalPasteNodes(node: JSONContent): JSONContent {
   if (node.type === "opaqueInline") return { type: "text", text: node.attrs?.source ?? "" };
   if (node.type === "opaqueBlock") {
@@ -93,6 +94,7 @@ function literalPasteNodes(node: JSONContent): JSONContent {
 function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Editor | null): boolean {
   const text = event.clipboardData?.getData("text/plain");
   if (!text || view.state.selection.$from.parent.type.spec.code || !editor?.markdown) return false;
+  // Spec requirement (AC-4): a pasted URL links the selection, even with rich HTML.
   if (!view.state.selection.empty && /^[a-z][a-z\d+.-]*:/i.test(text) && URL.canParse(text) && isSafePasteUri(text)) {
     return editor.chain().command(({ tr }) => { tr.setMeta("uiEvent", "paste"); return true; }).setLink({ href: text }).run();
   }
@@ -102,6 +104,7 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
   const { frontMatter, body } = splitFrontMatter(source);
   const document = editor.markdown.parse(body);
   if (source === text && !containsMarkdown(document, body)) return false;
+  // Spec requirement (AC-7): pasted front matter and unsupported nodes are literal text.
   const parsed = literalPasteNodes(document);
   const prefix = frontMatter ? [literalPasteNodes({ type: "opaqueBlock", attrs: { source: frontMatter.replace(/\r?\n$/, "") } })] : [];
   const nodes = [...prefix, ...(parsed.content ?? [])];
