@@ -28,6 +28,31 @@ const PlaceholderText = Extension.create({
   addStorage: () => ({ placeholder: "" }),
 });
 
+// Spec requirement: clipboard presentation is not document formatting.
+function cleanPastedHtml(html: string): string {
+  const document = new DOMParser().parseFromString(html, "text/html");
+  for (const element of Array.from(document.body.querySelectorAll("*"))) {
+    if (element.matches("img")) {
+      element.remove();
+      continue;
+    }
+    if (element.matches("button, input:not([type=checkbox]), textarea, select, iframe, script, style")) {
+      element.replaceWith(document.createTextNode(element.textContent ?? ""));
+      continue;
+    }
+    if (element.matches('b[id^="docs-internal-guid-"]')) {
+      element.replaceWith(...Array.from(element.childNodes));
+      continue;
+    }
+    for (const attribute of Array.from(element.attributes)) {
+      if (!["href", "data-type", "data-checked", "checked", "type", "start", "colspan", "rowspan"].includes(attribute.name)) {
+        element.removeAttribute(attribute.name);
+      }
+    }
+  }
+  return document.body.innerHTML;
+}
+
 const MarkdownStarterKit = StarterKit.extend({
   addExtensions() {
     return (this.parent?.() ?? []).map(extension => extension.name !== "paragraph" ? extension : extension.extend({
@@ -462,7 +487,7 @@ function useMarkdownEditor({
     }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, TaskList, TaskItem.configure({ nested: true }), MarkdownTable, TableRow, TableHeader, TableCell, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
     content: body,
     contentType: "markdown",
-    editorProps: { attributes: {
+    editorProps: { transformPastedHTML: cleanPastedHtml, attributes: {
       class: "anaphor-prose outline-none",
       role: "textbox",
       "aria-multiline": "true",
