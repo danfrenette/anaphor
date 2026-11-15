@@ -413,3 +413,30 @@ test("large bare URL pastes scale approximately linearly", async () => {
   console.info(`URL paste timings: 1k=${small.toFixed(1)}ms 2k=${large.toFixed(1)}ms`);
   expect(large).toBeLessThan(small * 3.5);
 }, 30000);
+
+test("pasted link titles survive saving and rendering", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.dom.focus();
+  await user.paste('[label](https://example.com "a \\\"quote\\\" \\\\ path )")');
+  const saved = api.getMarkdown();
+  act(() => { api.setMarkdown(saved); });
+  expect(api.dom.querySelector("a")).toHaveAttribute("title", 'a "quote" \\ path )');
+  const rendered = new DOMParser().parseFromString(await marked.parse(saved), "text/html");
+  expect(rendered.querySelector("a")?.getAttribute("title")).toBe('a "quote" \\ path )');
+  expect(rendered.querySelector("a")?.getAttributeNames().sort()).toEqual(["href", "title"]);
+});
+
+test("starting link title survives an edit and reparse", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor('[label](https://example.com "a \\\"quote\\\" \\\\ path )")');
+  api.dom.focus();
+  await user.keyboard("!");
+  const saved = api.getMarkdown();
+  expect(saved).toBe('\\![label](https://example.com "a \\\"quote\\\" \\\\ path )")');
+  act(() => { api.setMarkdown(saved); });
+  expect(api.dom.querySelector("a")).toHaveAttribute("title", 'a "quote" \\ path )');
+  const rendered = new DOMParser().parseFromString(await marked.parse(saved), "text/html");
+  expect(rendered.querySelector("a")?.getAttribute("title")).toBe('a "quote" \\ path )');
+  expect(rendered.querySelector("a")?.getAttributeNames().sort()).toEqual(["href", "title"]);
+});

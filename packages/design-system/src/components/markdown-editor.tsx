@@ -172,7 +172,9 @@ const MarkdownLink = Link.extend({
     const title = node.attrs?.title ?? "";
     const text = h.renderChildren(node);
     const destination = linkDestinationNeedsAngleBrackets(href) ? `<${href}>` : href;
-    return title ? `[${text}](${destination} "${title}")` : `[${text}](${destination})`;
+    // Tiptap 3.33.0 workaround: escape title delimiters and backslashes.
+    const escapedTitle = title.replace(/[\\"]/g, "\\$&");
+    return title ? `[${text}](${destination} "${escapedTitle}")` : `[${text}](${destination})`;
   },
 // Spec requirement (AC-4): paste linking is handled by the safety-checked adapter.
 }).configure({ openOnClick: false, autolink: false, linkOnPaste: false });
