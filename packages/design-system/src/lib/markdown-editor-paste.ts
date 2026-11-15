@@ -103,7 +103,7 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
   const source = text.replace(/^( {0,3}\d{4,})([.)])(?=\s)/, "$1\\$2");
   const { frontMatter, body } = splitFrontMatter(source);
   const document = editor.markdown.parse(body);
-  if (source === text && !containsMarkdown(document, body)) return false;
+  if (!frontMatter && source === text && !containsMarkdown(document, body)) return false;
   // Spec requirement (AC-7): pasted front matter and unsupported nodes are literal text.
   const parsed = literalPasteNodes(document);
   const prefix = frontMatter ? [literalPasteNodes({ type: "opaqueBlock", attrs: { source: frontMatter.replace(/\r?\n$/, "") } })] : [];

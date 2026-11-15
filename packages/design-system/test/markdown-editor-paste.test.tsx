@@ -206,6 +206,15 @@ test("pasted front matter remains visible literal text", async () => {
   expect(api.getMarkdown()).toBe("\\---  \ntitle: Draft  \n\\---\n\n# Heading");
 });
 
+test("front matter without other Markdown remains literal", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.dom.focus();
+  await user.paste("---\ntitle: Draft\n---");
+  expect(api.getMarkdown()).toBe("\\---  \ntitle: Draft  \n\\---");
+  expect(api.dom.textContent).toBe("---title: Draft---");
+});
+
 test("pasted inline HTML and footnotes stay literal beside Markdown", async () => {
   const user = userEvent.setup();
   const api = await setupPasteEditor();
