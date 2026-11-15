@@ -42,10 +42,11 @@ test("pasting 50k characters of realistic Markdown completes promptly", async ()
   editor.focus();
   const text = "# Heading\n\n- One\n- Two\n\nA paragraph of realistic Markdown content.\n\n".repeat(750);
   const start = performance.now();
-  const cpuStart = process.cpuUsage();
+  const threadCpuUsage: (previous?: NodeJS.CpuUsage) => NodeJS.CpuUsage = Reflect.get(process, "threadCpuUsage");
+  const cpuStart = threadCpuUsage();
   await user.paste(text);
   const elapsed = performance.now() - start;
-  const cpu = process.cpuUsage(cpuStart);
+  const cpu = threadCpuUsage(cpuStart);
   expect((cpu.user + cpu.system) / 1000).toBeLessThan(3000);
   // Concurrent test workers can delay wall time independently of paste cost.
   expect(elapsed).toBeLessThan(10000);
