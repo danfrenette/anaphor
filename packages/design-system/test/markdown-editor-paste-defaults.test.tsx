@@ -42,9 +42,13 @@ test("pasting 50k characters of realistic Markdown completes promptly", async ()
   editor.focus();
   const text = "# Heading\n\n- One\n- Two\n\nA paragraph of realistic Markdown content.\n\n".repeat(750);
   const start = performance.now();
+  const cpuStart = process.cpuUsage();
   await user.paste(text);
   const elapsed = performance.now() - start;
-  expect(elapsed).toBeLessThan(3000);
+  const cpu = process.cpuUsage(cpuStart);
+  expect((cpu.user + cpu.system) / 1000).toBeLessThan(3000);
+  // Concurrent test workers can delay wall time independently of paste cost.
+  expect(elapsed).toBeLessThan(10000);
   expect(ref.current?.getMarkdown()).toContain("# Heading");
   expect(editor).toHaveTextContent("A paragraph of realistic Markdown content.");
 }, 15000);
