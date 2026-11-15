@@ -61,6 +61,7 @@ function cleanPastedHtml(html: string): string {
       element.replaceWith(...Array.from(element.childNodes));
       continue;
     }
+    if (element.matches("a[href]") && !isSafePasteUri(element.getAttribute("href"))) element.removeAttribute("href");
     for (const attribute of Array.from(element.attributes)) {
       if (!["href", "data-type", "data-checked", "checked", "type", "start", "colspan", "rowspan"].includes(attribute.name)) {
         element.removeAttribute(attribute.name);
@@ -88,8 +89,15 @@ function containsMarkdown(tokens: unknown[]): boolean {
 }
 
 // Spec requirement: opaque preservation is only for loaded documents, not paste.
+function isSafePasteUri(uri: unknown): boolean {
+  if (typeof uri !== "string") return false;
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = uri.replace(/</g, "&lt;");
+  return !!isAllowedUri(textarea.value.replace(/[\u0000-\u0020\u007f]/g, ""));
+}
+
 function unsafePasteLink(node: JSONContent): string | undefined {
-  const href = node.marks?.find(mark => mark.type === "link" && !isAllowedUri(mark.attrs?.href))?.attrs?.href;
+  const href = node.marks?.find(mark => mark.type === "link" && !isSafePasteUri(mark.attrs?.href))?.attrs?.href;
   return typeof href === "string" ? href : undefined;
 }
 
@@ -122,7 +130,7 @@ function literalPasteNodes(node: JSONContent): JSONContent {
     }
   }
   flush();
-  const unsafeLink = node.marks?.find(mark => mark.type === "link" && !isAllowedUri(mark.attrs?.href));
+  const unsafeLink = node.marks?.find(mark => mark.type === "link" && !isSafePasteUri(mark.attrs?.href));
   return {
     ...node,
     ...(unsafeLink && node.text ? { text: `[${node.text}](${unsafeLink.attrs?.href ?? ""})` } : {}),
@@ -572,7 +580,7 @@ function useMarkdownEditor({
     editorProps: { transformPastedHTML: cleanPastedHtml, handlePaste: (view, event): boolean => {
       const text = event.clipboardData?.getData("text/plain");
       if (!text || event.clipboardData?.getData("text/html") || view.state.selection.$from.parent.type.spec.code || !editor?.markdown) return false;
-      if (!view.state.selection.empty && /^[a-z][a-z\d+.-]*:/i.test(text) && URL.canParse(text) && isAllowedUri(text)) {
+      if (!view.state.selection.empty && /^[a-z][a-z\d+.-]*:/i.test(text) && URL.canParse(text) && isSafePasteUri(text)) {
         return editor.chain().command(({ tr }) => { tr.setMeta("uiEvent", "paste"); return true; }).setLink({ href: text }).run();
       }
       if (/^\d{4,}[.)] [^\n]+$/.test(text)) {

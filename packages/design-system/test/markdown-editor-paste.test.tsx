@@ -6,6 +6,7 @@ import { EditorContent } from "@tiptap/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, test, vi } from "vitest";
 import { useMarkdownEditor, type UseMarkdownEditorResult } from "@anaphor/system";
+import { marked } from "marked";
 
 beforeEach(() => {
   vi.stubGlobal("ClipboardEvent", Event);
@@ -27,6 +28,32 @@ async function setupPasteEditor(value = "", options: { readOnly?: boolean; disab
 }
 
 const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "paste");
+
+test.each([
+  "&#106;avascript:alert(1)", "java&#x73;cript:alert(1)",
+  "java&#9;script:alert(1)", "java&#10;script:alert(1)",
+  "data&#58;text/html,evil", "JaVa&#x53;cript:alert(1)",
+])("entity-encoded unsafe links do not survive rendering: %s", async destination => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.editor!.view.dom.focus();
+  await user.paste(`[label](${destination})`);
+  const html = await marked.parse(api.getMarkdown());
+  const rendered = new DOMParser().parseFromString(html, "text/html");
+  expect([...rendered.querySelectorAll("a[href]")].map(link => (link as HTMLAnchorElement).protocol)).not.toContain("javascript:");
+  expect([...rendered.querySelectorAll("a[href]")].map(link => (link as HTMLAnchorElement).protocol)).not.toContain("data:");
+  expect(api.editor!.view.dom.textContent).toContain("label");
+});
+
+test("entity-encoded reference destinations stay literal on paste", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.editor!.view.dom.focus();
+  await user.paste("[label][ref]\n\n[ref]: &#106;avascript:alert(1)");
+  const rendered = new DOMParser().parseFromString(await marked.parse(api.getMarkdown()), "text/html");
+  expect(rendered.querySelector("a[href]")).toBeNull();
+  expect(api.editor!.view.dom.textContent).toContain("label");
+});
 
 test.each([
   ["anaphor-manual", "# Typography\n\nReading, navigation, and literal values share a small kit. Document structure chooses the heading level; purpose chooses its appearance."],
