@@ -117,6 +117,27 @@ test.each(["snake_case_names", "2 * 3 = 6", "    indented", "#heading", "2026. A
   expect(api.editor!.view.dom.querySelector("pre,ol,ul,h1,h2,strong,em")).toBeNull();
 });
 
+test("four-digit sentences retain inline Markdown without becoming lists", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.editor!.view.dom.focus();
+  await user.paste("2026. **Important**");
+  expect(api.getMarkdown()).toBe("2026. **Important**");
+  expect(api.editor!.view.dom.textContent).toBe("2026. Important");
+  expect(api.editor!.view.dom.querySelector("strong")).toHaveTextContent("Important");
+  expect(api.editor!.view.dom.querySelector("ol")).toBeNull();
+});
+
+test("four-digit ordinary sentences stay paragraphs", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.editor!.view.dom.focus();
+  await user.paste("2026. A year.");
+  expect(api.getMarkdown()).toBe("2026. A year.");
+  expect(api.editor!.view.dom.textContent).toBe("2026. A year.");
+  expect(api.editor!.view.dom.querySelector("ol")).toBeNull();
+});
+
 test("pasted Markdown preserves unsupported syntax as literal text", async () => {
   const user = userEvent.setup();
   const api = await setupPasteEditor();
