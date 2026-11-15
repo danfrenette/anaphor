@@ -87,6 +87,10 @@ Markdown parsing uses marked's lexer. Pathological inputs with many unmatched
 formatting delimiters can take disproportionately longer to parse, both on
 paste and when loading a document; there is no paste-size cap.
 
+Pasting blocks in the middle of a heading can save a leading space in the
+second heading (for example, `#  world`). Reparsing drops that space; it is
+already collapsed visually in the editor.
+
 Pasted raw HTML, footnotes, and front matter are text, not preserved opaque
 nodes. A URL pasted over a selection links the selected text; without a
 selection it links the URL itself. Unsafe protocols such as `javascript:` and

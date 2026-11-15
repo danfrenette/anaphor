@@ -100,6 +100,16 @@ test("Markdown syntax pasted inside code stays literal", async () => {
   expect(api.getMarkdown()).toBe("```\ncode# literal\n**bold**\n```");
 });
 
+test("pasting blocks splits a heading with a leading space in its saved form", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor("# hello world");
+  act(() => { api.editor!.commands.setTextSelection(6); });
+  api.editor!.view.dom.focus();
+  await user.paste("# head\n\n- list");
+  expect(api.getMarkdown()).toBe("# hello\n\n# head\n\n- list\n\n#  world");
+  expect(api.editor!.view.dom.textContent).toBe("helloheadlist world");
+});
+
 test("pasted Markdown tables become tables", async () => {
   const user = userEvent.setup();
   const api = await setupPasteEditor();
