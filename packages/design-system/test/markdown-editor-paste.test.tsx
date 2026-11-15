@@ -440,3 +440,25 @@ test("starting link title survives an edit and reparse", async () => {
   expect(rendered.querySelector("a")?.getAttribute("title")).toBe('a "quote" \\ path )');
   expect(rendered.querySelector("a")?.getAttributeNames().sort()).toEqual(["href", "title"]);
 });
+
+test.each([
+  "[x](&amp;#106;avascript:alert(1))",
+  "[x](&#106avascript:alert(1))",
+  "[x](javascript&colon;alert(1))",
+  "[x](%6Aavascript:alert(1))",
+  "[x](javascript：alert(1))",
+  "[x](javascript꞉alert(1))",
+  "![x](javascript:alert(1))",
+])("pasted destination cannot render a dangerous protocol: %s", async source => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.dom.focus();
+  await user.paste(source);
+  const rendered = new DOMParser().parseFromString(await marked.parse(api.getMarkdown()), "text/html");
+  for (const link of rendered.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+    expect(["javascript:", "data:"]).not.toContain(link.protocol);
+  }
+  for (const link of api.dom.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+    expect(["javascript:", "data:"]).not.toContain(link.protocol);
+  }
+});
