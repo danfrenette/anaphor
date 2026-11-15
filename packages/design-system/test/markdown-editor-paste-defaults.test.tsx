@@ -44,7 +44,7 @@ test("pasting 50k characters of realistic Markdown completes promptly", async ()
   const start = performance.now();
   await user.paste(text);
   const elapsed = performance.now() - start;
-  expect(elapsed).toBeLessThan(10000);
+  expect(elapsed).toBeLessThan(3000);
   expect(ref.current?.getMarkdown()).toContain("# Heading");
   expect(editor).toHaveTextContent("A paragraph of realistic Markdown content.");
 }, 15000);

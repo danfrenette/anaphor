@@ -30,21 +30,12 @@ function cleanPastedHtml(html: string): string {
   return document.body.innerHTML;
 }
 
-// Spec requirement: only recognizable Markdown syntax changes plain-text paste.
-type PasteToken = { type?: string; raw?: string; tokens?: unknown[]; items?: unknown[] };
-function isPasteToken(value: unknown): value is PasteToken {
-  return !!value && typeof value === "object" && "type" in value;
-}
-
-function containsMarkdown(tokens: unknown[]): boolean {
-  return tokens.some(token => {
-    if (!isPasteToken(token)) return false;
-    if (token.type === "code") return /^ {0,3}(?:`{3,}|~{3,})/.test(token.raw ?? "");
-    if (token.type === "list" && /^ {0,3}\d{4,}[.)]\s/.test(token.raw ?? "")) return false;
-    if (token.type === "link" && !/^!?\[/.test(token.raw ?? "")) return false;
-    if (["heading", "list", "blockquote", "table", "hr", "strong", "em", "del", "codespan", "link"].includes(token.type ?? "")) return true;
-    return containsMarkdown([...(token.tokens ?? []), ...(token.items ?? [])]);
-  });
+// Spec requirement (AC-3, AC-5): detect syntax from the parsed paste, not a second lex.
+function containsMarkdown(node: JSONContent, source: string): boolean {
+  if (node.type === "codeBlock") return /^ {0,3}(?:`{3,}|~{3,})/m.test(source);
+  if (["heading", "bulletList", "orderedList", "blockquote", "table", "horizontalRule"].includes(node.type ?? "")) return true;
+  if (node.marks?.some(mark => ["bold", "italic", "strike", "code"].includes(mark.type) || (mark.type === "link" && /\[[^\]\n]+\]/.test(source)))) return true;
+  return node.content?.some(child => containsMarkdown(child, source)) ?? false;
 }
 
 // Spec requirement: opaque preservation is only for loaded documents, not paste.
@@ -110,9 +101,10 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
     view.dispatch(view.state.tr.insertText(text).setMeta("uiEvent", "paste").scrollIntoView());
     return true;
   }
-  if (!containsMarkdown(editor.markdown.instance.lexer(text))) return false;
   const { frontMatter, body } = splitFrontMatter(text);
-  const parsed = literalPasteNodes(editor.markdown.parse(body));
+  const document = editor.markdown.parse(body);
+  if (!containsMarkdown(document, body)) return false;
+  const parsed = literalPasteNodes(document);
   const prefix = frontMatter ? [literalPasteNodes({ type: "opaqueBlock", attrs: { source: frontMatter.replace(/\r?\n$/, "") } })] : [];
   const nodes = [...prefix, ...(parsed.content ?? [])];
   const only = nodes.length === 1 ? nodes[0] : undefined;
