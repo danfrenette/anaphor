@@ -8,6 +8,7 @@ import { Extension, Node } from "@tiptap/core";
 import type { JSONContent, MarkdownRendererHelpers, MarkdownToken, RenderContext } from "@tiptap/core";
 import { Placeholder } from "@tiptap/extensions/placeholder";
 import { Markdown } from "@tiptap/markdown";
+import { closeHistory } from "@tiptap/pm/history";
 import { EditorState, Plugin, Selection } from "@tiptap/pm/state";
 import { GapCursor } from "@tiptap/pm/gapcursor";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
@@ -26,6 +27,22 @@ declare module "@tiptap/core" {
 const PlaceholderText = Extension.create({
   name: "placeholderText",
   addStorage: () => ({ placeholder: "" }),
+});
+
+// Spec requirement: a paste is one undo event, separate from surrounding typing.
+const PasteHistory = Extension.create({
+  name: "pasteHistory",
+  addProseMirrorPlugins() {
+    return [new Plugin({
+      filterTransaction(transaction) {
+        if (transaction.getMeta("uiEvent") === "paste") closeHistory(transaction);
+        return true;
+      },
+      appendTransaction(transactions, _oldState, newState) {
+        return transactions.some(transaction => transaction.getMeta("uiEvent") === "paste") ? closeHistory(newState.tr) : null;
+      },
+    })];
+  },
 });
 
 // Spec requirement: clipboard presentation is not document formatting.
@@ -549,24 +566,27 @@ function useMarkdownEditor({
       // that opens an ordered item as a code block (workaround 13).
       orderedList: false,
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-    }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, TaskList, TaskItem.configure({ nested: true }), MarkdownTable, TableRow, TableHeader, TableCell, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
+    }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, TaskList, TaskItem.configure({ nested: true }), MarkdownTable, TableRow, TableHeader, TableCell, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, PasteHistory, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
     content: body,
     contentType: "markdown",
     editorProps: { transformPastedHTML: cleanPastedHtml, handlePaste: (view, event): boolean => {
       const text = event.clipboardData?.getData("text/plain");
       if (!text || event.clipboardData?.getData("text/html") || view.state.selection.$from.parent.type.spec.code || !editor?.markdown) return false;
       if (!view.state.selection.empty && /^[a-z][a-z\d+.-]*:/i.test(text) && URL.canParse(text) && isAllowedUri(text)) {
-        return editor.commands.setLink({ href: text });
+        return editor.chain().command(({ tr }) => { tr.setMeta("uiEvent", "paste"); return true; }).setLink({ href: text }).run();
       }
       if (/^\d{4,}[.)] [^\n]+$/.test(text)) {
-        view.dispatch(view.state.tr.insertText(text).scrollIntoView());
+        view.dispatch(view.state.tr.insertText(text).setMeta("uiEvent", "paste").scrollIntoView());
         return true;
       }
       if (!containsMarkdown(editor.markdown.instance.lexer(text))) return false;
       const { frontMatter, body } = splitFrontMatter(text);
       const parsed = literalPasteNodes(editor.markdown.parse(body));
       const prefix = frontMatter ? [literalPasteNodes({ type: "opaqueBlock", attrs: { source: frontMatter.replace(/\r?\n$/, "") } })] : [];
-      return editor.commands.insertContent([...prefix, ...(parsed.content ?? [])]);
+      const nodes = [...prefix, ...(parsed.content ?? [])];
+      const only = nodes.length === 1 ? nodes[0] : undefined;
+      const insertion = only?.type === "paragraph" && !only.attrs?.pasteLiteral ? only.content ?? [] : nodes;
+      return editor.chain().command(({ tr }) => { tr.setMeta("paste", true).setMeta("uiEvent", "paste"); return true; }).insertContent(insertion).run();
     }, attributes: {
       class: "anaphor-prose outline-none",
       role: "textbox",
