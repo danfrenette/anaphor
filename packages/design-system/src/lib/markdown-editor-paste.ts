@@ -31,11 +31,11 @@ function cleanPastedHtml(html: string): string {
 }
 
 // Spec requirement (AC-3, AC-5): detect syntax from the parsed paste, not a second lex.
-function containsMarkdown(node: JSONContent, source: string): boolean {
+function containsMarkdown(node: JSONContent, source: string, hasBracketLink: boolean): boolean {
   if (node.type === "codeBlock") return /^ {0,3}(?:`{3,}|~{3,})/m.test(source);
   if (["heading", "bulletList", "orderedList", "blockquote", "table", "horizontalRule"].includes(node.type ?? "")) return true;
-  if (node.marks?.some(mark => ["bold", "italic", "strike", "code"].includes(mark.type) || (mark.type === "link" && /\[[^\]\n]+\]/.test(source)))) return true;
-  return node.content?.some(child => containsMarkdown(child, source)) ?? false;
+  if (node.marks?.some(mark => ["bold", "italic", "strike", "code"].includes(mark.type) || (mark.type === "link" && hasBracketLink))) return true;
+  return node.content?.some(child => containsMarkdown(child, source, hasBracketLink)) ?? false;
 }
 
 // Spec requirement (AC-4): validate destinations after HTML entity decoding.
@@ -105,7 +105,7 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
     : token.raw).join("");
   const { frontMatter, body } = splitFrontMatter(source);
   const document = editor.markdown.parse(body);
-  if (!frontMatter && source === text && !containsMarkdown(document, body)) return false;
+  if (!frontMatter && source === text && !containsMarkdown(document, body, /\[[^\]\n]+\]/.test(body))) return false;
   // Spec requirement (AC-7): pasted front matter and unsupported nodes are literal text.
   const parsed = literalPasteNodes(document);
   const prefix = frontMatter ? [literalPasteNodes({ type: "opaqueBlock", attrs: { source: frontMatter.replace(/\r?\n$/, "") } })] : [];
