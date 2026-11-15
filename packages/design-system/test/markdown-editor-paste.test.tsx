@@ -420,6 +420,7 @@ test("pasted link titles survive saving and rendering", async () => {
   api.dom.focus();
   await user.paste('[label](https://example.com "a \\\"quote\\\" \\\\ path )")');
   const saved = api.getMarkdown();
+  expect(saved).toBe('[label](https://example.com "a \\\"quote\\\" \\\\ path )")');
   act(() => { api.setMarkdown(saved); });
   expect(api.dom.querySelector("a")).toHaveAttribute("title", 'a "quote" \\ path )');
   const rendered = new DOMParser().parseFromString(await marked.parse(saved), "text/html");
@@ -461,4 +462,16 @@ test.each([
   for (const link of api.dom.querySelectorAll<HTMLAnchorElement>("a[href]")) {
     expect(["javascript:", "data:"]).not.toContain(link.protocol);
   }
+});
+
+test("a paragraph whose ordinal is bold survives reparse", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor("**x3. text**");
+  api.dom.focus();
+  await user.keyboard("{Delete}");
+  const saved = api.getMarkdown();
+  act(() => { api.setMarkdown(saved); });
+  expect(api.dom.textContent).toBe("3. text");
+  expect(api.dom.querySelector("ol")).toBeNull();
+  expect(await marked.parse(saved)).toContain("<strong>3. text</strong>");
 });
