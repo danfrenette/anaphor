@@ -146,7 +146,7 @@ test("pasted Markdown tables become tables", async () => {
   expect(api.dom.querySelector("table")).not.toBeNull();
 });
 
-test.each([["snake_case_names", "snake\\_case\\_names"], ["2 * 3 = 6", "2 \\* 3 = 6"], ["    indented", "    indented"], ["#heading", "#heading"], ["2026. A year.", "2026. A year."]])("ordinary text stays a paragraph: %s", async (text, expected) => {
+test.each([["snake_case_names", "snake\\_case\\_names"], ["2 * 3 = 6", "2 \\* 3 = 6"], ["    indented", "    indented"], ["#heading", "#heading"], ["2026. A year.", "2026\\. A year."]])("ordinary text stays a paragraph: %s", async (text, expected) => {
   const user = userEvent.setup();
   const api = await setupPasteEditor();
   api.dom.focus();
@@ -161,7 +161,7 @@ test("four-digit sentences retain inline Markdown without becoming lists", async
   const api = await setupPasteEditor();
   api.dom.focus();
   await user.paste("2026. **Important**");
-  expect(api.getMarkdown()).toBe("2026. **Important**");
+  expect(api.getMarkdown()).toBe("2026\\. **Important**");
   expect(api.dom.textContent).toBe("2026. Important");
   expect(api.dom.querySelector("strong")).toHaveTextContent("Important");
   expect(api.dom.querySelector("ol")).toBeNull();
@@ -172,7 +172,7 @@ test("four-digit ordinary sentences stay paragraphs", async () => {
   const api = await setupPasteEditor();
   api.dom.focus();
   await user.paste("2026. A year.");
-  expect(api.getMarkdown()).toBe("2026. A year.");
+  expect(api.getMarkdown()).toBe("2026\\. A year.");
   expect(api.dom.textContent).toBe("2026. A year.");
   expect(api.dom.querySelector("ol")).toBeNull();
 });
@@ -182,7 +182,7 @@ test("four-digit sentences retain inline links without becoming lists", async ()
   const api = await setupPasteEditor();
   api.dom.focus();
   await user.paste("2026. [a link](https://example.com)");
-  expect(api.getMarkdown()).toBe("2026. [a link](https://example.com)");
+  expect(api.getMarkdown()).toBe("2026\\. [a link](https://example.com)");
   expect(api.dom.textContent).toBe("2026. a link");
   expect(api.dom.querySelector("a")).toHaveAttribute("href", "https://example.com");
   expect(api.dom.querySelector("ol")).toBeNull();
@@ -345,4 +345,55 @@ test.each([
   expect(api.getMarkdown()).toBe(expected);
   expect(api.dom.textContent).toBe(visible);
   expect(api.dom.querySelector(format)).not.toBeNull();
+});
+
+test("ordinal paragraph survives save and reparse", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.dom.focus();
+  await user.paste("2026. **Important**");
+  const saved = api.getMarkdown();
+  expect(saved).toBe("2026\\. **Important**");
+  act(() => { api.setMarkdown(saved); });
+  expect(api.dom.textContent).toBe("2026. Important");
+  expect(api.dom.querySelector("ol")).toBeNull();
+  expect(await marked.parse(saved)).toBe("<p>2026. <strong>Important</strong></p>\n");
+});
+
+test.each([
+  ["2026. A year.", "2026\\. A year.", "2026. A year.", "<p>2026. A year.</p>\n"],
+  ["2026. **Important**", "2026\\. **Important**", "2026. Important", "<p>2026. <strong>Important</strong></p>\n"],
+  ["text\n\n2026. **Important**", "text\n\n2026\\. **Important**", "text2026. Important", "<p>text</p>\n<p>2026. <strong>Important</strong></p>\n"],
+])("pasted ordinal paragraphs survive reparse: %s", async (source, expected, visible, rendered) => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.dom.focus();
+  await user.paste(source);
+  expect(api.getMarkdown()).toBe(expected);
+  act(() => { api.setMarkdown(expected); });
+  expect(api.dom.textContent).toBe(visible);
+  expect(api.dom.querySelector("ol")).toBeNull();
+  expect(await marked.parse(expected)).toBe(rendered);
+});
+
+test("a paragraph made ordinal by deleting its prefix survives reparse", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor("x3. text");
+  await selectText(api.dom, 0, 1);
+  await user.keyboard("{Backspace}");
+  const saved = api.getMarkdown();
+  expect(saved).toBe("3\\. text");
+  act(() => { api.setMarkdown(saved); });
+  expect(api.dom.textContent).toBe("3. text");
+  expect(api.dom.querySelector("ol")).toBeNull();
+  expect(await marked.parse(saved)).toBe("<p>3. text</p>\n");
+});
+
+test("four-digit text inside pasted fences stays literal", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.dom.focus();
+  await user.paste("```\n2026. text\n```");
+  expect(api.dom.textContent).toBe("2026. text");
+  expect(api.getMarkdown()).toBe("```\n2026. text\n```");
 });
