@@ -14,7 +14,7 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, type Ref } from "react";
-import { cleanPastedHtml, handleMarkdownPaste } from "#lib/markdown-editor-paste";
+import { cleanPastedHtml, handleMarkdownPaste, PasteOrdinal, suppressPastedOrdinal } from "#lib/markdown-editor-paste";
 import { matchOpaqueBlock, matchOpaqueInline, splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 import { cn } from "../lib/utils";
 
@@ -256,6 +256,8 @@ const MarkdownOrderedList = OrderedList.extend({
     start: stockOrderedListTokenizer.start,
     tokenize: (source, tokens, lexer) => {
       const result = stockOrderedListTokenizer.tokenize(source, tokens, lexer);
+      const suppressed = suppressPastedOrdinal(source, result || undefined);
+      if (suppressed) return suppressed;
       const items = result?.items;
       if (!items) return result;
       for (const item of items) {
@@ -472,7 +474,7 @@ function useMarkdownEditor({
       // that opens an ordered item as a code block (workaround 13).
       orderedList: false,
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-    }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, TaskList, TaskItem.configure({ nested: true }), MarkdownTable, TableRow, TableHeader, TableCell, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
+    }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, PasteOrdinal, TaskList, TaskItem.configure({ nested: true }), MarkdownTable, TableRow, TableHeader, TableCell, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
     content: body,
     contentType: "markdown",
     // Spec requirement (AC-1–5, AC-7): clean and classify pasted content.

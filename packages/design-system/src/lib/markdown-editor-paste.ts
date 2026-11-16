@@ -1,8 +1,36 @@
 import { isAllowedUri } from "@tiptap/extension-link";
-import type { JSONContent } from "@tiptap/core";
+import { Extension } from "@tiptap/core";
+import type { JSONContent, MarkdownToken } from "@tiptap/core";
 import type { EditorView } from "@tiptap/pm/view";
 import type { Editor } from "@tiptap/react";
 import { splitFrontMatter } from "#lib/markdown-editor-tokenizers";
+
+// Markdown parsing is synchronous; restore the context even if parsing fails or re-enters.
+let pasteOrdinalContext: { suppressed: boolean } | undefined;
+
+const PasteOrdinal = Extension.create({
+  name: "pasteOrdinal",
+  markdownTokenName: "pasteOrdinal",
+  parseMarkdown(token, helpers) {
+    const content = helpers.parseChildren(token.tokens ?? []);
+    const marker = helpers.createTextNode(token.marker);
+    if (content[0]?.type === "paragraph") {
+      content[0].content = [marker, ...(content[0].content ?? [])];
+    } else {
+      content.unshift(helpers.createNode("paragraph", undefined, [marker]));
+    }
+    return content;
+  },
+});
+
+// Spec requirement (AC-3): retain the first item's tokens while suppressing its list marker.
+function suppressPastedOrdinal(source: string, token: MarkdownToken | undefined): MarkdownToken | undefined {
+  const item = token?.items?.[0];
+  const marker = item?.raw?.match(/^ {0,3}(\d{4,}[.)][ \t]+)/)?.[1];
+  if (!pasteOrdinalContext || !marker || !item?.raw || !source.startsWith(item.raw)) return undefined;
+  pasteOrdinalContext.suppressed = true;
+  return { type: "pasteOrdinal", raw: item.raw, tokens: item.tokens, marker };
+}
 
 // Spec requirement (AC-1, AC-2): clipboard presentation is not document formatting.
 function cleanPastedHtml(html: string): string {
@@ -100,14 +128,17 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
   }
   if (event.clipboardData?.getData("text/html")) return false;
   // Spec requirement (AC-3): a four-digit sentence is not an ordered list.
-  const source = /^( {0,3}\d{4,})[.)](?=\s)/m.test(text)
-    ? editor.markdown.instance.lexer(text).map(token => token.type === "list"
-      ? token.raw.replace(/^( {0,3}\d{4,})([.)])(?=\s)/, "$1\\$2")
-      : token.raw).join("")
-    : text;
-  const { frontMatter, body } = splitFrontMatter(source);
-  const document = editor.markdown.parse(body);
-  if (!frontMatter && source === text && !containsMarkdown(document, body, /\[[^\]\n]+\]/.test(body))) return false;
+  const { frontMatter, body } = splitFrontMatter(text);
+  const previous = pasteOrdinalContext;
+  const context = { suppressed: false };
+  pasteOrdinalContext = context;
+  let document: JSONContent;
+  try {
+    document = editor.markdown.parse(body);
+  } finally {
+    pasteOrdinalContext = previous;
+  }
+  if (!frontMatter && !context.suppressed && !containsMarkdown(document, body, /\[[^\]\n]+\]/.test(body))) return false;
   // Spec requirement (AC-7): pasted front matter and unsupported nodes are literal text.
   const parsed = literalPasteNodes(document);
   const prefix = frontMatter ? [literalPasteNodes({ type: "opaqueBlock", attrs: { source: frontMatter.replace(/\r?\n$/, "") } })] : [];
@@ -117,4 +148,4 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
   return editor.chain().command(({ tr }) => { tr.setMeta("paste", true).setMeta("uiEvent", "paste"); return true; }).insertContent(insertion).run();
 }
 
-export { cleanPastedHtml, handleMarkdownPaste };
+export { cleanPastedHtml, handleMarkdownPaste, PasteOrdinal, suppressPastedOrdinal };

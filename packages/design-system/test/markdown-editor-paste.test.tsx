@@ -416,6 +416,38 @@ test("four-digit text inside pasted fences stays literal", async () => {
   expect(api.getMarkdown()).toBe("```\n2026. text\n```");
 });
 
+test.each([
+  ["text\n\n> 2026. **Important**", "text\n\n> 2026\\. **Important**", "<p>text</p>\n<blockquote>\n<p>2026. <strong>Important</strong></p>\n</blockquote>\n", "blockquote > p"],
+  ["- item\n\n  2026. **Important**", "- item\n\n  2026\\. **Important**", "<ul>\n<li><p>item</p>\n<p>2026. <strong>Important</strong></p>\n</li>\n</ul>\n", "li > p + p"],
+])("nested four-digit sentences stay paragraphs: %s", async (source, expected, html, selector) => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.dom.focus();
+  await user.paste(source);
+  const saved = api.getMarkdown();
+  expect(saved).toBe(expected);
+  act(() => { api.setMarkdown(saved); });
+  expect(api.dom.querySelector(selector)?.textContent).toBe("2026. Important");
+  expect(api.dom.querySelector(`${selector} strong`)?.textContent).toBe("Important");
+  expect(await marked.parse(saved)).toBe(html);
+});
+
+test.each([
+  ["> 2026) **Important**", "> 2026\\) **Important**", "<blockquote>\n<p>2026) <strong>Important</strong></p>\n</blockquote>\n"],
+  ["> 2026. **First**\n> 2027. **Second**", "> 2026\\. **First**\n>\n> 2027\\. **Second**", "<blockquote>\n<p>2026. <strong>First</strong></p>\n<p>2027. <strong>Second</strong></p>\n</blockquote>\n"],
+  ["> ```\n> 2026. **Important**\n> ```", "> ```\n> 2026. **Important**\n> ```", "<blockquote>\n<pre><code>2026. **Important**\n</code></pre>\n</blockquote>\n"],
+  ["> 1. First\n> 2. Second", "> 1. First\n> 2. Second", "<blockquote>\n<ol>\n<li>First</li>\n<li>Second</li>\n</ol>\n</blockquote>\n"],
+])("nested paste preserves marker policy: %s", async (source, expected, html) => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor();
+  api.dom.focus();
+  await user.paste(source);
+  expect(api.getMarkdown()).toBe(expected);
+  act(() => { api.setMarkdown(expected); });
+  expect(api.getMarkdown()).toBe(expected);
+  expect(await marked.parse(expected)).toBe(html);
+});
+
 test("pasted link titles survive saving and rendering", async () => {
   const user = userEvent.setup();
   const api = await setupPasteEditor();
