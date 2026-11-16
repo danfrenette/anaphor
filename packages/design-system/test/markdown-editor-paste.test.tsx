@@ -360,6 +360,24 @@ test("ordinal paragraph survives save and reparse", async () => {
   expect(await marked.parse(saved)).toBe("<p>2026. <strong>Important</strong></p>\n");
 });
 
+test.each(["1.", "2.", "-", "+", ">", "3)"])("hard-break continuation survives HTML paste and starting value: %s", async marker => {
+  const continuation = marker === ">" ? "&gt;" : marker.replace(/[.)+\-]/, "\\$&");
+  const expected = `text  \n${continuation} next`;
+  const api = await setupPasteEditor();
+  pasteHTML(api.dom, `<p>text<br>${marker} next</p>`);
+  expect(api.getMarkdown()).toBe(expected);
+  act(() => { api.setMarkdown(expected); });
+  expect(api.dom.textContent).toBe(`text${marker} next`);
+  expect(api.dom.querySelector("ol, ul, blockquote")).toBeNull();
+  expect(await marked.parse(expected)).toBe(`<p>text<br>${marker === ">" ? "&gt;" : marker} next</p>\n`);
+  const user = userEvent.setup();
+  await selectText(api.dom, 4);
+  await user.keyboard("!");
+  expect(api.getMarkdown()).toBe(`text!  \n${continuation} next`);
+  act(() => { api.setMarkdown(api.getMarkdown()); });
+  expect(api.dom.textContent).toBe(`text!${marker} next`);
+});
+
 test.each([
   ["2026. A year.", "2026\\. A year.", "2026. A year.", "<p>2026. A year.</p>\n"],
   ["2026. **Important**", "2026\\. **Important**", "2026. Important", "<p>2026. <strong>Important</strong></p>\n"],

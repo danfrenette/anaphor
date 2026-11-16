@@ -48,8 +48,9 @@ const MarkdownStarterKit = StarterKit.extend({
         if (node.content?.length === 1 && node.content[0]?.type === "text" && node.content[0].text === "\u00a0") return "&nbsp;";
         const markdown = this.parent?.(node, helpers, context) ?? "";
         // Spec requirement (AC-7): keep pasted literal rules from becoming Markdown rules.
-        // Tiptap 3.33.0 workaround: a paragraph's leading ordinal is not a list.
-        const paragraph = markdown.replace(/^(\d+)([.)])(?=\s)/, "$1\\$2");
+        // Tiptap 3.33.0 workaround: paragraph lines are not lists or blockquotes.
+        const paragraph = markdown.replace(/^( {0,3})(\d+)([.)])(?=[ \t])/gm, "$1$2\\$3")
+          .replace(/(\n)( {0,3})([-+>])(?=[ \t])/g, "$1$2\\$3");
         return node.attrs?.pasteLiteral ? paragraph.replace(/^( {0,3})(?=-{3,}(?:\s|$))/gm, "$1\\") : paragraph;
       },
     }));
