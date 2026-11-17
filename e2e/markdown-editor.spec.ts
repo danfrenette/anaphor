@@ -2,6 +2,49 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { prepareContentSnapshot } from "./content-snapshot";
 
+test("Chromium drops an image file through the demo handler", async ({ page, browserName }) => {
+  test.skip(browserName !== "chromium", "File drop is verified in Chromium.");
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Research note" });
+  await editor.scrollIntoViewIfNeeded();
+  const prevented = await editor.evaluate(element => {
+    const transfer = new DataTransfer();
+    transfer.items.add(new File([new Uint8Array([137, 80, 78, 71])], "diagram.png", { type: "image/png" }));
+    const rect = element.getBoundingClientRect();
+    const event = new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer, clientX: rect.left + 20, clientY: rect.top + 20 });
+    element.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
+  expect(prevented).toBe(true);
+  const image = editor.getByRole("img", { name: "diagram.png" });
+  await expect(image).toHaveAttribute("src", /^blob:/);
+  await expect(page.getByLabel("Current Markdown", { exact: true })).toContainText("![diagram.png](blob:");
+});
+
+for (const key of ["Backspace", "Delete"]) test(`arrow selects an image and ${key} removes it`, async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "In-place note", exact: true });
+  const image = editor.getByRole("img", { name: "Landscape study" });
+  await image.scrollIntoViewIfNeeded();
+  await editor.evaluate(element => {
+    const image = element.querySelector('img[alt="Landscape study"]')!;
+    const selection = window.getSelection()!;
+    const range = document.createRange();
+    range.setStartBefore(image);
+    range.collapse(true);
+    element instanceof HTMLElement && element.focus();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    document.dispatchEvent(new Event("selectionchange"));
+  });
+  await page.keyboard.press("ArrowRight");
+  await expect(image).toHaveClass(/ProseMirror-selectednode/);
+  const outline = await image.evaluate(element => getComputedStyle(element).outlineStyle);
+  expect(outline).not.toBe("none");
+  await page.keyboard.press(key);
+  await expect(image).toHaveCount(0);
+});
+
 test("Chromium pastes real clipboard HTML and undoes it in one step", async ({ page, browserName, context }) => {
   test.skip(browserName !== "chromium", "WebKit cannot grant clipboard permissions in Playwright.");
   await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: "http://127.0.0.1:3105" });
