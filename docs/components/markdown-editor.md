@@ -86,7 +86,8 @@ The bubble uses the floating menu's tuned 8px offset, equivalent to twice the
 standard `--spacing` token (0.25rem at the default root size). It appears above
 the selection on a fine pointer and below it on a coarse pointer, flipping when
 space is insufficient. Its entrance uses a short opacity and scale animation;
-reduced motion disables the animation.
+reduced motion disables the animation. The menu disappears immediately on
+hide: Tiptap removes it from the DOM, and entrance-only motion is intentional.
 
 ## Paste
 
