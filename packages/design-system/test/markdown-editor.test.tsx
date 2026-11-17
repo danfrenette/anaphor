@@ -264,6 +264,7 @@ test("entity-shaped query text keeps the browser URL on edit", async () => {
   fireEvent.submit(field.closest("form")!);
   expect(editor.querySelector("a")).toHaveAttribute("href", "https://x/?a=1&lt;b");
   const saved = ref.current!.getMarkdown();
+  expect(saved).toBe("[text](https://x/?a=1\\&lt;b)");
   const parsed = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html");
   // Known gap: fresh Marked interprets the entity-shaped query when rendering HTML.
   expect(parsed.querySelector("a")?.getAttribute("href")).toBe("https://x/?a=1<b");
