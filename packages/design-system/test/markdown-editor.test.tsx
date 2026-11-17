@@ -146,6 +146,7 @@ test("link editing applies a bare domain and undo restores the text", async () =
   const url = await screen.findByRole("textbox", { name: "URL" });
   await user.type(url, "example.com{Enter}");
   expect(ref.current?.getMarkdown()).toBe("[text](https://example.com/)");
+  editor.focus();
   await user.keyboard("{Control>}z{/Control}");
   expect(ref.current?.getMarkdown()).toBe("text");
 });
