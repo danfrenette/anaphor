@@ -9,11 +9,12 @@ import type { JSONContent, MarkdownRendererHelpers, MarkdownToken, RenderContext
 import { Placeholder } from "@tiptap/extensions/placeholder";
 import { Image } from "@tiptap/extension-image";
 import { Markdown } from "@tiptap/markdown";
-import { EditorState, Plugin, Selection } from "@tiptap/pm/state";
+import { EditorState, Plugin, Selection, TextSelection } from "@tiptap/pm/state";
 import { GapCursor } from "@tiptap/pm/gapcursor";
 import { closeHistory } from "@tiptap/pm/history";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
+import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, type Ref } from "react";
 import { cleanPastedHtml, handleMarkdownPaste, literalPastedImage, PasteOrdinal, suppressPastedOrdinal } from "#lib/markdown-editor-paste";
@@ -773,6 +774,15 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       ),
     )}>
     <EditorContent editor={editor} />
+    {editor && <BubbleMenu editor={editor} role="toolbar" aria-label="Formatting" shouldShow={({ editor, element, view, state, from, to }) => {
+      // Spec requirement: exclude node and cell selections and opaque/code content.
+      if (!editor.isEditable || !(state.selection instanceof TextSelection) || state.selection.empty || !(view.hasFocus() || element.contains(document.activeElement))) return false;
+      let excluded = false;
+      state.doc.nodesBetween(from, to, node => {
+        if (["codeBlock", "opaqueBlock", "opaqueInline"].includes(node.type.name)) excluded = true;
+      });
+      return !excluded && !!state.doc.textBetween(from, to);
+    }} />}
   </div>;
 }
 

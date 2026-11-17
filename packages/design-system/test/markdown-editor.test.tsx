@@ -31,6 +31,37 @@ function setupEditor(defaultValue = "", props: { placeholder?: string; readOnly?
   return { user, ref, ...rendered };
 }
 
+function selectText(element: Element, from: number, to: number) {
+  act(() => {
+    const range = document.createRange();
+    range.setStart(element.firstChild!, from);
+    range.setEnd(element.firstChild!, to);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+    document.dispatchEvent(new Event("selectionchange"));
+  });
+}
+
+test("shows formatting for selected text and hides it after collapse", async () => {
+  const { user } = setupEditor("Selected text");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  expect(screen.queryByRole("toolbar", { name: "Formatting" })).not.toBeInTheDocument();
+  selectText(editor.querySelector("p")!, 0, 8);
+  expect(await screen.findByRole("toolbar", { name: "Formatting" })).toBeVisible();
+  selectText(editor.querySelector("p")!, 8, 8);
+  await waitFor(() => expect(screen.queryByRole("toolbar", { name: "Formatting" })).not.toBeInTheDocument());
+});
+
+test("does not show formatting inside a code block", async () => {
+  const { user } = setupEditor("```\ncode\n```");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor.querySelector("code")!);
+  selectText(editor.querySelector("code")!, 0, 4);
+  await waitFor(() => expect(screen.queryByRole("toolbar", { name: "Formatting" })).not.toBeInTheDocument());
+});
+
 test.each(["![alt](https://example.com/a.png \"title\")", "before ![alt](https://example.com/a.png \"title\") after"])("renders starting image inline: %s", async source => {
   const { ref, user } = setupEditor(source);
   const image = screen.getByRole("img", { name: "alt" });
