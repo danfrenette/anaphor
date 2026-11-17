@@ -368,6 +368,8 @@ pinned by a test so an upgrade that changes one is noticed:
 - An entity-shaped link query such as `https://x/?a=1&lt;b` retains the
   literal text in the editor, but fresh Marked rendering decodes `&lt;` to `<`
   in the link destination. It does not introduce HTML markup.
+- Other link destinations are compared as resolved URLs, rather than identical
+  attribute text: Marked percent-encodes backticks and non-ASCII characters.
 - Entities in preserved content are re-encoded, for example `&nbsp;` becomes
   `&amp;nbsp;`.
 - MDX fragments `<>…</>` are not preserved.

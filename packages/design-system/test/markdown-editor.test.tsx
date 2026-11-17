@@ -312,6 +312,23 @@ test("entity-shaped query text keeps the browser URL on edit", async () => {
   expect(editor.querySelector("a")).toHaveAttribute("href", "https://x/?a=1&lt;b");
 });
 
+test.each(["https://example.com/a`b", "https://éxample.com/a"])("fresh Marked resolves the same URL for %s", async destination => {
+  const { user, ref } = setupEditor("text");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("p")!, 0, 4);
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  const field = await screen.findByRole("textbox", { name: "URL" });
+  fireEvent.change(field, { target: { value: destination } });
+  fireEvent.submit(field.closest("form")!);
+  const saved = ref.current!.getMarkdown();
+  expect(saved).toBe(`[text](${destination})`);
+  const markedHref = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html").querySelector("a")!.getAttribute("href")!;
+  expect(new URL(markedHref, "https://base.invalid/").href).toBe(new URL(destination, "https://base.invalid/").href);
+  act(() => ref.current!.setMarkdown(saved));
+  expect(editor.querySelector("a")).toHaveAttribute("href", destination);
+});
+
 test("clean starting link stays unchanged after an unrelated edit", async () => {
   const { user, ref } = setupEditor("[text](https://anaphor.dev)");
   const editor = await screen.findByRole("textbox", { name: "Research note" });
