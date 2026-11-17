@@ -155,6 +155,22 @@ test("link bubble adds, edits, rejects unsafe URLs and removes links", async ({ 
   await expect(output).toHaveText("[hello](https://other.example)");
 });
 
+test("a multi-cell selection does not expose formatting", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Cell dragging is verified on desktop.");
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Table note" });
+  await editor.scrollIntoViewIfNeeded();
+  const cells = editor.locator("td");
+  const start = (await cells.nth(0).boundingBox())!;
+  const end = (await cells.nth(1).boundingBox())!;
+  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, { steps: 10 });
+  await page.mouse.up();
+  await expect(editor.locator(".selectedCell")).toHaveCount(2);
+  await expect(page.getByRole("toolbar", { name: "Formatting" })).toHaveCount(0);
+});
+
 test("formatting bubble escapes the field scroller and respects reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/markdown-editor");
@@ -262,6 +278,7 @@ for (const key of ["Backspace", "Delete"]) test(`arrow selects an image and ${ke
   });
   await page.keyboard.press("ArrowRight");
   await expect.poll(() => image.evaluate(element => getComputedStyle(element).outlineStyle)).not.toBe("none");
+  await expect(page.getByRole("toolbar", { name: "Formatting" })).toHaveCount(0);
   await page.keyboard.press(key);
   await expect(image).toHaveCount(0);
 });

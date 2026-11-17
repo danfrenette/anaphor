@@ -151,6 +151,27 @@ test("link editing changes and removes an existing link", async () => {
   expect(ref.current?.getMarkdown()).toBe("text");
 });
 
+test("link editing updates a selection spanning an existing link", async () => {
+  const { user, ref } = setupEditor("before [link](https://example.com) after");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  act(() => {
+    const paragraph = editor.querySelector("p")!;
+    const range = document.createRange();
+    range.setStart(paragraph.firstChild!, 0);
+    range.setEnd(paragraph.lastChild!, paragraph.lastChild!.textContent!.length);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+    document.dispatchEvent(new Event("selectionchange"));
+  });
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  const url = await screen.findByRole("textbox", { name: "URL" });
+  await user.clear(url);
+  await user.type(url, "https://other.example{Enter}");
+  expect(ref.current?.getMarkdown()).toBe("[before link after](https://other.example)");
+});
+
 test.each(["![alt](https://example.com/a.png \"title\")", "before ![alt](https://example.com/a.png \"title\") after"])("renders starting image inline: %s", async source => {
   const { ref, user } = setupEditor(source);
   const image = screen.getByRole("img", { name: "alt" });
