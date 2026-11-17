@@ -32,7 +32,7 @@ for (const key of ["Backspace", "Delete"]) test(`arrow selects an image and ${ke
     const range = document.createRange();
     range.setStartBefore(image);
     range.collapse(true);
-    element instanceof HTMLElement && element.focus();
+    if (element instanceof HTMLElement) element.focus();
     selection.removeAllRanges();
     selection.addRange(range);
     document.dispatchEvent(new Event("selectionchange"));

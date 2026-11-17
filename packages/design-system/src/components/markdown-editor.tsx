@@ -482,7 +482,7 @@ function useMarkdownEditor({
   const currentValue = useRef(defaultValue);
   const onChangeRef = useRef(onChange);
   const imageHandlerRef = useRef(onImageFile);
-  imageHandlerRef.current = onImageFile;
+  useLayoutEffect(() => { imageHandlerRef.current = onImageFile; }, [onImageFile]);
   const imageGeneration = useRef(0);
   useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
   const isReplacingRef = useRef(false);
