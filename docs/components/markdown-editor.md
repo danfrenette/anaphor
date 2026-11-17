@@ -190,14 +190,16 @@ the caret; rendered scroll regions should also be keyboard focusable.
 </Field>
 ```
 
-`useMarkdownEditor(options)` accepts the same value, callback, state, and
-labelling options. Its returned `editor` is only for mounting and frame
-composition with Tiptap's `EditorContent`; read Markdown only through the
+`useMarkdownEditor(options)` is the editing engine: it owns parsing,
+serialization, input rules and mark shortcuts, paste, image files, and the
+value contract. It accepts the same value, callback, state, and labelling
+options. Its returned `editor` is only for mounting Tiptap's `EditorContent`;
+read Markdown only through the
 returned `getMarkdown()` and replace it through `setMarkdown()`.
 `editor.getMarkdown()` is serializer-normalised even before the first edit and
-does not provide the pre-edit byte guarantee. `MarkdownEditor` is the standard
-presentation around that hook. Consumers exchange Markdown strings, not Tiptap
-JSON or HTML.
+does not provide the pre-edit byte guarantee. `MarkdownEditor` adds the frame,
+presentation, and selection bubble, including Alt+F10 and Cmd/Ctrl+K.
+Consumers exchange Markdown strings and should not depend on Tiptap JSON or HTML.
 
 The editable root has role `textbox`, `aria-multiline="true"`, and the supplied
 accessible name. Inside a field, the label names it via `aria-labelledby` and

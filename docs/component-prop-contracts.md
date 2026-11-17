@@ -90,8 +90,12 @@ is uncontrolled: `onChange(markdown)` is optional, and the component ref exposes
 `setMarkdown` replaces the document from outside, never fires `onChange`, and
 resets undo history. Optional props compose the editor into `Field`: `placeholder`,
 `readOnly`, `disabled`, `autoFocus`, `invalid`, `id`, and `aria-describedby`.
-The hook returns the configured `editor` for a consumer-owned frame and the same
-`getMarkdown()`/`setMarkdown()` readers. See [Markdown editor](components/markdown-editor.md).
+The hook is the editing engine, owning parsing, serialization, input rules and
+mark shortcuts, paste, image files, and the value contract. Its `editor` is only
+for mounting `EditorContent`; consumers exchange Markdown through
+`getMarkdown()`/`setMarkdown()`, not Tiptap JSON or HTML. The component adds the
+frame, presentation, and selection bubble (including Alt+F10 and Cmd/Ctrl+K).
+See [Markdown editor](components/markdown-editor.md).
 
 The optional `onImageFile` callback receives an image `File` and returns a
 promise of `{ src: string; alt: string }`. Its name describes the event without
