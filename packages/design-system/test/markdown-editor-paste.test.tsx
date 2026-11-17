@@ -235,6 +235,20 @@ test.each(["`code` *star* _under_ &lt; &#65; & < [ ] \\", "x\n\n<img src=x onerr
   expect(document.querySelector("img")?.getAttribute("alt")).toBe(alt.replace(/\s*\n\s*/g, " "));
 });
 
+test.each(["`code`", "*star*", "_under_", "~strike~", "&lt;", "&amp;", "<", ">", "[", "]", "\\", "a\\*b", "one\n\ntwo"])("image alt round trips: %s", async alt => {
+  const api = await setupPasteEditor("", { onImageFile: async () => ({ src: "https://safe.invalid/a", alt }) });
+  await act(async () => { fileEvent(api.dom, "paste", [new File(["a"], "a.png", { type: "image/png" })]); });
+  const saved = api.getMarkdown();
+  const expected = alt.replace(/\s*[\r\n]\s*/g, " ");
+  const rendered = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html");
+  expect(rendered.querySelector("img[src]")?.getAttribute("alt")).toBe(expected);
+  act(() => api.setMarkdown(saved));
+  expect(api.dom.querySelector("img[src]")?.getAttribute("alt")).toBe(expected);
+  api.dom.focus();
+  await userEvent.setup().keyboard("x");
+  expect(api.getMarkdown()).toBe(`${saved}x`);
+});
+
 test.each([
   ["<script>alert(1)</script>", "<script>alert(1)</script>"],
   ["x\\](javascript:alert(1))", "x](javascript:alert(1))"],

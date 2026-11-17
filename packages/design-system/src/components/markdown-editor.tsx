@@ -231,11 +231,18 @@ const MarkdownLink = Link.extend({
 
 // Tiptap 3.33.0 workaround: preserve delimiters in image alt text and destinations.
 const MarkdownImage = Image.extend({
-  // Tiptap 3.33.0 workaround: marked leaves escaped backslashes in image alt text.
-  parseMarkdown: (token, helpers) => literalPastedImage(token) ?? helpers.createNode("image", { src: token.href, title: token.title, alt: token.text?.replace(/\\\\/g, "\\") }),
+  // Tiptap 3.33.0 workaround: decode CommonMark escapes and entities in image alt text.
+  parseMarkdown: (token, helpers) => {
+    const literal = literalPastedImage(token);
+    if (literal) return literal;
+    const textarea = document.createElement("textarea");
+    textarea.innerHTML = (token.text ?? "").replace(/\\([!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~])/g, "$1");
+    return helpers.createNode("image", { src: token.href, title: token.title, alt: textarea.value });
+  },
   renderMarkdown: node => {
     const src = node.attrs?.src ?? "";
-    const alt = (node.attrs?.alt ?? "").replace(/\s*[\r\n]\s*/g, " ").replace(/&/g, "&amp;").replace(/[\\`*_[\]<>]/g, "\\$&");
+    // Tiptap 3.33.0 workaround: preserve literal Markdown syntax in alt text.
+    const alt = (node.attrs?.alt ?? "").replace(/\s*[\r\n]\s*/g, " ").replace(/&/g, "&amp;").replace(/[\\`*_[\]<>~]/g, "\\$&");
     const title = (node.attrs?.title ?? "").replace(/[\\"]/g, "\\$&");
     const destination = linkDestinationNeedsAngleBrackets(src) ? `<${src}>` : src;
     const image = title ? `![${alt}](${destination} "${title}")` : `![${alt}](${destination})`;
