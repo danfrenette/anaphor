@@ -591,6 +591,7 @@ function useMarkdownEditor({
       if (editor.isDestroyed || !editor.isEditable || generation !== imageGeneration.current) return;
       const content = results.flatMap(result => result.status === "fulfilled" ? [{ type: "image", attrs: result.value }] : []);
       if (content.length) {
+        // Spec requirement (handoff 346 decision 4): an asynchronously resolved image is its own undo step.
         editor.chain().command(({ tr }) => { closeHistory(tr); return true; }).insertContentAt({ from, to }, content).run();
         editor.view.dispatch(closeHistory(editor.state.tr));
       }

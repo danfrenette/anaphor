@@ -63,6 +63,17 @@ test("image file insertion maps through typing while pending", async () => {
   expect(api.getMarkdown()).toBe("axb");
 });
 
+test("typing after an image insertion has a separate undo step", async () => {
+  const api = await setupPasteEditor("", { onImageFile: async () => ({ src: "a.png", alt: "a" }) });
+  api.dom.focus();
+  await act(async () => { fileEvent(api.dom, "paste", [new File(["a"], "a.png", { type: "image/png" })]); });
+  await userEvent.setup().keyboard("x");
+  expect(api.getMarkdown()).toBe("![a](a.png)x");
+  await userEvent.setup().keyboard("{Control>}z{/Control}");
+  expect(api.getMarkdown()).toBe("![a](a.png)");
+  expect(screen.getByRole("img", { name: "a" })).toBeVisible();
+});
+
 test("a positioned drop maps its insertion point through pending edits", async () => {
   let resolveImage!: (value: { src: string; alt: string }) => void;
   let editor: Editor | null = null;
