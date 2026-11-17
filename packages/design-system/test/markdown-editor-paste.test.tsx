@@ -543,3 +543,46 @@ test.each([
   expect(api.dom.querySelector(element)).not.toBeNull();
   expect(api.dom.querySelectorAll("ol")).toHaveLength(element === "ol" ? 1 : 0);
 });
+
+test.each(["# heading", "###### heading", "```", "~~~", "---", "* * *", "___", "==="]) ("paragraph block opener survives HTML paste and starting value: %s", async line => {
+  const api = await setupPasteEditor();
+  pasteHTML(api.dom, `<p>text<br>${line}</p>`);
+  const saved = api.getMarkdown();
+  act(() => { api.setMarkdown(saved); });
+  expect(api.dom.querySelectorAll("p")).toHaveLength(1);
+  expect(api.dom.textContent).toBe(`text${line}`);
+  expect(api.dom.querySelector("br")).not.toBeNull();
+  const html = await new (await import("marked")).Marked().parse(saved);
+  const rendered = new DOMParser().parseFromString(html, "text/html");
+  expect(rendered.querySelector("p")?.textContent).toBe(`text${line}`);
+  expect(rendered.querySelector("br")).not.toBeNull();
+  await selectText(api.dom, 4);
+  await userEvent.setup().keyboard("!");
+  const edited = api.getMarkdown();
+  act(() => { api.setMarkdown(edited); });
+  expect(api.dom.textContent).toBe(`text!${line}`);
+  expect(api.dom.querySelector("br")).not.toBeNull();
+});
+
+test.each(["# not a heading", "a`b``c"]) ("inline code after a hard break survives serialization: %s", async code => {
+  const api = await setupPasteEditor();
+  pasteHTML(api.dom, `<p>text<br><code>${code}</code></p>`);
+  const saved = api.getMarkdown();
+  act(() => { api.setMarkdown(saved); });
+  expect(api.dom.querySelector("code")?.textContent).toBe(code);
+  expect(api.dom.querySelector("br")).not.toBeNull();
+  const html = await new (await import("marked")).Marked().parse(saved);
+  const rendered = new DOMParser().parseFromString(html, "text/html");
+  expect(rendered.querySelector("code")?.textContent).toBe(code);
+  expect(rendered.querySelector("br")).not.toBeNull();
+});
+
+test.each(["# heading", "```", "~~~", "---", "***", "___", "===", "- item", "+ item", "* item", "> quote"]) ("paragraph opener on its first line survives paste: %s", async line => {
+  const api = await setupPasteEditor();
+  pasteHTML(api.dom, `<p>${line.replace(">", "&gt;")}</p>`);
+  const saved = api.getMarkdown();
+  act(() => { api.setMarkdown(saved); });
+  expect(api.dom.querySelector("p")?.textContent).toBe(line);
+  const html = await new (await import("marked")).Marked().parse(saved);
+  expect(new DOMParser().parseFromString(html, "text/html").querySelector("p")?.textContent).toBe(line);
+});

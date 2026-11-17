@@ -50,7 +50,12 @@ const MarkdownStarterKit = StarterKit.extend({
         // Spec requirement (AC-7): keep pasted literal rules from becoming Markdown rules.
         // Tiptap 3.33.0 workaround: paragraph lines are not lists or blockquotes.
         const paragraph = markdown.replace(/^( {0,3})(\d+)([.)])(?=[ \t])/gm, "$1$2\\$3")
-          .replace(/(\n)( {0,3})([-+>])(?=[ \t])/g, "$1$2\\$3");
+          .replace(/^( {0,3})([-+>])(?=[ \t])/gm, "$1\\$2")
+          .replace(/^( {0,3})((?:#{1,6}(?=[ \t])|`{3,}|~{3,}|(?:[-*_][ \t]*){3,}$|={3,}[ \t]*$)[^\n]*)/gm, (line, indent: string, content: string) => {
+            const fence = /^`{3,}/.exec(content)?.[0];
+            if (fence && [...content.slice(fence.length).matchAll(/`+/g)].some(run => run[0] === fence)) return line;
+            return `${indent}\\${content}`;
+          });
         return node.attrs?.pasteLiteral ? paragraph.replace(/^( {0,3})(?=-{3,}(?:\s|$))/gm, "$1\\") : paragraph;
       },
     }));
