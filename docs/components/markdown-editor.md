@@ -104,7 +104,10 @@ ordinary text. Paste inside a code block is always literal.
 
 Markdown parsing uses marked's lexer. Pathological inputs with many unmatched
 formatting delimiters can take disproportionately longer to parse, both on
-paste and when loading a document; there is no paste-size cap.
+paste and when loading a document; there is no paste-size cap. A 50k-character
+realistic paste took 14.5 seconds under concurrent test load in one macOS run;
+it passed the prior 10-second bound when run alone. These are observations, not
+performance guarantees.
 
 Pasting blocks in the middle of a heading can save a leading space in the
 second heading (for example, `#  world`). Reparsing drops that space; it is
