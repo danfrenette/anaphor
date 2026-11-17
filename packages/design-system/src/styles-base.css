@@ -390,7 +390,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-slot="markdown-formatting-bubble"] { animation: none; }
+  [data-slot="markdown-formatting-bubble"]:not([hidden]) { animation: none; }
 }
 
 [data-slot="popover-popup"]:is([data-starting-style], [data-ending-style]) {

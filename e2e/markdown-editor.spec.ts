@@ -183,6 +183,7 @@ test("formatting bubble escapes the field scroller and respects reduced motion",
   await expect(bubble).toBeVisible();
   expect(await bubble.evaluate(element => getComputedStyle(element.parentElement!).position)).toBe("fixed");
   expect(await bubble.evaluate(element => getComputedStyle(element).transitionDuration)).toBe("0s");
+  expect(await bubble.evaluate(element => getComputedStyle(element).animationName)).toBe("none");
 });
 
 test("touch selection positions the bubble below text and buttons are tappable", async ({ page, isMobile }) => {
