@@ -75,6 +75,16 @@ function isSafePasteUri(uri: unknown): boolean {
   return !!isAllowedUri(textarea.value.replace(/[\u0000-\u0020\u007f]/g, ""));
 }
 
+// Tiptap 3.33.0 workaround: use the same browser-normalized destination on insert and save.
+function normalizeLinkHref(href: string): string {
+  href = href.replace(/&(?=(?:#\d+|#x[\da-f]+|[a-z][a-z\d]+);)/gi, "%26");
+  try {
+    const url = new URL(href);
+    if (["http:", "https:", "mailto:"].includes(url.protocol)) return url.href;
+  } catch { /* Relative references do not have an absolute URL. */ }
+  return href.replace(/[\u0000-\u0020\u007f<>\\"]/g, character => encodeURIComponent(character));
+}
+
 function literalPastedImage(token: MarkdownToken): JSONContent | undefined {
   if (!pasteOrdinalContext) return undefined;
   const src = token.href ?? "";
@@ -139,7 +149,7 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
   if (!text || view.state.selection.$from.parent.type.spec.code || !editor?.markdown) return false;
   // Spec requirement (AC-4): a pasted URL links the selection, even with rich HTML.
   if (!view.state.selection.empty && /^[a-z][a-z\d+.-]*:/i.test(text) && URL.canParse(text) && isSafePasteUri(text)) {
-    return editor.chain().command(({ tr }) => { tr.setMeta("uiEvent", "paste"); return true; }).setLink({ href: text }).run();
+    return editor.chain().command(({ tr }) => { tr.setMeta("uiEvent", "paste"); return true; }).setLink({ href: normalizeLinkHref(text) }).run();
   }
   if (event.clipboardData?.getData("text/html")) return false;
   // Spec requirement (AC-3): a four-digit sentence is not an ordered list.
@@ -163,4 +173,4 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
   return editor.chain().command(({ tr }) => { tr.setMeta("paste", true).setMeta("uiEvent", "paste"); return true; }).insertContent(insertion).run();
 }
 
-export { cleanPastedHtml, handleMarkdownPaste, isSafePasteUri, literalPastedImage, PasteOrdinal, suppressPastedOrdinal };
+export { cleanPastedHtml, handleMarkdownPaste, isSafePasteUri, literalPastedImage, normalizeLinkHref, PasteOrdinal, suppressPastedOrdinal };

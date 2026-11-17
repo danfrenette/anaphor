@@ -2,7 +2,7 @@ import { createRef, useLayoutEffect } from "react";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { Field, FieldDescription, FieldLabel, MarkdownEditor, useMarkdownEditor, type MarkdownEditorHandle, type UseMarkdownEditorResult } from "@anaphor/system";
@@ -116,9 +116,52 @@ test("link editing applies a bare domain and undo restores the text", async () =
   await user.click(await screen.findByRole("button", { name: "Link" }));
   const url = await screen.findByRole("textbox", { name: "URL" });
   await user.type(url, "example.com{Enter}");
-  expect(ref.current?.getMarkdown()).toBe("[text](https://example.com)");
+  expect(ref.current?.getMarkdown()).toBe("[text](https://example.com/)");
   await user.keyboard("{Control>}z{/Control}");
   expect(ref.current?.getMarkdown()).toBe("text");
+});
+
+test.each([
+  "https://example.com/a> <img src=x onerror=alert(1)>",
+  "https://example.com/a<b",
+  "https://example.com/a\\b",
+  "https://evil.com\\@example.com",
+  "https://example.com/a b",
+  "https://x/?a=1&lt;b",
+  "mailto:a@b.c?subject=x y",
+])("link destination cannot break out: %s", async destination => {
+  const { user, ref } = setupEditor("text");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("p")!, 0, 4);
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  const field = await screen.findByRole("textbox", { name: "URL" });
+  fireEvent.change(field, { target: { value: destination } });
+  fireEvent.submit(field.closest("form")!);
+  const before = editor.querySelector("a")!.getAttribute("href")!;
+  const saved = ref.current!.getMarkdown();
+  const parsed = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html");
+  expect(parsed.querySelectorAll("body > *")).toHaveLength(1);
+  expect(parsed.querySelector("img")).toBeNull();
+  expect(new URL(parsed.querySelector("a")!.getAttribute("href")!, "https://base.invalid/").href).toBe(new URL(before, "https://base.invalid/").href);
+  act(() => ref.current!.setMarkdown(saved));
+  expect(editor.querySelector("a")?.getAttribute("href")).toBe(before);
+});
+
+test("relative starting link retains its destination after editing and reparse", async () => {
+  const source = "[text](<../a b>)";
+  const { user, ref } = setupEditor(source);
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  expect(ref.current!.getMarkdown()).toBe(source);
+  const before = editor.querySelector("a")!.getAttribute("href")!;
+  await user.click(editor);
+  await user.keyboard("!");
+  const saved = ref.current!.getMarkdown();
+  const parsed = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html");
+  expect(new URL(parsed.querySelector("a")!.getAttribute("href")!, "https://base.invalid/").href).toBe(new URL(before, "https://base.invalid/").href);
+  expect(parsed.querySelector("img")).toBeNull();
+  act(() => ref.current!.setMarkdown(saved));
+  expect(editor.querySelector("a")?.getAttribute("href")).toBe(before);
 });
 
 test("link editing refuses encoded unsafe URLs without changing the link", async () => {
@@ -128,7 +171,7 @@ test("link editing refuses encoded unsafe URLs without changing the link", async
   selectText(editor.querySelector("a")!, 0, 4);
   await user.click(await screen.findByRole("button", { name: "Link" }));
   const url = await screen.findByRole("textbox", { name: "URL" });
-  expect(url).toHaveValue("https://example.com");
+  expect(url).toHaveValue("https://example.com/");
   await user.clear(url);
   await user.type(url, "java&#115;cript:alert(1){Enter}");
   expect(url).toHaveAttribute("aria-invalid", "true");
@@ -145,7 +188,7 @@ test("link editing changes and removes an existing link", async () => {
   const url = await screen.findByRole("textbox", { name: "URL" });
   await user.clear(url);
   await user.type(url, "https://other.example{Enter}");
-  expect(ref.current?.getMarkdown()).toBe("[text](https://other.example)");
+  expect(ref.current?.getMarkdown()).toBe("[text](https://other.example/)");
   await user.click(await screen.findByRole("button", { name: "Link" }));
   await user.click(await screen.findByRole("button", { name: "Remove link" }));
   expect(ref.current?.getMarkdown()).toBe("text");
@@ -169,7 +212,7 @@ test("link editing updates a selection spanning an existing link", async () => {
   const url = await screen.findByRole("textbox", { name: "URL" });
   await user.clear(url);
   await user.type(url, "https://other.example{Enter}");
-  expect(ref.current?.getMarkdown()).toBe("[before link after](https://other.example)");
+  expect(ref.current?.getMarkdown()).toBe("[before link after](https://other.example/)");
 });
 
 test.each(["![alt](https://example.com/a.png \"title\")", "before ![alt](https://example.com/a.png \"title\") after"])("renders starting image inline: %s", async source => {
@@ -261,9 +304,9 @@ test.each([
   const html = await new Marked().parse(saved);
   const document = new DOMParser().parseFromString(html, "text/html");
   expect(document.querySelector("a img")?.getAttribute("alt")).toBe("a");
-  expect(document.querySelector("a")?.getAttribute("href")).toBe("https://example.com");
+  expect(document.querySelector("a")?.getAttribute("href")).toBe("https://example.com/");
   const { ref, unmount } = setupEditor(saved);
-  expect(screen.getByRole("img", { name: "a" }).closest("a")).toHaveAttribute("href", "https://example.com");
+  expect(screen.getByRole("img", { name: "a" }).closest("a")).toHaveAttribute("href", "https://example.com/");
   expect(ref.current?.getMarkdown()).toBe(saved);
   unmount();
 });
@@ -445,14 +488,14 @@ test("a starting Markdown link renders and writes back as a link", async () => {
 
   const link = await screen.findByRole("link", { name: "Anaphor" });
   expect(link).toBeVisible();
-  expect(link).toHaveAttribute("href", "https://anaphor.dev");
+  expect(link).toHaveAttribute("href", "https://anaphor.dev/");
 
   const editor = await screen.findByRole("textbox", { name: "Research note" });
   await user.click(editor);
   await user.keyboard("!");
 
   const markdown = ref.current?.getMarkdown() ?? "";
-  expect(markdown).toContain("[Anaphor](https://anaphor.dev)");
+  expect(markdown).toContain("[Anaphor](https://anaphor.dev/)");
 });
 
 test("announces a labelled multiline textbox and allows Tab focus in and out", async () => {
@@ -811,7 +854,7 @@ describe("serializer round-trip", () => {
   test("a link destination needing angle brackets keeps them on round-trip", async () => {
     const input = "[a](<https://x.com/with space>)";
     const output = await serializeWithoutEdit(input);
-    expect(output).toBe(input);
+    expect(output).toBe("[a](https://x.com/with%20space)");
     expect(await serializeWithoutEdit(output)).toBe(output);
   });
 
@@ -958,7 +1001,7 @@ describe("fixture", () => {
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     expect(screen.getByRole("heading", { level: 1, name: "Title" })).toBeVisible();
-    expect(screen.getByRole("link", { name: "link" })).toHaveAttribute("href", "https://anaphor.dev");
+    expect(screen.getByRole("link", { name: "link" })).toHaveAttribute("href", "https://anaphor.dev/");
     expect(screen.getByRole("blockquote")).toHaveTextContent("A quote");
     expect(screen.getByRole("separator")).toBeVisible();
     expect(screen.getByText("const x = 1;")).toBeVisible();

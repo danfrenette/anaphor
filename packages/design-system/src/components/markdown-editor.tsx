@@ -18,7 +18,7 @@ import { BubbleMenu, type BubbleMenuProps } from "@tiptap/react/menus";
 import { TextB, TextItalic, TextStrikethrough, Code, Link as LinkIcon } from "@phosphor-icons/react/dist/ssr";
 import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type Ref } from "react";
-import { cleanPastedHtml, handleMarkdownPaste, isSafePasteUri, literalPastedImage, PasteOrdinal, suppressPastedOrdinal } from "#lib/markdown-editor-paste";
+import { cleanPastedHtml, handleMarkdownPaste, isSafePasteUri, literalPastedImage, normalizeLinkHref, PasteOrdinal, suppressPastedOrdinal } from "#lib/markdown-editor-paste";
 import { matchOpaqueBlock, matchOpaqueInline, splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 import { cn } from "../lib/utils";
 import { Button } from "./button";
@@ -50,7 +50,7 @@ function renderLinkedImages(node: JSONContent, helpers: MarkdownRendererHelpers)
     const text = helpers.renderChildren(children);
     if (link) {
       const href = link.attrs?.href ?? "";
-      const destination = linkDestinationNeedsAngleBrackets(href) ? `<${href}>` : href;
+      const destination = serializeLinkDestination(href);
       const title = (link.attrs?.title ?? "").replace(/[\\"]/g, "\\$&");
       markdown += title ? `[${text}](${destination} "${title}")` : `[${text}](${destination})`;
     } else markdown += text;
@@ -173,7 +173,12 @@ function codeFenceLength(text: string): number {
   return Math.max(3, longestBacktickRun(text) + 1);
 }
 
-/** True when a link destination must use the `<...>` form to survive a round-trip. */
+// Tiptap 3.33.0 workaround: bare destinations cannot terminate in injected HTML.
+function serializeLinkDestination(href: string): string {
+  return normalizeLinkHref(href).replace(/[()&]/g, "\\$&");
+}
+
+/** True when an image destination must use the `<...>` form to survive a round-trip. */
 function linkDestinationNeedsAngleBrackets(href: string): boolean {
   if (/\s/.test(href)) return true;
   let depth = 0;
@@ -223,20 +228,29 @@ const CodeBlockGapCursor = Extension.create({
   extendNodeSchema: extension => extension.name === "codeBlock" ? { createGapCursor: true } : {},
 });
 
-// Workaround F3: wrap a link destination in `<...>` when it holds spaces or
-// unbalanced parentheses, which CommonMark only accepts in the bracketed form.
-// The stock renderer writes the bare href, which re-parses as a shorter link.
+// Tiptap 3.33.0 workaround: serialize link destinations without syntax breakout.
 const MarkdownLink = Link.extend({
+  // Tiptap 3.33.0 workaround: paste rules can create a non-normalized link mark.
+  renderHTML(props) {
+    const href = props.HTMLAttributes.href;
+    return this.parent!({ ...props, HTMLAttributes: { ...props.HTMLAttributes, href: isSafePasteUri(href) ? normalizeLinkHref(href) : href } });
+  },
+  addAttributes() {
+    return { ...this.parent?.(), href: { default: null, parseHTML: element => {
+      const href = element.getAttribute("href");
+      return href && isSafePasteUri(href) ? normalizeLinkHref(href) : href;
+    } } };
+  },
   // Tiptap 3.33.0 workaround: applyMark skips inline image nodes.
   parseMarkdown: (token, helpers) => helpers.parseInline(token.tokens ?? []).map(node => ({
     ...node,
-    marks: [...(node.marks ?? []), { type: "link", attrs: { href: token.href, title: token.title || null } }],
+    marks: [...(node.marks ?? []), { type: "link", attrs: { href: isSafePasteUri(token.href) ? normalizeLinkHref(token.href ?? "") : token.href, title: token.title || null } }],
   })),
   renderMarkdown: (node, h) => {
     const href = node.attrs?.href ?? "";
     const title = node.attrs?.title ?? "";
     const text = h.renderChildren(node);
-    const destination = linkDestinationNeedsAngleBrackets(href) ? `<${href}>` : href;
+    const destination = serializeLinkDestination(href);
     // Tiptap 3.33.0 workaround: escape title delimiters and backslashes.
     const escapedTitle = title.replace(/[\\"]/g, "\\$&");
     return title ? `[${text}](${destination} "${escapedTitle}")` : `[${text}](${destination})`;
@@ -269,7 +283,7 @@ const MarkdownImage = Image.extend({
     const link = node.marks?.find(mark => mark.type === "link");
     if (!link) return image;
     const href = link.attrs?.href ?? "";
-    const linkDestination = linkDestinationNeedsAngleBrackets(href) ? `<${href}>` : href;
+    const linkDestination = serializeLinkDestination(href);
     const linkTitle = (link.attrs?.title ?? "").replace(/[\\"]/g, "\\$&");
     return linkTitle ? `[${image}](${linkDestination} "${linkTitle}")` : `[${image}](${linkDestination})`;
   },
@@ -797,7 +811,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
     if (!editor) return;
     const value = url.trim();
     if (!remove && (!value || !isSafePasteUri(value))) { setLinkError(true); return; }
-    const href = /^[a-z][a-z\d+.-]*:/i.test(value) || value.startsWith("/") || value.startsWith("#") ? value : `https://${value}`;
+    const href = normalizeLinkHref(/^[a-z][a-z\d+.-]*:/i.test(value) || value.startsWith("/") || value.startsWith("#") ? value : `https://${value}`);
     const chain = editor.chain().command(({ tr }) => { closeHistory(tr); return true; });
     if (remove) chain.unsetLink().run(); else chain.setLink({ href }).run();
     editor.view.dispatch(closeHistory(editor.state.tr));
