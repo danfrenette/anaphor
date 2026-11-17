@@ -210,6 +210,28 @@ test.each(["x\n\n<img src=x onerror=alert(1)>", "one\ntwo", "<script>alert(1)</s
   expect(document.querySelector("img")?.getAttribute("alt")).toBe(alt.replace(/\s*\n\s*/g, " "));
 });
 
+test.each([
+  ["<script>alert(1)</script>", "<script>alert(1)</script>"],
+  ["x\\](javascript:alert(1))", "x](javascript:alert(1))"],
+  ["a\\\\\\]b.png", "a\\]b.png"],
+  ["one\ntwo", "one two"],
+])("starting and pasted Markdown image alt remains contained: %s", async (sourceAlt, expectedAlt) => {
+  const source = `![${sourceAlt}](https://safe.invalid/a)`;
+  for (const origin of ["start", "paste"]) {
+    const api = await setupPasteEditor(origin === "start" ? source : "");
+    api.dom.focus();
+    if (origin === "paste") await userEvent.setup().paste(source);
+    else await userEvent.setup().keyboard("x");
+    const saved = api.getMarkdown();
+    const html = await new Marked().parse(saved);
+    const parsed = new DOMParser().parseFromString(html, "text/html");
+    expect(Array.from(parsed.body.querySelectorAll("*"), element => element.tagName)).toEqual(["P", "IMG"]);
+    expect(parsed.querySelector("img")?.getAttribute("alt")).toBe(expectedAlt);
+    expect(saved).toBe(`${origin === "start" ? "x" : ""}![${sourceAlt.replace(/\n/g, " ")}](https://safe.invalid/a)`);
+    api.unmount();
+  }
+});
+
 function pasteHTML(dom: HTMLElement, html: string) {
   const event = new Event("paste", { bubbles: true, cancelable: true });
   Object.defineProperty(event, "clipboardData", { value: { getData: (type: string) => type === "text/html" ? html : "", files: [], types: ["text/html"] } });

@@ -212,7 +212,8 @@ const MarkdownLink = Link.extend({
 
 // Tiptap 3.33.0 workaround: preserve delimiters in image alt text and destinations.
 const MarkdownImage = Image.extend({
-  parseMarkdown: (token, helpers) => literalPastedImage(token) ?? helpers.createNode("image", { src: token.href, title: token.title, alt: token.text }),
+  // Tiptap 3.33.0 workaround: marked leaves escaped backslashes in image alt text.
+  parseMarkdown: (token, helpers) => literalPastedImage(token) ?? helpers.createNode("image", { src: token.href, title: token.title, alt: token.text?.replace(/\\\\/g, "\\") }),
   renderMarkdown: node => {
     const src = node.attrs?.src ?? "";
     const alt = (node.attrs?.alt ?? "").replace(/\s*[\r\n]\s*/g, " ").replace(/[\\\]]/g, "\\$&");
