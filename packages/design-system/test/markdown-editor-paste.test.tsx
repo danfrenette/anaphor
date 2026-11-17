@@ -616,3 +616,44 @@ test("typed leading spaces stay a paragraph", async () => {
   const html = await new (await import("marked")).Marked().parse(saved);
   expect(new DOMParser().parseFromString(html, "text/html").querySelector("p")?.textContent).toBe(visible);
 });
+
+test.each(["paste", "starting value"]) ("table cell hard break survives %s", async source => {
+  const input = "| A |\n| --- |\n| a<br>b |";
+  const api = await setupPasteEditor(source === "starting value" ? input : "");
+  if (source === "paste") pasteHTML(api.dom, "<table><tr><th>A</th></tr><tr><td>a<br>b</td></tr></table>");
+  if (source === "starting value") {
+    const cell = api.dom.querySelector("td")!;
+    expect(cell.querySelector("br")).not.toBeNull();
+    await selectText(api.dom, 1);
+    await userEvent.setup().keyboard("!");
+  }
+  const saved = api.getMarkdown();
+  act(() => { api.setMarkdown(saved); });
+  const cell = api.dom.querySelector("td")!;
+  expect(cell.textContent).toBe("ab");
+  expect(cell.querySelector("br")).not.toBeNull();
+  expect(cell.querySelector("[data-opaque-inline]")).toBeNull();
+  const html = await new (await import("marked")).Marked().parse(saved);
+  expect(new DOMParser().parseFromString(html, "text/html").querySelector("td br")).not.toBeNull();
+});
+
+test("typed table cell hard break survives save", async () => {
+  const api = await setupPasteEditor("| A |\n| --- |\n| ab |");
+  const text = api.dom.querySelector("td p")!.firstChild!;
+  api.dom.focus();
+  const range = document.createRange();
+  range.setStart(text, 1);
+  range.collapse(true);
+  const selection = window.getSelection()!;
+  selection.removeAllRanges();
+  selection.addRange(range);
+  await act(async () => { document.dispatchEvent(new Event("selectionchange")); await new Promise(resolve => setTimeout(resolve, 30)); });
+  await userEvent.setup().keyboard("{Shift>}{Enter}{/Shift}");
+  expect(api.dom.querySelector("td br")).not.toBeNull();
+  const saved = api.getMarkdown();
+  act(() => { api.setMarkdown(saved); });
+  expect(api.dom.querySelector("td")?.textContent).toBe("ab");
+  expect(api.dom.querySelector("td br")).not.toBeNull();
+  const html = await new (await import("marked")).Marked().parse(saved);
+  expect(new DOMParser().parseFromString(html, "text/html").querySelector("td br")).not.toBeNull();
+});

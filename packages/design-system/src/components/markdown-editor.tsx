@@ -5,7 +5,7 @@ import Link from "@tiptap/extension-link";
 import { getListMarker, ListItem, OrderedList, TaskItem, TaskList } from "@tiptap/extension-list";
 import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import { Extension, Node } from "@tiptap/core";
-import type { MarkdownRendererHelpers, MarkdownToken, RenderContext } from "@tiptap/core";
+import type { JSONContent, MarkdownRendererHelpers, MarkdownToken, RenderContext } from "@tiptap/core";
 import { Placeholder } from "@tiptap/extensions/placeholder";
 import { Markdown } from "@tiptap/markdown";
 import { EditorState, Plugin, Selection } from "@tiptap/pm/state";
@@ -64,6 +64,19 @@ const MarkdownStarterKit = StarterKit.extend({
 });
 
 const MarkdownTable = Table.extend({
+  // Tiptap 3.33.0 workaround: table serialization writes hard breaks as HTML.
+  parseMarkdown(token, helpers) {
+    const table = this.parent?.(token, helpers) ?? [];
+    const restoreBreaks = (node: JSONContent) => {
+      if (node.type === "opaqueInline" && /^<br\s*\/?>$/i.test(node.attrs?.source ?? "")) {
+        node.type = "hardBreak";
+        delete node.attrs;
+      }
+      node.content?.forEach(restoreBreaks);
+    };
+    (Array.isArray(table) ? table : [table]).forEach(restoreBreaks);
+    return table;
+  },
   // Tiptap 3.33.0 workaround (#8719): don't double the separator between tables.
   renderMarkdown(node, helpers, context) {
     const markdown = this.parent?.(node, helpers, context) ?? "";
