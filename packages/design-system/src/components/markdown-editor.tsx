@@ -13,13 +13,17 @@ import { EditorState, Plugin, Selection, TextSelection } from "@tiptap/pm/state"
 import { GapCursor } from "@tiptap/pm/gapcursor";
 import { closeHistory } from "@tiptap/pm/history";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
-import { EditorContent, useEditor, type Editor } from "@tiptap/react";
+import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
+import { TextB, TextItalic, TextStrikethrough, Code, Link as LinkIcon } from "@phosphor-icons/react/dist/ssr";
 import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, type Ref } from "react";
 import { cleanPastedHtml, handleMarkdownPaste, literalPastedImage, PasteOrdinal, suppressPastedOrdinal } from "#lib/markdown-editor-paste";
 import { matchOpaqueBlock, matchOpaqueInline, splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 import { cn } from "../lib/utils";
+import { Button } from "./button";
+import { Kbd } from "./kbd";
+import { Tooltip, TooltipGroup, TooltipPopup, TooltipTrigger } from "./tooltip";
 
 declare module "@tiptap/core" {
   interface Storage {
@@ -732,6 +736,25 @@ function useMarkdownEditor({
   return { editor, getMarkdown, setMarkdown };
 }
 
+function FormattingButtons({ editor }: { editor: Editor }) {
+  const active = useEditorState({ editor, selector: ({ editor }) => ({
+    bold: editor.isActive("bold"), italic: editor.isActive("italic"),
+    strike: editor.isActive("strike"), code: editor.isActive("code"), link: editor.isActive("link"),
+  }) });
+  const items = [
+    { name: "Bold", key: "bold" as const, shortcut: "B", Icon: TextB, run: () => editor.chain().toggleBold().run() },
+    { name: "Italic", key: "italic" as const, shortcut: "I", Icon: TextItalic, run: () => editor.chain().toggleItalic().run() },
+    { name: "Strikethrough", key: "strike" as const, shortcut: "Shift+S", Icon: TextStrikethrough, run: () => editor.chain().toggleStrike().run() },
+    { name: "Inline code", key: "code" as const, shortcut: "E", Icon: Code, run: () => editor.chain().toggleCode().run() },
+    { name: "Link", key: "link" as const, shortcut: "K", Icon: LinkIcon, run: () => {} },
+  ];
+  return <TooltipGroup>{items.map(({ name, key, shortcut, Icon, run }) => <Tooltip key={key}>
+    <TooltipTrigger render={<Button nativeButton type="button" variant="ghost" tone="neutral" size="sm" shape="square" iconOnly loading={false}
+      aria-label={name} aria-pressed={active[key]} onMouseDown={event => event.preventDefault()} onClick={run} />} />
+    <TooltipPopup side="top" align="center" sideOffset={8}>{name} <Kbd>Mod+{shortcut}</Kbd></TooltipPopup>
+  </Tooltip>)}</TooltipGroup>;
+}
+
 function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) {
   const { disabled = false, invalid = false } = options;
   const { editor, getMarkdown, setMarkdown } = useMarkdownEditor(options);
@@ -782,7 +805,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
         if (["codeBlock", "opaqueBlock", "opaqueInline"].includes(node.type.name)) excluded = true;
       });
       return !excluded && !!state.doc.textBetween(from, to);
-    }} />}
+    }}><FormattingButtons editor={editor} /></BubbleMenu>}
   </div>;
 }
 

@@ -62,6 +62,23 @@ test("does not show formatting inside a code block", async () => {
   await waitFor(() => expect(screen.queryByRole("toolbar", { name: "Formatting" })).not.toBeInTheDocument());
 });
 
+test.each([
+  ["Bold", "**text**"],
+  ["Italic", "*text*"],
+  ["Strikethrough", "~~text~~"],
+  ["Inline code", "`text`"],
+])("%s toggles the selected text and reports pressed state", async (name, expected) => {
+  const { user, ref } = setupEditor("text");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("p")!, 0, 4);
+  const button = await screen.findByRole("button", { name });
+  expect(button).toHaveAttribute("aria-pressed", "false");
+  await user.click(button);
+  expect(ref.current?.getMarkdown()).toBe(expected);
+  expect(button).toHaveAttribute("aria-pressed", "true");
+});
+
 test.each(["![alt](https://example.com/a.png \"title\")", "before ![alt](https://example.com/a.png \"title\") after"])("renders starting image inline: %s", async source => {
   const { ref, user } = setupEditor(source);
   const image = screen.getByRole("img", { name: "alt" });
