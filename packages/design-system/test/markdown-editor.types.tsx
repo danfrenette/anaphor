@@ -1,6 +1,11 @@
 import { createRef } from "react";
 import { expectTypeOf } from "vitest";
-import { MarkdownEditor, useMarkdownEditor, type MarkdownEditorHandle, type UseMarkdownEditorOptions } from "@anaphor/system";
+import { MarkdownEditor, useMarkdownEditor, type MarkdownEditorHandle, type MarkdownEditorImageHandler, type UseMarkdownEditorOptions } from "@anaphor/system";
+
+const handleImage: MarkdownEditorImageHandler = async file => ({ src: file.name, alt: file.name });
+<MarkdownEditor presentation="field" defaultValue="" aria-label="Note" onImageFile={handleImage} />;
+// @ts-expect-error An image handler returns both src and alt.
+<MarkdownEditor presentation="field" defaultValue="" aria-label="Note" onImageFile={async () => ({ src: "image.png" })} />;
 
 const ref = createRef<MarkdownEditorHandle>();
 <MarkdownEditor presentation="in-place" defaultValue="Note" aria-label="Research note" />;

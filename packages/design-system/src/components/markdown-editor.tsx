@@ -431,9 +431,12 @@ function resetHistory(editor: Editor): void {
 }
 
 type MarkdownEditorLabel = { "aria-label": string; "aria-labelledby"?: never } | { "aria-label"?: never; "aria-labelledby": string };
+type MarkdownEditorImageHandler = (file: File) => Promise<{ src: string; alt: string }>;
 type UseMarkdownEditorOptions = {
   defaultValue: string;
   onChange?: (markdown: string) => void;
+  /** Resolve a pasted or dropped image file to an address and alt text. */
+  onImageFile?: MarkdownEditorImageHandler;
   /** Shown in an empty editor; disappears on the first input. */
   placeholder?: string;
   /** Still focusable and selectable, but typing does nothing. */
@@ -667,4 +670,4 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   </div>;
 }
 
-export { MarkdownEditor, useMarkdownEditor, type MarkdownEditorHandle, type MarkdownEditorProps, type UseMarkdownEditorOptions, type UseMarkdownEditorResult };
+export { MarkdownEditor, useMarkdownEditor, type MarkdownEditorHandle, type MarkdownEditorImageHandler, type MarkdownEditorProps, type UseMarkdownEditorOptions, type UseMarkdownEditorResult };
