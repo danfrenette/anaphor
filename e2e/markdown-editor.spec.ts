@@ -95,29 +95,29 @@ test("Chromium never loads resources from pasted HTML", async ({ page, browserNa
   await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: "http://127.0.0.1:3105" });
   const requests: string[] = [];
   await page.route("**/*", async route => {
-    if (new URL(route.request().url()).hostname !== "127.0.0.1") {
+    if (new URL(route.request().url()).host !== "127.0.0.1:3105") {
       requests.push(route.request().url());
       await route.abort();
     } else await route.continue();
   });
-  await page.goto("/markdown-editor");
-  const editor = page.getByRole("textbox", { name: "Notes" });
-  for (const html of [
-    '<img src="https://paste-image.invalid/a.png" alt="image">',
-    '<img srcset="https://paste-srcset.invalid/a.png 2x" alt="srcset">',
-    '<picture><source srcset="https://paste-picture.invalid/a.png"><img alt="picture"></picture>',
-    '<table><tr><td><img src="https://paste-table.invalid/a.png" alt="table"></td></tr></table>',
-    '<div style="background-image:url(https://paste-css.invalid/a.png)">background</div>',
-  ]) {
+  for (const [html, visible] of [
+    ['<img src="https://paste-image.invalid/a.png" alt="image">', "image"],
+    ['<img srcset="https://paste-srcset.invalid/a.png 2x" alt="srcset">', "srcset"],
+    ['<picture><source srcset="https://paste-picture.invalid/a.png"><img alt="picture"></picture>', "picture"],
+    ['<table><tr><td><img src="https://paste-table.invalid/a.png" alt="table"></td></tr></table>', "table"],
+    ['<div style="background-image:url(https://paste-css.invalid/a.png)">background</div>', "background"],
+  ] as const) {
+    await page.goto("/markdown-editor");
+    const editor = page.getByRole("textbox", { name: "Notes" });
     await page.evaluate(async html => navigator.clipboard.write([new ClipboardItem({
       "text/html": new Blob([html], { type: "text/html" }),
       "text/plain": new Blob(["text"], { type: "text/plain" }),
     })]), html);
     await editor.click();
     await page.keyboard.press("ControlOrMeta+V");
+    await expect(editor).toHaveText(visible);
+    expect(requests).toEqual([]);
   }
-  await expect(editor).toContainText("background");
-  expect(requests).toEqual([]);
 });
 
 test("typing a task item exposes a named checkbox and toggles Markdown", async ({ page }) => {
