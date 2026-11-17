@@ -43,6 +43,22 @@ function selectText(element: Element, from: number, to: number) {
   });
 }
 
+test("URL paste across opaque inline source saves one link", async () => {
+  const source = "before <i>middle</i> after";
+  const { user, ref } = setupEditor(source);
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  await user.keyboard("{Control>}a{/Control}");
+  await user.paste("https://example.com");
+  const saved = ref.current!.getMarkdown();
+  expect(saved).toBe(`[${source}](https://example.com)`);
+  const parsed = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html");
+  expect(parsed.querySelectorAll("a")).toHaveLength(1);
+  act(() => ref.current!.setMarkdown(saved));
+  expect(editor.querySelectorAll("a")).toHaveLength(1);
+  expect(editor).toHaveTextContent(source);
+});
+
 test("shows formatting for selected text and hides it after collapse", async () => {
   const { user } = setupEditor("Selected text");
   const editor = await screen.findByRole("textbox", { name: "Research note" });
