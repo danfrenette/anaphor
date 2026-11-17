@@ -16,7 +16,7 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, type Ref } from "react";
-import { cleanPastedHtml, handleMarkdownPaste, PasteOrdinal, suppressPastedOrdinal } from "#lib/markdown-editor-paste";
+import { cleanPastedHtml, handleMarkdownPaste, literalPastedImage, PasteOrdinal, suppressPastedOrdinal } from "#lib/markdown-editor-paste";
 import { matchOpaqueBlock, matchOpaqueInline, splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 import { cn } from "../lib/utils";
 
@@ -212,6 +212,7 @@ const MarkdownLink = Link.extend({
 
 // Tiptap 3.33.0 workaround: preserve delimiters in image alt text and destinations.
 const MarkdownImage = Image.extend({
+  parseMarkdown: (token, helpers) => literalPastedImage(token) ?? helpers.createNode("image", { src: token.href, title: token.title, alt: token.text }),
   renderMarkdown: node => {
     const src = node.attrs?.src ?? "";
     const alt = (node.attrs?.alt ?? "").replace(/\s*[\r\n]\s*/g, " ").replace(/[\\\]]/g, "\\$&");

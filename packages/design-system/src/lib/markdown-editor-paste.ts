@@ -6,7 +6,7 @@ import type { Editor } from "@tiptap/react";
 import { splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 
 // Markdown parsing is synchronous; restore the context even if parsing fails or re-enters.
-let pasteOrdinalContext: { suppressed: boolean } | undefined;
+let pasteOrdinalContext: { suppressed: boolean; unsafeImage: boolean } | undefined;
 
 const PasteOrdinal = Extension.create({
   name: "pasteOrdinal",
@@ -75,6 +75,14 @@ function isSafePasteUri(uri: unknown): boolean {
   return !!isAllowedUri(textarea.value.replace(/[\u0000-\u0020\u007f]/g, ""));
 }
 
+function literalPastedImage(token: MarkdownToken): JSONContent | undefined {
+  if (!pasteOrdinalContext) return undefined;
+  const src = token.href ?? "";
+  if (/^https?:/i.test(src) && isSafePasteUri(src)) return undefined;
+  pasteOrdinalContext.unsafeImage = true;
+  return { type: "text", text: token.raw };
+}
+
 function unsafePasteLink(node: JSONContent): string | undefined {
   const href = node.marks?.find(mark => mark.type === "link" && !isSafePasteUri(mark.attrs?.href))?.attrs?.href;
   return typeof href === "string" ? href : undefined;
@@ -137,7 +145,7 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
   // Spec requirement (AC-3): a four-digit sentence is not an ordered list.
   const { frontMatter, body } = splitFrontMatter(text);
   const previous = pasteOrdinalContext;
-  const context = { suppressed: false };
+  const context = { suppressed: false, unsafeImage: false };
   pasteOrdinalContext = context;
   let document: JSONContent;
   try {
@@ -145,7 +153,7 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
   } finally {
     pasteOrdinalContext = previous;
   }
-  if (!frontMatter && !context.suppressed && !containsMarkdown(document, body, /\[[^\]\n]+\]/.test(body))) return false;
+  if (!frontMatter && !context.suppressed && !context.unsafeImage && !containsMarkdown(document, body, /\[[^\]\n]+\]/.test(body))) return false;
   // Spec requirement (AC-7): pasted front matter and unsupported nodes are literal text.
   const parsed = literalPasteNodes(document);
   const prefix = frontMatter ? [literalPasteNodes({ type: "opaqueBlock", attrs: { source: frontMatter.replace(/\r?\n$/, "") } })] : [];
@@ -155,4 +163,4 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
   return editor.chain().command(({ tr }) => { tr.setMeta("paste", true).setMeta("uiEvent", "paste"); return true; }).insertContent(insertion).run();
 }
 
-export { cleanPastedHtml, handleMarkdownPaste, PasteOrdinal, suppressPastedOrdinal };
+export { cleanPastedHtml, handleMarkdownPaste, literalPastedImage, PasteOrdinal, suppressPastedOrdinal };

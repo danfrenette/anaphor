@@ -187,6 +187,18 @@ test.each(["javascript:alert(1)", "data:image/png;base64,abc", "&#106;avascript:
   expect(new DOMParser().parseFromString(html, "text/html").querySelector("img")).toBeNull();
 });
 
+test.each([
+  '![alt](data:image/png;base64,abc "caption")',
+  '![a\\]b](<javascript:alert(1)> "caption")',
+  '![alt](relative.png "caption")',
+])("unsafe pasted image preserves its complete original text: %s", async source => {
+  const api = await setupPasteEditor();
+  api.dom.focus();
+  await userEvent.setup().paste(source);
+  expect(api.dom.textContent).toBe(source);
+  expect(api.getMarkdown()).toBe(source.replace(/([\\`*_[\]~])/g, "\\$1").replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+});
+
 async function selectText(dom: HTMLElement, from: number, to = from) {
   dom.focus();
   const text = dom.querySelector("p, h1, code")!.firstChild!;
