@@ -108,6 +108,23 @@ test("the link shortcut focuses the URL field", async () => {
   expect(await screen.findByRole("textbox", { name: "URL" })).toHaveFocus();
 });
 
+test("dismissing link editing resets the toolbar for the next selection", async () => {
+  const { user } = setupEditor("text");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("p")!, 0, 4);
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  expect(screen.getByRole("textbox", { name: "URL" })).toBeVisible();
+  editor.focus();
+  selectText(editor.querySelector("p")!, 4, 4);
+  await waitFor(() => expect(screen.queryByRole("toolbar", { name: "Formatting" })).not.toBeInTheDocument());
+  selectText(editor.querySelector("p")!, 0, 4);
+  const bold = await screen.findByRole("button", { name: "Bold" });
+  await user.keyboard("{Alt>}{F10}{/Alt}");
+  await waitFor(() => expect(bold).toHaveFocus());
+  expect(screen.queryByRole("textbox", { name: "URL" })).not.toBeInTheDocument();
+});
+
 test("link editing applies a bare domain and undo restores the text", async () => {
   const { user, ref } = setupEditor("text");
   const editor = await screen.findByRole("textbox", { name: "Research note" });
