@@ -2,6 +2,20 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { prepareContentSnapshot } from "./content-snapshot";
 
+test("formatting bubble escapes the field scroller and respects reduced motion", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes", exact: true });
+  await editor.click();
+  await editor.pressSequentially("Selection to format");
+  await page.keyboard.press("Shift+ArrowLeft");
+  await expect.poll(() => page.evaluate(() => window.getSelection()?.toString())).toBe("t");
+  const bubble = page.getByRole("toolbar", { name: "Formatting" });
+  await expect(bubble).toBeVisible();
+  expect(await bubble.evaluate(element => getComputedStyle(element.parentElement!).position)).toBe("fixed");
+  expect(await bubble.evaluate(element => getComputedStyle(element).transitionDuration)).toBe("0s");
+});
+
 test("Chromium drops an image file through the demo handler", async ({ page, browserName }) => {
   test.skip(browserName !== "chromium", "File drop is verified in Chromium.");
   await page.goto("/markdown-editor");

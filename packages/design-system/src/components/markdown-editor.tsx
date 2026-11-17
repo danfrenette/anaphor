@@ -845,14 +845,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       ),
     )}>
     <EditorContent editor={editor} />
-    {editor && <BubbleMenu ref={bubbleRef} editor={editor} role="toolbar" aria-label="Formatting" onKeyDown={event => {
-      if (event.key === "Escape") { event.preventDefault(); setEditingLink(false); editor.view.focus(); return; }
-      const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
-      const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
-      if (index < 0) return;
-      const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1 : event.key === "ArrowRight" ? (index + 1) % buttons.length : event.key === "ArrowLeft" ? (index + buttons.length - 1) % buttons.length : -1;
-      if (next >= 0) { event.preventDefault(); buttons[next].focus(); }
-    }} shouldShow={({ editor, element, view, state, from, to }) => {
+    {editor && <BubbleMenu ref={bubbleRef} editor={editor} options={{ strategy: "fixed" }} shouldShow={({ editor, element, view, state, from, to }) => {
       // Spec requirement: exclude node and cell selections and opaque/code content.
       if (!editor.isEditable || !(state.selection instanceof TextSelection) || state.selection.empty || !(view.hasFocus() || element.contains(document.activeElement))) return false;
       let excluded = false;
@@ -860,11 +853,18 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
         if (["codeBlock", "opaqueBlock", "opaqueInline"].includes(node.type.name)) excluded = true;
       });
       return !excluded && !!state.doc.textBetween(from, to);
+    }}><div role="toolbar" aria-label="Formatting" data-slot="markdown-formatting-bubble" className="flex items-center rounded-control border bg-muted text-foreground border-[color-mix(in_oklch,var(--anaphor-input-border)_72%,var(--anaphor-background))] shadow-[var(--anaphor-shadow-menu)]" onKeyDownCapture={event => {
+      if (event.key === "Escape") { event.preventDefault(); setEditingLink(false); editor.view.focus(); return; }
+      const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
+      const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
+      if (index < 0) return;
+      const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1 : event.key === "ArrowRight" ? (index + 1) % buttons.length : event.key === "ArrowLeft" ? (index + buttons.length - 1) % buttons.length : -1;
+      if (next >= 0) { event.preventDefault(); buttons[next]?.focus(); }
     }}>{editingLink ? <form onSubmit={event => { event.preventDefault(); finishLink(false); }}>
       <Input ref={inputRef} size="sm" aria-label="URL" value={url} onChange={event => { setUrl(event.target.value); setLinkError(false); }} aria-invalid={linkError || undefined} aria-describedby={linkError ? errorId : undefined} />
       {linkError && <span id={errorId}>Enter a safe URL.</span>}
       <Button nativeButton type="button" variant="ghost" tone="neutral" size="sm" shape="square" iconOnly={false} loading={false} onClick={() => finishLink(true)}>Remove link</Button>
-    </form> : <FormattingButtons editor={editor} focused={focused} setFocused={setFocused} openLink={openLink} />}</BubbleMenu>}
+    </form> : <FormattingButtons editor={editor} focused={focused} setFocused={setFocused} openLink={openLink} />}</div></BubbleMenu>}
   </div>;
 }
 
