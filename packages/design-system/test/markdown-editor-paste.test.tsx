@@ -94,6 +94,18 @@ test.each(["unmount", "read only"])("pending image is discarded on %s", async st
   expect(screen.queryByRole("img")).toBeNull();
 });
 
+test.each(["paste", "drop"] as const)("setMarkdown discards a pending image from %s", async kind => {
+  let resolveImage!: (value: { src: string; alt: string }) => void;
+  const onChange = vi.fn();
+  const api = await setupPasteEditor("before", { onChange, onImageFile: () => new Promise(resolve => { resolveImage = resolve; }) });
+  await act(async () => { fileEvent(api.dom, kind, [new File(["a"], "a.png", { type: "image/png" })]); });
+  act(() => api.setMarkdown("replacement"));
+  await act(async () => { resolveImage({ src: "a.png", alt: "a" }); });
+  expect(api.getMarkdown()).toBe("replacement");
+  expect(onChange).not.toHaveBeenCalled();
+  expect(screen.queryByRole("img")).toBeNull();
+});
+
 test("image file paste calls the host and inserts its result", async () => {
   const file = new File(["image"], "note.png", { type: "image/png" });
   const onImageFile = vi.fn(async () => ({ src: "blob:note", alt: "note" }));
