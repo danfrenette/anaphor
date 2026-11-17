@@ -365,6 +365,9 @@ after an edit while each line's source stays byte-identical.
 **Limitations.** These are known, mostly stock Tiptap 3.33.0 behaviours, each
 pinned by a test so an upgrade that changes one is noticed:
 
+- An entity-shaped link query such as `https://x/?a=1&lt;b` retains the
+  literal text in the editor, but fresh Marked rendering decodes `&lt;` to `<`
+  in the link destination. It does not introduce HTML markup.
 - Entities in preserved content are re-encoded, for example `&nbsp;` becomes
   `&amp;nbsp;`.
 - MDX fragments `<>…</>` are not preserved.
