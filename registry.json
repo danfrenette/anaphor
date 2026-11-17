@@ -54,6 +54,7 @@
         "danfrenette/anaphor/button",
         "danfrenette/anaphor/input",
         "danfrenette/anaphor/kbd",
+        "danfrenette/anaphor/popover",
         "danfrenette/anaphor/tooltip"
       ],
       "files": [

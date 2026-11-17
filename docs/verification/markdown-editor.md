@@ -191,6 +191,8 @@ code remains separately keyboard-focusable.
     not clipped. At 320px on a coarse pointer select text by touch and confirm
     the bubble is below it and controls are tappable. Emulate reduced motion
     and confirm the bubble appears without animation.
+    On a physical touch device, also confirm that the bubble coexists with the
+    operating system's selection menu; emulation cannot verify that menu.
 
 Keep Playwright output and screenshots under `test-results/` with the run
 receipt. Stop only a server started for the verification run.

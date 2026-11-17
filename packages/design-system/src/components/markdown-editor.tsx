@@ -22,8 +22,9 @@ import { cleanPastedHtml, handleMarkdownPaste, isSafePasteUri, literalPastedImag
 import { matchOpaqueBlock, matchOpaqueInline, splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 import { cn } from "../lib/utils";
 import { Button } from "./button";
-import { Kbd } from "./kbd";
+import { Kbd, KbdGroup } from "./kbd";
 import { Input } from "./input";
+import { popoverSurface } from "./popover";
 import { Tooltip, TooltipGroup, TooltipPopup, TooltipTrigger } from "./tooltip";
 
 declare module "@tiptap/core" {
@@ -752,6 +753,8 @@ function useMarkdownEditor({
 }
 
 function FormattingButtons({ editor, focused, setFocused, openLink }: { editor: Editor; focused: number; setFocused: (index: number) => void; openLink: () => void }) {
+  const [mac, setMac] = useState(false);
+  useEffect(() => { setMac(/Mac|iPhone|iPad/.test(navigator.platform)); }, []);
   const active = useEditorState({ editor, selector: ({ editor }) => ({
     bold: editor.isActive("bold"), italic: editor.isActive("italic"),
     strike: editor.isActive("strike"), code: editor.isActive("code"), link: editor.isActive("link"),
@@ -766,12 +769,12 @@ function FormattingButtons({ editor, focused, setFocused, openLink }: { editor: 
   return <TooltipGroup>{items.map(({ name, key, shortcut, Icon, run }, index) => <Tooltip key={key}>
     <TooltipTrigger render={<Button nativeButton type="button" variant="ghost" tone="neutral" size="sm" shape="square" iconOnly loading={false}
       className="aria-pressed:bg-[var(--anaphor-input-disabled)]" aria-label={name} aria-pressed={active[key]} tabIndex={focused === index ? 0 : -1} onFocus={() => setFocused(index)} onMouseDown={event => event.preventDefault()} onClick={() => { if (editor.isEditable) run(); }}><Icon aria-hidden="true" /></Button>} />
-    <TooltipPopup side="top" align="center" sideOffset={8}>{name} <Kbd>Mod+{shortcut}</Kbd></TooltipPopup>
+    <TooltipPopup side="top" align="center" sideOffset={8}>{name} <KbdGroup aria-label={`${mac ? "Command" : "Control"} ${shortcut}`}><Kbd>{mac ? "⌘" : "Ctrl"}</Kbd>{shortcut.split("+").map(key => <Kbd key={key}>{key}</Kbd>)}</KbdGroup></TooltipPopup>
   </Tooltip>)}</TooltipGroup>;
 }
 
 function shouldShowFormatting({ editor, element, view, state, from, to }: Parameters<NonNullable<BubbleMenuProps["shouldShow"]>>[0]) {
-  // Spec requirement: exclude node and cell selections and opaque/code content.
+  // Spec requirement (AC-1, AC-2), Tiptap 3.33.0 override: exclude node and cell selections and opaque/code content.
   if (!editor.isEditable || !(state.selection instanceof TextSelection) || state.selection.empty || !(view.hasFocus() || element.contains(document.activeElement))) return false;
   let excluded = false;
   state.doc.nodesBetween(from, to, node => {
@@ -849,7 +852,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
         const element = bubbleRef.current;
         const { state, view } = editor;
         if (!element || !shouldShowFormatting({ editor, element, view, state, from: state.selection.from, to: state.selection.to })) return;
-        // The menu's default debounce must not delay keyboard access.
+        // Spec requirement (AC-5), Tiptap 3.33.0 override: the menu's debounce must not delay keyboard access.
         view.dispatch(state.tr.setMeta(bubbleKey, "show"));
         view.dispatch(view.state.tr.setMeta(bubbleKey, "updatePosition"));
       // Spec requirement (AC-5): the link shortcut opens URL editing.
@@ -899,7 +902,8 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       ),
     )}>
     <EditorContent editor={editor} />
-    {editor && !readOnly && !disabled && <BubbleMenu ref={bubbleRef} pluginKey={bubbleKey} editor={editor} options={{ strategy: "fixed", placement: coarsePointer ? "bottom" : "top", onHide: () => { setEditingLink(false); setFocused(0); }, onShow: () => { if (bubbleRef.current) bubbleRef.current.tabIndex = -1; } }} shouldShow={shouldShowFormatting}><div role="toolbar" aria-label="Formatting" data-slot="markdown-formatting-bubble" className="flex items-center rounded-control border bg-muted text-foreground border-[color-mix(in_oklch,var(--anaphor-input-border)_72%,var(--anaphor-background))] shadow-[var(--anaphor-shadow-menu)]" onKeyDownCapture={event => {
+    {/* Decision 7, Tiptap 3.33.0/floating-ui override: fixed positioning escapes clipping. AC-8: coarse pointers prefer below. The menu tabindex override preserves normal Tab order. */}
+    {editor && !readOnly && !disabled && <BubbleMenu ref={bubbleRef} pluginKey={bubbleKey} editor={editor} options={{ strategy: "fixed", placement: coarsePointer ? "bottom" : "top", onHide: () => { setEditingLink(false); setFocused(0); }, onShow: () => { if (bubbleRef.current) bubbleRef.current.tabIndex = -1; } }} shouldShow={shouldShowFormatting}><div role="toolbar" aria-label="Formatting" data-slot="markdown-formatting-bubble" className={cn("flex items-center", popoverSurface)} onKeyDownCapture={event => {
       if (event.key === "Escape") { event.preventDefault(); setEditingLink(false); editor.view.focus(); return; }
       const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
       const index = buttons.findIndex(button => button === document.activeElement);

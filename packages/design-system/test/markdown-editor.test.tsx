@@ -54,6 +54,18 @@ test("shows formatting for selected text and hides it after collapse", async () 
   await waitFor(() => expect(screen.queryByRole("toolbar", { name: "Formatting" })).not.toBeInTheDocument());
 });
 
+test("formatting shortcut hints show the platform modifier as separate keys", async () => {
+  const { user } = setupEditor("text");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("p")!, 0, 4);
+  await user.hover(await screen.findByRole("button", { name: "Bold" }));
+  const hint = await screen.findByRole("tooltip");
+  const modifier = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl";
+  expect(hint).toHaveTextContent(modifier);
+  expect(hint.querySelectorAll("kbd kbd")).toHaveLength(2);
+});
+
 test("does not show formatting inside a code block", async () => {
   const { user } = setupEditor("```\ncode\n```");
   const editor = await screen.findByRole("textbox", { name: "Research note" });

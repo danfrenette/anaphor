@@ -6,6 +6,7 @@ import { cn } from "../lib/utils";
 
 const Popover: typeof PopoverPrimitive.Root = PopoverPrimitive.Root;
 const PopoverClose: typeof PopoverPrimitive.Close = PopoverPrimitive.Close;
+const popoverSurface = "rounded-control border bg-muted text-foreground border-[color-mix(in_oklch,var(--anaphor-input-border)_72%,var(--anaphor-background))] shadow-[var(--anaphor-shadow-menu)]";
 
 function PopoverTrigger<Payload>(props: PopoverPrimitive.Trigger.Props<Payload>): ReactElement {
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" data-stable-anchor="" {...props} />;
@@ -33,8 +34,8 @@ function PopoverPopup({ align, side, sideOffset, portalProps, positionerProps, c
         <PopoverPrimitive.Popup
           data-slot="popover-popup"
           className={(state) => cn(
-            "w-80 max-w-[min(var(--available-width),calc(100vw-2rem))] origin-[var(--transform-origin)] rounded-control border bg-muted text-foreground outline-none",
-            "border-[color-mix(in_oklch,var(--anaphor-input-border)_72%,var(--anaphor-background))] shadow-[var(--anaphor-shadow-menu)]",
+            "w-80 max-w-[min(var(--available-width),calc(100vw-2rem))] origin-[var(--transform-origin)] outline-none",
+            popoverSurface,
             typeof className === "function" ? className(state) : className,
           )}
           {...props}
@@ -56,4 +57,4 @@ function PopoverDescription({ className, ...props }: PopoverPrimitive.Descriptio
   return <PopoverPrimitive.Description data-slot="popover-description" className={(state) => cn("mt-1 text-small text-pretty text-muted-foreground", typeof className === "function" ? className(state) : className)} {...props} />;
 }
 
-export { Popover, PopoverBody, PopoverClose, PopoverDescription, PopoverPopup, PopoverTitle, PopoverTrigger, type PopoverPopupProps };
+export { Popover, PopoverBody, PopoverClose, PopoverDescription, PopoverPopup, PopoverTitle, PopoverTrigger, popoverSurface, type PopoverPopupProps };

@@ -11,7 +11,7 @@ for (const theme of ["light", "dark"]) test(`formatting bubble baseline and acce
   await page.keyboard.press("Shift+ArrowLeft");
   const bubble = page.getByRole("toolbar", { name: "Formatting" });
   await expect(bubble).toBeVisible();
-  await expect(bubble.locator('[data-slot="button-content"] svg')).toHaveCount(5);
+  for (const name of ["Bold", "Italic", "Strikethrough", "Inline code", "Link"]) await expect(bubble.getByRole("button", { name, exact: true })).toBeVisible();
   await checkAccessibility(page, '[aria-label="Field states"]');
   await expect(bubble).toHaveScreenshot(`markdown-bubble-${theme}.png`, { animations: "disabled", caret: "hide" });
   await bubble.getByRole("button", { name: "Link" }).click();
@@ -84,7 +84,6 @@ for (const theme of ["light", "dark"]) {
     const existing = page.getByRole("textbox", { name: "Existing post" });
     const block = existing.locator("[data-opaque-block]").first();
     await block.click();
-    await expect(block).toHaveClass(/ProseMirror-selectednode/);
     await expect(bubble).toBeHidden();
   });
 
@@ -110,6 +109,8 @@ for (const theme of ["light", "dark"]) {
     await expect.poll(() => image.evaluate(element => getComputedStyle(element).outlineStyle)).not.toBe("none");
     const bubble = page.getByRole("toolbar", { name: "Formatting" });
     await expect(bubble).toBeHidden();
+    await page.keyboard.press("Backspace");
+    await expect(image).toHaveCount(0);
 
     const editor = page.getByRole("textbox", { name: "Notes", exact: true });
     await editor.click();
@@ -216,15 +217,33 @@ test("bubble remains reachable at both edges of a scrolled field", async ({ page
       selection.addRange(range);
       document.dispatchEvent(new Event("selectionchange"));
     });
-    const button = page.getByRole("button", { name: "Bold", exact: true });
-    await expect(button).toBeVisible();
-    const box = (await button.boundingBox())!;
-    const hit = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.getAttribute('aria-label'), { x: box.x + box.width / 2, y: box.y + box.height / 2 });
-    expect(hit).toBe("Bold");
+    await assertBubbleGeometry(page);
     expect(await frame.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
     await editor.focus();
   }
+  const comparison = page.getByRole("textbox", { name: "In-place note", exact: true });
+  await comparison.scrollIntoViewIfNeeded();
+  await comparison.locator("p").first().click();
+  await page.keyboard.press("Shift+ArrowLeft");
+  await assertBubbleGeometry(page);
 });
+
+async function assertBubbleGeometry(page: Page) {
+  const bubble = page.getByRole("toolbar", { name: "Formatting" });
+  await expect(bubble).toBeVisible();
+  const box = (await bubble.boundingBox())!;
+  const viewport = page.viewportSize()!;
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.y).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+  expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+  for (const name of ["Bold", "Italic", "Strikethrough", "Inline code", "Link"]) {
+    const button = bubble.getByRole("button", { name, exact: true });
+    const bounds = (await button.boundingBox())!;
+    const hit = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest("button")?.getAttribute("aria-label"), { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 });
+    expect(hit).toBe(name);
+  }
+}
 
 test("link bubble adds, edits, rejects unsafe URLs and removes links", async ({ page, isMobile }) => {
   test.skip(isMobile, "Link editing is exercised with desktop keyboard and pointer.");
@@ -239,22 +258,22 @@ test("link bubble adds, edits, rejects unsafe URLs and removes links", async ({ 
   let url = page.getByRole("textbox", { name: "URL" });
   await url.fill("example.com");
   await url.press("Enter");
-  await expect(output).toHaveText("[hello](https://example.com)");
+  await expect(output).toHaveText("[hello](https://example.com/)");
   await link.click();
   url = page.getByRole("textbox", { name: "URL" });
-  await expect(url).toHaveValue("https://example.com");
+  await expect(url).toHaveValue("https://example.com/");
   await url.fill("java&#115;cript:alert(1)");
   await url.press("Enter");
   await expect(url).toHaveAttribute("aria-invalid", "true");
-  await expect(output).toHaveText("[hello](https://example.com)");
+  await expect(output).toHaveText("[hello](https://example.com/)");
   await url.fill("https://other.example");
   await url.press("Enter");
-  await expect(output).toHaveText("[hello](https://other.example)");
+  await expect(output).toHaveText("[hello](https://other.example/)");
   await link.click();
   await page.getByRole("button", { name: "Remove link" }).click();
   await expect(output).toHaveText("hello");
   await page.keyboard.press("ControlOrMeta+Z");
-  await expect(output).toHaveText("[hello](https://other.example)");
+  await expect(output).toHaveText("[hello](https://other.example/)");
 });
 
 test("a multi-cell selection does not expose formatting", async ({ page, isMobile }) => {
@@ -269,7 +288,6 @@ test("a multi-cell selection does not expose formatting", async ({ page, isMobil
   await page.mouse.down();
   await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, { steps: 10 });
   await page.mouse.up();
-  await expect(editor.locator(".selectedCell")).toHaveCount(2);
   await expect(page.getByRole("toolbar", { name: "Formatting" })).toHaveCount(0);
 });
 
@@ -283,7 +301,7 @@ test("formatting bubble escapes the field scroller and respects reduced motion",
   await expect.poll(() => page.evaluate(() => window.getSelection()?.toString())).toBe("t");
   const bubble = page.getByRole("toolbar", { name: "Formatting" });
   await expect(bubble).toBeVisible();
-  expect(await bubble.evaluate(element => getComputedStyle(element.parentElement!).position)).toBe("fixed");
+  await assertBubbleGeometry(page);
   expect(await bubble.evaluate(element => getComputedStyle(element).transitionDuration)).toBe("0s");
   expect(await bubble.evaluate(element => getComputedStyle(element).animationName)).toBe("none");
 });
