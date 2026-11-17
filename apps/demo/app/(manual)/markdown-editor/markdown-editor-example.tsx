@@ -1,7 +1,7 @@
 "use client";
 
 import { Field, FieldFeedback, FieldLabel, Input, MarkdownEditor, Text, type MarkdownEditorHandle } from "@anaphor/system";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Source of truth for e2e/markdown-editor.spec.ts, which locates its constructs
 // ("Field notes", "Bullet one", "A quote", "const x = 1;"). Rename a label only
@@ -63,6 +63,13 @@ const existingPostMarkdown = [
 ].join("\n");
 
 export function MarkdownEditorExample() {
+  const imageUrls = useRef<string[]>([]);
+  useEffect(() => () => { imageUrls.current.forEach(url => URL.revokeObjectURL(url)); }, []);
+  const onImageFile = async (file: File) => {
+    const src = URL.createObjectURL(file);
+    imageUrls.current.push(src);
+    return { src, alt: file.name };
+  };
   const [markdown, setMarkdown] = useState(startingMarkdown);
   const [existingPost, setExistingPost] = useState(existingPostMarkdown);
   const [inPlaceNote, setInPlaceNote] = useState(otherNote);
@@ -71,8 +78,9 @@ export function MarkdownEditorExample() {
     <section aria-label="Field presentation" className="mt-8">
       <Text as="h2" variant="heading">Field presentation</Text>
       <Text as="p" variant="body" className="mt-3">Type Markdown and watch it format. Headings, lists, quotes, code, rules, emphasis, and links all convert as you type. Shift+Enter inserts a line break.</Text>
+      <Text as="p" variant="body" className="mt-3">Paste or drop an image to try an in-memory address. It lasts only while this page is open.</Text>
       <div className="mt-6">
-        <MarkdownEditor presentation="field" defaultValue={startingMarkdown} onChange={setMarkdown} aria-label="Research note" />
+        <MarkdownEditor presentation="field" defaultValue={startingMarkdown} onChange={setMarkdown} onImageFile={onImageFile} aria-label="Research note" />
       </div>
       <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
       <div role="group" aria-label="Current Markdown" className="mt-3 min-h-24 whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-4 font-mono text-small">{markdown}</div>
