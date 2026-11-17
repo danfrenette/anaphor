@@ -149,6 +149,27 @@ test("the visible Apply button submits a link", async () => {
   expect(ref.current!.getMarkdown()).toBe("[text](https://example.com/)");
 });
 
+test.each(["apply", "remove"])("keyboard %s returns focus to Link", async action => {
+  const { user } = setupEditor("[text](https://example.com)");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("a")!, 0, 4);
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  if (action === "apply") await user.keyboard("{Enter}");
+  else { screen.getByRole("button", { name: "Remove link" }).focus(); await user.keyboard("{Enter}"); }
+  await waitFor(() => expect(screen.getByRole("button", { name: "Link" })).toHaveFocus());
+});
+
+test.each(["Apply", "Remove link"])("pointer %s returns focus to text", async action => {
+  const { user } = setupEditor("[text](https://example.com)");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("a")!, 0, 4);
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  await user.click(screen.getByRole("button", { name: action }));
+  expect(editor).toHaveFocus();
+});
+
 test.each(["readOnly", "disabled"] as const)("locking with %s closes formatting and blocks stale actions", async lock => {
   const onChange = vi.fn();
   const { user, ref, rerender } = setupEditor("text", { onChange });

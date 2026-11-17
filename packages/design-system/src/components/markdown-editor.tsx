@@ -800,8 +800,16 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   const [linkError, setLinkError] = useState(false);
   const errorId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const pointerLinkAction = useRef(false);
+  const returnLinkFocus = useRef(false);
   useLayoutEffect(() => { if (disabled || readOnly) setEditingLink(false); }, [disabled, readOnly]);
   useLayoutEffect(() => { if (editingLink) inputRef.current?.focus(); }, [editingLink]);
+  useLayoutEffect(() => {
+    if (!editingLink && returnLinkFocus.current) {
+      returnLinkFocus.current = false;
+      bubbleRef.current?.querySelector<HTMLButtonElement>('button[aria-label="Link"]')?.focus();
+    }
+  }, [editingLink]);
   const openLink = useCallback(() => {
     if (!editor?.isEditable) return;
     setUrl(editor.getAttributes("link").href ?? "");
@@ -819,8 +827,9 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
     const chain = editor.chain().command(({ tr }) => { closeHistory(tr); return true; });
     if (remove) chain.unsetLink().run(); else chain.setLink({ href }).run();
     editor.view.dispatch(closeHistory(editor.state.tr));
+    returnLinkFocus.current = !pointerLinkAction.current;
     setEditingLink(false);
-    editor.view.focus();
+    if (pointerLinkAction.current) editor.view.focus();
   };
   useImperativeHandle(ref, () => ({ getMarkdown, setMarkdown }), [getMarkdown, setMarkdown]);
 
@@ -897,7 +906,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       if (index < 0) return;
       const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1 : event.key === "ArrowRight" ? (index + 1) % buttons.length : event.key === "ArrowLeft" ? (index + buttons.length - 1) % buttons.length : -1;
       if (next >= 0) { event.preventDefault(); buttons[next]?.focus(); }
-    }}>{editingLink ? <form onSubmit={event => { event.preventDefault(); finishLink(false); }}>
+    }}>{editingLink ? <form onPointerDownCapture={() => { pointerLinkAction.current = true; }} onKeyDownCapture={() => { pointerLinkAction.current = false; }} onSubmit={event => { event.preventDefault(); finishLink(false); }}>
       <label id={`${errorId}-label`} htmlFor={`${errorId}-input`}>URL</label>
       <Input ref={inputRef} id={`${errorId}-input`} size="sm" aria-labelledby={`${errorId}-label`} value={url} onChange={event => { setUrl(event.target.value); setLinkError(false); }} aria-invalid={linkError || undefined} aria-describedby={linkError ? errorId : undefined} />
       <Button nativeButton type="submit" variant="ghost" tone="neutral" size="sm" shape="square" iconOnly={false} loading={false}>Apply</Button>
