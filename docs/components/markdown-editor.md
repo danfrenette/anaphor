@@ -90,6 +90,17 @@ space is insufficient. Its entrance uses a short opacity and scale animation;
 reduced motion disables the animation. The menu disappears immediately on
 hide: Tiptap removes it from the DOM, and entrance-only motion is intentional.
 
+## Security
+
+The editor is not a Markdown sanitizer. Starting values and preserved opaque
+HTML are returned unchanged by `getMarkdown()`, including `javascript:` links
+and raw HTML. Hosts must sanitize Markdown at their rendering boundary. HTTP
+and HTTPS Markdown images load remote resources when rendered.
+
+Paste filters unsupported HTML and unsafe link protocols; images are dropped
+only from pasted HTML, with their alt text retained. The selection bubble also
+rejects unsafe link destinations. See [Paste](#paste) for the input rules.
+
 ## Paste
 
 Pasting web content retains supported headings, paragraphs, lists, task lists,
@@ -351,10 +362,11 @@ matched with the same grammar marked uses for its `html` tokens, so it is
 preserved instead of being folded into marks (`<b>x</b>` stays `<b>x</b>`, not
 `**x**`) or dropped (`<img>`).
 
-**Inert rendering.** Opaque source is emitted as a text child only — never as
+**Inert rendering.** In the editor's own display, opaque source is emitted as a text child only — never as
 `innerHTML` and never parsed into live nodes — so `<script>`, `<img onerror>`,
-and `javascript:` links inside preserved HTML create no elements and run
-nothing. Parsing opaque nodes from HTML matches only the editor's own
+and `javascript:` links inside preserved HTML create no elements and execute
+nothing there. This is not a rendering guarantee for hosts; see [Security](#security).
+Parsing opaque nodes from HTML matches only the editor's own
 `data-opaque-block` / `data-opaque-inline` markup, so arbitrary pasted HTML
 cannot become an opaque node.
 
