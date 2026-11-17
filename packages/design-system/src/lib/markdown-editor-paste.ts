@@ -163,4 +163,4 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
   return editor.chain().command(({ tr }) => { tr.setMeta("paste", true).setMeta("uiEvent", "paste"); return true; }).insertContent(insertion).run();
 }
 
-export { cleanPastedHtml, handleMarkdownPaste, literalPastedImage, PasteOrdinal, suppressPastedOrdinal };
+export { cleanPastedHtml, handleMarkdownPaste, isSafePasteUri, literalPastedImage, PasteOrdinal, suppressPastedOrdinal };

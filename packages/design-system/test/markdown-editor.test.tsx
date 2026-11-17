@@ -108,6 +108,49 @@ test("the link shortcut focuses the URL field", async () => {
   expect(await screen.findByRole("textbox", { name: "URL" })).toHaveFocus();
 });
 
+test("link editing applies a bare domain and undo restores the text", async () => {
+  const { user, ref } = setupEditor("text");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("p")!, 0, 4);
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  const url = await screen.findByRole("textbox", { name: "URL" });
+  await user.type(url, "example.com{Enter}");
+  expect(ref.current?.getMarkdown()).toBe("[text](https://example.com)");
+  await user.keyboard("{Control>}z{/Control}");
+  expect(ref.current?.getMarkdown()).toBe("text");
+});
+
+test("link editing refuses encoded unsafe URLs without changing the link", async () => {
+  const { user, ref } = setupEditor("[text](https://example.com)");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("a")!, 0, 4);
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  const url = await screen.findByRole("textbox", { name: "URL" });
+  expect(url).toHaveValue("https://example.com");
+  await user.clear(url);
+  await user.type(url, "java&#115;cript:alert(1){Enter}");
+  expect(url).toHaveAttribute("aria-invalid", "true");
+  expect(screen.getByText("Enter a safe URL.")).toBeVisible();
+  expect(ref.current?.getMarkdown()).toBe("[text](https://example.com)");
+});
+
+test("link editing changes and removes an existing link", async () => {
+  const { user, ref } = setupEditor("[text](https://example.com)");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("a")!, 0, 4);
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  const url = await screen.findByRole("textbox", { name: "URL" });
+  await user.clear(url);
+  await user.type(url, "https://other.example{Enter}");
+  expect(ref.current?.getMarkdown()).toBe("[text](https://other.example)");
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  await user.click(await screen.findByRole("button", { name: "Remove link" }));
+  expect(ref.current?.getMarkdown()).toBe("text");
+});
+
 test.each(["![alt](https://example.com/a.png \"title\")", "before ![alt](https://example.com/a.png \"title\") after"])("renders starting image inline: %s", async source => {
   const { ref, user } = setupEditor(source);
   const image = screen.getByRole("img", { name: "alt" });

@@ -17,8 +17,8 @@ import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/r
 import { BubbleMenu } from "@tiptap/react/menus";
 import { TextB, TextItalic, TextStrikethrough, Code, Link as LinkIcon } from "@phosphor-icons/react/dist/ssr";
 import StarterKit from "@tiptap/starter-kit";
-import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type Ref } from "react";
-import { cleanPastedHtml, handleMarkdownPaste, literalPastedImage, PasteOrdinal, suppressPastedOrdinal } from "#lib/markdown-editor-paste";
+import { useCallback, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type Ref } from "react";
+import { cleanPastedHtml, handleMarkdownPaste, isSafePasteUri, literalPastedImage, PasteOrdinal, suppressPastedOrdinal } from "#lib/markdown-editor-paste";
 import { matchOpaqueBlock, matchOpaqueInline, splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 import { cn } from "../lib/utils";
 import { Button } from "./button";
@@ -762,8 +762,28 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   const bubbleRef = useRef<HTMLDivElement>(null);
   const [focused, setFocused] = useState(0);
   const [editingLink, setEditingLink] = useState(false);
+  const [url, setUrl] = useState("");
+  const [linkError, setLinkError] = useState(false);
+  const errorId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   useLayoutEffect(() => { if (editingLink) inputRef.current?.focus(); }, [editingLink]);
+  const openLink = useCallback(() => {
+    if (!editor) return;
+    setUrl(editor.getAttributes("link").href ?? "");
+    setLinkError(false);
+    setEditingLink(true);
+  }, [editor]);
+  const finishLink = (remove: boolean) => {
+    if (!editor) return;
+    const value = url.trim();
+    if (!remove && (!value || !isSafePasteUri(value))) { setLinkError(true); return; }
+    const href = /^[a-z][a-z\d+.-]*:/i.test(value) || value.startsWith("/") || value.startsWith("#") ? value : `https://${value}`;
+    const chain = editor.chain().command(({ tr }) => { closeHistory(tr); return true; });
+    if (remove) chain.unsetLink().run(); else chain.setLink({ href }).run();
+    editor.view.dispatch(closeHistory(editor.state.tr));
+    setEditingLink(false);
+    editor.view.focus();
+  };
   useImperativeHandle(ref, () => ({ getMarkdown, setMarkdown }), [getMarkdown, setMarkdown]);
 
   useEffect(() => {
@@ -772,7 +792,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       // Spec requirement (AC-5): the link shortcut opens URL editing.
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k" && !editor.state.selection.empty && editor.isEditable) {
         event.preventDefault();
-        setEditingLink(true);
+        openLink();
         return;
       }
       if (event.altKey && event.key === "F10" && !editor.state.selection.empty) {
@@ -785,7 +805,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
     };
     editor.view.dom.addEventListener("keydown", onKeyDown);
     return () => editor.view.dom.removeEventListener("keydown", onKeyDown);
-  }, [editor]);
+  }, [editor, openLink]);
 
   // A click on the frame's own surface (padding or the empty space below short
   // content) lands outside the editor content; place the caret at the end there.
@@ -794,6 +814,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   const handleFrameClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (disabled || !editor) return;
     const target = event.target;
+    if (target instanceof globalThis.Node && bubbleRef.current?.contains(target)) return;
     if (target instanceof globalThis.Node && editor.view.dom.contains(target)) return;
     focusAtEnd(editor);
   };
@@ -839,7 +860,11 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
         if (["codeBlock", "opaqueBlock", "opaqueInline"].includes(node.type.name)) excluded = true;
       });
       return !excluded && !!state.doc.textBetween(from, to);
-    }}>{editingLink ? <Input ref={inputRef} size="sm" aria-label="URL" /> : <FormattingButtons editor={editor} focused={focused} setFocused={setFocused} openLink={() => setEditingLink(true)} />}</BubbleMenu>}
+    }}>{editingLink ? <form onSubmit={event => { event.preventDefault(); finishLink(false); }}>
+      <Input ref={inputRef} size="sm" aria-label="URL" value={url} onChange={event => { setUrl(event.target.value); setLinkError(false); }} aria-invalid={linkError || undefined} aria-describedby={linkError ? errorId : undefined} />
+      {linkError && <span id={errorId}>Enter a safe URL.</span>}
+      <Button nativeButton type="button" variant="ghost" tone="neutral" size="sm" shape="square" iconOnly={false} loading={false} onClick={() => finishLink(true)}>Remove link</Button>
+    </form> : <FormattingButtons editor={editor} focused={focused} setFocused={setFocused} openLink={openLink} />}</BubbleMenu>}
   </div>;
 }
 
