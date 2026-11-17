@@ -226,7 +226,7 @@ test("image file paste calls the host and inserts its result", async () => {
   expect(onChange).toHaveBeenCalledWith("![note](blob:note)");
 });
 
-test.each(["x\n\n<img src=x onerror=alert(1)>", "one\ntwo", "<script>alert(1)</script>", "x](javascript:alert(1))", "a\\]b.png"])("handler alt stays inside the rendered image: %s", async alt => {
+test.each(["`code` *star* _under_ &lt; &#65; & < [ ] \\", "x\n\n<img src=x onerror=alert(1)>", "one\ntwo", "<script>alert(1)</script>", "x](javascript:alert(1))", "a\\]b.png"])("handler alt stays inside the rendered image: %s", async alt => {
   const api = await setupPasteEditor("", { onImageFile: async file => ({ src: "https://safe.invalid/a", alt: alt || file.name }) });
   await act(async () => { fileEvent(api.dom, "paste", [new File(["a"], alt, { type: "image/png" })]); });
   const html = await new Marked().parse(api.getMarkdown());
@@ -252,7 +252,7 @@ test.each([
     const parsed = new DOMParser().parseFromString(html, "text/html");
     expect(Array.from(parsed.body.querySelectorAll("*"), element => element.tagName)).toEqual(["P", "IMG"]);
     expect(parsed.querySelector("img")?.getAttribute("alt")).toBe(expectedAlt);
-    expect(saved).toBe(`${origin === "start" ? "x" : ""}![${sourceAlt.replace(/\n/g, " ")}](https://safe.invalid/a)`);
+    expect(saved).toBe(`${origin === "start" ? "x" : ""}![${sourceAlt.replace(/\n/g, " ").replace(/[<>]/g, "\\$&")}](https://safe.invalid/a)`);
     api.unmount();
   }
 });

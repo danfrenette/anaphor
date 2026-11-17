@@ -106,7 +106,7 @@ test.each([
   ["angle destination", "![a](<https://example.com/a.png>)", "![a](https://example.com/a.png)"],
   ["empty alt", "![](https://example.com/a.png)", "![](https://example.com/a.png)"],
   ["escaped bracket", "![a\\]b](https://example.com/a.png)", "![a\\]b](https://example.com/a.png)"],
-  ["emphasis alt", "![a*b](https://example.com/a.png)", "![a*b](https://example.com/a.png)"],
+  ["emphasis alt", "![a*b](https://example.com/a.png)", "![a\\*b](https://example.com/a.png)"],
 ])("image round trip: %s", async (_name, source, expected) => {
   expect(await serializeWithoutEdit(source)).toBe(expected);
 });
