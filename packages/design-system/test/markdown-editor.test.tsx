@@ -138,6 +138,17 @@ test("link editing applies a bare domain and undo restores the text", async () =
   expect(ref.current?.getMarkdown()).toBe("text");
 });
 
+test("the visible Apply button submits a link", async () => {
+  const { user, ref } = setupEditor("text");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("p")!, 0, 4);
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  await user.type(await screen.findByRole("textbox", { name: "URL" }), "example.com");
+  await user.click(screen.getByRole("button", { name: "Apply" }));
+  expect(ref.current!.getMarkdown()).toBe("[text](https://example.com/)");
+});
+
 test.each(["readOnly", "disabled"] as const)("locking with %s closes formatting and blocks stale actions", async lock => {
   const onChange = vi.fn();
   const { user, ref, rerender } = setupEditor("text", { onChange });

@@ -900,6 +900,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
     }}>{editingLink ? <form onSubmit={event => { event.preventDefault(); finishLink(false); }}>
       <label id={`${errorId}-label`} htmlFor={`${errorId}-input`}>URL</label>
       <Input ref={inputRef} id={`${errorId}-input`} size="sm" aria-labelledby={`${errorId}-label`} value={url} onChange={event => { setUrl(event.target.value); setLinkError(false); }} aria-invalid={linkError || undefined} aria-describedby={linkError ? errorId : undefined} />
+      <Button nativeButton type="submit" variant="ghost" tone="neutral" size="sm" shape="square" iconOnly={false} loading={false}>Apply</Button>
       {linkError && <span id={errorId}>Enter a safe URL.</span>}
       <Button nativeButton type="button" variant="ghost" tone="neutral" size="sm" shape="square" iconOnly={false} loading={false} onClick={() => finishLink(true)}>Remove link</Button>
     </form> : <FormattingButtons editor={editor} focused={focused} setFocused={setFocused} openLink={openLink} />}</div></BubbleMenu>}
