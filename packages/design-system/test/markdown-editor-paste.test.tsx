@@ -587,13 +587,17 @@ test.each(["# heading", "```", "~~~", "---", "***", "___", "===", "- item", "+ i
   expect(new DOMParser().parseFromString(html, "text/html").querySelector("p")?.textContent).toBe(line);
 });
 
-test.each(["    indented", "      indented", "\tindented"]) ("pasted indentation stays a paragraph: %j", async text => {
+test.each([
+  ["\ta", "&#9;a"], [" \ta", "&#32;&#9;a"], ["  \ta", "&#32;&#32;&#9;a"],
+  ["   \ta", "&#32;&#32;&#32;&#9;a"], ["    a", "&#32;&#32;&#32;&#32;a"], ["   a", "   a"],
+]) ("pasted indentation stays a paragraph: %j", async (text, expected) => {
   const api = await setupPasteEditor();
   api.dom.focus();
   await userEvent.setup().paste(text);
   const visible = api.dom.textContent;
   expect(visible).toBe(text);
   const saved = api.getMarkdown();
+  expect(saved).toBe(expected);
   act(() => { api.setMarkdown(saved); });
   expect(api.dom.querySelector("p")?.textContent).toBe(visible);
   expect(api.dom.querySelector("pre")).toBeNull();
