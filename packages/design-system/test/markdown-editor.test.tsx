@@ -79,6 +79,35 @@ test.each([
   expect(button).toHaveAttribute("aria-pressed", "true");
 });
 
+test("Alt+F10 enters formatting, arrows and endpoints move focus, and Escape returns to the selection", async () => {
+  const { user } = setupEditor("text");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("p")!, 0, 4);
+  const bold = await screen.findByRole("button", { name: "Bold" });
+  await user.keyboard("{Alt>}{F10}{/Alt}");
+  expect(bold).toHaveFocus();
+  await user.keyboard("{ArrowRight}");
+  expect(screen.getByRole("button", { name: "Italic" })).toHaveFocus();
+  await user.keyboard("{End}");
+  expect(screen.getByRole("button", { name: "Link" })).toHaveFocus();
+  await user.keyboard("{Home}{ArrowLeft}");
+  expect(screen.getByRole("button", { name: "Link" })).toHaveFocus();
+  await user.keyboard("{Escape}");
+  expect(editor).toHaveFocus();
+  expect(window.getSelection()?.toString()).toBe("text");
+});
+
+test("the link shortcut focuses the URL field", async () => {
+  const { user } = setupEditor("text");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("p")!, 0, 4);
+  await screen.findByRole("button", { name: "Link" });
+  await user.keyboard("{Control>}k{/Control}");
+  expect(await screen.findByRole("textbox", { name: "URL" })).toHaveFocus();
+});
+
 test.each(["![alt](https://example.com/a.png \"title\")", "before ![alt](https://example.com/a.png \"title\") after"])("renders starting image inline: %s", async source => {
   const { ref, user } = setupEditor(source);
   const image = screen.getByRole("img", { name: "alt" });

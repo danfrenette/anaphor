@@ -17,12 +17,13 @@ import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/r
 import { BubbleMenu } from "@tiptap/react/menus";
 import { TextB, TextItalic, TextStrikethrough, Code, Link as LinkIcon } from "@phosphor-icons/react/dist/ssr";
 import StarterKit from "@tiptap/starter-kit";
-import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, type Ref } from "react";
+import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type Ref } from "react";
 import { cleanPastedHtml, handleMarkdownPaste, literalPastedImage, PasteOrdinal, suppressPastedOrdinal } from "#lib/markdown-editor-paste";
 import { matchOpaqueBlock, matchOpaqueInline, splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 import { cn } from "../lib/utils";
 import { Button } from "./button";
 import { Kbd } from "./kbd";
+import { Input } from "./input";
 import { Tooltip, TooltipGroup, TooltipPopup, TooltipTrigger } from "./tooltip";
 
 declare module "@tiptap/core" {
@@ -736,7 +737,7 @@ function useMarkdownEditor({
   return { editor, getMarkdown, setMarkdown };
 }
 
-function FormattingButtons({ editor }: { editor: Editor }) {
+function FormattingButtons({ editor, focused, setFocused, openLink }: { editor: Editor; focused: number; setFocused: (index: number) => void; openLink: () => void }) {
   const active = useEditorState({ editor, selector: ({ editor }) => ({
     bold: editor.isActive("bold"), italic: editor.isActive("italic"),
     strike: editor.isActive("strike"), code: editor.isActive("code"), link: editor.isActive("link"),
@@ -746,11 +747,11 @@ function FormattingButtons({ editor }: { editor: Editor }) {
     { name: "Italic", key: "italic" as const, shortcut: "I", Icon: TextItalic, run: () => editor.chain().toggleItalic().run() },
     { name: "Strikethrough", key: "strike" as const, shortcut: "Shift+S", Icon: TextStrikethrough, run: () => editor.chain().toggleStrike().run() },
     { name: "Inline code", key: "code" as const, shortcut: "E", Icon: Code, run: () => editor.chain().toggleCode().run() },
-    { name: "Link", key: "link" as const, shortcut: "K", Icon: LinkIcon, run: () => {} },
+    { name: "Link", key: "link" as const, shortcut: "K", Icon: LinkIcon, run: openLink },
   ];
-  return <TooltipGroup>{items.map(({ name, key, shortcut, Icon, run }) => <Tooltip key={key}>
+  return <TooltipGroup>{items.map(({ name, key, shortcut, Icon, run }, index) => <Tooltip key={key}>
     <TooltipTrigger render={<Button nativeButton type="button" variant="ghost" tone="neutral" size="sm" shape="square" iconOnly loading={false}
-      aria-label={name} aria-pressed={active[key]} onMouseDown={event => event.preventDefault()} onClick={run} />} />
+      aria-label={name} aria-pressed={active[key]} tabIndex={focused === index ? 0 : -1} onFocus={() => setFocused(index)} onMouseDown={event => event.preventDefault()} onClick={run} />} />
     <TooltipPopup side="top" align="center" sideOffset={8}>{name} <Kbd>Mod+{shortcut}</Kbd></TooltipPopup>
   </Tooltip>)}</TooltipGroup>;
 }
@@ -758,7 +759,33 @@ function FormattingButtons({ editor }: { editor: Editor }) {
 function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) {
   const { disabled = false, invalid = false } = options;
   const { editor, getMarkdown, setMarkdown } = useMarkdownEditor(options);
+  const bubbleRef = useRef<HTMLDivElement>(null);
+  const [focused, setFocused] = useState(0);
+  const [editingLink, setEditingLink] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  useLayoutEffect(() => { if (editingLink) inputRef.current?.focus(); }, [editingLink]);
   useImperativeHandle(ref, () => ({ getMarkdown, setMarkdown }), [getMarkdown, setMarkdown]);
+
+  useEffect(() => {
+    if (!editor) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      // Spec requirement (AC-5): the link shortcut opens URL editing.
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k" && !editor.state.selection.empty && editor.isEditable) {
+        event.preventDefault();
+        setEditingLink(true);
+        return;
+      }
+      if (event.altKey && event.key === "F10" && !editor.state.selection.empty) {
+        const button = bubbleRef.current?.querySelector<HTMLButtonElement>("button");
+        if (button && bubbleRef.current?.style.visibility !== "hidden") {
+          event.preventDefault();
+          button.focus();
+        }
+      }
+    };
+    editor.view.dom.addEventListener("keydown", onKeyDown);
+    return () => editor.view.dom.removeEventListener("keydown", onKeyDown);
+  }, [editor]);
 
   // A click on the frame's own surface (padding or the empty space below short
   // content) lands outside the editor content; place the caret at the end there.
@@ -797,7 +824,14 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       ),
     )}>
     <EditorContent editor={editor} />
-    {editor && <BubbleMenu editor={editor} role="toolbar" aria-label="Formatting" shouldShow={({ editor, element, view, state, from, to }) => {
+    {editor && <BubbleMenu ref={bubbleRef} editor={editor} role="toolbar" aria-label="Formatting" onKeyDown={event => {
+      if (event.key === "Escape") { event.preventDefault(); setEditingLink(false); editor.view.focus(); return; }
+      const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
+      const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
+      if (index < 0) return;
+      const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1 : event.key === "ArrowRight" ? (index + 1) % buttons.length : event.key === "ArrowLeft" ? (index + buttons.length - 1) % buttons.length : -1;
+      if (next >= 0) { event.preventDefault(); buttons[next].focus(); }
+    }} shouldShow={({ editor, element, view, state, from, to }) => {
       // Spec requirement: exclude node and cell selections and opaque/code content.
       if (!editor.isEditable || !(state.selection instanceof TextSelection) || state.selection.empty || !(view.hasFocus() || element.contains(document.activeElement))) return false;
       let excluded = false;
@@ -805,7 +839,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
         if (["codeBlock", "opaqueBlock", "opaqueInline"].includes(node.type.name)) excluded = true;
       });
       return !excluded && !!state.doc.textBetween(from, to);
-    }}><FormattingButtons editor={editor} /></BubbleMenu>}
+    }}>{editingLink ? <Input ref={inputRef} size="sm" aria-label="URL" /> : <FormattingButtons editor={editor} focused={focused} setFocused={setFocused} openLink={() => setEditingLink(true)} />}</BubbleMenu>}
   </div>;
 }
 
