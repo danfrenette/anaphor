@@ -93,10 +93,12 @@ test("Space toggles a focused task checkbox and its Markdown", async () => {
   const checkbox = await screen.findByRole("checkbox", { name: /Review notes/i });
   checkbox.focus();
   await user.keyboard(" ");
-  expect(checkbox).toBeChecked();
+  await waitFor(() => expect(screen.getByRole("checkbox", { name: /Review notes/i })).toBeChecked());
   expect(ref.current?.getMarkdown()).toBe("- [x] Review notes");
+  await waitFor(() => expect(screen.getByRole("textbox", { name: "Research note" })).toHaveFocus());
+  screen.getByRole("checkbox", { name: /Review notes/i }).focus();
   await user.keyboard(" ");
-  expect(checkbox).not.toBeChecked();
+  await waitFor(() => expect(screen.getByRole("checkbox", { name: /Review notes/i })).not.toBeChecked());
   expect(ref.current?.getMarkdown()).toBe("- [ ] Review notes");
 });
 
