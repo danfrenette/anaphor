@@ -824,7 +824,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
     const explicit = /^[a-z][a-z\d+.-]*:/i.test(value) && !host;
     const relative = /^(?:\.\.?\/|\/|#)/.test(value) || /^[^\s@\\:]+\/[^\s@\\]*$/.test(value);
     const href = normalizeLinkHref(host ? `https://${value}` : value);
-    if (!remove && (!value || !isSafePasteUri(href) || (!explicit && !host && !relative) || (!explicit && /[\s@\\]/.test(value)))) { setLinkError(true); return; }
+    if (!remove && (!value || !isSafePasteUri(host ? `https://${value}` : value) || !isSafePasteUri(href) || (!explicit && !host && !relative) || (!explicit && /[\s@\\]/.test(value)))) { setLinkError(true); return; }
     const chain = editor.chain().command(({ tr }) => { closeHistory(tr); return true; });
     if (remove) chain.unsetLink().run(); else chain.setLink({ href }).run();
     editor.view.dispatch(closeHistory(editor.state.tr));

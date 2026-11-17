@@ -270,7 +270,7 @@ test("relative starting link retains its destination after editing and reparse",
   expect(editor.querySelector("a")?.getAttribute("href")).toBe(before);
 });
 
-test("link editing refuses encoded unsafe URLs without changing the link", async () => {
+test.each(["java&#115;cript:alert(1)", "javascript&#58;alert(1)", "javascript&#58;//evil"])("link editing refuses encoded unsafe URLs without changing the link: %s", async unsafe => {
   const { user, ref } = setupEditor("[text](https://example.com)");
   const editor = await screen.findByRole("textbox", { name: "Research note" });
   await user.click(editor);
@@ -279,7 +279,8 @@ test("link editing refuses encoded unsafe URLs without changing the link", async
   const url = await screen.findByRole("textbox", { name: "URL" });
   expect(url).toHaveValue("https://example.com/");
   await user.clear(url);
-  await user.type(url, "java&#115;cript:alert(1){Enter}");
+  fireEvent.change(url, { target: { value: unsafe } });
+  await user.keyboard("{Enter}");
   expect(url).toHaveAttribute("aria-invalid", "true");
   expect(screen.getByText("Enter a safe URL.")).toBeVisible();
   expect(ref.current?.getMarkdown()).toBe("[text](https://example.com)");
