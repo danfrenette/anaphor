@@ -37,7 +37,7 @@ function cleanPastedHtml(html: string): string {
   const document = new DOMParser().parseFromString(html, "text/html");
   for (const element of Array.from(document.body.querySelectorAll("*"))) {
     if (element.matches("img")) {
-      element.remove();
+      element.replaceWith(document.createTextNode(element.getAttribute("alt") ?? ""));
       continue;
     }
     if (element.matches("form, button, input:not([type=checkbox]), textarea, select, iframe, script, style")) {
@@ -60,6 +60,7 @@ function cleanPastedHtml(html: string): string {
 
 // Spec requirement (AC-3, AC-5): detect syntax from the parsed paste, not a second lex.
 function containsMarkdown(node: JSONContent, source: string, hasBracketLink: boolean): boolean {
+  if (node.type === "image") return true;
   if (node.type === "codeBlock") return /^ {0,3}(?:`{3,}|~{3,})/m.test(source);
   if (["heading", "bulletList", "orderedList", "blockquote", "table", "horizontalRule"].includes(node.type ?? "")) return true;
   if (node.marks?.some(mark => ["bold", "italic", "strike", "code"].includes(mark.type) || (mark.type === "link" && hasBracketLink))) return true;
@@ -81,6 +82,12 @@ function unsafePasteLink(node: JSONContent): string | undefined {
 
 // Spec requirement (AC-4, AC-7): unsafe links and unsupported pasted syntax stay literal.
 function literalPasteNodes(node: JSONContent): JSONContent {
+  if (node.type === "image") {
+    const src = String(node.attrs?.src ?? "");
+    if (!/^https?:/i.test(src) || !isSafePasteUri(src)) {
+      return { type: "text", text: `![${node.attrs?.alt ?? ""}](${src})` };
+    }
+  }
   if (node.type === "opaqueInline") return { type: "text", text: node.attrs?.source ?? "" };
   if (node.type === "opaqueBlock") {
     const lines = String(node.attrs?.source ?? "").split("\n");

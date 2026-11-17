@@ -113,6 +113,32 @@ function pasteHTML(dom: HTMLElement, html: string) {
   act(() => { dom.dispatchEvent(event); });
 }
 
+test("pasted HTML images retain alt text without loading their source", async () => {
+  const api = await setupPasteEditor();
+  pasteHTML(api.dom, '<p>Before <img src="https://evil.test/a.png" alt="a &amp; b"> after<img src="https://evil.test/b.png"></p>');
+  expect(api.getMarkdown()).toBe("Before a &amp; b after");
+  expect(api.dom.textContent).toBe("Before a & b after");
+  expect(api.dom.querySelector("img[src]")).toBeNull();
+});
+
+test.each(["https://example.com/a.png", "http://example.com/a.png"])("pasted Markdown image permits %s", async src => {
+  const api = await setupPasteEditor();
+  api.dom.focus();
+  await userEvent.setup().paste(`![alt](${src})`);
+  expect(api.getMarkdown()).toBe(`![alt](${src})`);
+  expect(screen.getByRole("img", { name: "alt" })).toHaveAttribute("src", src);
+});
+
+test.each(["javascript:alert(1)", "data:image/png;base64,abc", "&#106;avascript:alert(1)", "//example.com/a.png", "relative.png"])("pasted Markdown image stays literal for %s", async src => {
+  const api = await setupPasteEditor();
+  api.dom.focus();
+  await userEvent.setup().paste(`![alt](${src})`);
+  expect(api.dom.querySelector("img[src]")).toBeNull();
+  expect(api.dom.textContent).toContain("![alt]");
+  const html = await marked.parse(api.getMarkdown());
+  expect(new DOMParser().parseFromString(html, "text/html").querySelector("img")).toBeNull();
+});
+
 async function selectText(dom: HTMLElement, from: number, to = from) {
   dom.focus();
   const text = dom.querySelector("p, h1, code")!.firstChild!;
@@ -159,7 +185,7 @@ test("entity-encoded reference destinations stay literal on paste", async () => 
 test.each([
   ["anaphor-manual", "# Typography\n\nReading, navigation, and literal values share a small kit. Document structure chooses the heading level; purpose chooses its appearance.", "TypographyReading, navigation, and literal values share a small kit. Document structure chooses the heading level; purpose chooses its appearance."],
   ["google-docs", "Quarterly **report**\n\nPlain text and *emphasis*.", "Quarterly reportPlain text and emphasis."],
-  ["blog", "## Field notes\n\nRead [the report](https://example.com) and **remember**.\n\n> Take care.\n\n- First\n- Second", "Field notesRead the report and remember.Take care.FirstSecond"],
+  ["blog", "## Field notes\n\nRead [the report](https://example.com) and **remember**.\n\n> Take care.\n\n- First\n- Second\n\nPhoto", "Field notesRead the report and remember.Take care.FirstSecondPhoto"],
 ])("pasting %s HTML keeps semantic formatting", async (name, expected, visible) => {
   const api = await setupPasteEditor();
   pasteHTML(api.dom, readFileSync(join(fixtureDir, `${name}.html`), "utf8"));
