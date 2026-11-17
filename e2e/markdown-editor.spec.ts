@@ -21,6 +21,33 @@ test("Chromium drops an image file through the demo handler", async ({ page, bro
   await expect(page.getByLabel("Current Markdown", { exact: true })).toContainText("![diagram.png](blob:");
 });
 
+test("Chromium maps a positioned pending image drop through edits", async ({ page, browserName }) => {
+  test.skip(browserName !== "chromium", "File drop is verified in Chromium.");
+  await page.goto("/markdown-editor-fixture");
+  const editor = page.getByRole("textbox", { name: "Drop fixture" });
+  const prevented = await editor.evaluate(element => {
+    const text = element.querySelector("p")!.firstChild!;
+    const range = document.createRange();
+    range.setStart(text, 2);
+    range.collapse(true);
+    const rect = range.getBoundingClientRect();
+    const transfer = new DataTransfer();
+    transfer.items.add(new File(["image"], "diagram.png", { type: "image/png" }));
+    const event = new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer, clientX: rect.x, clientY: rect.y + rect.height / 2 });
+    element.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
+  expect(prevented).toBe(true);
+  await expect(page.getByRole("button", { name: "Complete upload" })).toBeEnabled();
+  await editor.focus();
+  await page.keyboard.press("Home");
+  await page.keyboard.type("x");
+  await expect(page.getByRole("group", { name: "Drop Markdown" })).toHaveText("xabcd");
+  await page.getByRole("button", { name: "Complete upload" }).click();
+  await expect(editor.getByRole("img", { name: "diagram.png" })).toBeVisible();
+  await expect(page.getByRole("group", { name: "Drop Markdown" })).toHaveText("xab![diagram.png](/icon.svg)cd");
+});
+
 for (const key of ["Backspace", "Delete"]) test(`arrow selects an image and ${key} removes it`, async ({ page }) => {
   await page.goto("/markdown-editor");
   const editor = page.getByRole("textbox", { name: "In-place note", exact: true });
