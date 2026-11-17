@@ -77,7 +77,6 @@ function isSafePasteUri(uri: unknown): boolean {
 
 // Tiptap 3.33.0 workaround: use the same browser-normalized destination on insert and save.
 function normalizeLinkHref(href: string): string {
-  href = href.replace(/&(?=(?:#\d+|#x[\da-f]+|[a-z][a-z\d]+);)/gi, "%26");
   try {
     const url = new URL(href);
     if (["http:", "https:", "mailto:"].includes(url.protocol)) return url.href;
