@@ -121,6 +121,25 @@ test("link editing applies a bare domain and undo restores the text", async () =
   expect(ref.current?.getMarkdown()).toBe("text");
 });
 
+test.each(["readOnly", "disabled"] as const)("locking with %s closes formatting and blocks stale actions", async lock => {
+  const onChange = vi.fn();
+  const { user, ref, rerender } = setupEditor("text", { onChange });
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("p")!, 0, 4);
+  const bold = await screen.findByRole("button", { name: "Bold" });
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  const field = await screen.findByRole("textbox", { name: "URL" });
+  fireEvent.change(field, { target: { value: "https://example.com" } });
+  const form = field.closest("form")!;
+  rerender(<MarkdownEditor presentation="field" ref={ref} defaultValue="text" aria-label="Research note" onChange={onChange} {...{ [lock]: true }} />);
+  expect(screen.queryByRole("toolbar", { name: "Formatting" })).not.toBeInTheDocument();
+  fireEvent.submit(form);
+  fireEvent.click(bold);
+  expect(ref.current!.getMarkdown()).toBe("text");
+  expect(onChange).not.toHaveBeenCalled();
+});
+
 test.each([
   "https://example.com/a> <img src=x onerror=alert(1)>",
   "https://example.com/a<b",

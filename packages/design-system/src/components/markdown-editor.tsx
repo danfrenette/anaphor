@@ -765,7 +765,7 @@ function FormattingButtons({ editor, focused, setFocused, openLink }: { editor: 
   ];
   return <TooltipGroup>{items.map(({ name, key, shortcut, Icon, run }, index) => <Tooltip key={key}>
     <TooltipTrigger render={<Button nativeButton type="button" variant="ghost" tone="neutral" size="sm" shape="square" iconOnly loading={false}
-      className="aria-pressed:bg-[var(--anaphor-input-disabled)]" aria-label={name} aria-pressed={active[key]} tabIndex={focused === index ? 0 : -1} onFocus={() => setFocused(index)} onMouseDown={event => event.preventDefault()} onClick={run}><Icon aria-hidden="true" /></Button>} />
+      className="aria-pressed:bg-[var(--anaphor-input-disabled)]" aria-label={name} aria-pressed={active[key]} tabIndex={focused === index ? 0 : -1} onFocus={() => setFocused(index)} onMouseDown={event => event.preventDefault()} onClick={() => { if (editor.isEditable) run(); }}><Icon aria-hidden="true" /></Button>} />
     <TooltipPopup side="top" align="center" sideOffset={8}>{name} <Kbd>Mod+{shortcut}</Kbd></TooltipPopup>
   </Tooltip>)}</TooltipGroup>;
 }
@@ -781,7 +781,7 @@ function shouldShowFormatting({ editor, element, view, state, from, to }: Parame
 }
 
 function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) {
-  const { disabled = false, invalid = false } = options;
+  const { disabled = false, readOnly = false, invalid = false } = options;
   const { editor, getMarkdown, setMarkdown } = useMarkdownEditor(options);
   const bubbleRef = useRef<HTMLDivElement>(null);
   const bubbleKey = useMemo(() => new PluginKey("formattingBubble"), []);
@@ -800,15 +800,16 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   const [linkError, setLinkError] = useState(false);
   const errorId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  useLayoutEffect(() => { if (disabled || readOnly) setEditingLink(false); }, [disabled, readOnly]);
   useLayoutEffect(() => { if (editingLink) inputRef.current?.focus(); }, [editingLink]);
   const openLink = useCallback(() => {
-    if (!editor) return;
+    if (!editor?.isEditable) return;
     setUrl(editor.getAttributes("link").href ?? "");
     setLinkError(false);
     setEditingLink(true);
   }, [editor]);
   const finishLink = (remove: boolean) => {
-    if (!editor) return;
+    if (!editor?.isEditable) return;
     const value = url.trim();
     if (!remove && (!value || !isSafePasteUri(value))) { setLinkError(true); return; }
     const href = normalizeLinkHref(/^[a-z][a-z\d+.-]*:/i.test(value) || value.startsWith("/") || value.startsWith("#") ? value : `https://${value}`);
@@ -886,7 +887,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       ),
     )}>
     <EditorContent editor={editor} />
-    {editor && <BubbleMenu ref={bubbleRef} pluginKey={bubbleKey} editor={editor} options={{ strategy: "fixed", placement: coarsePointer ? "bottom" : "top", onShow: () => { if (bubbleRef.current) bubbleRef.current.tabIndex = -1; } }} shouldShow={shouldShowFormatting}><div role="toolbar" aria-label="Formatting" data-slot="markdown-formatting-bubble" className="flex items-center rounded-control border bg-muted text-foreground border-[color-mix(in_oklch,var(--anaphor-input-border)_72%,var(--anaphor-background))] shadow-[var(--anaphor-shadow-menu)]" onKeyDownCapture={event => {
+    {editor && !readOnly && !disabled && <BubbleMenu ref={bubbleRef} pluginKey={bubbleKey} editor={editor} options={{ strategy: "fixed", placement: coarsePointer ? "bottom" : "top", onShow: () => { if (bubbleRef.current) bubbleRef.current.tabIndex = -1; } }} shouldShow={shouldShowFormatting}><div role="toolbar" aria-label="Formatting" data-slot="markdown-formatting-bubble" className="flex items-center rounded-control border bg-muted text-foreground border-[color-mix(in_oklch,var(--anaphor-input-border)_72%,var(--anaphor-background))] shadow-[var(--anaphor-shadow-menu)]" onKeyDownCapture={event => {
       if (event.key === "Escape") { event.preventDefault(); setEditingLink(false); editor.view.focus(); return; }
       const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
       const index = buttons.findIndex(button => button === document.activeElement);
