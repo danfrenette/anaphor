@@ -40,7 +40,7 @@ test.each(["![alt](https://example.com/a.png \"title\")", "before ![alt](https:/
   expect(ref.current?.getMarkdown()).toBe(source);
   await user.click(screen.getByRole("textbox", { name: "Research note" }));
   await user.keyboard("x");
-  expect(ref.current?.getMarkdown()).toContain('![alt](https://example.com/a.png "title")');
+  expect(ref.current?.getMarkdown()).toBe(`x${source}`);
 });
 
 test("in-place presentation does not focus when its surrounding wrapper is clicked", async () => {

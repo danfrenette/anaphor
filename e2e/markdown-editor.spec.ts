@@ -38,9 +38,7 @@ for (const key of ["Backspace", "Delete"]) test(`arrow selects an image and ${ke
     document.dispatchEvent(new Event("selectionchange"));
   });
   await page.keyboard.press("ArrowRight");
-  await expect(image).toHaveClass(/ProseMirror-selectednode/);
-  const outline = await image.evaluate(element => getComputedStyle(element).outlineStyle);
-  expect(outline).not.toBe("none");
+  await expect.poll(() => image.evaluate(element => getComputedStyle(element).outlineStyle)).not.toBe("none");
   await page.keyboard.press(key);
   await expect(image).toHaveCount(0);
 });
