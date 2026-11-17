@@ -761,6 +761,15 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   const { editor, getMarkdown, setMarkdown } = useMarkdownEditor(options);
   const bubbleRef = useRef<HTMLDivElement>(null);
   const [focused, setFocused] = useState(0);
+  const [coarsePointer, setCoarsePointer] = useState(false);
+  useEffect(() => {
+    if (!window.matchMedia) return;
+    const media = window.matchMedia("(pointer: coarse)");
+    const update = () => setCoarsePointer(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
   const [editingLink, setEditingLink] = useState(false);
   const [url, setUrl] = useState("");
   const [linkError, setLinkError] = useState(false);
@@ -845,7 +854,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       ),
     )}>
     <EditorContent editor={editor} />
-    {editor && <BubbleMenu ref={bubbleRef} editor={editor} options={{ strategy: "fixed" }} shouldShow={({ editor, element, view, state, from, to }) => {
+    {editor && <BubbleMenu ref={bubbleRef} editor={editor} options={{ strategy: "fixed", placement: coarsePointer ? "bottom" : "top" }} shouldShow={({ editor, element, view, state, from, to }) => {
       // Spec requirement: exclude node and cell selections and opaque/code content.
       if (!editor.isEditable || !(state.selection instanceof TextSelection) || state.selection.empty || !(view.hasFocus() || element.contains(document.activeElement))) return false;
       let excluded = false;

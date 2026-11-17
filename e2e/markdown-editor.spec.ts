@@ -16,6 +16,35 @@ test("formatting bubble escapes the field scroller and respects reduced motion",
   expect(await bubble.evaluate(element => getComputedStyle(element).transitionDuration)).toBe("0s");
 });
 
+test("touch selection positions the bubble below text and buttons are tappable", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "Touch placement is tested on mobile WebKit.");
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes", exact: true });
+  await editor.tap();
+  await editor.pressSequentially("Touch selection");
+  const selectionBox = await editor.evaluate(element => {
+    const text = element.querySelector("p")!.firstChild!;
+    const range = document.createRange();
+    range.setStart(text, 0);
+    range.setEnd(text, 5);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+    document.dispatchEvent(new Event("selectionchange"));
+    const rect = range.getBoundingClientRect();
+    return { bottom: rect.bottom };
+  });
+  const bubble = page.getByRole("toolbar", { name: "Formatting" });
+  await expect(bubble).toBeVisible();
+  expect((await bubble.boundingBox())!.y).toBeGreaterThanOrEqual(selectionBox.bottom);
+  const bold = bubble.getByRole("button", { name: "Bold" });
+  const box = (await bold.boundingBox())!;
+  expect(box.width).toBeGreaterThanOrEqual(24);
+  expect(box.height).toBeGreaterThanOrEqual(24);
+  await bold.tap();
+  await expect(page.getByLabel("Field states Markdown", { exact: true })).toHaveText("**Touch** selection");
+});
+
 test("Chromium drops an image file through the demo handler", async ({ page, browserName }) => {
   test.skip(browserName !== "chromium", "File drop is verified in Chromium.");
   await page.goto("/markdown-editor");
