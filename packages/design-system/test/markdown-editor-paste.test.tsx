@@ -407,7 +407,7 @@ test.each([
 ])("pasting %s HTML keeps semantic formatting", async (name, expected, visible) => {
   const api = await setupPasteEditor();
   pasteHTML(api.dom, readFileSync(join(fixtureDir, `${name}.html`), "utf8"));
-  expect(api.getMarkdown()).toBe(expected.replaceAll("](https://example.com)", "](https://example.com/)"));
+  expect(api.getMarkdown()).toBe(expected);
   expect(api.dom.textContent).toBe(visible);
 });
 
@@ -525,9 +525,9 @@ test("four-digit sentences retain inline links without becoming lists", async ()
   const api = await setupPasteEditor();
   api.dom.focus();
   await user.paste("2026. [a link](https://example.com)");
-  expect(api.getMarkdown()).toBe("2026\\. [a link](https://example.com/)");
+  expect(api.getMarkdown()).toBe("2026\\. [a link](https://example.com)");
   expect(api.dom.textContent).toBe("2026. a link");
-  expect(api.dom.querySelector("a")).toHaveAttribute("href", "https://example.com/");
+  expect(api.dom.querySelector("a")).toHaveAttribute("href", "https://example.com");
   expect(api.dom.querySelector("ol")).toBeNull();
 });
 
@@ -573,9 +573,9 @@ test("pasting a URL over selected text links the selection", async () => {
   await selectText(api.dom, 0, 8);
   api.dom.focus();
   await user.paste("https://example.com");
-  expect(api.getMarkdown()).toBe("[selected](https://example.com/)");
+  expect(api.getMarkdown()).toBe("[selected](https://example.com)");
   expect(api.dom.textContent).toBe("selected");
-  expect(api.dom.querySelector("a")).toHaveAttribute("href", "https://example.com/");
+  expect(api.dom.querySelector("a")).toHaveAttribute("href", "https://example.com");
 });
 
 test("pasting a rich clipboard URL links selected text", async () => {
@@ -585,7 +585,7 @@ test("pasting a rich clipboard URL links selected text", async () => {
   const event = new Event("paste", { bubbles: true, cancelable: true });
   Object.defineProperty(event, "clipboardData", { value: { getData: (type: string) => type === "text/plain" ? "https://example.com" : type === "text/html" ? '<a href="https://example.com">example</a>' : "", files: [], types: ["text/plain", "text/html"] } });
   act(() => { api.dom.dispatchEvent(event); });
-  expect(api.getMarkdown()).toBe("[selected](https://example.com/)");
+  expect(api.getMarkdown()).toBe("[selected](https://example.com)");
   expect(api.dom.textContent).toBe("selected");
 });
 
@@ -622,16 +622,16 @@ test.each(["https://example.com", "mailto:reader@example.com"])("a pasted URL li
   const api = await setupPasteEditor();
   api.dom.focus();
   await user.paste(url);
-  expect(api.getMarkdown()).toBe(`[${url}](${new URL(url).href})`);
+  expect(api.getMarkdown()).toBe(`[${url}](${url})`);
   expect(api.dom.textContent).toBe(url);
-  expect(api.dom.querySelector("a")).toHaveAttribute("href", new URL(url).href);
+  expect(api.dom.querySelector("a")).toHaveAttribute("href", url);
 });
 
 test.each([
   ["Markdown", "# Heading", false, "Original\n\n# Heading", "OriginalHeading"],
-  ["link on selection", "https://example.com", true, "[Original](https://example.com/)", "Original"],
+  ["link on selection", "https://example.com", true, "[Original](https://example.com)", "Original"],
   ["plain text", "ordinary text", false, "Originalordinary text", "Originalordinary text"],
-  ["URL", "https://example.com", false, "Original[https://example.com](https://example.com/)", "Originalhttps://example.com"],
+  ["URL", "https://example.com", false, "Original[https://example.com](https://example.com)", "Originalhttps://example.com"],
 ])("one undo reverts a whole %s paste", async (_name, text, selected, expected, visible) => {
   const user = userEvent.setup();
   const api = await setupPasteEditor("Original");
@@ -679,7 +679,7 @@ test.each([
   ["quote", "> Quote", "> Quote", "blockquote", "Quote"],
   ["fence", "```\ncode\n```", "```\ncode\n```", "pre", "code"],
   ["emphasis", "**bold**", "**bold**", "strong", "bold"],
-  ["link", "[label](https://example.com)", "[label](https://example.com/)", "a", "label"],
+  ["link", "[label](https://example.com)", "[label](https://example.com)", "a", "label"],
 ])("plain-text paste formats Markdown %s", async (_name, text, expected, format, visible) => {
   const user = userEvent.setup();
   const api = await setupPasteEditor();
@@ -797,7 +797,7 @@ test("pasted link titles survive saving and rendering", async () => {
   api.dom.focus();
   await user.paste('[label](https://example.com "a \\\"quote\\\" \\\\ path )")');
   const saved = api.getMarkdown();
-  expect(saved).toBe('[label](https://example.com/ "a \\\"quote\\\" \\\\ path )")');
+  expect(saved).toBe('[label](https://example.com "a \\\"quote\\\" \\\\ path )")');
   act(() => { api.setMarkdown(saved); });
   expect(api.dom.querySelector("a")).toHaveAttribute("title", 'a "quote" \\ path )');
   const rendered = new DOMParser().parseFromString(await marked.parse(saved), "text/html");
@@ -811,7 +811,7 @@ test("starting link title survives an edit and reparse", async () => {
   api.dom.focus();
   await user.keyboard("!");
   const saved = api.getMarkdown();
-  expect(saved).toBe('\\![label](https://example.com/ "a \\\"quote\\\" \\\\ path )")');
+  expect(saved).toBe('\\![label](https://example.com "a \\\"quote\\\" \\\\ path )")');
   act(() => { api.setMarkdown(saved); });
   expect(api.dom.querySelector("a")).toHaveAttribute("title", 'a "quote" \\ path )');
   const rendered = new DOMParser().parseFromString(await marked.parse(saved), "text/html");
@@ -1020,7 +1020,7 @@ test.each([
   api.dom.focus();
   await userEvent.setup().keyboard('z');
   const saved = api.getMarkdown();
-  expect(saved).toBe(`z${source.replaceAll('](https://example.com)', '](https://example.com/)').replaceAll('](https://other.example)', '](https://other.example/)')}`);
+  expect(saved).toBe(`z${source}`);
   const rendered = new DOMParser().parseFromString(await new Marked().parse(saved), 'text/html');
   expect(rendered.querySelectorAll('a')).toHaveLength(count);
   expect(rendered.querySelector('a img')?.getAttribute('alt')).toBe('a');

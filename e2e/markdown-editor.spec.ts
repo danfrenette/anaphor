@@ -258,22 +258,22 @@ test("link bubble adds, edits, rejects unsafe URLs and removes links", async ({ 
   let url = page.getByRole("textbox", { name: "URL" });
   await url.fill("example.com");
   await url.press("Enter");
-  await expect(output).toHaveText("[hello](https://example.com/)");
+  await expect(output).toHaveText("[hello](https://example.com)");
   await link.click();
   url = page.getByRole("textbox", { name: "URL" });
-  await expect(url).toHaveValue("https://example.com/");
+  await expect(url).toHaveValue("https://example.com");
   await url.fill("java&#115;cript:alert(1)");
   await url.press("Enter");
   await expect(url).toHaveAttribute("aria-invalid", "true");
-  await expect(output).toHaveText("[hello](https://example.com/)");
+  await expect(output).toHaveText("[hello](https://example.com)");
   await url.fill("https://other.example");
   await url.press("Enter");
-  await expect(output).toHaveText("[hello](https://other.example/)");
+  await expect(output).toHaveText("[hello](https://other.example)");
   await link.click();
   await page.getByRole("button", { name: "Remove link" }).click();
   await expect(output).toHaveText("hello");
   await page.keyboard.press("ControlOrMeta+Z");
-  await expect(output).toHaveText("[hello](https://other.example/)");
+  await expect(output).toHaveText("[hello](https://other.example)");
 });
 
 test("a multi-cell selection does not expose formatting", async ({ page, isMobile }) => {
@@ -1124,7 +1124,7 @@ test("the starting fixture renders every supported construct formatted", async (
   await expect(editor.locator("pre code")).toContainText("const x = 1;");
   await expect(editor.locator("pre code")).toHaveClass(/language-ts/);
   await expect(editor.locator("hr")).toBeVisible();
-  await expect(editor.getByRole("link", { name: "link" })).toHaveAttribute("href", "https://anaphor.dev/");
+  await expect(editor.getByRole("link", { name: "link" })).toHaveAttribute("href", "https://anaphor.dev");
   await expect(editor.getByText("strike", { exact: true })).toBeVisible();
   await expect(editor.getByText("code", { exact: true })).toBeVisible();
 
