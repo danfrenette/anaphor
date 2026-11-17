@@ -48,8 +48,9 @@ const MarkdownStarterKit = StarterKit.extend({
         if (node.content?.length === 1 && node.content[0]?.type === "text" && node.content[0].text === "\u00a0") return "&nbsp;";
         const markdown = this.parent?.(node, helpers, context) ?? "";
         // Spec requirement (AC-7): keep pasted literal rules from becoming Markdown rules.
-        // Tiptap 3.33.0 workaround: paragraph lines are not lists or blockquotes.
-        const paragraph = markdown.replace(/^( {0,3})(\d+)([.)])(?=[ \t])/gm, "$1$2\\$3")
+        // Tiptap 3.33.0 workaround: paragraph lines must not reparse as blocks.
+        const paragraph = markdown.replace(/^(?: {4,}|\t)[ \t]*/gm, indent => [...indent].map(character => character === "\t" ? "&#9;" : "&#32;").join(""))
+          .replace(/^( {0,3})(\d+)([.)])(?=[ \t])/gm, "$1$2\\$3")
           .replace(/^( {0,3})([-+>])(?=[ \t])/gm, "$1\\$2")
           .replace(/^( {0,3})((?:#{1,6}(?=[ \t])|`{3,}|~{3,}|(?:[-*_][ \t]*){3,}$|={3,}[ \t]*$)[^\n]*)/gm, (line, indent: string, content: string) => {
             const fence = /^`{3,}/.exec(content)?.[0];

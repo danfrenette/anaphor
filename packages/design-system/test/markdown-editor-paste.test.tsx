@@ -146,7 +146,7 @@ test("pasted Markdown tables become tables", async () => {
   expect(api.dom.querySelector("table")).not.toBeNull();
 });
 
-test.each([["snake_case_names", "snake\\_case\\_names"], ["2 * 3 = 6", "2 \\* 3 = 6"], ["    indented", "    indented"], ["#heading", "#heading"], ["2026. A year.", "2026\\. A year."]])("ordinary text stays a paragraph: %s", async (text, expected) => {
+test.each([["snake_case_names", "snake\\_case\\_names"], ["2 * 3 = 6", "2 \\* 3 = 6"], ["    indented", "&#32;&#32;&#32;&#32;indented"], ["#heading", "#heading"], ["2026. A year.", "2026\\. A year."]])("ordinary text stays a paragraph: %s", async (text, expected) => {
   const user = userEvent.setup();
   const api = await setupPasteEditor();
   api.dom.focus();
@@ -585,4 +585,34 @@ test.each(["# heading", "```", "~~~", "---", "***", "___", "===", "- item", "+ i
   expect(api.dom.querySelector("p")?.textContent).toBe(line);
   const html = await new (await import("marked")).Marked().parse(saved);
   expect(new DOMParser().parseFromString(html, "text/html").querySelector("p")?.textContent).toBe(line);
+});
+
+test.each(["    indented", "      indented", "\tindented"]) ("pasted indentation stays a paragraph: %j", async text => {
+  const api = await setupPasteEditor();
+  api.dom.focus();
+  await userEvent.setup().paste(text);
+  const visible = api.dom.textContent;
+  expect(visible).toBe(text);
+  const saved = api.getMarkdown();
+  act(() => { api.setMarkdown(saved); });
+  expect(api.dom.querySelector("p")?.textContent).toBe(visible);
+  expect(api.dom.querySelector("pre")).toBeNull();
+  const html = await new (await import("marked")).Marked().parse(saved);
+  const rendered = new DOMParser().parseFromString(html, "text/html");
+  expect(rendered.querySelector("p")?.textContent).toBe(visible);
+  expect(rendered.querySelector("pre")).toBeNull();
+});
+
+test("typed leading spaces stay a paragraph", async () => {
+  const api = await setupPasteEditor();
+  api.dom.focus();
+  await userEvent.setup().keyboard("    indented");
+  const visible = api.dom.textContent;
+  expect(visible?.replace(/\u00a0/g, " ")).toBe("    indented");
+  const saved = api.getMarkdown();
+  act(() => { api.setMarkdown(saved); });
+  expect(api.dom.querySelector("p")?.textContent).toBe(visible);
+  expect(api.dom.querySelector("pre")).toBeNull();
+  const html = await new (await import("marked")).Marked().parse(saved);
+  expect(new DOMParser().parseFromString(html, "text/html").querySelector("p")?.textContent).toBe(visible);
 });
