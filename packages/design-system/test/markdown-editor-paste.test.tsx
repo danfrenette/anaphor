@@ -84,6 +84,25 @@ test.each(["no handler", "read only", "disabled"].flatMap(state => (["paste", "d
   expect(api.getMarkdown()).toBe("");
 });
 
+test("non-image file drop prevents navigation without insertion", async () => {
+  const onImageFile = vi.fn(async () => ({ src: "a.png", alt: "a" }));
+  const api = await setupPasteEditor("before", { onImageFile });
+  let event!: Event;
+  await act(async () => { event = fileEvent(api.dom, "drop", [new File(["x"], "x.txt", { type: "text/plain" })]); });
+  expect(event.defaultPrevented).toBe(true);
+  expect(onImageFile).not.toHaveBeenCalled();
+  expect(api.getMarkdown()).toBe("before");
+});
+
+test("dropping a javascript URI does not create a link", async () => {
+  const api = await setupPasteEditor();
+  Object.defineProperty(document, "elementFromPoint", { configurable: true, value: () => null });
+  const event = new Event("drop", { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "dataTransfer", { value: { files: [], types: ["text/uri-list"], getData: () => "javascript:alert(1)" } });
+  await act(async () => { api.dom.dispatchEvent(event); });
+  expect(api.dom.querySelector("a")).toBeNull();
+});
+
 test.each(["unmount", "read only"])("pending image is discarded on %s", async state => {
   let resolveImage!: (value: { src: string; alt: string }) => void;
   const onImageFile = () => new Promise<{ src: string; alt: string }>(resolve => { resolveImage = resolve; });

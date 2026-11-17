@@ -565,7 +565,10 @@ function useMarkdownEditor({
 
   function handleImageFiles(view: Editor["view"], event: Event, files: FileList | undefined, drop: boolean): boolean {
     const images = Array.from(files ?? []).filter(file => file.type.startsWith("image/"));
-    if (!images.length) return false;
+    if (!images.length) {
+      if (drop && files?.length) { event.preventDefault(); return true; }
+      return false;
+    }
     event.preventDefault();
     const handler = imageHandlerRef.current;
     if (!handler || !editor || !editor.isEditable) return true;
