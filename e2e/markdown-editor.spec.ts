@@ -2,6 +2,134 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { prepareContentSnapshot } from "./content-snapshot";
 
+for (const theme of ["light", "dark"]) test(`formatting bubble baseline and accessibility: ${theme}`, async ({ page }) => {
+  await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes", exact: true });
+  await editor.click();
+  await editor.pressSequentially("Format this text");
+  await page.keyboard.press("Shift+ArrowLeft");
+  const bubble = page.getByRole("toolbar", { name: "Formatting" });
+  await expect(bubble).toBeVisible();
+  await expect(bubble.locator('[data-slot="button-content"] svg')).toHaveCount(5);
+  await checkAccessibility(page, '[aria-label="Field states"]');
+  await expect(bubble).toHaveScreenshot(`markdown-bubble-${theme}.png`, { animations: "disabled", caret: "hide" });
+  await bubble.getByRole("button", { name: "Link" }).click();
+  await expect(page.getByRole("textbox", { name: "URL" })).toBeFocused();
+  await checkAccessibility(page, '[aria-label="Field states"]');
+});
+
+test("bubble keyboard navigation and link shortcut preserve selection", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Keyboard navigation is verified on desktop.");
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes", exact: true });
+  await editor.click();
+  await editor.pressSequentially("hello");
+  for (let i = 0; i < 5; i++) await page.keyboard.press("Shift+ArrowLeft");
+  const bubble = page.getByRole("toolbar", { name: "Formatting" });
+  await expect(bubble).toBeVisible();
+  await page.keyboard.press("Alt+F10");
+  await expect(bubble.getByRole("button", { name: "Bold" })).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await expect(bubble.getByRole("button", { name: "Italic" })).toBeFocused();
+  await page.keyboard.press("End");
+  await expect(bubble.getByRole("button", { name: "Link" })).toBeFocused();
+  await page.keyboard.press("Home");
+  await page.keyboard.press("Escape");
+  await expect(editor).toBeFocused();
+  await expect.poll(() => page.evaluate(() => window.getSelection()?.toString())).toBe("hello");
+  await page.keyboard.press("ControlOrMeta+K");
+  await expect(page.getByRole("textbox", { name: "URL" })).toBeFocused();
+});
+
+for (const [name, markdown] of [["Bold", "**hello**"], ["Italic", "*hello*"], ["Strikethrough", "~~hello~~"], ["Inline code", "`hello`"]]) {
+  test(`pointer selection and ${name} produce Markdown`, async ({ page, isMobile }) => {
+    test.skip(isMobile, "Pointer dragging is verified on desktop.");
+    await page.goto("/markdown-editor");
+    const editor = page.getByRole("textbox", { name: "Notes", exact: true });
+    await editor.click();
+    await editor.pressSequentially("hello");
+    const box = (await editor.locator("p").boundingBox())!;
+    const textWidth = await editor.locator("p").evaluate(element => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      return range.getBoundingClientRect().width;
+    });
+    await page.mouse.move(box.x + 1, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + textWidth - 1, box.y + box.height / 2, { steps: 8 });
+    await page.mouse.up();
+    await expect.poll(() => page.evaluate(() => window.getSelection()?.toString())).toBe("hello");
+    const button = page.getByRole("button", { name, exact: true });
+    await expect(button).toHaveAttribute("aria-pressed", "false");
+    await button.click();
+    await expect(button).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByLabel("Field states Markdown", { exact: true })).toHaveText(markdown);
+  });
+}
+
+test("bubble remains reachable at both edges of a scrolled field", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The scrolling field edge test uses desktop selection.");
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes", exact: true });
+  await editor.click();
+  for (let i = 0; i < 20; i++) {
+    await editor.pressSequentially(`Line ${i}`);
+    if (i < 19) await page.keyboard.press("Enter");
+  }
+  const frame = page.locator('[data-slot="markdown-editor"]').filter({ has: editor });
+  for (const index of [0, 19]) {
+    const line = editor.locator("p").nth(index);
+    await line.scrollIntoViewIfNeeded();
+    await line.evaluate(element => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      const selection = window.getSelection()!;
+      selection.removeAllRanges();
+      selection.addRange(range);
+      document.dispatchEvent(new Event("selectionchange"));
+    });
+    const button = page.getByRole("button", { name: "Bold", exact: true });
+    await expect(button).toBeVisible();
+    const box = (await button.boundingBox())!;
+    const hit = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.getAttribute('aria-label'), { x: box.x + box.width / 2, y: box.y + box.height / 2 });
+    expect(hit).toBe("Bold");
+    expect(await frame.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
+    await editor.focus();
+  }
+});
+
+test("link bubble adds, edits, rejects unsafe URLs and removes links", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Link editing is exercised with desktop keyboard and pointer.");
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes", exact: true });
+  const output = page.getByLabel("Field states Markdown", { exact: true });
+  await editor.click();
+  await editor.pressSequentially("hello");
+  for (let i = 0; i < 5; i++) await page.keyboard.press("Shift+ArrowLeft");
+  const link = page.getByRole("button", { name: "Link", exact: true });
+  await link.click();
+  let url = page.getByRole("textbox", { name: "URL" });
+  await url.fill("example.com");
+  await url.press("Enter");
+  await expect(output).toHaveText("[hello](https://example.com)");
+  await link.click();
+  url = page.getByRole("textbox", { name: "URL" });
+  await expect(url).toHaveValue("https://example.com");
+  await url.fill("java&#115;cript:alert(1)");
+  await url.press("Enter");
+  await expect(url).toHaveAttribute("aria-invalid", "true");
+  await expect(output).toHaveText("[hello](https://example.com)");
+  await url.fill("https://other.example");
+  await url.press("Enter");
+  await expect(output).toHaveText("[hello](https://other.example)");
+  await link.click();
+  await page.getByRole("button", { name: "Remove link" }).click();
+  await expect(output).toHaveText("hello");
+  await page.keyboard.press("ControlOrMeta+Z");
+  await expect(output).toHaveText("[hello](https://other.example)");
+});
+
 test("formatting bubble escapes the field scroller and respects reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/markdown-editor");

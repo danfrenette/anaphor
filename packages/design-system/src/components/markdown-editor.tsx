@@ -751,7 +751,7 @@ function FormattingButtons({ editor, focused, setFocused, openLink }: { editor: 
   ];
   return <TooltipGroup>{items.map(({ name, key, shortcut, Icon, run }, index) => <Tooltip key={key}>
     <TooltipTrigger render={<Button nativeButton type="button" variant="ghost" tone="neutral" size="sm" shape="square" iconOnly loading={false}
-      aria-label={name} aria-pressed={active[key]} tabIndex={focused === index ? 0 : -1} onFocus={() => setFocused(index)} onMouseDown={event => event.preventDefault()} onClick={run} />} />
+      className="aria-pressed:bg-[var(--anaphor-input-disabled)]" aria-label={name} aria-pressed={active[key]} tabIndex={focused === index ? 0 : -1} onFocus={() => setFocused(index)} onMouseDown={event => event.preventDefault()} onClick={run}><Icon aria-hidden="true" /></Button>} />
     <TooltipPopup side="top" align="center" sideOffset={8}>{name} <Kbd>Mod+{shortcut}</Kbd></TooltipPopup>
   </Tooltip>)}</TooltipGroup>;
 }
@@ -854,7 +854,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       ),
     )}>
     <EditorContent editor={editor} />
-    {editor && <BubbleMenu ref={bubbleRef} editor={editor} options={{ strategy: "fixed", placement: coarsePointer ? "bottom" : "top" }} shouldShow={({ editor, element, view, state, from, to }) => {
+    {editor && <BubbleMenu ref={bubbleRef} editor={editor} options={{ strategy: "fixed", placement: coarsePointer ? "bottom" : "top", onShow: () => { if (bubbleRef.current) bubbleRef.current.tabIndex = -1; } }} shouldShow={({ editor, element, view, state, from, to }) => {
       // Spec requirement: exclude node and cell selections and opaque/code content.
       if (!editor.isEditable || !(state.selection instanceof TextSelection) || state.selection.empty || !(view.hasFocus() || element.contains(document.activeElement))) return false;
       let excluded = false;
@@ -870,7 +870,8 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1 : event.key === "ArrowRight" ? (index + 1) % buttons.length : event.key === "ArrowLeft" ? (index + buttons.length - 1) % buttons.length : -1;
       if (next >= 0) { event.preventDefault(); buttons[next]?.focus(); }
     }}>{editingLink ? <form onSubmit={event => { event.preventDefault(); finishLink(false); }}>
-      <Input ref={inputRef} size="sm" aria-label="URL" value={url} onChange={event => { setUrl(event.target.value); setLinkError(false); }} aria-invalid={linkError || undefined} aria-describedby={linkError ? errorId : undefined} />
+      <label id={`${errorId}-label`} htmlFor={`${errorId}-input`}>URL</label>
+      <Input ref={inputRef} id={`${errorId}-input`} size="sm" aria-labelledby={`${errorId}-label`} value={url} onChange={event => { setUrl(event.target.value); setLinkError(false); }} aria-invalid={linkError || undefined} aria-describedby={linkError ? errorId : undefined} />
       {linkError && <span id={errorId}>Enter a safe URL.</span>}
       <Button nativeButton type="button" variant="ghost" tone="neutral" size="sm" shape="square" iconOnly={false} loading={false} onClick={() => finishLink(true)}>Remove link</Button>
     </form> : <FormattingButtons editor={editor} focused={focused} setFocused={setFocused} openLink={openLink} />}</div></BubbleMenu>}

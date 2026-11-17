@@ -50,7 +50,11 @@
       ],
       "registryDependencies": [
         "danfrenette/anaphor/style",
-        "danfrenette/anaphor/utils"
+        "danfrenette/anaphor/utils",
+        "danfrenette/anaphor/button",
+        "danfrenette/anaphor/input",
+        "danfrenette/anaphor/kbd",
+        "danfrenette/anaphor/tooltip"
       ],
       "files": [
         {
