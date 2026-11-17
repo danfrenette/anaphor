@@ -5,7 +5,9 @@ import { act, render, screen } from "@testing-library/react";
 import { createRef } from "react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, test, vi } from "vitest";
-import { MarkdownEditor, type MarkdownEditorHandle, type MarkdownEditorImageHandler } from "@anaphor/system";
+import { MarkdownEditor, useMarkdownEditor, type MarkdownEditorHandle, type MarkdownEditorImageHandler } from "@anaphor/system";
+import { EditorContent } from "@tiptap/react";
+import type { Editor } from "@tiptap/core";
 import { Marked } from "marked";
 
 // A fresh renderer: the shared `marked` instance is the one @tiptap/markdown configures.
@@ -104,6 +106,29 @@ test.each(["paste", "drop"] as const)("setMarkdown discards a pending image from
   expect(api.getMarkdown()).toBe("replacement");
   expect(onChange).not.toHaveBeenCalled();
   expect(screen.queryByRole("img")).toBeNull();
+});
+
+test("replacement detaches transaction listeners for never-settling images", async () => {
+  let editor: Editor | null = null;
+  let replace!: (markdown: string) => void;
+  function Harness() {
+    const api = useMarkdownEditor({ "aria-label": "Listener editor", onImageFile: () => new Promise(() => {}) });
+    editor = api.editor;
+    replace = api.setMarkdown;
+    return <EditorContent editor={api.editor} />;
+  }
+  render(<Harness />);
+  const dom = await screen.findByRole("textbox", { name: "Listener editor" });
+  const on = vi.spyOn(editor!, "on");
+  const off = vi.spyOn(editor!, "off");
+  for (let i = 0; i < 3; i++) {
+    await act(async () => { fileEvent(dom, "paste", [new File(["a"], "a.png", { type: "image/png" })]); });
+    act(() => replace("replacement"));
+  }
+  const added = on.mock.calls.filter(([event]) => event === "transaction").map(([, listener]) => listener);
+  const removed = off.mock.calls.filter(([event]) => event === "transaction").map(([, listener]) => listener);
+  expect(added).toHaveLength(3);
+  expect(removed).toEqual(added);
 });
 
 test("image file paste calls the host and inserts its result", async () => {

@@ -497,6 +497,11 @@ function useMarkdownEditor({
   const imageHandlerRef = useRef(onImageFile);
   useLayoutEffect(() => { imageHandlerRef.current = onImageFile; }, [onImageFile]);
   const imageGeneration = useRef(0);
+  const pendingImageCleanup = useRef(new Set<() => void>());
+  const cancelPendingImages = useCallback(() => {
+    imageGeneration.current++;
+    for (const cleanup of pendingImageCleanup.current) cleanup();
+  }, []);
   useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
   const isReplacingRef = useRef(false);
   const pendingBodyRef = useRef<string | null>(null);
@@ -572,8 +577,13 @@ function useMarkdownEditor({
       to = transaction.mapping.map(to, 1);
     };
     editor.on("transaction", map);
-    void Promise.allSettled(images.map(file => Promise.resolve().then(() => handler(file)))).then(results => {
+    const cleanup = () => {
       editor.off("transaction", map);
+      pendingImageCleanup.current.delete(cleanup);
+    };
+    pendingImageCleanup.current.add(cleanup);
+    void Promise.allSettled(images.map(file => Promise.resolve().then(() => handler(file)))).then(results => {
+      cleanup();
       if (editor.isDestroyed || !editor.isEditable || generation !== imageGeneration.current) return;
       const content = results.flatMap(result => result.status === "fulfilled" ? [{ type: "image", attrs: result.value }] : []);
       if (content.length) {
@@ -610,7 +620,7 @@ function useMarkdownEditor({
 
   const setMarkdown = useCallback((markdown: string) => {
     if (editor?.isDestroyed) return;
-    imageGeneration.current++;
+    cancelPendingImages();
     const { frontMatter: nextFrontMatter, body: nextBody } = splitFrontMatter(markdown);
     // Until the next real edit, reading the value returns the replaced string
     // byte for byte, the same contract as `defaultValue`.
@@ -622,7 +632,7 @@ function useMarkdownEditor({
       // Before the editor exists, remember the body and apply it on mount.
       pendingBodyRef.current = nextBody;
     }
-  }, [editor, replaceContent]);
+  }, [editor, replaceContent, cancelPendingImages]);
 
   // A replacement requested before the editor mounted wins over the starting value.
   useEffect(() => {
@@ -638,12 +648,12 @@ function useMarkdownEditor({
   // `editorProps.attributes` above, so they survive view updates.
   useLayoutEffect(() => {
     if (!editor) return;
-    if (readOnly || disabled) imageGeneration.current++;
+    if (readOnly || disabled) cancelPendingImages();
     if (disabled && document.activeElement instanceof HTMLElement && editor.view.dom.contains(document.activeElement)) document.activeElement.blur();
     editor.setEditable(!readOnly && !disabled, false);
-  }, [editor, readOnly, disabled]);
+  }, [editor, readOnly, disabled, cancelPendingImages]);
 
-  useEffect(() => () => { imageGeneration.current++; }, []);
+  useEffect(() => () => { cancelPendingImages(); }, [cancelPendingImages]);
 
   useLayoutEffect(() => {
     if (!editor || !disabled) return;
