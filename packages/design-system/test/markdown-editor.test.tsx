@@ -255,6 +255,43 @@ test.each([
   expect(editor.querySelector("a")?.getAttribute("href")).toBe(before);
 });
 
+test.each([
+  ["https://example.com/?a=\\)", "https://example.com/?a=%5C)"],
+  ["https://example.com/?a=\\b", "https://example.com/?a=%5Cb"],
+  ["https://example.com/?a=\\) %3Cimg%3E", "https://example.com/?a=%5C)%20%3Cimg%3E"],
+  ["https://example.com/a\\b", "https://example.com/a/b"],
+])("backslash destination round trips through %s", async (destination, expected) => {
+  for (const mode of ["bubble", "paste", "starting"] as const) {
+    const source = `[text](<${destination.replace(/\\/g, "\\\\")}>)`;
+    const { user, ref, unmount } = setupEditor(mode === "starting" ? source : "text");
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    await user.click(editor);
+    if (mode === "starting") {
+      await user.keyboard("!");
+    } else {
+      selectText(editor.querySelector("p")!, 0, 4);
+      if (mode === "bubble") {
+        await user.click(await screen.findByRole("button", { name: "Link" }));
+        const field = await screen.findByRole("textbox", { name: "URL" });
+        fireEvent.change(field, { target: { value: destination } });
+        fireEvent.submit(field.closest("form")!);
+      } else {
+        fireEvent.paste(editor, { clipboardData: { getData: (type: string) => type === "text/plain" ? destination : "" } });
+      }
+    }
+    expect(editor.querySelector("a")).toHaveAttribute("href", expected);
+    const saved = ref.current!.getMarkdown();
+    expect(saved).toContain(`(${expected.replace(/[()&]/g, "\\$&")})`);
+    const parsed = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html");
+    expect(parsed.querySelectorAll("a")).toHaveLength(1);
+    expect(parsed.querySelector("img")).toBeNull();
+    expect(parsed.querySelector("a")?.getAttribute("href")).toBe(expected);
+    act(() => ref.current!.setMarkdown(saved));
+    expect(editor.querySelector("a")).toHaveAttribute("href", expected);
+    unmount();
+  }
+});
+
 test("entity-shaped query text keeps the browser URL on edit", async () => {
   const { user, ref } = setupEditor("text");
   const editor = await screen.findByRole("textbox", { name: "Research note" });
