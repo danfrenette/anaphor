@@ -136,6 +136,21 @@ test("pasting blocks splits a heading with a leading space in its saved form", a
   expect(api.getMarkdown()).toBe(saved);
 });
 
+test("a tab after text at the start of a list item becomes spaces on reparse", async () => {
+  const user = userEvent.setup();
+  const api = await setupPasteEditor("- &#32;&#9;a");
+  await selectText(api.dom, 0);
+  api.dom.focus();
+  await user.keyboard("!");
+  const saved = api.getMarkdown();
+  expect(saved).toBe("- ! \ta");
+  expect(api.dom.textContent).toBe("! \ta");
+  act(() => { api.setMarkdown(saved); });
+  // Pinned Tiptap 3.33.0 drift: CommonMark expands the tab inside the list item; no text is lost.
+  expect(api.dom.textContent).toBe("!     a");
+  expect(api.getMarkdown()).toBe(saved);
+});
+
 test("pasted Markdown tables become tables", async () => {
   const user = userEvent.setup();
   const api = await setupPasteEditor();
