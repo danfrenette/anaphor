@@ -183,7 +183,7 @@ test("replacement detaches transaction listeners for never-settling images", asy
   const added = on.mock.calls.filter(([event]) => event === "transaction").map(([, listener]) => listener);
   const removed = off.mock.calls.filter(([event]) => event === "transaction").map(([, listener]) => listener);
   expect(added).toHaveLength(3);
-  expect(removed.filter(listener => added.includes(listener))).toEqual(added);
+  expect(removed.filter(listener => listener !== undefined && added.includes(listener))).toEqual(added);
 });
 
 test.each(["read only", "disabled", "unmount"])("%s detaches transaction listeners for never-settling images", async state => {
@@ -208,7 +208,7 @@ test.each(["read only", "disabled", "unmount"])("%s detaches transaction listene
   const added = on.mock.calls.filter(([event]) => event === "transaction").map(([, listener]) => listener);
   const removed = off.mock.calls.filter(([event]) => event === "transaction").map(([, listener]) => listener);
   expect(added).toHaveLength(3);
-  expect(removed.filter(listener => added.includes(listener))).toEqual(added);
+  expect(removed.filter(listener => listener !== undefined && added.includes(listener))).toEqual(added);
 });
 
 test("image file paste calls the host and inserts its result", async () => {
