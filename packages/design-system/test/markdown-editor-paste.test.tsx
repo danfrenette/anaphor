@@ -109,6 +109,15 @@ test("image file paste calls the host and inserts its result", async () => {
   expect(onChange).toHaveBeenCalledWith("![note](blob:note)");
 });
 
+test.each(["x\n\n<img src=x onerror=alert(1)>", "one\ntwo", "<script>alert(1)</script>", "x](javascript:alert(1))", "a\\]b.png"])("handler alt stays inside the rendered image: %s", async alt => {
+  const api = await setupPasteEditor("", { onImageFile: async file => ({ src: "https://safe.invalid/a", alt: alt || file.name }) });
+  await act(async () => { fileEvent(api.dom, "paste", [new File(["a"], alt, { type: "image/png" })]); });
+  const html = await new Marked().parse(api.getMarkdown());
+  const document = new DOMParser().parseFromString(html, "text/html");
+  expect(Array.from(document.body.querySelectorAll("*"), el => el.tagName)).toEqual(["P", "IMG"]);
+  expect(document.querySelector("img")?.getAttribute("alt")).toBe(alt.replace(/\s*\n\s*/g, " "));
+});
+
 function pasteHTML(dom: HTMLElement, html: string) {
   const event = new Event("paste", { bubbles: true, cancelable: true });
   Object.defineProperty(event, "clipboardData", { value: { getData: (type: string) => type === "text/html" ? html : "", files: [], types: ["text/html"] } });
