@@ -257,6 +257,8 @@ test.each([
   ["\\&copy;", "&copy;", "&amp;copy;"],
   ["&amp;copy;", "&copy;", "&amp;copy;"],
   ["&unknownentity;", "&unknownentity;", "&amp;unknownentity;"],
+  // Pinned drift: numeric references 128–159 use HTML's legacy mapping (€), as marked renders them, not CommonMark's U+0080.
+  ["&#128;", "€", "€"],
 ])("starting image alt decodes CommonMark once: %s", async (sourceAlt, expectedAlt, savedAlt) => {
   const api = await setupPasteEditor(`![${sourceAlt}](https://safe.invalid/a)`);
   expect(api.dom.querySelector("img[src]")?.getAttribute("alt")).toBe(expectedAlt);

@@ -359,6 +359,10 @@ pinned by a test so an upgrade that changes one is noticed:
 - An unclosed multi-line component whose `>` starts a line loses that `>`.
 - Tables acquire serializer padding and extra blank lines. Adjacent tables keep
   a stable separator on repeated round trips (a workaround for Tiptap #8719).
+- In image alt text, numeric references from `&#128;` to `&#159;` decode with
+  HTML's legacy mapping (for example `€`), as `marked` renders them, rather
+  than CommonMark's control characters; after an edit the decoded character is
+  saved.
 - A tab that follows text at the start of a list item is expanded to spaces
   when the saved Markdown is reloaded; the visible text is otherwise unchanged.
 - Authored NBSP-only paragraphs are preserved anywhere in a document, including
