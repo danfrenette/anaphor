@@ -55,6 +55,8 @@ test("image file insertion maps through typing while pending", async () => {
   await userEvent.setup().keyboard("x");
   await act(async () => { resolveImage({ src: "a.png", alt: "a" }); });
   expect(api.getMarkdown()).toBe("ax![a](a.png)b");
+  await userEvent.setup().keyboard("{Control>}z{/Control}");
+  expect(api.getMarkdown()).toBe("axb");
 });
 
 test("rejected image file leaves the editor usable without an unhandled rejection", async () => {

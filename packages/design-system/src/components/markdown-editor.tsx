@@ -11,6 +11,7 @@ import { Image } from "@tiptap/extension-image";
 import { Markdown } from "@tiptap/markdown";
 import { EditorState, Plugin, Selection } from "@tiptap/pm/state";
 import { GapCursor } from "@tiptap/pm/gapcursor";
+import { closeHistory } from "@tiptap/pm/history";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -563,7 +564,10 @@ function useMarkdownEditor({
       editor.off("transaction", map);
       if (editor.isDestroyed || !editor.isEditable || generation !== imageGeneration.current) return;
       const content = results.flatMap(result => result.status === "fulfilled" ? [{ type: "image", attrs: result.value }] : []);
-      if (content.length) editor.commands.insertContentAt({ from, to }, content);
+      if (content.length) {
+        editor.chain().command(({ tr }) => { closeHistory(tr); return true; }).insertContentAt({ from, to }, content).run();
+        editor.view.dispatch(closeHistory(editor.state.tr));
+      }
     });
     return true;
   }
