@@ -7,6 +7,7 @@ import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table
 import { Extension, Node } from "@tiptap/core";
 import type { JSONContent, MarkdownRendererHelpers, MarkdownToken, RenderContext } from "@tiptap/core";
 import { Placeholder } from "@tiptap/extensions/placeholder";
+import { Image } from "@tiptap/extension-image";
 import { Markdown } from "@tiptap/markdown";
 import { EditorState, Plugin, Selection } from "@tiptap/pm/state";
 import { GapCursor } from "@tiptap/pm/gapcursor";
@@ -39,6 +40,10 @@ const MarkdownStarterKit = StarterKit.extend({
       // Tiptap 3.33.0 workaround: preserve authored NBSP-only paragraphs anywhere;
       // stock serialization loses their visible gap on reparse, including #8719's authored separator.
       parseMarkdown(token, helpers) {
+        // Spec requirement (AC-1, AC-2): an image-only paragraph stays a paragraph.
+        if (token.tokens?.length === 1 && token.tokens[0]?.type === "image") {
+          return helpers.createNode("paragraph", undefined, helpers.parseInline(token.tokens));
+        }
         if (token.tokens?.length === 1 && token.tokens[0]?.type === "text" && ["&nbsp;", "\u00a0"].includes(token.tokens[0].raw ?? "")) {
           return helpers.createNode("paragraph", undefined, [{ type: "text", text: "\u00a0" }]);
         }
@@ -198,6 +203,17 @@ const MarkdownLink = Link.extend({
   },
 // Spec requirement (AC-4): paste linking is handled by the safety-checked adapter.
 }).configure({ openOnClick: false, autolink: false, linkOnPaste: false });
+
+// Tiptap 3.33.0 workaround: preserve delimiters in image alt text and destinations.
+const MarkdownImage = Image.extend({
+  renderMarkdown: node => {
+    const src = node.attrs?.src ?? "";
+    const alt = (node.attrs?.alt ?? "").replace(/[\\\]]/g, "\\$&");
+    const title = (node.attrs?.title ?? "").replace(/[\\"]/g, "\\$&");
+    const destination = linkDestinationNeedsAngleBrackets(src) ? `<${src}>` : src;
+    return title ? `![${alt}](${destination} "${title}")` : `![${alt}](${destination})`;
+  },
+}).configure({ inline: true });
 
 /** Width of a prefix in Markdown columns, where a tab runs to the next 4-column stop. */
 function columnWidth(text: string): number {
@@ -493,7 +509,8 @@ function useMarkdownEditor({
       // that opens an ordered item as a code block (workaround 13).
       orderedList: false,
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-    }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, PasteOrdinal, TaskList, TaskItem.configure({ nested: true }), MarkdownTable, TableRow, TableHeader, TableCell, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
+    // Spec requirement (AC-1, AC-2): Markdown images are inline content.
+    }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, PasteOrdinal, TaskList, TaskItem.configure({ nested: true }), MarkdownTable, TableRow, TableHeader, TableCell, MarkdownImage, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
     content: body,
     contentType: "markdown",
     // Spec requirement (AC-1–5, AC-7): clean and classify pasted content.

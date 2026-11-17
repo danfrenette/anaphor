@@ -30,6 +30,18 @@ function setupEditor(defaultValue = "", props: { placeholder?: string; readOnly?
   return { user, ref, ...rendered };
 }
 
+test.each(["![alt](https://example.com/a.png \"title\")", "before ![alt](https://example.com/a.png \"title\") after"])("renders starting image inline: %s", async source => {
+  const { ref, user } = setupEditor(source);
+  const image = screen.getByRole("img", { name: "alt" });
+  expect(image).toHaveAttribute("src", "https://example.com/a.png");
+  expect(image).toHaveAttribute("title", "title");
+  expect(image.parentElement?.tagName).toBe("P");
+  expect(ref.current?.getMarkdown()).toBe(source);
+  await user.click(screen.getByRole("textbox", { name: "Research note" }));
+  await user.keyboard("x");
+  expect(ref.current?.getMarkdown()).toContain('![alt](https://example.com/a.png "title")');
+});
+
 test("in-place presentation does not focus when its surrounding wrapper is clicked", async () => {
   const user = userEvent.setup();
   const { container } = render(<MarkdownEditor presentation="in-place" defaultValue="Note" aria-label="In-place note" />);
@@ -87,6 +99,16 @@ async function serializeWithoutEdit(markdown: string) {
   unmount();
   return value;
 }
+
+test.each([
+  ["reference", "![a][ref]\n\n[ref]: https://example.com/a.png", "![a](https://example.com/a.png)"],
+  ["angle destination", "![a](<https://example.com/a.png>)", "![a](https://example.com/a.png)"],
+  ["empty alt", "![](https://example.com/a.png)", "![](https://example.com/a.png)"],
+  ["escaped bracket", "![a\\]b](https://example.com/a.png)", "![a\\]b](https://example.com/a.png)"],
+  ["emphasis alt", "![a*b](https://example.com/a.png)", "![a*b](https://example.com/a.png)"],
+])("image round trip: %s", async (_name, source, expected) => {
+  expect(await serializeWithoutEdit(source)).toBe(expected);
+});
 
 test("Space toggles a focused task checkbox and its Markdown", async () => {
   const { user, ref } = setupEditor("- [ ] Review notes");
