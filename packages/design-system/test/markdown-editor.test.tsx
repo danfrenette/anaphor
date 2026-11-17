@@ -224,6 +224,8 @@ test.each([
     const saved = ref.current!.getMarkdown();
     act(() => ref.current!.setMarkdown(saved));
     expect(editor.querySelector("a")).toHaveAttribute("href", expected);
+    const host = expected.startsWith("https://") ? (expected.includes(":8080") ? "example.com:8080" : "example.com") : expected.startsWith("mailto:") ? "" : "base.invalid";
+    expect(new URL(editor.querySelector("a")!.getAttribute("href")!, "https://base.invalid/").host).toBe(host);
   }
 });
 

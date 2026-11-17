@@ -901,7 +901,10 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
     )}>
     <EditorContent editor={editor} />
     {/* Decision 7, Tiptap 3.33.0/floating-ui override: fixed positioning escapes clipping. AC-8: coarse pointers prefer below. The menu tabindex override preserves normal Tab order. */}
-    {editor && !readOnly && !disabled && <BubbleMenu ref={bubbleRef} pluginKey={bubbleKey} editor={editor} options={{ strategy: "fixed", placement: coarsePointer ? "bottom" : "top", onHide: () => { setEditingLink(false); setFocused(0); }, onShow: () => { if (bubbleRef.current) bubbleRef.current.tabIndex = -1; } }} shouldShow={shouldShowFormatting}><div role="toolbar" aria-label="Formatting" data-slot="markdown-formatting-bubble" className={cn("flex items-center", popoverSurface)} onKeyDownCapture={event => {
+    {editor && !readOnly && !disabled && <BubbleMenu ref={bubbleRef} pluginKey={bubbleKey} editor={editor} options={{ strategy: "fixed", placement: coarsePointer ? "bottom" : "top", onHide: () => { setEditingLink(false); setFocused(0); }, onShow: () => { if (bubbleRef.current) bubbleRef.current.tabIndex = -1; } }} shouldShow={shouldShowFormatting}><div role="toolbar" aria-label="Formatting" data-slot="markdown-formatting-bubble" className={cn("flex items-center", popoverSurface)} onBlur={event => {
+      // Tiptap 3.33.0 workaround: dismiss when focus leaves the menu as well as the editor.
+      if (!event.currentTarget.contains(event.relatedTarget) && !editor.view.dom.contains(event.relatedTarget)) editor.view.dispatch(editor.state.tr.setMeta(bubbleKey, "hide"));
+    }} onKeyDownCapture={event => {
       if (event.key === "Escape") { event.preventDefault(); setEditingLink(false); editor.view.focus(); return; }
       const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
       const index = buttons.findIndex(button => button === document.activeElement);

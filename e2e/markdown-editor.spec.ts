@@ -276,6 +276,44 @@ test("link bubble adds, edits, rejects unsafe URLs and removes links", async ({ 
   await expect(output).toHaveText("[hello](https://other.example)");
 });
 
+test("link form dismissal on focus leaving resets the toolbar", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Keyboard selection is verified on desktop.");
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes", exact: true });
+  await editor.click();
+  await editor.pressSequentially("hello");
+  for (let i = 0; i < 5; i++) await page.keyboard.press("Shift+ArrowLeft");
+  await page.getByRole("button", { name: "Link", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "URL" })).toBeFocused();
+  await page.getByRole("button", { name: "Toggle autofocus example" }).click();
+  await expect(page.getByRole("toolbar", { name: "Formatting" })).toBeHidden();
+  await editor.click();
+  await page.keyboard.press("Shift+ArrowLeft");
+  await page.keyboard.press("Alt+F10");
+  await expect(page.getByRole("button", { name: "Bold", exact: true })).toBeFocused();
+  await expect(page.getByRole("textbox", { name: "URL" })).toBeHidden();
+});
+
+for (const method of ["keyboard", "pointer"] as const) test(`link ${method} apply restores focus`, async ({ page, isMobile }) => {
+  test.skip(isMobile, "Focus behavior is verified on desktop.");
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes", exact: true });
+  await editor.click();
+  await editor.pressSequentially("hello");
+  for (let i = 0; i < 5; i++) await page.keyboard.press("Shift+ArrowLeft");
+  await page.getByRole("button", { name: "Link", exact: true }).click();
+  const url = page.getByRole("textbox", { name: "URL" });
+  await url.fill("https://example.com");
+  if (method === "keyboard") {
+    await url.press("Enter");
+    await expect(page.getByRole("button", { name: "Link", exact: true })).toBeFocused();
+  } else {
+    await page.getByRole("button", { name: "Apply" }).click();
+    await expect(editor).toBeFocused();
+  }
+  await expect(page.getByLabel("Field states Markdown", { exact: true })).toHaveText("[hello](https://example.com)");
+});
+
 test("a multi-cell selection does not expose formatting", async ({ page, isMobile }) => {
   test.skip(isMobile, "Cell dragging is verified on desktop.");
   await page.goto("/markdown-editor");
