@@ -19,8 +19,9 @@ for (const theme of ["light", "dark"]) test(`formatting bubble baseline and acce
   await checkAccessibility(page, '[aria-label="Field states"]');
 });
 
-test("bubble keyboard navigation and link shortcut preserve selection", async ({ page, isMobile }) => {
+for (const theme of ["light", "dark"]) test(`bubble keyboard navigation, focus and accessibility: ${theme}`, async ({ page, isMobile }) => {
   test.skip(isMobile, "Keyboard navigation is verified on desktop.");
+  await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
   await page.goto("/markdown-editor");
   const editor = page.getByRole("textbox", { name: "Notes", exact: true });
   await editor.click();
@@ -30,8 +31,12 @@ test("bubble keyboard navigation and link shortcut preserve selection", async ({
   await expect(bubble).toBeVisible();
   await page.keyboard.press("Alt+F10");
   await expect(bubble.getByRole("button", { name: "Bold" })).toBeFocused();
+  await expect(bubble).toBeVisible();
+  await checkAccessibility(page, '[aria-label="Field states"]');
   await page.keyboard.press("ArrowRight");
   await expect(bubble.getByRole("button", { name: "Italic" })).toBeFocused();
+  await page.keyboard.press("ArrowLeft");
+  await expect(bubble.getByRole("button", { name: "Bold" })).toBeFocused();
   await page.keyboard.press("End");
   await expect(bubble.getByRole("button", { name: "Link" })).toBeFocused();
   await page.keyboard.press("Home");
@@ -40,7 +45,96 @@ test("bubble keyboard navigation and link shortcut preserve selection", async ({
   await expect.poll(() => page.evaluate(() => window.getSelection()?.toString())).toBe("hello");
   await page.keyboard.press("ControlOrMeta+K");
   await expect(page.getByRole("textbox", { name: "URL" })).toBeFocused();
+  await checkAccessibility(page, '[aria-label="Field states"]');
+  await page.keyboard.press("Escape");
+  await expect(editor).toBeFocused();
+  await expect.poll(() => page.evaluate(() => window.getSelection()?.toString())).toBe("hello");
+  await page.getByRole("textbox", { name: "Input comparison" }).click();
+  await expect(bubble).toBeHidden();
 });
+
+for (const theme of ["light", "dark"]) {
+  test(`bubble excludes code and opaque selections: ${theme}`, async ({ page, isMobile }) => {
+    test.skip(isMobile, "Keyboard selection is verified on desktop.");
+    await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
+    await page.goto("/markdown-editor");
+    const editor = page.getByRole("textbox", { name: "Research note" });
+    const paragraph = editor.locator("p").first();
+    await paragraph.click();
+    await page.keyboard.press("Shift+ArrowLeft");
+    const bubble = page.getByRole("toolbar", { name: "Formatting" });
+    await expect(bubble).toBeVisible();
+    const code = editor.locator("pre code");
+    await code.click();
+    await page.keyboard.press("Shift+ArrowLeft");
+    await expect.poll(() => page.evaluate(() => {
+      const selection = window.getSelection();
+      return !!selection?.toString() && !!selection.anchorNode?.parentElement?.closest("pre");
+    })).toBe(true);
+    await expect(bubble).toBeHidden();
+
+    const existing = page.getByRole("textbox", { name: "Existing post" });
+    const block = existing.locator("[data-opaque-block]").first();
+    await block.click();
+    await expect(block).toHaveClass(/ProseMirror-selectednode/);
+    await expect(bubble).toBeHidden();
+  });
+
+  test(`bubble excludes image and non-editable selections: ${theme}`, async ({ page, isMobile }) => {
+    test.skip(isMobile, "Keyboard selection is verified on desktop.");
+    await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
+    await page.goto("/markdown-editor");
+    const inPlace = page.getByRole("textbox", { name: "In-place note", exact: true });
+    const image = inPlace.getByRole("img", { name: "Landscape study" });
+    await image.scrollIntoViewIfNeeded();
+    await inPlace.evaluate(element => {
+      const image = element.querySelector('img[alt="Landscape study"]')!;
+      const range = document.createRange();
+      range.setStartBefore(image);
+      range.collapse(true);
+      if (element instanceof HTMLElement) element.focus();
+      const selection = window.getSelection()!;
+      selection.removeAllRanges();
+      selection.addRange(range);
+      document.dispatchEvent(new Event("selectionchange"));
+    });
+    await page.keyboard.press("ArrowRight");
+    await expect.poll(() => image.evaluate(element => getComputedStyle(element).outlineStyle)).not.toBe("none");
+    const bubble = page.getByRole("toolbar", { name: "Formatting" });
+    await expect(bubble).toBeHidden();
+
+    const editor = page.getByRole("textbox", { name: "Notes", exact: true });
+    await editor.click();
+    await editor.pressSequentially("Selected text");
+    await page.keyboard.press("Shift+ArrowLeft");
+    await expect(bubble).toBeVisible();
+    await page.getByRole("button", { name: "Read-only", exact: true }).click();
+    await expect(editor).toHaveAttribute("aria-readonly", "true");
+    const text = editor.locator("p");
+    const box = (await text.boundingBox())!;
+    await page.mouse.move(box.x + 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 60, box.y + box.height / 2, { steps: 10 });
+    await page.mouse.up();
+    await expect.poll(() => page.evaluate(() => window.getSelection()?.toString())).not.toBe("");
+    await expect(bubble).toBeHidden();
+
+    await page.getByRole("button", { name: "Read-only", exact: true }).click();
+    await page.getByRole("button", { name: "Disabled", exact: true }).click();
+    await expect(editor).toHaveAttribute("aria-disabled", "true");
+    // Disabled fields do not accept pointer or focus; establish a native DOM selection directly.
+    await editor.evaluate(element => {
+      const range = document.createRange();
+      range.selectNodeContents(element.querySelector("p")!);
+      const selection = window.getSelection()!;
+      selection.removeAllRanges();
+      selection.addRange(range);
+      document.dispatchEvent(new Event("selectionchange"));
+    });
+    await expect.poll(() => page.evaluate(() => window.getSelection()?.toString())).toBe("Selected text");
+    await expect(bubble).toBeHidden();
+  });
+}
 
 test("shortcuts work immediately after a keyboard selection", async ({ page, isMobile }) => {
   test.skip(isMobile, "Keyboard navigation is verified on desktop.");
