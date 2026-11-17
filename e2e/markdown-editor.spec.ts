@@ -42,7 +42,7 @@ test("bubble keyboard navigation and link shortcut preserve selection", async ({
   await expect(page.getByRole("textbox", { name: "URL" })).toBeFocused();
 });
 
-for (const [name, markdown] of [["Bold", "**hello**"], ["Italic", "*hello*"], ["Strikethrough", "~~hello~~"], ["Inline code", "`hello`"]]) {
+for (const [name, markdown] of [["Bold", "**hello**"], ["Italic", "*hello*"], ["Strikethrough", "~~hello~~"], ["Inline code", "`hello`"]] as const) {
   test(`pointer selection and ${name} produce Markdown`, async ({ page, isMobile }) => {
     test.skip(isMobile, "Pointer dragging is verified on desktop.");
     await page.goto("/markdown-editor");
