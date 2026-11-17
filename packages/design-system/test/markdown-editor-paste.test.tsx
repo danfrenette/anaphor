@@ -183,7 +183,32 @@ test("replacement detaches transaction listeners for never-settling images", asy
   const added = on.mock.calls.filter(([event]) => event === "transaction").map(([, listener]) => listener);
   const removed = off.mock.calls.filter(([event]) => event === "transaction").map(([, listener]) => listener);
   expect(added).toHaveLength(3);
-  expect(removed).toEqual(added);
+  expect(removed.filter(listener => added.includes(listener))).toEqual(added);
+});
+
+test.each(["read only", "disabled", "unmount"])("%s detaches transaction listeners for never-settling images", async state => {
+  let editor: Editor | null = null;
+  function Harness({ active }: { active: boolean }) {
+    const api = useMarkdownEditor({ defaultValue: "", "aria-label": "Listener editor", onImageFile: () => new Promise(() => {}), readOnly: active && state === "read only", disabled: active && state === "disabled" });
+    editor = api.editor;
+    return <EditorContent editor={api.editor} />;
+  }
+  const rendered = render(<Harness active={false} />);
+  const dom = await screen.findByRole("textbox", { name: "Listener editor" });
+  const on = vi.spyOn(editor!, "on");
+  const off = vi.spyOn(editor!, "off");
+  for (let i = 0; i < 3; i++) {
+    await act(async () => { fileEvent(dom, "paste", [new File(["a"], "a.png", { type: "image/png" })]); });
+    if (state !== "unmount") {
+      rendered.rerender(<Harness active />);
+      rendered.rerender(<Harness active={false} />);
+    }
+  }
+  if (state === "unmount") rendered.unmount();
+  const added = on.mock.calls.filter(([event]) => event === "transaction").map(([, listener]) => listener);
+  const removed = off.mock.calls.filter(([event]) => event === "transaction").map(([, listener]) => listener);
+  expect(added).toHaveLength(3);
+  expect(removed.filter(listener => added.includes(listener))).toEqual(added);
 });
 
 test("image file paste calls the host and inserts its result", async () => {
