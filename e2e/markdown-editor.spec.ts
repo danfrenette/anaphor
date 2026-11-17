@@ -33,6 +33,11 @@ for (const theme of ["light", "dark"]) test(`bubble keyboard navigation, focus a
   await expect(bubble.getByRole("button", { name: "Bold" })).toBeFocused();
   await expect(bubble).toBeVisible();
   await checkAccessibility(page, '[aria-label="Field states"]');
+  await page.keyboard.press("Space");
+  await expect(bubble.getByRole("button", { name: "Bold" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("Field states Markdown", { exact: true })).toHaveText("**hello**");
+  await page.keyboard.press("Space");
+  await expect(page.getByLabel("Field states Markdown", { exact: true })).toHaveText("hello");
   await page.keyboard.press("ArrowRight");
   await expect(bubble.getByRole("button", { name: "Italic" })).toBeFocused();
   await page.keyboard.press("ArrowLeft");
@@ -49,7 +54,10 @@ for (const theme of ["light", "dark"]) test(`bubble keyboard navigation, focus a
   await page.keyboard.press("Escape");
   await expect(editor).toBeFocused();
   await expect.poll(() => page.evaluate(() => window.getSelection()?.toString())).toBe("hello");
-  await page.getByRole("textbox", { name: "Input comparison" }).click();
+  await page.keyboard.press("Alt+F10");
+  await expect(bubble.getByRole("button", { name: "Bold" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect.poll(() => page.evaluate(() => document.querySelector('[role="toolbar"][aria-label="Formatting"]')?.contains(document.activeElement) ?? false)).toBe(false);
   await expect(bubble).toBeHidden();
 });
 
