@@ -9,12 +9,12 @@ import type { JSONContent, MarkdownRendererHelpers, MarkdownToken, RenderContext
 import { Placeholder } from "@tiptap/extensions/placeholder";
 import { Image } from "@tiptap/extension-image";
 import { Markdown } from "@tiptap/markdown";
-import { EditorState, Plugin, Selection, TextSelection } from "@tiptap/pm/state";
+import { EditorState, Plugin, PluginKey, Selection, TextSelection } from "@tiptap/pm/state";
 import { GapCursor } from "@tiptap/pm/gapcursor";
 import { closeHistory } from "@tiptap/pm/history";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/react";
-import { BubbleMenu } from "@tiptap/react/menus";
+import { BubbleMenu, type BubbleMenuProps } from "@tiptap/react/menus";
 import { TextB, TextItalic, TextStrikethrough, Code, Link as LinkIcon } from "@phosphor-icons/react/dist/ssr";
 import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type Ref } from "react";
@@ -756,10 +756,21 @@ function FormattingButtons({ editor, focused, setFocused, openLink }: { editor: 
   </Tooltip>)}</TooltipGroup>;
 }
 
+function shouldShowFormatting({ editor, element, view, state, from, to }: Parameters<NonNullable<BubbleMenuProps["shouldShow"]>>[0]) {
+  // Spec requirement: exclude node and cell selections and opaque/code content.
+  if (!editor.isEditable || !(state.selection instanceof TextSelection) || state.selection.empty || !(view.hasFocus() || element.contains(document.activeElement))) return false;
+  let excluded = false;
+  state.doc.nodesBetween(from, to, node => {
+    if (["codeBlock", "opaqueBlock", "opaqueInline"].includes(node.type.name)) excluded = true;
+  });
+  return !excluded && !!state.doc.textBetween(from, to);
+}
+
 function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) {
   const { disabled = false, invalid = false } = options;
   const { editor, getMarkdown, setMarkdown } = useMarkdownEditor(options);
   const bubbleRef = useRef<HTMLDivElement>(null);
+  const bubbleKey = useMemo(() => new PluginKey("formattingBubble"), []);
   const [focused, setFocused] = useState(0);
   const [coarsePointer, setCoarsePointer] = useState(false);
   useEffect(() => {
@@ -798,23 +809,30 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   useEffect(() => {
     if (!editor) return;
     const onKeyDown = (event: KeyboardEvent) => {
+      const linkShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
+      const toolbarShortcut = event.altKey && event.key === "F10";
+      if (!linkShortcut && !toolbarShortcut) return;
+      const selection = window.getSelection();
+      if (!editor.isEditable || !selection || selection.isCollapsed || !editor.view.dom.contains(selection.anchorNode)) return;
+      event.preventDefault();
+      // The browser can dispatch the shortcut before ProseMirror reads selectionchange.
+      document.dispatchEvent(new Event("selectionchange"));
+      requestAnimationFrame(() => {
+        if (editor.isDestroyed) return;
+        const element = bubbleRef.current;
+        const { state, view } = editor;
+        if (!element || !shouldShowFormatting({ editor, element, view, state, from: state.selection.from, to: state.selection.to })) return;
+        // The menu's default debounce must not delay keyboard access.
+        view.dispatch(state.tr.setMeta(bubbleKey, "show"));
+        view.dispatch(view.state.tr.setMeta(bubbleKey, "updatePosition"));
       // Spec requirement (AC-5): the link shortcut opens URL editing.
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k" && !editor.state.selection.empty && editor.isEditable) {
-        event.preventDefault();
-        openLink();
-        return;
-      }
-      if (event.altKey && event.key === "F10" && !editor.state.selection.empty) {
-        const button = bubbleRef.current?.querySelector<HTMLButtonElement>("button");
-        if (button && bubbleRef.current?.style.visibility !== "hidden") {
-          event.preventDefault();
-          button.focus();
-        }
-      }
+        if (linkShortcut) openLink();
+        else element.querySelector<HTMLButtonElement>("button")?.focus();
+      });
     };
     editor.view.dom.addEventListener("keydown", onKeyDown);
     return () => editor.view.dom.removeEventListener("keydown", onKeyDown);
-  }, [editor, openLink]);
+  }, [editor, openLink, bubbleKey]);
 
   // A click on the frame's own surface (padding or the empty space below short
   // content) lands outside the editor content; place the caret at the end there.
@@ -854,15 +872,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       ),
     )}>
     <EditorContent editor={editor} />
-    {editor && <BubbleMenu ref={bubbleRef} editor={editor} options={{ strategy: "fixed", placement: coarsePointer ? "bottom" : "top", onShow: () => { if (bubbleRef.current) bubbleRef.current.tabIndex = -1; } }} shouldShow={({ editor, element, view, state, from, to }) => {
-      // Spec requirement: exclude node and cell selections and opaque/code content.
-      if (!editor.isEditable || !(state.selection instanceof TextSelection) || state.selection.empty || !(view.hasFocus() || element.contains(document.activeElement))) return false;
-      let excluded = false;
-      state.doc.nodesBetween(from, to, node => {
-        if (["codeBlock", "opaqueBlock", "opaqueInline"].includes(node.type.name)) excluded = true;
-      });
-      return !excluded && !!state.doc.textBetween(from, to);
-    }}><div role="toolbar" aria-label="Formatting" data-slot="markdown-formatting-bubble" className="flex items-center rounded-control border bg-muted text-foreground border-[color-mix(in_oklch,var(--anaphor-input-border)_72%,var(--anaphor-background))] shadow-[var(--anaphor-shadow-menu)]" onKeyDownCapture={event => {
+    {editor && <BubbleMenu ref={bubbleRef} pluginKey={bubbleKey} editor={editor} options={{ strategy: "fixed", placement: coarsePointer ? "bottom" : "top", onShow: () => { if (bubbleRef.current) bubbleRef.current.tabIndex = -1; } }} shouldShow={shouldShowFormatting}><div role="toolbar" aria-label="Formatting" data-slot="markdown-formatting-bubble" className="flex items-center rounded-control border bg-muted text-foreground border-[color-mix(in_oklch,var(--anaphor-input-border)_72%,var(--anaphor-background))] shadow-[var(--anaphor-shadow-menu)]" onKeyDownCapture={event => {
       if (event.key === "Escape") { event.preventDefault(); setEditingLink(false); editor.view.focus(); return; }
       const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
       const index = buttons.findIndex(button => button === document.activeElement);

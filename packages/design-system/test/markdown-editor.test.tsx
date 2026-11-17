@@ -86,7 +86,7 @@ test("Alt+F10 enters formatting, arrows and endpoints move focus, and Escape ret
   selectText(editor.querySelector("p")!, 0, 4);
   const bold = await screen.findByRole("button", { name: "Bold" });
   await user.keyboard("{Alt>}{F10}{/Alt}");
-  expect(bold).toHaveFocus();
+  await waitFor(() => expect(bold).toHaveFocus());
   await user.keyboard("{ArrowRight}");
   expect(screen.getByRole("button", { name: "Italic" })).toHaveFocus();
   await user.keyboard("{End}");

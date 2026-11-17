@@ -42,6 +42,31 @@ test("bubble keyboard navigation and link shortcut preserve selection", async ({
   await expect(page.getByRole("textbox", { name: "URL" })).toBeFocused();
 });
 
+test("shortcuts work immediately after a keyboard selection", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Keyboard navigation is verified on desktop.");
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes", exact: true });
+  await editor.click();
+  await editor.pressSequentially("text");
+  await page.keyboard.press("Shift+ArrowLeft");
+  await page.keyboard.press("Alt+F10");
+  await expect(page.getByRole("button", { name: "Bold", exact: true })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("ControlOrMeta+K");
+  await expect(page.getByRole("textbox", { name: "URL" })).toBeFocused();
+});
+
+test("link shortcut works before the selection bubble appears", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Keyboard navigation is verified on desktop.");
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes", exact: true });
+  await editor.click();
+  await editor.pressSequentially("text");
+  await page.keyboard.press("Shift+ArrowLeft");
+  await page.keyboard.press("ControlOrMeta+K");
+  await expect(page.getByRole("textbox", { name: "URL" })).toBeFocused();
+});
+
 for (const [name, markdown] of [["Bold", "**hello**"], ["Italic", "*hello*"], ["Strikethrough", "~~hello~~"], ["Inline code", "`hello`"]] as const) {
   test(`pointer selection and ${name} produce Markdown`, async ({ page, isMobile }) => {
     test.skip(isMobile, "Pointer dragging is verified on desktop.");
