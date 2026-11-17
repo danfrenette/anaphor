@@ -7,6 +7,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { Field, FieldDescription, FieldLabel, MarkdownEditor, useMarkdownEditor, type MarkdownEditorHandle, type UseMarkdownEditorResult } from "@anaphor/system";
 import { EditorContent } from "@tiptap/react";
+import { Marked } from "marked";
 
 // Anchored to the test file so the path survives running Vitest from elsewhere.
 // (jsdom replaces the global URL, so new URL(relative, import.meta.url) resolves
@@ -108,6 +109,22 @@ test.each([
   ["emphasis alt", "![a*b](https://example.com/a.png)", "![a*b](https://example.com/a.png)"],
 ])("image round trip: %s", async (_name, source, expected) => {
   expect(await serializeWithoutEdit(source)).toBe(expected);
+});
+
+test.each([
+  "[![a](x.png)](https://example.com)",
+  "before [![a](x.png)](https://example.com) after",
+  "[text ![a](x.png) more](https://example.com)",
+])("linked images survive an edit: %s", async source => {
+  const saved = await serializeWithoutEdit(source);
+  const html = await new Marked().parse(saved);
+  const document = new DOMParser().parseFromString(html, "text/html");
+  expect(document.querySelector("a img")?.getAttribute("alt")).toBe("a");
+  expect(document.querySelector("a")?.getAttribute("href")).toBe("https://example.com");
+  const { ref, unmount } = setupEditor(saved);
+  expect(screen.getByRole("img", { name: "a" }).closest("a")).toHaveAttribute("href", "https://example.com");
+  expect(ref.current?.getMarkdown()).toBe(saved);
+  unmount();
 });
 
 test("Space toggles a focused task checkbox and its Markdown", async () => {

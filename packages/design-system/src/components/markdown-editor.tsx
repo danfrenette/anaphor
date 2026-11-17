@@ -193,6 +193,11 @@ const CodeBlockGapCursor = Extension.create({
 // unbalanced parentheses, which CommonMark only accepts in the bracketed form.
 // The stock renderer writes the bare href, which re-parses as a shorter link.
 const MarkdownLink = Link.extend({
+  // Tiptap 3.33.0 workaround: applyMark skips inline image nodes.
+  parseMarkdown: (token, helpers) => helpers.parseInline(token.tokens ?? []).map(node => ({
+    ...node,
+    marks: [...(node.marks ?? []), { type: "link", attrs: { href: token.href, title: token.title || null } }],
+  })),
   renderMarkdown: (node, h) => {
     const href = node.attrs?.href ?? "";
     const title = node.attrs?.title ?? "";
@@ -212,7 +217,14 @@ const MarkdownImage = Image.extend({
     const alt = (node.attrs?.alt ?? "").replace(/[\\\]]/g, "\\$&");
     const title = (node.attrs?.title ?? "").replace(/[\\"]/g, "\\$&");
     const destination = linkDestinationNeedsAngleBrackets(src) ? `<${src}>` : src;
-    return title ? `![${alt}](${destination} "${title}")` : `![${alt}](${destination})`;
+    const image = title ? `![${alt}](${destination} "${title}")` : `![${alt}](${destination})`;
+    // Tiptap 3.33.0 workaround: inline atom marks are not rendered by the serializer.
+    const link = node.marks?.find(mark => mark.type === "link");
+    if (!link) return image;
+    const href = link.attrs?.href ?? "";
+    const linkDestination = linkDestinationNeedsAngleBrackets(href) ? `<${href}>` : href;
+    const linkTitle = (link.attrs?.title ?? "").replace(/[\\"]/g, "\\$&");
+    return linkTitle ? `[${image}](${linkDestination} "${linkTitle}")` : `[${image}](${linkDestination})`;
   },
 }).configure({ inline: true });
 
