@@ -1,8 +1,8 @@
-import { isAllowedUri } from "@tiptap/extension-link";
 import { Extension } from "@tiptap/core";
 import type { JSONContent, MarkdownToken } from "@tiptap/core";
 import type { EditorView } from "@tiptap/pm/view";
 import type { Editor } from "@tiptap/react";
+import { isSafePasteUri, normalizeLinkHref } from "#lib/markdown-editor-links";
 import { splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 
 // Markdown parsing is synchronous; restore the context even if parsing fails or re-enters.
@@ -65,24 +65,6 @@ function containsMarkdown(node: JSONContent, source: string, hasBracketLink: boo
   if (["heading", "bulletList", "orderedList", "blockquote", "table", "horizontalRule"].includes(node.type ?? "")) return true;
   if (node.marks?.some(mark => ["bold", "italic", "strike", "code"].includes(mark.type) || (mark.type === "link" && hasBracketLink))) return true;
   return node.content?.some(child => containsMarkdown(child, source, hasBracketLink)) ?? false;
-}
-
-// Spec requirement (AC-4): validate destinations after HTML entity decoding.
-function isSafePasteUri(uri: unknown): boolean {
-  if (typeof uri !== "string") return false;
-  const textarea = document.createElement("textarea");
-  textarea.innerHTML = uri.replace(/</g, "&lt;");
-  return !!isAllowedUri(textarea.value.replace(/[\u0000-\u0020\u007f]/g, ""));
-}
-
-// Tiptap 3.33.0 workaround: use the same browser-normalized destination on insert and save.
-function normalizeLinkHref(href: string): string {
-  if (!/[\u0000-\u0020\u007f<>\\"]/g.test(href)) return href;
-  try {
-    const url = new URL(href);
-    if (["http:", "https:", "mailto:"].includes(url.protocol)) return url.href.replace(/\\/g, "%5C");
-  } catch { /* Relative references do not have an absolute URL. */ }
-  return href.replace(/[\u0000-\u0020\u007f<>\\"]/g, character => encodeURIComponent(character));
 }
 
 function literalPastedImage(token: MarkdownToken): JSONContent | undefined {
@@ -173,4 +155,4 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
   return editor.chain().command(({ tr }) => { tr.setMeta("paste", true).setMeta("uiEvent", "paste"); return true; }).insertContent(insertion).run();
 }
 
-export { cleanPastedHtml, handleMarkdownPaste, isSafePasteUri, literalPastedImage, normalizeLinkHref, PasteOrdinal, suppressPastedOrdinal };
+export { cleanPastedHtml, handleMarkdownPaste, literalPastedImage, PasteOrdinal, suppressPastedOrdinal };

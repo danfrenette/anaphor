@@ -18,7 +18,8 @@ import { BubbleMenu, type BubbleMenuProps } from "@tiptap/react/menus";
 import { TextB, TextItalic, TextStrikethrough, Code, Link as LinkIcon } from "@phosphor-icons/react/dist/ssr";
 import StarterKit from "@tiptap/starter-kit";
 import { useCallback, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type Ref } from "react";
-import { cleanPastedHtml, handleMarkdownPaste, isSafePasteUri, literalPastedImage, normalizeLinkHref, PasteOrdinal, suppressPastedOrdinal } from "#lib/markdown-editor-paste";
+import { escapeMarkdownTitle, isSafePasteUri, normalizeLinkHref } from "#lib/markdown-editor-links";
+import { cleanPastedHtml, handleMarkdownPaste, literalPastedImage, PasteOrdinal, suppressPastedOrdinal } from "#lib/markdown-editor-paste";
 import { matchOpaqueBlock, matchOpaqueInline, splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 import { cn } from "../lib/utils";
 import { Button } from "./button";
@@ -52,7 +53,7 @@ function renderLinkedImages(node: JSONContent, helpers: MarkdownRendererHelpers)
     if (link) {
       const href = link.attrs?.href ?? "";
       const destination = serializeLinkDestination(href);
-      const title = (link.attrs?.title ?? "").replace(/[\\"]/g, "\\$&");
+      const title = escapeMarkdownTitle(link.attrs?.title ?? "");
       markdown += title ? `[${text}](${destination} "${title}")` : `[${text}](${destination})`;
     } else markdown += text;
     i = end;
@@ -253,7 +254,7 @@ const MarkdownLink = Link.extend({
     const text = h.renderChildren(node);
     const destination = serializeLinkDestination(href);
     // Tiptap 3.33.0 workaround: escape title delimiters and backslashes.
-    const escapedTitle = title.replace(/[\\"]/g, "\\$&");
+    const escapedTitle = escapeMarkdownTitle(title);
     return title ? `[${text}](${destination} "${escapedTitle}")` : `[${text}](${destination})`;
   },
 // Spec requirement (AC-4): paste linking is handled by the safety-checked adapter.
@@ -277,7 +278,7 @@ const MarkdownImage = Image.extend({
     const src = node.attrs?.src ?? "";
     // Tiptap 3.33.0 workaround: preserve literal Markdown syntax in alt text.
     const alt = (node.attrs?.alt ?? "").replace(/\s*[\r\n]\s*/g, " ").replace(/&/g, "&amp;").replace(/[\\`*_[\]<>~]/g, "\\$&");
-    const title = (node.attrs?.title ?? "").replace(/[\\"]/g, "\\$&");
+    const title = escapeMarkdownTitle(node.attrs?.title ?? "");
     const destination = linkDestinationNeedsAngleBrackets(src) ? `<${src}>` : src;
     const image = title ? `![${alt}](${destination} "${title}")` : `![${alt}](${destination})`;
     // Tiptap 3.33.0 workaround: inline atom marks are not rendered by the serializer.
@@ -285,7 +286,7 @@ const MarkdownImage = Image.extend({
     if (!link) return image;
     const href = link.attrs?.href ?? "";
     const linkDestination = serializeLinkDestination(href);
-    const linkTitle = (link.attrs?.title ?? "").replace(/[\\"]/g, "\\$&");
+    const linkTitle = escapeMarkdownTitle(link.attrs?.title ?? "");
     return linkTitle ? `[${image}](${linkDestination} "${linkTitle}")` : `[${image}](${linkDestination})`;
   },
 }).configure({ inline: true });
