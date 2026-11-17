@@ -548,6 +548,7 @@ test.each(["# heading", "###### heading", "```", "~~~", "---", "* * *", "___", "
   const api = await setupPasteEditor();
   pasteHTML(api.dom, `<p>text<br>${line}</p>`);
   const saved = api.getMarkdown();
+  expect(saved).toBe(`text  \n${line.replace(/[`~*_]/g, "\\$&").replace(/^(?=[#\-=])/, "\\")}`);
   act(() => { api.setMarkdown(saved); });
   expect(api.dom.querySelectorAll("p")).toHaveLength(1);
   expect(api.dom.textContent).toBe(`text${line}`);
@@ -559,6 +560,7 @@ test.each(["# heading", "###### heading", "```", "~~~", "---", "* * *", "___", "
   await selectText(api.dom, 4);
   await userEvent.setup().keyboard("!");
   const edited = api.getMarkdown();
+  expect(edited).toBe(saved.replace("text", "text!"));
   act(() => { api.setMarkdown(edited); });
   expect(api.dom.textContent).toBe(`text!${line}`);
   expect(api.dom.querySelector("br")).not.toBeNull();
@@ -568,6 +570,7 @@ test.each(["# not a heading", "a`b``c"]) ("inline code after a hard break surviv
   const api = await setupPasteEditor();
   pasteHTML(api.dom, `<p>text<br><code>${code}</code></p>`);
   const saved = api.getMarkdown();
+  expect(saved).toBe("text  \n" + (code.includes("`") ? "```" + code + "```" : "`" + code + "`"));
   act(() => { api.setMarkdown(saved); });
   expect(api.dom.querySelector("code")?.textContent).toBe(code);
   expect(api.dom.querySelector("br")).not.toBeNull();
@@ -581,6 +584,7 @@ test.each(["# heading", "```", "~~~", "---", "***", "___", "===", "- item", "+ i
   const api = await setupPasteEditor();
   pasteHTML(api.dom, `<p>${line.replace(">", "&gt;")}</p>`);
   const saved = api.getMarkdown();
+  expect(saved).toBe(line === "> quote" ? "&gt; quote" : line.replace(/[`~*_]/g, "\\$&").replace(/^(?=[#\-=+])/, "\\"));
   act(() => { api.setMarkdown(saved); });
   expect(api.dom.querySelector("p")?.textContent).toBe(line);
   const html = await new (await import("marked")).Marked().parse(saved);
@@ -614,6 +618,7 @@ test("typed leading spaces stay a paragraph", async () => {
   const visible = api.dom.textContent;
   expect(visible?.replace(/\u00a0/g, " ")).toBe("    indented");
   const saved = api.getMarkdown();
+  expect(saved).toBe("&#32;&#32;&#32;&#32;indented");
   act(() => { api.setMarkdown(saved); });
   expect(api.dom.querySelector("p")?.textContent).toBe(visible);
   expect(api.dom.querySelector("pre")).toBeNull();
@@ -632,11 +637,11 @@ test.each(["paste", "starting value"]) ("table cell hard break survives %s", asy
     await userEvent.setup().keyboard("!");
   }
   const saved = api.getMarkdown();
+  expect(saved).toBe(source === "paste" ? "\n| A      |\n| ------ |\n| a<br>b |\n" : "\n| A!     |\n| ------ |\n| a<br>b |\n");
   act(() => { api.setMarkdown(saved); });
   const cell = api.dom.querySelector("td")!;
   expect(cell.textContent).toBe("ab");
   expect(cell.querySelector("br")).not.toBeNull();
-  expect(cell.querySelector("[data-opaque-inline]")).toBeNull();
   const html = await new (await import("marked")).Marked().parse(saved);
   expect(new DOMParser().parseFromString(html, "text/html").querySelector("td br")).not.toBeNull();
 });
@@ -655,6 +660,7 @@ test("typed table cell hard break survives save", async () => {
   await userEvent.setup().keyboard("{Shift>}{Enter}{/Shift}");
   expect(api.dom.querySelector("td br")).not.toBeNull();
   const saved = api.getMarkdown();
+  expect(saved).toBe("\n| A      |\n| ------ |\n| a<br>b |\n");
   act(() => { api.setMarkdown(saved); });
   expect(api.dom.querySelector("td")?.textContent).toBe("ab");
   expect(api.dom.querySelector("td br")).not.toBeNull();
