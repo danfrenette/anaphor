@@ -132,10 +132,9 @@ function useMarkdownEditor({
       // Replaced below by an .extend()ed copy whose renderer writes a fence long
       // enough for the content (F1).
       codeBlock: false,
-      // Replaced below by an .extend()ed copy whose renderer writes angle-bracket
-      // destinations when CommonMark requires them (F3). Interaction options are
-      // unchanged: links render as links but never open on click, never auto-link
-      // while typing, and never link on paste. Clicking places the caret instead.
+      // Replaced below by an .extend()ed copy that escapes link destinations.
+      // Links do not open on click or auto-link while typing; the paste adapter
+      // handles safe URLs and selected-text linking.
       link: false,
       // Replaced below by an .extend()ed copy whose renderer keeps a leading code
       // block on the marker line (F4).

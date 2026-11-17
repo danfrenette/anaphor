@@ -296,14 +296,15 @@ The demo gives its rendered code blocks their own keyboard focus for scrolling.
   span typing and formatting. After undoing a `> ` conversion the literal
   characters read back as `&gt; ` in the output: that is the serializer's
   existing entity normalisation, not a regression.
-- Links render as links and are written back as links. They do not auto-link
-  while typing or on paste, and clicking places the caret rather than opening
+- Links render as links and are written back as links. Typing does not auto-link;
+  pasting a URL creates a link or links selected text. Clicking places the caret rather than opening
   the link. Rendered links carry Tiptap's default `target="_blank"`
   `rel="noopener noreferrer nofollow"`, but those attributes never appear in the
   written Markdown.
 
-The active extensions are StarterKit minus underline, trailing node and drop
-cursor, plus the Markdown extension and two opaque nodes. Gapcursor is enabled.
+The active extensions include StarterKit minus underline, trailing node and drop
+cursor, plus Markdown, task lists, tables, images, placeholder, and custom
+extensions including two opaque nodes. Gapcursor is enabled.
 Document, paragraph, text, headings, bold, italic, strike, inline code, code
 block, bullet and ordered lists (with list item and list keymap), blockquote,
 horizontal rule, link, hard break, and undo/redo are enabled because each
