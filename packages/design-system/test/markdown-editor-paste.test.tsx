@@ -167,7 +167,7 @@ test("replacement detaches transaction listeners for never-settling images", asy
   let editor: Editor | null = null;
   let replace!: (markdown: string) => void;
   function Harness() {
-    const api = useMarkdownEditor({ "aria-label": "Listener editor", onImageFile: () => new Promise(() => {}) });
+    const api = useMarkdownEditor({ defaultValue: "", "aria-label": "Listener editor", onImageFile: () => new Promise(() => {}) });
     editor = api.editor;
     replace = api.setMarkdown;
     return <EditorContent editor={api.editor} />;
