@@ -141,6 +141,31 @@ test.each(["readOnly", "disabled"] as const)("locking with %s closes formatting 
 });
 
 test.each([
+  ["example.com:8080/path?q=1#part", "https://example.com:8080/path?q=1#part"],
+  ["./foo", "./foo"], ["../foo", "../foo"], ["/foo", "/foo"], ["#anchor", "#anchor"], ["foo/bar", "foo/bar"],
+  ["mailto:reader@example.com", "mailto:reader@example.com"], ["https://example.com", "https://example.com/"],
+  ["evil.com@other.example", null], ["evil.com\\@example.com", null], ["singleword", null], ["example.com/path with space", null],
+])("link input %s is normalized or refused", async (value, expected) => {
+  const { user, ref } = setupEditor("text");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("p")!, 0, 4);
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  const field = await screen.findByRole("textbox", { name: "URL" });
+  fireEvent.change(field, { target: { value } });
+  fireEvent.submit(field.closest("form")!);
+  if (expected === null) {
+    expect(field).toHaveAttribute("aria-invalid", "true");
+    expect(ref.current!.getMarkdown()).toBe("text");
+  } else {
+    expect(editor.querySelector("a")).toHaveAttribute("href", expected);
+    const saved = ref.current!.getMarkdown();
+    act(() => ref.current!.setMarkdown(saved));
+    expect(editor.querySelector("a")).toHaveAttribute("href", expected);
+  }
+});
+
+test.each([
   "https://example.com/a> <img src=x onerror=alert(1)>",
   "https://example.com/a<b",
   "https://example.com/a\\b",

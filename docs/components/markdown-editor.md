@@ -79,8 +79,9 @@ focus to the text without collapsing the selection. Tab keeps its normal editor
 meaning and leaves the toolbar by ordinary page order. Cmd+K on macOS or Ctrl+K
 elsewhere opens the URL field. Enter applies an address, Escape cancels, and
 Remove link removes it. A bare domain such as `example.com` becomes
-`https://example.com`; unsafe protocols, including entity-encoded forms, are
-rejected with an inline error. Applying or removing a link is one undo step.
+`https://example.com/`. Relative references remain relative. Ambiguous bare
+addresses and unsafe protocols, including entity-encoded forms, are rejected
+with an inline error. Applying or removing a link is one undo step.
 
 The bubble uses the floating menu's tuned 8px offset, equivalent to twice the
 standard `--spacing` token (0.25rem at the default root size). It appears above
