@@ -271,6 +271,25 @@ test.each([
   }
 });
 
+test.each([
+  ["heading", "# [text ![a](x.png) more](https://example.com)", "h1"],
+  ["list item", "- [text ![a](x.png) more](https://example.com)", "li"],
+  ["task item", "- [ ] [text ![a](x.png) more](https://example.com)", "li"],
+  ["table cell", "| A |\n| --- |\n| [text ![a](x.png) more](https://example.com) |", "td"],
+  ["blockquote", "> [text ![a](x.png) more](https://example.com)", "blockquote"],
+])("mixed linked image stays one link in %s", async (_name, source, selector) => {
+  const api = await setupPasteEditor(source);
+  api.dom.focus();
+  await userEvent.setup().keyboard("z");
+  const saved = api.getMarkdown();
+  const rendered = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html");
+  const block = rendered.querySelector(selector);
+  expect(block?.querySelectorAll("a")).toHaveLength(1);
+  expect(block?.querySelector("a")?.textContent).toContain("text ");
+  expect(block?.querySelector("a img[src]")?.getAttribute("alt")).toBe("a");
+  expect(block?.querySelector("a")?.textContent).toContain(" more");
+});
+
 function pasteHTML(dom: HTMLElement, html: string) {
   const event = new Event("paste", { bubbles: true, cancelable: true });
   Object.defineProperty(event, "clipboardData", { value: { getData: (type: string) => type === "text/html" ? html : "", files: [], types: ["text/html"] } });
