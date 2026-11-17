@@ -753,8 +753,7 @@ function useMarkdownEditor({
 }
 
 function FormattingButtons({ editor, focused, setFocused, openLink }: { editor: Editor; focused: number; setFocused: (index: number) => void; openLink: () => void }) {
-  const [mac, setMac] = useState(false);
-  useEffect(() => { setMac(/Mac|iPhone|iPad/.test(navigator.platform)); }, []);
+  const [mac] = useState(() => typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform));
   const active = useEditorState({ editor, selector: ({ editor }) => ({
     bold: editor.isActive("bold"), italic: editor.isActive("italic"),
     strike: editor.isActive("strike"), code: editor.isActive("code"), link: editor.isActive("link"),
@@ -805,7 +804,6 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   const inputRef = useRef<HTMLInputElement>(null);
   const pointerLinkAction = useRef(false);
   const returnLinkFocus = useRef(false);
-  useLayoutEffect(() => { if (disabled || readOnly) setEditingLink(false); }, [disabled, readOnly]);
   useLayoutEffect(() => { if (editingLink) inputRef.current?.focus(); }, [editingLink]);
   useLayoutEffect(() => {
     if (!editingLink && returnLinkFocus.current) {
