@@ -41,6 +41,8 @@ const comparisonMarkdown = [
   "",
   "---",
   "",
+  "![Landscape study](/markdown-landscape.svg)",
+  "",
   "The final paragraph.",
 ].join("\n");
 

@@ -388,6 +388,8 @@ for (const theme of ["light", "dark"]) {
     const editor = page.getByRole("textbox", { name: "In-place note", exact: true });
     const prose = page.getByLabel("Rendered note");
     await expect(editor).toBeVisible();
+    await expect(editor.getByRole("img", { name: "Landscape study" })).toBeVisible();
+    await expect(prose.getByRole("img", { name: "Landscape study" })).toBeVisible();
     await editor.focus();
     const chrome = await editor.evaluate(element => [element, element.parentElement, element.parentElement?.parentElement].filter((node): node is HTMLElement => node instanceof HTMLElement).map(node => {
       const style = getComputedStyle(node);
@@ -395,7 +397,7 @@ for (const theme of ["light", "dark"]) {
     }));
     for (const style of chrome) expect(style).toEqual({ background: "rgba(0, 0, 0, 0)", border: "0px", padding: "0px", outline: "none", minHeight: "0px", maxHeight: "none", overflow: "visible" });
     await editor.blur();
-    const selectors = ["h1", ":scope > p:nth-of-type(1)", ":scope > p:nth-of-type(2)", "h2", ":scope > ul", "ul ul", ":scope > ol", "blockquote", "pre", "hr", ":scope > p:last-child"];
+    const selectors = ["h1", ":scope > p:nth-of-type(1)", ":scope > p:nth-of-type(2)", "h2", ":scope > ul", "ul ul", ":scope > ol", "blockquote", "pre", "hr", ":scope > p:has(img[src])", "img[src]", ":scope > p:last-child"];
     const measure = (root: Element, queries: string[]) => {
       const rootRect = root.getBoundingClientRect();
       return queries.map(selector => {

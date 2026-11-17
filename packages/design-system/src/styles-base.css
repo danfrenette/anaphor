@@ -315,6 +315,8 @@
     :where([data-slot="markdown-editor"][data-disabled]) .anaphor-prose :where(li input[type="checkbox"]:checked):not(:where([data-prose-exclude], [data-prose-exclude] *))::after { border-color: GrayText; }
   }
   .anaphor-prose :where(a):not(:where([data-prose-exclude], [data-prose-exclude] *)) { color: inherit; text-decoration-line: underline; text-underline-offset: 0.15em; }
+  .anaphor-prose :where(img):not(:where([data-prose-exclude], [data-prose-exclude] *)) { display: inline-block; max-width: 100%; height: auto; }
+  .anaphor-prose :where(img.ProseMirror-selectednode) { outline: 2px solid var(--anaphor-focus); outline-offset: 2px; }
   .anaphor-prose :where(strong):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-weight: var(--font-weight-bold); }
   .anaphor-prose :where(blockquote):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: calc(var(--spacing-prose) * 2); border-inline-start: 1px solid var(--anaphor-input-border); padding-inline-start: calc(var(--spacing-prose) * 1.5); font-style: italic; }
   .anaphor-prose :where(code, pre):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-family: var(--font-mono); font-size: var(--text-prose-code); font-weight: var(--font-weight-normal); font-style: normal; }
