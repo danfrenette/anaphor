@@ -1124,7 +1124,7 @@ test("the starting fixture renders every supported construct formatted", async (
   await expect(editor.locator("pre code")).toContainText("const x = 1;");
   await expect(editor.locator("pre code")).toHaveClass(/language-ts/);
   await expect(editor.locator("hr")).toBeVisible();
-  await expect(editor.getByRole("link", { name: "link" })).toHaveAttribute("href", "https://anaphor.dev");
+  await expect(editor.getByRole("link", { name: "link" })).toHaveAttribute("href", "https://anaphor.dev/");
   await expect(editor.getByText("strike", { exact: true })).toBeVisible();
   await expect(editor.getByText("code", { exact: true })).toBeVisible();
 
