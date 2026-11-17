@@ -1214,6 +1214,16 @@ test("the existing post hides front matter and shows opaque blocks in both theme
   }
 });
 
+test("opaque inline source follows the Prose code size token", async ({ page }) => {
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Existing post" });
+  const source = editor.getByText("[^1]", { exact: true });
+  await expect(source).toBeVisible();
+  expect(await source.evaluate(element => getComputedStyle(element).fontSize)).toBe("14px");
+  await editor.evaluate(element => element.style.setProperty("--text-prose-code", "1em"));
+  expect(await source.evaluate(element => getComputedStyle(element).fontSize)).toBe("16px");
+});
+
 test("an opaque block is selected and deleted as a whole", async ({ page }) => {
   await page.goto("/markdown-editor");
   const editor = page.getByRole("textbox", { name: "Existing post" });

@@ -384,9 +384,8 @@ const OPAQUE_BLOCK_CLASS = cn(
   // Mono face and muted small text
   "font-mono text-small text-muted-foreground",
 );
-// The inline span shares the mono face and muted text; its `0.875em` matches
-// the prose code size (`--text-prose-code`) so it sits naturally beside body text.
-const OPAQUE_INLINE_CLASS = cn("font-mono text-muted-foreground", "text-[0.875em]");
+// The inline span shares Prose code's size so it follows the same token.
+const OPAQUE_INLINE_CLASS = cn("font-mono text-muted-foreground", "text-[length:var(--text-prose-code)]");
 
 type OpaqueNodeOptions = {
   name: "opaqueBlock" | "opaqueInline";
