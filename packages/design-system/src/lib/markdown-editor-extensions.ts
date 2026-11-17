@@ -166,6 +166,7 @@ function linkDestinationNeedsAngleBrackets(href: string): boolean {
 // content so a line of backticks inside the block cannot close the fence on
 // reload. The stock renderer writes a fixed ``` fence.
 const MarkdownCodeBlock = CodeBlock.extend({
+  // Spec requirement: read-only code blocks must be keyboard-scrollable.
   addProseMirrorPlugins() {
     const editor = this.editor;
     return [new Plugin({
@@ -191,7 +192,7 @@ const MarkdownCodeBlock = CodeBlock.extend({
   },
 });
 
-// ProseMirror's gap cursor treats textblocks as open unless their schema asks
+// Spec requirement: ProseMirror's gap cursor treats textblocks as open unless their schema asks
 // for a gap, so allow the default gap-cursor plugin to move past a code block.
 const CodeBlockGapCursor = Extension.create({
   name: "codeBlockGapCursor",
@@ -205,6 +206,7 @@ const MarkdownLink = Link.extend({
     const href = props.HTMLAttributes.href;
     return this.parent!({ ...props, HTMLAttributes: { ...props.HTMLAttributes, href: isSafePasteUri(href) ? normalizeLinkHref(href) : href } });
   },
+  // Tiptap 3.33.0 workaround: normalize safe destinations parsed from HTML.
   addAttributes() {
     return { ...this.parent?.(), href: { default: null, parseHTML: element => {
       const href = element.getAttribute("href");
