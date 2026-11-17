@@ -116,6 +116,8 @@ Rendered task boxes are status indicators and retain their normal appearance
 even when the renderer marks their inputs disabled. A disabled editor instead
 uses the shared disabled treatment.
 Table wrappers scroll horizontally and retain the normal outer table rhythm.
+Prose images are inline-block, constrained to the available width, and preserve
+their aspect ratio. Image-only paragraphs keep ordinary paragraph spacing.
 Renderers can put `data-prose-table` on a wrapper around a table; give a
 scrollable wrapper a name and `tabindex="0"` for keyboard access.
 

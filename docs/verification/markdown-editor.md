@@ -170,6 +170,13 @@ code remains separately keyboard-focusable.
     Paste a URL over selected text and confirm it links the selection. Paste
     Markdown syntax into a code block and confirm it remains literal. Repeat
     a paste with read-only and disabled toggled and confirm no edit occurs.
+16. In Research note, paste or drop an image file and confirm the image and its
+    blob address and filename alt text appear in Current Markdown. Undo once.
+    Confirm HTML images paste only their alt text, while an explicit HTTPS
+    Markdown image renders. Compare the landscape image and its surrounding
+    spacing on both sides of In-place comparison in light and dark at desktop
+    and 320px. Select the image with an arrow key and remove it with Delete or
+    Backspace. Component tests cover rejection, mapping and non-editable states.
 
 Keep Playwright output and screenshots under `test-results/` with the run
 receipt. Stop only a server started for the verification run.
@@ -179,5 +186,4 @@ receipt. Stop only a server started for the verification run.
 The callback and pre-edit byte guarantee are component-test criteria. The hook
 is exercised through the component rather than through internal editor calls.
 Tests assert visible results and Markdown output, never Tiptap document JSON,
-extension arrays, or private methods. Images and the bubble are outside this
-recipe.
+extension arrays, or private methods. The bubble is outside this recipe.

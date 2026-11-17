@@ -71,8 +71,27 @@ never fires `onChange`.
 Pasting web content retains supported headings, paragraphs, lists, task lists,
 tables, links, emphasis, code, quotations, and rules. Page fonts, colours,
 sizes, classes, and inline styles are discarded. Unsupported controls are
-reduced to their text. Images in pasted HTML are dropped; image support is
-planned separately.
+reduced to their text. Images in pasted HTML are dropped without loading their
+source, but their alt text is retained as plain text. Explicit Markdown image
+syntax in pasted plain text is accepted only for HTTP and HTTPS destinations;
+other destinations stay literal.
+
+## Images
+
+Markdown images render inline, including an image-only paragraph. The optional
+`onImageFile` callback receives each pasted or dropped image `File` and returns
+`Promise<{ src: string; alt: string }>`. The host owns storage and the returned
+address is trusted, so blob and data URLs are supported. Files are inserted in
+clipboard or drop order at the mapped paste or drop position, in one undo step.
+Rejected files are omitted. Without a handler, or while read-only or disabled,
+image files are ignored and the drop default is prevented. Pending results are
+discarded if the editor unmounts or becomes read-only or disabled.
+
+Before edits, image Markdown is returned unchanged. After edits, reference-style
+images become inline destinations and angle-bracket destinations may become
+bare; empty alt text and escaped closing brackets are retained. Raw HTML images
+in starting Markdown remain inert opaque source. An image can be selected with
+the arrow keys and removed with Backspace or Delete.
 
 Plain text is parsed as Markdown when the Markdown lexer finds a supported
 heading, list, quote, fenced code block, table, rule, emphasis, inline code, or
@@ -349,4 +368,4 @@ The standalone `markdown-editor` registry item installs the component, shared
 styles, utilities, and exact Tiptap 3.33.0 dependencies. It is also part of the
 complete `ui` aggregate.
 
-This slice does not support images or a selection bubble.
+This slice does not support a selection bubble.
