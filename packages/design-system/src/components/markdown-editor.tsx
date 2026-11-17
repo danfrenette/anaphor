@@ -466,6 +466,7 @@ type MarkdownEditorProps = UseMarkdownEditorOptions & { presentation: "field" | 
 function useMarkdownEditor({
   defaultValue,
   onChange,
+  onImageFile,
   placeholder,
   readOnly = false,
   disabled = false,
@@ -480,6 +481,9 @@ function useMarkdownEditor({
   const frontMatterRef = useRef(frontMatter);
   const currentValue = useRef(defaultValue);
   const onChangeRef = useRef(onChange);
+  const imageHandlerRef = useRef(onImageFile);
+  imageHandlerRef.current = onImageFile;
+  const imageGeneration = useRef(0);
   useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
   const isReplacingRef = useRef(false);
   const pendingBodyRef = useRef<string | null>(null);
@@ -517,7 +521,10 @@ function useMarkdownEditor({
     content: body,
     contentType: "markdown",
     // Spec requirement (AC-1–5, AC-7): clean and classify pasted content.
-    editorProps: { transformPastedHTML: cleanPastedHtml, handlePaste: (view, event): boolean => {
+    editorProps: { transformPastedHTML: cleanPastedHtml, handleDOMEvents: {
+      paste: (view, event) => handleImageFiles(view, event, event.clipboardData?.files, false),
+      drop: (view, event) => handleImageFiles(view, event, event.dataTransfer?.files, true),
+    }, handlePaste: (view, event): boolean => {
       return handleMarkdownPaste(view, event, editor);
     }, attributes: {
       class: "anaphor-prose outline-none",
@@ -536,6 +543,30 @@ function useMarkdownEditor({
       ...(ariaLabel === undefined ? { "aria-labelledby": ariaLabelledBy } : { "aria-label": ariaLabel }),
     } },
   });
+
+  function handleImageFiles(view: Editor["view"], event: Event, files: FileList | undefined, drop: boolean): boolean {
+    const images = Array.from(files ?? []).filter(file => file.type.startsWith("image/"));
+    if (!images.length) return false;
+    event.preventDefault();
+    const handler = imageHandlerRef.current;
+    if (!handler || !editor || !editor.isEditable) return true;
+    const position = drop && event instanceof MouseEvent ? view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos : undefined;
+    let from = position ?? view.state.selection.from;
+    let to = position ?? view.state.selection.to;
+    const generation = imageGeneration.current;
+    const map = ({ transaction }: { transaction: import("@tiptap/pm/state").Transaction }) => {
+      from = transaction.mapping.map(from, 1);
+      to = transaction.mapping.map(to, 1);
+    };
+    editor.on("transaction", map);
+    void Promise.allSettled(images.map(file => Promise.resolve().then(() => handler(file)))).then(results => {
+      editor.off("transaction", map);
+      if (editor.isDestroyed || !editor.isEditable || generation !== imageGeneration.current) return;
+      const content = results.flatMap(result => result.status === "fulfilled" ? [{ type: "image", attrs: result.value }] : []);
+      if (content.length) editor.commands.insertContentAt({ from, to }, content);
+    });
+    return true;
+  }
 
   useEffect(() => {
     if (editor && !editor.isDestroyed) {
@@ -590,9 +621,12 @@ function useMarkdownEditor({
   // `editorProps.attributes` above, so they survive view updates.
   useLayoutEffect(() => {
     if (!editor) return;
+    if (readOnly || disabled) imageGeneration.current++;
     if (disabled && document.activeElement instanceof HTMLElement && editor.view.dom.contains(document.activeElement)) document.activeElement.blur();
     editor.setEditable(!readOnly && !disabled, false);
   }, [editor, readOnly, disabled]);
+
+  useEffect(() => () => { imageGeneration.current++; }, []);
 
   useLayoutEffect(() => {
     if (!editor || !disabled) return;

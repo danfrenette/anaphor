@@ -5,7 +5,7 @@ import { act, render, screen } from "@testing-library/react";
 import { createRef } from "react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, test, vi } from "vitest";
-import { MarkdownEditor, type MarkdownEditorHandle } from "@anaphor/system";
+import { MarkdownEditor, type MarkdownEditorHandle, type MarkdownEditorImageHandler } from "@anaphor/system";
 import { Marked } from "marked";
 
 // A fresh renderer: the shared `marked` instance is the one @tiptap/markdown configures.
@@ -19,12 +19,93 @@ beforeEach(() => {
   Object.defineProperty(window, "scrollBy", { configurable: true, value: () => {} });
 });
 
-async function setupPasteEditor(value = "", options: { readOnly?: boolean; disabled?: boolean; onChange?: (value: string) => void } = {}) {
+async function setupPasteEditor(value = "", options: { readOnly?: boolean; disabled?: boolean; onChange?: (value: string) => void; onImageFile?: MarkdownEditorImageHandler } = {}) {
   const ref = createRef<MarkdownEditorHandle>();
-  render(<MarkdownEditor ref={ref} presentation="field" defaultValue={value} aria-label="Paste editor" {...options} />);
+  const rendered = render(<MarkdownEditor ref={ref} presentation="field" defaultValue={value} aria-label="Paste editor" {...options} />);
   const dom = await screen.findByRole("textbox", { name: "Paste editor" });
-  return { dom, getMarkdown: () => ref.current!.getMarkdown(), setMarkdown: (markdown: string) => ref.current!.setMarkdown(markdown) };
+  return { dom, ref, ...rendered, getMarkdown: () => ref.current!.getMarkdown(), setMarkdown: (markdown: string) => ref.current!.setMarkdown(markdown) };
 }
+
+function fileEvent(dom: HTMLElement, kind: "paste" | "drop", files: File[]) {
+  const event = new Event(kind, { bubbles: true, cancelable: true });
+  Object.defineProperty(event, kind === "paste" ? "clipboardData" : "dataTransfer", { value: { files, types: ["Files"], getData: () => "" } });
+  dom.dispatchEvent(event);
+  return event;
+}
+
+test("image file order survives asynchronous completion and ignores other files", async () => {
+  const files = [new File(["a"], "a.png", { type: "image/png" }), new File(["x"], "x.txt", { type: "text/plain" }), new File(["b"], "b.png", { type: "image/png" })];
+  let resolveFirst!: (value: { src: string; alt: string }) => void;
+  const onImageFile = vi.fn((file: File) => file === files[0] ? new Promise<{ src: string; alt: string }>(resolve => { resolveFirst = resolve; }) : Promise.resolve({ src: "b.png", alt: "b" }));
+  const api = await setupPasteEditor("", { onImageFile });
+  api.dom.focus();
+  await act(async () => { fileEvent(api.dom, "paste", files); });
+  expect(onImageFile.mock.calls.map(([file]) => file.name)).toEqual(["a.png", "b.png"]);
+  await act(async () => { resolveFirst({ src: "a.png", alt: "a" }); });
+  expect(api.getMarkdown()).toBe("![a](a.png)![b](b.png)");
+  await userEvent.setup().keyboard("{Control>}z{/Control}");
+  expect(api.getMarkdown()).toBe("");
+});
+
+test("image file insertion maps through typing while pending", async () => {
+  let resolveImage!: (value: { src: string; alt: string }) => void;
+  const api = await setupPasteEditor("ab", { onImageFile: () => new Promise(resolve => { resolveImage = resolve; }) });
+  await selectText(api.dom, 1);
+  await act(async () => { fileEvent(api.dom, "paste", [new File(["a"], "a.png", { type: "image/png" })]); });
+  await userEvent.setup().keyboard("x");
+  await act(async () => { resolveImage({ src: "a.png", alt: "a" }); });
+  expect(api.getMarkdown()).toBe("ax![a](a.png)b");
+});
+
+test("rejected image file leaves the editor usable without an unhandled rejection", async () => {
+  const unhandled = vi.fn();
+  window.addEventListener("unhandledrejection", unhandled);
+  const api = await setupPasteEditor("", { onImageFile: async () => { throw new Error("upload failed"); } });
+  api.dom.focus();
+  await act(async () => { fileEvent(api.dom, "paste", [new File(["a"], "a.png", { type: "image/png" })]); });
+  expect(api.getMarkdown()).toBe("");
+  await userEvent.setup().keyboard("x");
+  expect(api.getMarkdown()).toBe("x");
+  expect(unhandled).not.toHaveBeenCalled();
+  window.removeEventListener("unhandledrejection", unhandled);
+});
+
+test.each(["no handler", "read only", "disabled"].flatMap(state => (["paste", "drop"] as const).map(kind => [state, kind] as const)))("image %s prevents %s", async (state, kind) => {
+  const handler = vi.fn(async () => ({ src: "a.png", alt: "a" }));
+  const api = await setupPasteEditor("", { ...(state !== "no handler" ? { onImageFile: handler } : {}), readOnly: state === "read only", disabled: state === "disabled" });
+  let event!: Event;
+  await act(async () => { event = fileEvent(api.dom, kind, [new File(["a"], "a.png", { type: "image/png" })]); });
+  expect(event.defaultPrevented).toBe(true);
+  expect(handler).not.toHaveBeenCalled();
+  expect(api.getMarkdown()).toBe("");
+});
+
+test.each(["unmount", "read only"])("pending image is discarded on %s", async state => {
+  let resolveImage!: (value: { src: string; alt: string }) => void;
+  const onImageFile = () => new Promise<{ src: string; alt: string }>(resolve => { resolveImage = resolve; });
+  const api = await setupPasteEditor("", { onImageFile });
+  await act(async () => { fileEvent(api.dom, "paste", [new File(["a"], "a.png", { type: "image/png" })]); });
+  if (state === "unmount") api.unmount();
+  else api.rerender(<MarkdownEditor ref={api.ref} presentation="field" defaultValue="" aria-label="Paste editor" onImageFile={onImageFile} readOnly />);
+  await act(async () => { resolveImage({ src: "a.png", alt: "a" }); });
+  if (state !== "unmount") expect(api.getMarkdown()).toBe("");
+  expect(screen.queryByRole("img")).toBeNull();
+});
+
+test("image file paste calls the host and inserts its result", async () => {
+  const file = new File(["image"], "note.png", { type: "image/png" });
+  const onImageFile = vi.fn(async () => ({ src: "blob:note", alt: "note" }));
+  const onChange = vi.fn();
+  const api = await setupPasteEditor("", { onImageFile, onChange });
+  const event = new Event("paste", { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "clipboardData", { value: { files: [file], types: ["Files", "text/html"], getData: () => "<p>unwanted</p>" } });
+  await act(async () => { api.dom.dispatchEvent(event); });
+  expect(event.defaultPrevented).toBe(true);
+  expect(onImageFile).toHaveBeenCalledWith(file);
+  expect(api.getMarkdown()).toBe("![note](blob:note)");
+  expect(screen.getByRole("img", { name: "note" })).toHaveAttribute("src", "blob:note");
+  expect(onChange).toHaveBeenCalledWith("![note](blob:note)");
+});
 
 function pasteHTML(dom: HTMLElement, html: string) {
   const event = new Event("paste", { bubbles: true, cancelable: true });
