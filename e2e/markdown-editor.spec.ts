@@ -61,6 +61,64 @@ for (const theme of ["light", "dark"]) test(`bubble keyboard navigation, focus a
   await expect(bubble).toBeHidden();
 });
 
+test("task checkboxes have separate 44px touch targets", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "Coarse-pointer hit testing is covered on mobile WebKit.");
+  await page.goto("/markdown-editor");
+  const editor = page.getByRole("textbox", { name: "Notes" });
+  await editor.click();
+  await editor.pressSequentially("[ ] First");
+  await editor.press("Enter");
+  await editor.pressSequentially("Second");
+  await editor.press("Enter");
+  await editor.pressSequentially("Third");
+  const boxes = editor.getByRole("checkbox");
+  await expect(boxes).toHaveCount(3);
+  console.log(JSON.stringify(await boxes.evaluateAll(inputs => inputs.map(input => {
+    const rect = input.getBoundingClientRect();
+    return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+  }))));
+  for (let index = 0; index < 3; index++) {
+    const box = boxes.nth(index);
+    await box.scrollIntoViewIfNeeded();
+    const result = await box.evaluate(input => {
+      const rect = input.getBoundingClientRect();
+      const center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      const offsets = [-21.5, 0, 21.5];
+      const hits = offsets.flatMap(x => offsets.map(y => {
+        const hit = document.elementFromPoint(center.x + x, center.y + y);
+        return hit === input || hit?.closest("label")?.contains(input) === true;
+      }));
+      const label = input.closest("label")!;
+      const labelRect = label.getBoundingClientRect();
+      return { center, hits, label: { x: labelRect.x, y: labelRect.y, width: labelRect.width, height: labelRect.height } };
+    });
+    console.log(JSON.stringify({ index, ...result }));
+    expect(result.hits).toEqual(Array(9).fill(true));
+    for (const [x, y] of [[-21.5, -21.5], [21.5, 21.5]]) {
+      const before = await boxes.evaluateAll(inputs => inputs.map(input => input instanceof HTMLInputElement && input.checked));
+      await page.touchscreen.tap(result.center.x + x!, result.center.y + y!);
+      const after = await boxes.evaluateAll(inputs => inputs.map(input => input instanceof HTMLInputElement && input.checked));
+      expect(after).toEqual(before.map((checked, item) => item === index ? !checked : checked));
+    }
+  }
+  const nested = page.getByRole("textbox", { name: "In-place note", exact: true }).getByRole("checkbox");
+  await expect(nested).toHaveCount(3);
+  for (let index = 0; index < 3; index++) {
+    const box = nested.nth(index);
+    await box.scrollIntoViewIfNeeded();
+    const hits = await box.evaluate(input => {
+      const rect = input.getBoundingClientRect();
+      const offsets = [-21.5, 0, 21.5];
+      return offsets.flatMap(x => offsets.map(y => {
+        const hit = document.elementFromPoint(rect.left + rect.width / 2 + x, rect.top + rect.height / 2 + y);
+        return hit === input || hit?.closest("label")?.contains(input) === true;
+      }));
+    });
+    console.log(JSON.stringify({ nested: index, hits }));
+    expect(hits, `nested task ${index}`).toEqual(Array(9).fill(true));
+  }
+});
+
 for (const theme of ["light", "dark"]) {
   test(`bubble excludes code and opaque selections: ${theme}`, async ({ page, isMobile }) => {
     test.skip(isMobile, "Keyboard selection is verified on desktop.");
