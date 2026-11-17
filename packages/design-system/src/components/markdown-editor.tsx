@@ -244,9 +244,13 @@ const MarkdownImage = Image.extend({
   parseMarkdown: (token, helpers) => {
     const literal = literalPastedImage(token);
     if (literal) return literal;
-    const textarea = document.createElement("textarea");
-    textarea.innerHTML = (token.text ?? "").replace(/\\([!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~])/g, "$1");
-    return helpers.createNode("image", { src: token.href, title: token.title, alt: textarea.value });
+    const element = document.createElement("span");
+    const alt = (token.text ?? "").replace(/\\([!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~])|&(?:[a-zA-Z][a-zA-Z0-9]{1,31}|#[0-9]{1,7}|#[xX][a-fA-F0-9]{1,6});/g, (match, escaped: string | undefined) => {
+      if (escaped) return escaped;
+      element.innerHTML = `<span data-entity="${match}"></span>`;
+      return element.firstElementChild!.getAttribute("data-entity")!;
+    });
+    return helpers.createNode("image", { src: token.href, title: token.title, alt });
   },
   renderMarkdown: node => {
     const src = node.attrs?.src ?? "";

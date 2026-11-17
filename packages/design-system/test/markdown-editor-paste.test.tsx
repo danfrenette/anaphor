@@ -250,6 +250,26 @@ test.each(["`code`", "*star*", "_under_", "~strike~", "&lt;", "&amp;", "<", ">",
 });
 
 test.each([
+  ["&copy without", "&copy without", "&amp;copy without"],
+  ["&copy;", "©", "©"],
+  ["&#169;", "©", "©"],
+  ["&#xA9;", "©", "©"],
+  ["\\&copy;", "&copy;", "&amp;copy;"],
+  ["&amp;copy;", "&copy;", "&amp;copy;"],
+  ["&unknownentity;", "&unknownentity;", "&amp;unknownentity;"],
+])("starting image alt decodes CommonMark once: %s", async (sourceAlt, expectedAlt, savedAlt) => {
+  const api = await setupPasteEditor(`![${sourceAlt}](https://safe.invalid/a)`);
+  expect(api.dom.querySelector("img[src]")?.getAttribute("alt")).toBe(expectedAlt);
+  api.dom.focus();
+  await userEvent.setup().keyboard("x");
+  expect(api.dom.querySelector("img[src]")?.getAttribute("alt")).toBe(expectedAlt);
+  const saved = api.getMarkdown();
+  expect(saved).toBe(`x![${savedAlt}](https://safe.invalid/a)`);
+  const rendered = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html");
+  expect(rendered.querySelector("img")?.getAttribute("alt")).toBe(expectedAlt);
+});
+
+test.each([
   ["<script>alert(1)</script>", "<script>alert(1)</script>"],
   ["x\\](javascript:alert(1))", "x](javascript:alert(1))"],
   ["a\\\\\\]b.png", "a\\]b.png"],
