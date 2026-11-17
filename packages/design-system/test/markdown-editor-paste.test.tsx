@@ -74,29 +74,6 @@ test("typing after an image insertion has a separate undo step", async () => {
   expect(screen.getByRole("img", { name: "a" })).toBeVisible();
 });
 
-test("a positioned drop maps its insertion point through pending edits", async () => {
-  let resolveImage!: (value: { src: string; alt: string }) => void;
-  let editor: Editor | null = null;
-  let getMarkdown!: () => string;
-  function Harness() {
-    const api = useMarkdownEditor({ defaultValue: "abcd", "aria-label": "Drop editor", onImageFile: () => new Promise(resolve => { resolveImage = resolve; }) });
-    editor = api.editor;
-    getMarkdown = api.getMarkdown;
-    return <EditorContent editor={api.editor} />;
-  }
-  render(<Harness />);
-  const dom = await screen.findByRole("textbox", { name: "Drop editor" });
-  vi.spyOn(editor!.view, "posAtCoords").mockReturnValue({ pos: 3, inside: 0 });
-  const event = new MouseEvent("drop", { bubbles: true, cancelable: true, clientX: 10, clientY: 10 });
-  Object.defineProperty(event, "dataTransfer", { value: { files: [new File(["a"], "a.png", { type: "image/png" })], types: ["Files"], getData: () => "" } });
-  await act(async () => { dom.dispatchEvent(event); });
-  await selectText(dom, 1);
-  await userEvent.setup().keyboard("x");
-  await act(async () => { resolveImage({ src: "a.png", alt: "a" }); });
-  expect(getMarkdown()).toBe("axb![a](a.png)cd");
-  expect(screen.getByRole("img", { name: "a" })).toBeVisible();
-});
-
 test("rejected image file leaves the editor usable without an unhandled rejection", async () => {
   const unhandled = vi.fn();
   window.addEventListener("unhandledrejection", unhandled);
@@ -163,6 +140,7 @@ test.each(["paste", "drop"] as const)("setMarkdown discards a pending image from
   expect(screen.queryByRole("img")).toBeNull();
 });
 
+// Narrow exception: a never-settling upload exposes no public signal for listener release.
 test("replacement detaches transaction listeners for never-settling images", async () => {
   let editor: Editor | null = null;
   let replace!: (markdown: string) => void;
@@ -186,6 +164,7 @@ test("replacement detaches transaction listeners for never-settling images", asy
   expect(removed.filter(listener => listener !== undefined && added.includes(listener))).toEqual(added);
 });
 
+// The same listener-release exception applies to state transitions and unmount.
 test.each(["read only", "disabled", "unmount"])("%s detaches transaction listeners for never-settling images", async state => {
   let editor: Editor | null = null;
   function Harness({ active }: { active: boolean }) {

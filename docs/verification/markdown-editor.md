@@ -199,7 +199,8 @@ receipt. Stop only a server started for the verification run.
 
 ## Boundaries
 
-The callback and pre-edit byte guarantee are component-test criteria. The hook
-is exercised through the component rather than through internal editor calls.
-Tests assert visible results and Markdown output, never Tiptap document JSON,
-extension arrays, or private methods.
+The callback and pre-edit byte guarantee are component-test criteria. Tests
+assert visible results and Markdown output rather than Tiptap document structure,
+extension arrays, or private editing methods. A narrow listener instrumentation
+exception checks release for never-settling image uploads, which has no public
+observable signal. Positioned drop geometry is covered in the browser.

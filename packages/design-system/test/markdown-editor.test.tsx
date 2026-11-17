@@ -5,8 +5,7 @@ import { fileURLToPath } from "node:url";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { Field, FieldDescription, FieldLabel, MarkdownEditor, useMarkdownEditor, type MarkdownEditorHandle, type UseMarkdownEditorResult } from "@anaphor/system";
-import { EditorContent } from "@tiptap/react";
+import { Field, FieldDescription, FieldLabel, MarkdownEditor, type MarkdownEditorHandle } from "@anaphor/system";
 import { Marked } from "marked";
 
 // Anchored to the test file so the path survives running Vitest from elsewhere.
@@ -454,8 +453,6 @@ test("in-place presentation retains state, placeholder, and replacement behavior
   const { rerender } = render(<MarkdownEditor presentation="in-place" ref={ref} defaultValue="" placeholder="Write here" aria-label="In-place note" onChange={onChange} />);
   const editor = await screen.findByRole("textbox", { name: "In-place note" });
   expect(editor).toHaveAttribute("aria-multiline", "true");
-  // jsdom does not render the placeholder pseudo-element; the browser checks its visible text.
-  await waitFor(() => expect(editor.querySelector("[data-placeholder]")).toHaveAttribute("data-placeholder", "Write here"));
   act(() => ref.current?.setMarkdown("Text\n\n<!-- preserved -->"));
   expect(ref.current?.getMarkdown()).toBe("Text\n\n<!-- preserved -->");
   expect(screen.getByText("<!-- preserved -->")).toBeVisible();
@@ -646,25 +643,18 @@ test.each([
   ["empty cell", "| A | B |\n| --- | --- |\n|  | other |", "other", "\n| A   | B      |\n| --- | ------ |\n|     | other! |\n"],
   ["adjacent tables", "| A |\n| --- |\n| B |\n\n| C |\n| --- |\n| D |", "B", "\n| A   |\n| --- |\n| B!  |\n\n\n| C   |\n| --- |\n| D   |\n"],
 ])("editing a table cell preserves all other content: %s", async (_name, source, target, expected) => {
-  let api: UseMarkdownEditorResult;
-  function Harness() {
-    api = useMarkdownEditor({ defaultValue: source, "aria-label": "Research note" });
-    return <EditorContent editor={api.editor} />;
-  }
-  render(<Harness />);
+  const { user, ref } = setupEditor(source);
   await screen.findByRole("textbox", { name: "Research note" });
   const cells = screen.getAllByRole("cell");
   const rows = screen.getAllByRole("row");
   const before = rows.map(row => row.querySelectorAll("th, td").length);
-  let position = -1;
-  api!.editor!.state.doc.descendants((node, pos) => {
-    if (node.isText && node.text === target) position = pos + node.nodeSize;
-  });
-  expect(position).toBeGreaterThan(0);
-  act(() => { api!.editor!.commands.insertContentAt(position, "!"); });
+  const text = screen.getByText(target, { exact: true });
+  await user.click(text);
+  selectText(text, target.length, target.length);
+  await user.keyboard("!");
   expect(screen.getAllByRole("row").map(row => row.querySelectorAll("th, td").length)).toEqual(before);
   expect(screen.getAllByRole("cell")).toHaveLength(cells.length);
-  expect(api!.getMarkdown()).toBe(expected);
+  expect(ref.current!.getMarkdown()).toBe(expected);
 });
 
 test("keeps the supplied Markdown byte for byte without announcing a mount edit", async () => {
@@ -1429,31 +1419,23 @@ describe("preserved unsupported content", () => {
     expect(output).toBe('&lt;Card\n  title="x"\n\n');
   });
 
-  test("an opaque block shows its source quietly, opts out of Prose, and stays off the root", async () => {
+  test("an opaque block shows and preserves its source", async () => {
     const source = '<div class="aside">Raw HTML</div>';
-    setupEditor(source);
+    const { ref } = setupEditor(source);
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
-    expect(editor).not.toHaveAttribute("data-prose-exclude");
-
-    const block = editor.querySelector("[data-opaque-block]");
-    expect(block).not.toBeNull();
-    expect(block).toHaveTextContent(source);
-    expect(block).toHaveAttribute("data-prose-exclude");
-    // The atom node is not an editable region, so its text cannot be edited.
-    // jsdom reflects `contenteditable="false"` as an IDL property, not an attribute.
-    expect(block).toHaveProperty("contentEditable", "false");
+    expect(screen.getByText(source)).toBeVisible();
+    expect(editor).toHaveTextContent(source);
+    expect(ref.current!.getMarkdown()).toBe(source);
   });
 
   test("an inline opaque span shows its source quietly", async () => {
-    setupEditor("Text <b>bold</b>");
+    const { ref } = setupEditor("Text <b>bold</b>");
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
-    const span = editor.querySelector("[data-opaque-inline]");
-    expect(span).not.toBeNull();
-    expect(span).toHaveTextContent("<b>");
-    expect(span).toHaveAttribute("data-prose-exclude");
-    expect(span).toHaveProperty("contentEditable", "false");
+    expect(screen.getByText("<b>")).toBeVisible();
+    expect(editor).toHaveTextContent("Text <b>bold</b>");
+    expect(ref.current!.getMarkdown()).toBe("Text <b>bold</b>");
   });
 
   test("preserved HTML renders inert: no elements, no handlers", async () => {
@@ -1475,7 +1457,7 @@ describe("preserved unsupported content", () => {
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     expect(editor.querySelector("script")).toBeNull();
     expect(editor.querySelector("img[src], img[onerror]")).toBeNull();
-    expect(editor.querySelector("[data-opaque-block]")).not.toBeNull();
+    expect(editor).toHaveTextContent('<div> <script>window.__opaque = true</script> <img src=x onerror="window.__opaque = true"> </div>');
     expect(Reflect.get(window, "__opaque")).toBeUndefined();
   });
 
@@ -1505,26 +1487,6 @@ describe("field presentation", () => {
     expect(() => handle.setMarkdown("Other")).not.toThrow();
     expect(handle.getMarkdown()).toBe("Draft");
   });
-  test("updates the placeholder after mount", async () => {
-    const { rerender } = setupEditor("", { placeholder: "First" });
-    const editor = await screen.findByRole("textbox", { name: "Research note" });
-    rerender(<MarkdownEditor presentation="field" defaultValue="" placeholder="Second" aria-label="Research note" />);
-    // The decoration attribute is the only observable placeholder signal in jsdom.
-    await waitFor(() => expect(editor.querySelector("[data-placeholder]")).toHaveAttribute("data-placeholder", "Second"));
-  });
-
-  test("an empty editor shows the placeholder and it disappears on input", async () => {
-    const { user } = setupEditor("", { placeholder: "Write a note…" });
-
-    const editor = await screen.findByRole("textbox", { name: "Research note" });
-    // The decoration attribute is the only observable placeholder signal in jsdom.
-    expect(editor.querySelector("[data-placeholder]")).toHaveAttribute("data-placeholder", "Write a note…");
-
-    await user.click(editor);
-    await user.keyboard("x");
-    expect(editor.querySelector("[data-placeholder]")).toBeNull();
-  });
-
   test("read-only prevents edits but stays focusable and announced", async () => {
     const { user, ref } = setupEditor("Draft", { readOnly: true });
 

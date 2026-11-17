@@ -82,7 +82,7 @@ for (const theme of ["light", "dark"]) {
     await expect(bubble).toBeHidden();
 
     const existing = page.getByRole("textbox", { name: "Existing post" });
-    const block = existing.locator("[data-opaque-block]").first();
+    const block = existing.getByText("[^1]: The note text.", { exact: true });
     await block.click();
     await expect(bubble).toBeHidden();
   });
@@ -1203,15 +1203,14 @@ test("the existing post hides front matter and shows opaque blocks in both theme
   await expect(editor).not.toContainText('title: "An existing post"');
   await expect(editor).not.toContainText("draft: true");
 
-  const blocks = editor.locator("[data-opaque-block]");
-  await expect(blocks).toHaveCount(7);
-  await expect(blocks.first()).toHaveText("[^1]: The note text.");
+  const block = editor.getByText("[^1]: The note text.", { exact: true });
+  await expect(block).toBeVisible();
 
   for (const dark of [false, true]) {
     await page.locator("html").evaluate((element, value) => element.classList.toggle("dark", value), dark);
-    const fontFamily = await blocks.first().evaluate(element => getComputedStyle(element).fontFamily);
+    const fontFamily = await block.evaluate(element => getComputedStyle(element).fontFamily);
     expect(fontFamily).toContain("mono");
-    await blocks.first().screenshot({ path: testInfo.outputPath(`opaque-block-${dark ? "dark" : "light"}.png`) });
+    await block.screenshot({ path: testInfo.outputPath(`opaque-block-${dark ? "dark" : "light"}.png`) });
   }
 });
 
@@ -1220,12 +1219,12 @@ test("an opaque block is selected and deleted as a whole", async ({ page }) => {
   const editor = page.getByRole("textbox", { name: "Existing post" });
   const output = page.getByLabel("Existing post Markdown", { exact: true });
 
-  const block = editor.locator("[data-opaque-block]").first();
+  const block = editor.getByText("[^1]: The note text.", { exact: true });
   await expect(block).toHaveText("[^1]: The note text.");
   await block.click();
   await editor.press("Delete");
 
-  await expect(editor.locator("[data-opaque-block]")).toHaveCount(6);
+  await expect(block).toHaveCount(0);
   // The definition is gone as a whole; the surrounding content is untouched.
   await expect(output).not.toContainText("[^1]: The note text.");
   await expect(output).toContainText("Raw HTML");
@@ -1233,7 +1232,7 @@ test("an opaque block is selected and deleted as a whole", async ({ page }) => {
 
   // One undo restores the block and its exact source in the output.
   await editor.press("ControlOrMeta+z");
-  await expect(editor.locator("[data-opaque-block]")).toHaveCount(7);
+  await expect(block).toBeVisible();
   await expect(output).toContainText("[^1]: The note text.");
 });
 
@@ -1241,17 +1240,13 @@ test("an opaque block's text cannot be edited in place", async ({ page }) => {
   await page.goto("/markdown-editor");
   const editor = page.getByRole("textbox", { name: "Existing post" });
   const output = page.getByLabel("Existing post Markdown", { exact: true });
-  const block = editor.locator("[data-opaque-block]").first();
-
-  // ProseMirror renders the atom non-editable, which Chromium reflects as an
-  // attribute, so no caret can be placed inside its text.
-  await expect(block).toHaveAttribute("contenteditable", "false");
+  const block = editor.getByText("[^1]: The note text.", { exact: true });
 
   // Clicking the block and typing replaces the whole atom instead of editing
   // its source text: the block disappears as a unit, never a character edit.
   await block.click();
   await editor.press("z");
-  await expect(editor.locator("[data-opaque-block]")).toHaveCount(6);
+  await expect(block).toHaveCount(0);
   await expect(output).not.toContainText("[^1]: The note text.");
 });
 
