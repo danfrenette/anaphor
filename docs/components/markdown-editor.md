@@ -74,7 +74,7 @@ sizes, classes, and inline styles are discarded. Unsupported controls are
 reduced to their text. Images in pasted HTML are dropped without loading their
 source, but their alt text is retained as plain text. Explicit Markdown image
 syntax in pasted plain text is accepted only for HTTP and HTTPS destinations;
-other destinations stay literal.
+other destinations, including relative paths such as `/icon.svg`, stay literal.
 
 ## Images
 

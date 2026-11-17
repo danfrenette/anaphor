@@ -326,6 +326,7 @@ test.each([
   '![alt](data:image/png;base64,abc "caption")',
   '![a\\]b](<javascript:alert(1)> "caption")',
   '![alt](relative.png "caption")',
+  '![a](/icon.svg)',
 ])("unsafe pasted image preserves its complete original text: %s", async source => {
   const api = await setupPasteEditor();
   api.dom.focus();
