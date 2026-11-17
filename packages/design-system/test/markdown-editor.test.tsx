@@ -498,7 +498,7 @@ describe("block editing", () => {
     await user.click(editor);
     await user.keyboard("- a{Enter}- b");
 
-    expect(ref.current?.getMarkdown()).toBe("- a\n- - b");
+    expect(ref.current?.getMarkdown()).toBe("- a\n- \\- b");
   });
 
   test("Backspace at the start of a list item lifts it to a paragraph", async () => {
@@ -576,7 +576,7 @@ describe("history", () => {
     await user.keyboard("- ");
     await user.keyboard("{Control>}z{/Control}");
 
-    expect(ref.current?.getMarkdown()).toBe("- ");
+    expect(ref.current?.getMarkdown()).toBe("\\- ");
   });
 
   test("one undo reverts a heading conversion to the literal characters", async () => {
@@ -587,7 +587,7 @@ describe("history", () => {
     await user.keyboard("# ");
     await user.keyboard("{Control>}z{/Control}");
 
-    expect(ref.current?.getMarkdown()).toBe("# ");
+    expect(ref.current?.getMarkdown()).toBe("\\# ");
   });
 
   test("one undo reverts a horizontal rule conversion to the literal characters", async () => {
@@ -598,7 +598,7 @@ describe("history", () => {
     await user.keyboard("---");
     await user.keyboard("{Control>}z{/Control}");
 
-    expect(ref.current?.getMarkdown()).toBe("---");
+    expect(ref.current?.getMarkdown()).toBe("\\---");
   });
 
   test("undo and redo span typing and formatting", async () => {

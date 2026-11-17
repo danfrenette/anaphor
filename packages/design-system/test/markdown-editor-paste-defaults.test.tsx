@@ -14,7 +14,7 @@ beforeEach(() => {
 test.each([
   ["snake case", "snake_case_names", "snake\\_case\\_names"],
   ["arithmetic", "2 * 3 = 6", "2 \\* 3 = 6"],
-  ["indented text", "    indented", "    indented"],
+  ["indented text", "    indented", "&#32;&#32;&#32;&#32;indented"],
   ["URL", "https://example.com", "[https://example.com](https://example.com)"],
   ["hash without space", "#heading", "#heading"],
   ["numbered sentence", "2026. A year.", "2026\\. A year."],
