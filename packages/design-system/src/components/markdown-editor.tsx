@@ -52,7 +52,26 @@ const MarkdownStarterKit = StarterKit.extend({
       },
       renderMarkdown(node, helpers, context) {
         if (node.content?.length === 1 && node.content[0]?.type === "text" && node.content[0].text === "\u00a0") return "&nbsp;";
-        const markdown = this.parent?.(node, helpers, context) ?? "";
+        // Tiptap 3.33.0 workaround: serialize a link across inline images as one span.
+        const content = node.content ?? [];
+        let markdown = this.parent?.(node, helpers, context) ?? "";
+        if (content.some(child => child.type === "image" && child.marks?.some(mark => mark.type === "link"))) {
+          markdown = "";
+          for (let i = 0; i < content.length;) {
+            const link = content[i]?.marks?.find(mark => mark.type === "link");
+            let end = i + 1;
+            while (end < content.length && JSON.stringify(content[end]?.marks?.find(mark => mark.type === "link")) === JSON.stringify(link)) end++;
+            const children = content.slice(i, end).map(child => ({ ...child, marks: child.marks?.filter(mark => mark.type !== "link") }));
+            const text = helpers.renderChildren(children);
+            if (link) {
+              const href = link.attrs?.href ?? "";
+              const destination = linkDestinationNeedsAngleBrackets(href) ? `<${href}>` : href;
+              const title = (link.attrs?.title ?? "").replace(/[\\"]/g, "\\$&");
+              markdown += title ? `[${text}](${destination} "${title}")` : `[${text}](${destination})`;
+            } else markdown += text;
+            i = end;
+          }
+        }
         // Spec requirement (AC-7): keep pasted literal rules from becoming Markdown rules.
         // Tiptap 3.33.0 workaround: paragraph lines must not reparse as blocks.
         const paragraph = markdown.replace(/^(?: {4,}| {0,3}\t)[ \t]*/gm, indent => [...indent].map(character => character === "\t" ? "&#9;" : "&#32;").join(""))

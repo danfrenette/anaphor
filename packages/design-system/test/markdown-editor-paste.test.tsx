@@ -954,3 +954,21 @@ test("typed table cell hard break survives save", async () => {
   const html = await new (await import("marked")).Marked().parse(saved);
   expect(new DOMParser().parseFromString(html, "text/html").querySelector("td br")).not.toBeNull();
 });
+
+test.each([
+  ['[text ![a](x.png) more](https://example.com)', 1],
+  ['[![a](x.png)](https://example.com)', 1],
+  ['[one ![a](x.png)](https://example.com)[two](https://other.example)', 2],
+])('linked image remains in its anchor after edit: %s', async (source, count) => {
+  const api = await setupPasteEditor(source);
+  api.dom.focus();
+  await userEvent.setup().keyboard('z');
+  const saved = api.getMarkdown();
+  expect(saved).toBe(`z${source}`);
+  const rendered = new DOMParser().parseFromString(await new Marked().parse(saved), 'text/html');
+  expect(rendered.querySelectorAll('a')).toHaveLength(count);
+  expect(rendered.querySelector('a img')?.getAttribute('alt')).toBe('a');
+  act(() => api.setMarkdown(saved));
+  expect(api.dom.querySelectorAll('a')).toHaveLength(count);
+  expect(api.dom.querySelector('a img')?.getAttribute('alt')).toBe('a');
+});
