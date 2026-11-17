@@ -6,8 +6,8 @@ Rendered demo code is separate and is also focusable.
 
 `MarkdownEditor` edits Markdown in a bounded field or in place. It uses Tiptap 3 and the
 official `@tiptap/markdown` extension, pinned at 3.33.0. Content uses the same
-`anaphor-prose` styling as rendered Markdown; there is no toolbar or selection
-bubble in this slice.
+`anaphor-prose` styling as rendered Markdown. A selection bubble supplies
+inline formatting controls.
 
 ## Consumer contract
 
@@ -65,6 +65,28 @@ The remaining optional props compose for use inside Anaphor's field:
 
 Both state props take effect after mount without remounting, and toggling them
 never fires `onChange`.
+
+## Selection bubble
+
+Select text in an editable field or in-place editor to show Bold, Italic,
+Strikethrough, Inline code, and Link. The bubble is hidden for collapsed
+selections, code blocks, opaque content, image and table-cell selections, and
+read-only or disabled editors. Buttons report the active mark as a pressed state.
+
+Press Alt+F10 from the selection to enter the toolbar. Left and Right move
+between controls; Home and End move to the first and last. Escape returns
+focus to the text without collapsing the selection. Tab keeps its normal editor
+meaning and leaves the toolbar by ordinary page order. Cmd+K on macOS or Ctrl+K
+elsewhere opens the URL field. Enter applies an address, Escape cancels, and
+Remove link removes it. A bare domain such as `example.com` becomes
+`https://example.com`; unsafe protocols, including entity-encoded forms, are
+rejected with an inline error. Applying or removing a link is one undo step.
+
+The bubble uses the floating menu's tuned 8px offset, equivalent to twice the
+standard `--spacing` token (0.25rem at the default root size). It appears above
+the selection on a fine pointer and below it on a coarse pointer, flipping when
+space is insufficient. Its entrance uses a short opacity and scale animation;
+reduced motion disables the animation.
 
 ## Paste
 
@@ -374,5 +396,3 @@ pinned by a test so an upgrade that changes one is noticed:
 The standalone `markdown-editor` registry item installs the component, shared
 styles, utilities, and exact Tiptap 3.33.0 dependencies. It is also part of the
 complete `ui` aggregate.
-
-This slice does not support a selection bubble.

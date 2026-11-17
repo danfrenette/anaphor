@@ -177,6 +177,20 @@ code remains separately keyboard-focusable.
     spacing on both sides of In-place comparison in light and dark at desktop
     and 320px. Select the image with an arrow key and remove it with Delete or
     Backspace. Component tests cover rejection, mapping and non-editable states.
+17. Select text in Notes by dragging, then with Shift+arrow. Confirm the bubble
+    contains Bold, Italic, Strikethrough, Inline code and Link, with pressed
+    states and matching Markdown after each action. Collapse the selection and
+    confirm it hides. Check a code block, an opaque block, a selected image,
+    table cells, read-only and disabled states do not expose formatting.
+18. Select text, press Alt+F10, and navigate with the arrows, Home and End.
+    Escape returns to the same selection. Press Cmd/Ctrl+K; apply a bare domain,
+    edit and remove the link, and undo. Try `javascript:` and an entity-encoded
+    protocol and confirm the inline error and unchanged Markdown. Check the
+    open toolbar and URL field with axe in both themes.
+19. Scroll a filled field and select text at both edges; confirm the bubble is
+    not clipped. At 320px on a coarse pointer select text by touch and confirm
+    the bubble is below it and controls are tappable. Emulate reduced motion
+    and confirm the bubble appears without animation.
 
 Keep Playwright output and screenshots under `test-results/` with the run
 receipt. Stop only a server started for the verification run.
@@ -186,4 +200,4 @@ receipt. Stop only a server started for the verification run.
 The callback and pre-edit byte guarantee are component-test criteria. The hook
 is exercised through the component rather than through internal editor calls.
 Tests assert visible results and Markdown output, never Tiptap document JSON,
-extension arrays, or private methods. The bubble is outside this recipe.
+extension arrays, or private methods.
