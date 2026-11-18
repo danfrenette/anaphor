@@ -1,6 +1,14 @@
 "use client";
 
-import { Field, FieldFeedback, FieldLabel, Input, MarkdownEditor, Text, type MarkdownEditorHandle } from "@anaphor/system";
+import {
+  Field,
+  FieldFeedback,
+  FieldLabel,
+  Input,
+  MarkdownEditor,
+  Text,
+  type MarkdownEditorHandle,
+} from "@anaphor/system";
 import { useEffect, useRef, useState } from "react";
 
 // Source of truth for e2e/markdown-editor.spec.ts, which locates its constructs
@@ -62,6 +70,8 @@ const existingPostMarkdown = [
   "",
 ].join("\n");
 
+// Loaded by "Load another note" and shown in the in-place opaque example.
+// e2e/markdown-editor.spec.ts reads its exact text; change it only with that spec.
 const anotherNoteMarkdown = "## A loaded note\n\nLoaded with `setMarkdown`.\n\n<!-- Field note -->";
 
 const tableMarkdown = "| Name | Value |\n| :--- | ---: |\n| Alpha | Beta |";
@@ -70,109 +80,229 @@ const markdownOutputClassName = "mt-3 min-h-24 whitespace-pre-wrap break-words r
 
 export function MarkdownEditorExample() {
   const imageUrls = useRef<string[]>([]);
-  useEffect(() => () => { imageUrls.current.forEach(url => URL.revokeObjectURL(url)); }, []);
+
+  useEffect(() => () => {
+    imageUrls.current.forEach(url => URL.revokeObjectURL(url));
+  }, []);
+
   const onImageFile = async (file: File) => {
     const src = URL.createObjectURL(file);
     imageUrls.current.push(src);
     return { src, alt: file.name };
   };
+
   const [markdown, setMarkdown] = useState(startingMarkdown);
   const [existingPost, setExistingPost] = useState(existingPostMarkdown);
   const [inPlaceNote, setInPlaceNote] = useState(anotherNoteMarkdown);
   const [tableNote, setTableNote] = useState(tableMarkdown);
-  return <>
-    <section aria-label="Field presentation" className="mt-8">
-      <Text as="h2" variant="heading">Field presentation</Text>
-      <Text as="p" variant="body" className="mt-3">Type Markdown and watch it format. Headings, lists, quotes, code, rules, emphasis, and links all convert as you type. Shift+Enter inserts a line break.</Text>
-      <Text as="p" variant="body" className="mt-3">Paste or drop an image to try an in-memory address. It lasts only while this page is open.</Text>
-      <div className="mt-6">
-        <MarkdownEditor presentation="field" defaultValue={startingMarkdown} onChange={setMarkdown} onImageFile={onImageFile} aria-label="Research note" />
-      </div>
-      <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
-      <div role="group" aria-label="Current Markdown" className={markdownOutputClassName}>{markdown}</div>
-    </section>
-    <section aria-label="Existing post" className="mt-12">
-      <Text as="h2" variant="heading">Existing post</Text>
-      <Text as="p" variant="body" className="mt-3">Front matter stays out of sight, and raw HTML, footnotes, MDX import and export, and components appear as quiet read-only blocks of their source.</Text>
-      <div className="mt-6">
-        <MarkdownEditor presentation="field" defaultValue={existingPostMarkdown} onChange={setExistingPost} aria-label="Existing post" />
-      </div>
-      <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
-      <div role="group" aria-label="Existing post Markdown" className={markdownOutputClassName}>{existingPost}</div>
-    </section>
-    <section aria-label="Field states" className="mt-12">
-      <FieldStatesExample />
-    </section>
-    <section aria-label="In-place states" className="mt-12">
-      <Text as="h2" variant="heading">In-place states</Text>
-      <div className="mt-6"><MarkdownEditor presentation="in-place" defaultValue={anotherNoteMarkdown} onChange={setInPlaceNote} aria-label="In-place opaque note" /></div>
-      <div role="group" aria-label="Space below the editor" className="h-8" />
-      <div role="group" aria-label="In-place opaque Markdown" className="mt-3 whitespace-pre-wrap">{inPlaceNote}</div>
-      <div className="mt-6"><MarkdownEditor presentation="in-place" defaultValue="Read-only in-place example" readOnly aria-label="Read-only in-place note" /></div>
-    </section>
-    <section aria-label="Table editing" className="mt-12">
-      <Text as="h2" variant="heading">Table editing</Text>
-      <button type="button">Before table</button>
-      <MarkdownEditor presentation="field" defaultValue={tableMarkdown} onChange={setTableNote} aria-label="Table note" />
-      <button type="button">After table</button>
-      <div role="group" aria-label="Table Markdown" className="whitespace-pre-wrap">{tableNote}</div>
-    </section>
-  </>;
+
+  return (
+    <>
+      <section aria-label="Field presentation" className="mt-8">
+        <Text as="h2" variant="heading">Field presentation</Text>
+        <Text as="p" variant="body" className="mt-3">
+          Type Markdown and watch it format. Headings, lists, quotes, code, rules, emphasis, and
+          links all convert as you type. Shift+Enter inserts a line break.
+        </Text>
+        <Text as="p" variant="body" className="mt-3">
+          Paste or drop an image to try an in-memory address. It lasts only while this page is open.
+        </Text>
+        <div className="mt-6">
+          <MarkdownEditor
+            presentation="field"
+            defaultValue={startingMarkdown}
+            onChange={setMarkdown}
+            onImageFile={onImageFile}
+            aria-label="Research note"
+          />
+        </div>
+        <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
+        <div role="group" aria-label="Current Markdown" className={markdownOutputClassName}>
+          {markdown}
+        </div>
+      </section>
+      <section aria-label="Existing post" className="mt-12">
+        <Text as="h2" variant="heading">Existing post</Text>
+        <Text as="p" variant="body" className="mt-3">
+          Front matter stays out of sight, and raw HTML, footnotes, MDX import and export, and
+          components appear as quiet read-only blocks of their source.
+        </Text>
+        <div className="mt-6">
+          <MarkdownEditor
+            presentation="field"
+            defaultValue={existingPostMarkdown}
+            onChange={setExistingPost}
+            aria-label="Existing post"
+          />
+        </div>
+        <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
+        <div role="group" aria-label="Existing post Markdown" className={markdownOutputClassName}>
+          {existingPost}
+        </div>
+      </section>
+      <section aria-label="Field states" className="mt-12">
+        <FieldStatesExample />
+      </section>
+      <section aria-label="In-place states" className="mt-12">
+        <Text as="h2" variant="heading">In-place states</Text>
+        <div className="mt-6">
+          <MarkdownEditor
+            presentation="in-place"
+            defaultValue={anotherNoteMarkdown}
+            onChange={setInPlaceNote}
+            aria-label="In-place opaque note"
+          />
+        </div>
+        <div role="group" aria-label="Space below the editor" className="h-8" />
+        <div role="group" aria-label="In-place opaque Markdown" className="mt-3 whitespace-pre-wrap">
+          {inPlaceNote}
+        </div>
+        <div className="mt-6">
+          <MarkdownEditor
+            presentation="in-place"
+            defaultValue="Read-only in-place example"
+            readOnly
+            aria-label="Read-only in-place note"
+          />
+        </div>
+      </section>
+      <section aria-label="Table editing" className="mt-12">
+        <Text as="h2" variant="heading">Table editing</Text>
+        <button type="button">Before table</button>
+        <MarkdownEditor
+          presentation="field"
+          defaultValue={tableMarkdown}
+          onChange={setTableNote}
+          aria-label="Table note"
+        />
+        <button type="button">After table</button>
+        <div role="group" aria-label="Table Markdown" className="whitespace-pre-wrap">
+          {tableNote}
+        </div>
+      </section>
+    </>
+  );
 }
 
 // Demonstrates the field inside Anaphor's Field: label, description, error,
 // placeholder, read-only and disabled toggles, and imperative replace.
 function FieldStatesExample() {
   const editorRef = useRef<MarkdownEditorHandle>(null);
+
   const [readOnly, setReadOnly] = useState(false);
   const [disabled, setDisabled] = useState(false);
   const [invalid, setInvalid] = useState(false);
   const [markdown, setMarkdown] = useState("");
   const [showReadOnlyAutofocus, setShowReadOnlyAutofocus] = useState(false);
-  return <>
-    <Text as="h2" variant="heading">Inside a field</Text>
-    <Text as="p" variant="body" className="mt-3">The same editor inside <code className="font-mono text-small">Field</code>, named by its label and associated with a description and error. The empty box shows the placeholder, which disappears on input. The field starts at <code className="font-mono text-small">6rem</code> and grows to <code className="font-mono text-small">18rem</code>, then scrolls.</Text>
-    <div className="mt-6 flex flex-wrap gap-2">
-      <ToggleButton pressed={readOnly} onToggle={setReadOnly}>Read-only</ToggleButton>
-      <ToggleButton pressed={disabled} onToggle={setDisabled}>Disabled</ToggleButton>
-      <ToggleButton pressed={invalid} onToggle={setInvalid}>Error</ToggleButton>
-      <button type="button" className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted" onClick={() => { editorRef.current?.setMarkdown(anotherNoteMarkdown); setMarkdown(anotherNoteMarkdown); }}>Load another note</button>
-      <button type="button" className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted" onClick={() => { editorRef.current?.setMarkdown(""); setMarkdown(""); }}>Discard edits</button>
-      <button type="button" className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted" onClick={() => setShowReadOnlyAutofocus(!showReadOnlyAutofocus)}>Toggle autofocus example</button>
-    </div>
-    <div className="mt-6 max-w-2xl">
-      <Input size="md" aria-label="Input comparison" aria-invalid={invalid || undefined} disabled={disabled} placeholder="Input comparison" />
-    </div>
-    {showReadOnlyAutofocus && <div className="mt-6 max-w-2xl"><MarkdownEditor presentation="field" defaultValue="Read-only example" readOnly autoFocus aria-label="Read-only autofocus example" /></div>}
-    <div className="mt-6 max-w-2xl">
-      <Field orientation="vertical" invalid={invalid}>
-        <FieldLabel id="notes-label">Notes</FieldLabel>
-        <MarkdownEditor presentation="field"
-          ref={editorRef}
-          defaultValue=""
-          onChange={setMarkdown}
-          aria-labelledby="notes-label"
-          aria-describedby="notes-feedback"
-          placeholder="Write a note…"
-          readOnly={readOnly}
+
+  return (
+    <>
+      <Text as="h2" variant="heading">Inside a field</Text>
+      <Text as="p" variant="body" className="mt-3">
+        The same editor inside <code className="font-mono text-small">Field</code>, named by its
+        label and associated with a description and error. The empty box shows the placeholder,
+        which disappears on input. The field starts
+        at <code className="font-mono text-small">6rem</code> and grows
+        to <code className="font-mono text-small">18rem</code>, then scrolls.
+      </Text>
+      <div className="mt-6 flex flex-wrap gap-2">
+        <ToggleButton pressed={readOnly} onToggle={setReadOnly}>Read-only</ToggleButton>
+        <ToggleButton pressed={disabled} onToggle={setDisabled}>Disabled</ToggleButton>
+        <ToggleButton pressed={invalid} onToggle={setInvalid}>Error</ToggleButton>
+        <button
+          type="button"
+          className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted"
+          onClick={() => {
+            editorRef.current?.setMarkdown(anotherNoteMarkdown);
+            setMarkdown(anotherNoteMarkdown);
+          }}
+        >
+          Load another note
+        </button>
+        <button
+          type="button"
+          className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted"
+          onClick={() => {
+            editorRef.current?.setMarkdown("");
+            setMarkdown("");
+          }}
+        >
+          Discard edits
+        </button>
+        <button
+          type="button"
+          className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted"
+          onClick={() => setShowReadOnlyAutofocus(!showReadOnlyAutofocus)}
+        >
+          Toggle autofocus example
+        </button>
+      </div>
+      <div className="mt-6 max-w-2xl">
+        <Input
+          size="md"
+          aria-label="Input comparison"
+          aria-invalid={invalid || undefined}
           disabled={disabled}
-          invalid={invalid}
+          placeholder="Input comparison"
         />
-        <FieldFeedback id="notes-feedback" hint="Markdown is fine here; use setMarkdown to load or discard a note." error="This note needs your attention before you save." invalid={invalid} />
-      </Field>
-    </div>
-    <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
-    <div role="group" aria-label="Field states Markdown" className={markdownOutputClassName}>{markdown}</div>
-  </>;
+      </div>
+      {showReadOnlyAutofocus && (
+        <div className="mt-6 max-w-2xl">
+          <MarkdownEditor
+            presentation="field"
+            defaultValue="Read-only example"
+            readOnly
+            autoFocus
+            aria-label="Read-only autofocus example"
+          />
+        </div>
+      )}
+      <div className="mt-6 max-w-2xl">
+        <Field orientation="vertical" invalid={invalid}>
+          <FieldLabel id="notes-label">Notes</FieldLabel>
+          <MarkdownEditor
+            presentation="field"
+            ref={editorRef}
+            defaultValue=""
+            onChange={setMarkdown}
+            aria-labelledby="notes-label"
+            aria-describedby="notes-feedback"
+            placeholder="Write a note…"
+            readOnly={readOnly}
+            disabled={disabled}
+            invalid={invalid}
+          />
+          <FieldFeedback
+            id="notes-feedback"
+            hint="Markdown is fine here; use setMarkdown to load or discard a note."
+            error="This note needs your attention before you save."
+            invalid={invalid}
+          />
+        </Field>
+      </div>
+      <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
+      <div role="group" aria-label="Field states Markdown" className={markdownOutputClassName}>
+        {markdown}
+      </div>
+    </>
+  );
 }
 
-function ToggleButton({ pressed, onToggle, children }: { pressed: boolean; onToggle: (next: boolean) => void; children: string }) {
+type ToggleButtonProps = {
+  pressed: boolean;
+  onToggle: (next: boolean) => void;
+  children: string;
+};
+
+function ToggleButton({ pressed, onToggle, children }: ToggleButtonProps) {
   return (
     <button
       type="button"
       aria-pressed={pressed}
       className={`rounded-md border px-3 py-1.5 text-ui ${pressed ? "border-ring bg-muted" : "border-border hover:bg-muted"}`}
       onClick={() => onToggle(!pressed)}
-    >{children}</button>
+    >
+      {children}
+    </button>
   );
 }
