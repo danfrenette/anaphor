@@ -11,22 +11,48 @@ import { Marked } from "marked";
 // Anchored to the test file so the path survives running Vitest from elsewhere.
 // (jsdom replaces the global URL, so new URL(relative, import.meta.url) resolves
 // against the window origin rather than the file.)
-const mixedFixture = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "fixtures", "markdown-editor", "mixed.md"), "utf8");
+const mixedFixture = readFileSync(
+  join(dirname(fileURLToPath(import.meta.url)), "fixtures", "markdown-editor", "mixed.md"),
+  "utf8",
+);
 
 // jsdom has no pointer hit testing or range layout; real editing geometry is covered in Playwright.
 beforeEach(() => {
-  Object.defineProperty(document, "elementFromPoint", { configurable: true, value: () => document.querySelector('[contenteditable="true"]') });
+  Object.defineProperty(document, "elementFromPoint", {
+    configurable: true,
+    value: () => document.querySelector('[contenteditable="true"]'),
+  });
   Object.defineProperty(window, "scrollBy", { configurable: true, value: () => {} });
   const rect = new DOMRect(0, 0, 10, 20);
   Object.defineProperty(Range.prototype, "getBoundingClientRect", { configurable: true, value: () => rect });
-  Object.defineProperty(Range.prototype, "getClientRects", { configurable: true, value: () => Object.assign([rect], { item: (index: number) => index === 0 ? rect : null }) });
+  Object.defineProperty(Range.prototype, "getClientRects", {
+    configurable: true,
+    value: () => Object.assign([rect], { item: (index: number) => index === 0 ? rect : null }),
+  });
 });
 
+type SetupEditorProps = {
+  placeholder?: string;
+  readOnly?: boolean;
+  disabled?: boolean;
+  autoFocus?: boolean;
+  invalid?: boolean;
+  onChange?: (markdown: string) => void;
+};
+
 // Renders the editor with a starting value and the shared accessible name.
-function setupEditor(defaultValue = "", props: { placeholder?: string; readOnly?: boolean; disabled?: boolean; autoFocus?: boolean; invalid?: boolean; onChange?: (markdown: string) => void } = {}) {
+function setupEditor(defaultValue = "", props: SetupEditorProps = {}) {
   const user = userEvent.setup();
   const ref = createRef<MarkdownEditorHandle>();
-  const rendered = render(<MarkdownEditor presentation="field" ref={ref} defaultValue={defaultValue} aria-label="Research note" {...props} />);
+  const rendered = render(
+    <MarkdownEditor
+      presentation="field"
+      ref={ref}
+      defaultValue={defaultValue}
+      aria-label="Research note"
+      {...props}
+    />,
+  );
   return { user, ref, ...rendered };
 }
 
@@ -183,8 +209,12 @@ test.each(["apply", "remove"])("keyboard %s returns focus to Link", async action
   await user.click(editor);
   selectText(editor.querySelector("a")!, 0, 4);
   await user.click(await screen.findByRole("button", { name: "Link" }));
-  if (action === "apply") await user.keyboard("{Enter}");
-  else { screen.getByRole("button", { name: "Remove link" }).focus(); await user.keyboard("{Enter}"); }
+  if (action === "apply") {
+    await user.keyboard("{Enter}");
+  } else {
+    screen.getByRole("button", { name: "Remove link" }).focus();
+    await user.keyboard("{Enter}");
+  }
   await waitFor(() => expect(screen.getByRole("button", { name: "Link" })).toHaveFocus());
 });
 
@@ -209,8 +239,19 @@ test.each(["readOnly", "disabled"] as const)("locking with %s closes formatting 
   const field = await screen.findByRole("textbox", { name: "URL" });
   fireEvent.change(field, { target: { value: "https://example.com" } });
   const form = field.closest("form")!;
-  rerender(<MarkdownEditor presentation="field" ref={ref} defaultValue="text" aria-label="Research note" onChange={onChange} {...{ [lock]: true }} />);
+
+  rerender(
+    <MarkdownEditor
+      presentation="field"
+      ref={ref}
+      defaultValue="text"
+      aria-label="Research note"
+      onChange={onChange}
+      {...{ [lock]: true }}
+    />,
+  );
   expect(screen.queryByRole("toolbar", { name: "Formatting" })).not.toBeInTheDocument();
+
   fireEvent.submit(form);
   fireEvent.click(bold);
   expect(ref.current!.getMarkdown()).toBe("text");
@@ -239,7 +280,9 @@ test.each([
     const saved = ref.current!.getMarkdown();
     act(() => ref.current!.setMarkdown(saved));
     expect(editor.querySelector("a")).toHaveAttribute("href", expected);
-    const host = expected.startsWith("https://") ? (expected.includes(":8080") ? "example.com:8080" : "example.com") : expected.startsWith("mailto:") ? "" : "base.invalid";
+    const host = expected.startsWith("https://") ? (expected.includes(":8080") ? "example.com:8080" : "example.com")
+      : expected.startsWith("mailto:") ? ""
+      : "base.invalid";
     expect(new URL(editor.querySelector("a")!.getAttribute("href")!, "https://base.invalid/").host).toBe(host);
   }
 });
@@ -373,7 +416,11 @@ test("relative starting link retains its destination after editing and reparse",
   expect(editor.querySelector("a")?.getAttribute("href")).toBe(before);
 });
 
-test.each(["java&#115;cript:alert(1)", "javascript&#58;alert(1)", "javascript&#58;//evil"])("link editing refuses encoded unsafe URLs without changing the link: %s", async unsafe => {
+test.each([
+  "java&#115;cript:alert(1)",
+  "javascript&#58;alert(1)",
+  "javascript&#58;//evil",
+])("link editing refuses encoded unsafe URLs without changing the link: %s", async unsafe => {
   const { user, ref } = setupEditor("[text](https://example.com)");
   const editor = await screen.findByRole("textbox", { name: "Research note" });
   await user.click(editor);
@@ -425,7 +472,10 @@ test("link editing updates a selection spanning an existing link", async () => {
   expect(ref.current?.getMarkdown()).toBe("[before link after](https://other.example)");
 });
 
-test.each(["![alt](https://example.com/a.png \"title\")", "before ![alt](https://example.com/a.png \"title\") after"])("renders starting image inline: %s", async source => {
+test.each([
+  "![alt](https://example.com/a.png \"title\")",
+  "before ![alt](https://example.com/a.png \"title\") after",
+])("renders starting image inline: %s", async source => {
   const { ref, user } = setupEditor(source);
   const image = screen.getByRole("img", { name: "alt" });
   expect(image).toHaveAttribute("src", "https://example.com/a.png");
@@ -450,15 +500,27 @@ test("in-place presentation does not focus when its surrounding wrapper is click
 test("in-place presentation retains state, placeholder, and replacement behavior", async () => {
   const ref = createRef<MarkdownEditorHandle>();
   const onChange = vi.fn();
-  const { rerender } = render(<MarkdownEditor presentation="in-place" ref={ref} defaultValue="" placeholder="Write here" aria-label="In-place note" onChange={onChange} />);
+  const { rerender } = render(
+    <MarkdownEditor
+      presentation="in-place"
+      ref={ref}
+      defaultValue=""
+      placeholder="Write here"
+      aria-label="In-place note"
+      onChange={onChange}
+    />,
+  );
   const editor = await screen.findByRole("textbox", { name: "In-place note" });
   expect(editor).toHaveAttribute("aria-multiline", "true");
+
   act(() => ref.current?.setMarkdown("Text\n\n<!-- preserved -->"));
   expect(ref.current?.getMarkdown()).toBe("Text\n\n<!-- preserved -->");
   expect(screen.getByText("<!-- preserved -->")).toBeVisible();
   expect(onChange).not.toHaveBeenCalled();
+
   rerender(<MarkdownEditor presentation="in-place" ref={ref} defaultValue="" readOnly aria-label="In-place note" />);
   expect(editor).toHaveAttribute("aria-readonly", "true");
+
   rerender(<MarkdownEditor presentation="in-place" ref={ref} defaultValue="" disabled aria-label="In-place note" />);
   expect(editor).toHaveAttribute("aria-disabled", "true");
   expect(editor).not.toHaveAttribute("tabindex");
@@ -533,7 +595,10 @@ test("Space toggles a focused task checkbox and its Markdown", async () => {
   expect(ref.current?.getMarkdown()).toBe("- [ ] Review notes");
 });
 
-test.each([{ readOnly: true }, { disabled: true }])("non-editable task checkboxes do not change Markdown or announce edits: %o", async props => {
+test.each([
+  { readOnly: true },
+  { disabled: true },
+])("non-editable task checkboxes do not change Markdown or announce edits: %o", async props => {
   const onChange = vi.fn();
   const source = "- [ ] Review notes";
   const { user, ref } = setupEditor(source, { ...props, onChange });
@@ -551,11 +616,30 @@ test("focused task checkbox follows read-only and editable transitions", async (
   const { user, ref, rerender } = setupEditor("- [x] Review notes", { onChange });
   const checkbox = await screen.findByRole("checkbox", { name: /Review notes/i });
   checkbox.focus();
-  rerender(<MarkdownEditor presentation="field" ref={ref} defaultValue="- [x] Review notes" aria-label="Research note" onChange={onChange} readOnly />);
+
+  rerender(
+    <MarkdownEditor
+      presentation="field"
+      ref={ref}
+      defaultValue="- [x] Review notes"
+      aria-label="Research note"
+      onChange={onChange}
+      readOnly
+    />,
+  );
   await user.click(checkbox);
   expect(checkbox).toBeChecked();
   expect(onChange).not.toHaveBeenCalled();
-  rerender(<MarkdownEditor presentation="field" ref={ref} defaultValue="- [x] Review notes" aria-label="Research note" onChange={onChange} />);
+
+  rerender(
+    <MarkdownEditor
+      presentation="field"
+      ref={ref}
+      defaultValue="- [x] Review notes"
+      aria-label="Research note"
+      onChange={onChange}
+    />,
+  );
   await user.click(checkbox);
   expect(checkbox).not.toBeChecked();
   expect(onChange).toHaveBeenCalledWith("- [ ] Review notes");
@@ -563,7 +647,18 @@ test("focused task checkbox follows read-only and editable transitions", async (
 
 test("disabled task checkboxes are skipped by keyboard navigation", async () => {
   const user = userEvent.setup();
-  render(<><button>Before</button><MarkdownEditor presentation="field" defaultValue="- [ ] Review notes" disabled aria-label="Disabled note" /><button>After</button></>);
+  render(
+    <>
+      <button>Before</button>
+      <MarkdownEditor
+        presentation="field"
+        defaultValue="- [ ] Review notes"
+        disabled
+        aria-label="Disabled note"
+      />
+      <button>After</button>
+    </>,
+  );
   await screen.findByRole("checkbox", { name: /Review notes/i });
   screen.getByRole("button", { name: "Before" }).focus();
   await user.tab();
@@ -701,7 +796,14 @@ test("a starting Markdown link renders and writes back as a link", async () => {
 
 test("announces a labelled multiline textbox and allows Tab focus in and out", async () => {
   const user = userEvent.setup();
-  render(<><button>Before</button><span id="note-label">Research note</span><MarkdownEditor presentation="field" defaultValue="Note" aria-labelledby="note-label" /><button>After</button></>);
+  render(
+    <>
+      <button>Before</button>
+      <span id="note-label">Research note</span>
+      <MarkdownEditor presentation="field" defaultValue="Note" aria-labelledby="note-label" />
+      <button>After</button>
+    </>,
+  );
 
   const editor = await screen.findByRole("textbox", { name: "Research note" });
   expect(editor).toHaveAttribute("aria-multiline", "true");
@@ -766,7 +868,10 @@ describe("typed triggers", () => {
     expect(ref.current?.getMarkdown()).toBe("*italic*");
   });
 
-  test.each([{ trigger: "- ", expected: "- Item" }, { trigger: "* ", expected: "- Item" }])("typing $trigger starts a bullet list", async ({ trigger, expected }) => {
+  test.each([
+    { trigger: "- ", expected: "- Item" },
+    { trigger: "* ", expected: "- Item" },
+  ])("typing $trigger starts a bullet list", async ({ trigger, expected }) => {
     const { user, ref } = setupEditor();
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
@@ -846,7 +951,10 @@ describe("typed triggers", () => {
 });
 
 describe("shortcuts", () => {
-  test.each([{ text: "bold", key: "b", expected: "**bold**" }, { text: "italic", key: "i", expected: "*italic*" }])("Mod-$key formats selected $text", async ({ text, key, expected }) => {
+  test.each([
+    { text: "bold", key: "b", expected: "**bold**" },
+    { text: "italic", key: "i", expected: "*italic*" },
+  ])("Mod-$key formats selected $text", async ({ text, key, expected }) => {
     const { user, ref } = setupEditor();
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
@@ -1487,6 +1595,7 @@ describe("field presentation", () => {
     expect(() => handle.setMarkdown("Other")).not.toThrow();
     expect(handle.getMarkdown()).toBe("Draft");
   });
+
   test("read-only prevents edits but stays focusable and announced", async () => {
     const { user, ref } = setupEditor("Draft", { readOnly: true });
 
@@ -1542,7 +1651,16 @@ describe("field presentation", () => {
     const { ref, rerender } = setupEditor("Draft", { onChange });
     await screen.findByRole("textbox", { name: "Research note" });
 
-    rerender(<MarkdownEditor presentation="field" ref={ref} defaultValue="Draft" onChange={onChange} readOnly aria-label="Research note" />);
+    rerender(
+      <MarkdownEditor
+        presentation="field"
+        ref={ref}
+        defaultValue="Draft"
+        onChange={onChange}
+        readOnly
+        aria-label="Research note"
+      />,
+    );
     expect(onChange).not.toHaveBeenCalled();
     expect(ref.current?.getMarkdown()).toBe("Draft");
   });
