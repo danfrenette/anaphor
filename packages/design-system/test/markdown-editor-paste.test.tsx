@@ -51,7 +51,8 @@ async function setupPasteEditor(value = "", options: PasteEditorOptions = {}) {
 
 function fileEvent(dom: HTMLElement, kind: "paste" | "drop", files: File[]) {
   const event = new Event(kind, { bubbles: true, cancelable: true });
-  Object.defineProperty(event, kind === "paste" ? "clipboardData" : "dataTransfer", { value: { files, types: ["Files"], getData: () => "" } });
+  const transferProperty = kind === "paste" ? "clipboardData" : "dataTransfer";
+  Object.defineProperty(event, transferProperty, { value: { files, types: ["Files"], getData: () => "" } });
   dom.dispatchEvent(event);
   return event;
 }
@@ -333,7 +334,8 @@ test.each([
     const parsed = new DOMParser().parseFromString(html, "text/html");
     expect(Array.from(parsed.body.querySelectorAll("*"), element => element.tagName)).toEqual(["P", "IMG"]);
     expect(parsed.querySelector("img")?.getAttribute("alt")).toBe(expectedAlt);
-    expect(saved).toBe(`${origin === "start" ? "x" : ""}![${sourceAlt.replace(/\n/g, " ").replace(/[<>]/g, "\\$&")}](https://safe.invalid/a)`);
+    const savedAlt = sourceAlt.replace(/\n/g, " ").replace(/[<>]/g, "\\$&");
+    expect(saved).toBe(`${origin === "start" ? "x" : ""}![${savedAlt}](https://safe.invalid/a)`);
     api.unmount();
   }
 });
@@ -411,7 +413,12 @@ test.each([
   api.dom.focus();
   await userEvent.setup().paste(source);
   expect(api.dom.textContent).toBe(source);
-  expect(api.getMarkdown()).toBe(source.replace(/([\\`*_[\]~])/g, "\\$1").replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+  expect(api.getMarkdown()).toBe(
+    source
+      .replace(/([\\`*_[\]~])/g, "\\$1")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;"),
+  );
 });
 
 async function selectText(dom: HTMLElement, from: number, to = from) {
