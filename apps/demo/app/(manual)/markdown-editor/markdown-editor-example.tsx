@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  Button,
+  ButtonLabel,
   Field,
   FieldFeedback,
   FieldLabel,
@@ -168,14 +170,36 @@ export function MarkdownEditorExample() {
       </section>
       <section aria-label="Table editing" className="mt-12">
         <Text as="h2" variant="heading">Table editing</Text>
-        <button type="button">Before table</button>
+        <Button
+          nativeButton
+          type="button"
+          variant="outline"
+          tone="neutral"
+          size="sm"
+          shape="square"
+          iconOnly={false}
+          loading={false}
+        >
+          <ButtonLabel>Before table</ButtonLabel>
+        </Button>
         <MarkdownEditor
           presentation="field"
           defaultValue={tableMarkdown}
           onChange={setTableNote}
           aria-label="Table note"
         />
-        <button type="button">After table</button>
+        <Button
+          nativeButton
+          type="button"
+          variant="outline"
+          tone="neutral"
+          size="sm"
+          shape="square"
+          iconOnly={false}
+          loading={false}
+        >
+          <ButtonLabel>After table</ButtonLabel>
+        </Button>
         <div role="group" aria-label="Table Markdown" className="whitespace-pre-wrap">
           {tableNote}
         </div>
@@ -206,36 +230,96 @@ function FieldStatesExample() {
         to <code className="font-mono text-small">18rem</code>, then scrolls.
       </Text>
       <div className="mt-6 flex flex-wrap gap-2">
-        <ToggleButton pressed={readOnly} onToggle={setReadOnly}>Read-only</ToggleButton>
-        <ToggleButton pressed={disabled} onToggle={setDisabled}>Disabled</ToggleButton>
-        <ToggleButton pressed={invalid} onToggle={setInvalid}>Error</ToggleButton>
-        <button
+        <Button
+          nativeButton
           type="button"
-          className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted"
+          variant="outline"
+          tone="neutral"
+          size="sm"
+          shape="square"
+          iconOnly={false}
+          loading={false}
+          aria-pressed={readOnly}
+          className={readOnly ? "bg-muted" : ""}
+          onClick={() => setReadOnly(value => !value)}
+        >
+          <ButtonLabel>Read-only</ButtonLabel>
+        </Button>
+        <Button
+          nativeButton
+          type="button"
+          variant="outline"
+          tone="neutral"
+          size="sm"
+          shape="square"
+          iconOnly={false}
+          loading={false}
+          aria-pressed={disabled}
+          className={disabled ? "bg-muted" : ""}
+          onClick={() => setDisabled(value => !value)}
+        >
+          <ButtonLabel>Disabled</ButtonLabel>
+        </Button>
+        <Button
+          nativeButton
+          type="button"
+          variant="outline"
+          tone="neutral"
+          size="sm"
+          shape="square"
+          iconOnly={false}
+          loading={false}
+          aria-pressed={invalid}
+          className={invalid ? "bg-muted" : ""}
+          onClick={() => setInvalid(value => !value)}
+        >
+          <ButtonLabel>Error</ButtonLabel>
+        </Button>
+        <Button
+          nativeButton
+          type="button"
+          variant="outline"
+          tone="neutral"
+          size="sm"
+          shape="square"
+          iconOnly={false}
+          loading={false}
           onClick={() => {
             editorRef.current?.setMarkdown(anotherNoteMarkdown);
             setMarkdown(anotherNoteMarkdown);
           }}
         >
-          Load another note
-        </button>
-        <button
+          <ButtonLabel>Load another note</ButtonLabel>
+        </Button>
+        <Button
+          nativeButton
           type="button"
-          className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted"
+          variant="outline"
+          tone="neutral"
+          size="sm"
+          shape="square"
+          iconOnly={false}
+          loading={false}
           onClick={() => {
             editorRef.current?.setMarkdown("");
             setMarkdown("");
           }}
         >
-          Discard edits
-        </button>
-        <button
+          <ButtonLabel>Discard edits</ButtonLabel>
+        </Button>
+        <Button
+          nativeButton
           type="button"
-          className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted"
+          variant="outline"
+          tone="neutral"
+          size="sm"
+          shape="square"
+          iconOnly={false}
+          loading={false}
           onClick={() => setShowReadOnlyAutofocus(!showReadOnlyAutofocus)}
         >
-          Toggle autofocus example
-        </button>
+          <ButtonLabel>Toggle autofocus example</ButtonLabel>
+        </Button>
       </div>
       <div className="mt-6 max-w-2xl">
         <Input
@@ -285,24 +369,5 @@ function FieldStatesExample() {
         {markdown}
       </div>
     </>
-  );
-}
-
-type ToggleButtonProps = {
-  pressed: boolean;
-  onToggle: (next: boolean) => void;
-  children: string;
-};
-
-function ToggleButton({ pressed, onToggle, children }: ToggleButtonProps) {
-  return (
-    <button
-      type="button"
-      aria-pressed={pressed}
-      className={`rounded-md border px-3 py-1.5 text-ui ${pressed ? "border-ring bg-muted" : "border-border hover:bg-muted"}`}
-      onClick={() => onToggle(!pressed)}
-    >
-      {children}
-    </button>
   );
 }
