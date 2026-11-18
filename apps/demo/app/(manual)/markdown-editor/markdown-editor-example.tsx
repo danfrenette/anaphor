@@ -62,7 +62,7 @@ const existingPostMarkdown = [
   "",
 ].join("\n");
 
-const otherNote = "## A loaded note\n\nLoaded with `setMarkdown`.\n\n<!-- Field note -->";
+const anotherNoteMarkdown = "## A loaded note\n\nLoaded with `setMarkdown`.\n\n<!-- Field note -->";
 
 export function MarkdownEditorExample() {
   const imageUrls = useRef<string[]>([]);
@@ -74,7 +74,7 @@ export function MarkdownEditorExample() {
   };
   const [markdown, setMarkdown] = useState(startingMarkdown);
   const [existingPost, setExistingPost] = useState(existingPostMarkdown);
-  const [inPlaceNote, setInPlaceNote] = useState(otherNote);
+  const [inPlaceNote, setInPlaceNote] = useState(anotherNoteMarkdown);
   const [tableNote, setTableNote] = useState("| Name | Value |\n| :--- | ---: |\n| Alpha | Beta |");
   return <>
     <section aria-label="Field presentation" className="mt-8">
@@ -101,7 +101,7 @@ export function MarkdownEditorExample() {
     </section>
     <section aria-label="In-place states" className="mt-12">
       <Text as="h2" variant="heading">In-place states</Text>
-      <div className="mt-6"><MarkdownEditor presentation="in-place" defaultValue={otherNote} onChange={setInPlaceNote} aria-label="In-place opaque note" /></div>
+      <div className="mt-6"><MarkdownEditor presentation="in-place" defaultValue={anotherNoteMarkdown} onChange={setInPlaceNote} aria-label="In-place opaque note" /></div>
       <div role="group" aria-label="Space below the editor" className="h-8" />
       <div role="group" aria-label="In-place opaque Markdown" className="mt-3 whitespace-pre-wrap">{inPlaceNote}</div>
       <div className="mt-6"><MarkdownEditor presentation="in-place" defaultValue="Read-only in-place example" readOnly aria-label="Read-only in-place note" /></div>
@@ -132,7 +132,7 @@ function FieldStatesExample() {
       <ToggleButton pressed={readOnly} onToggle={setReadOnly}>Read-only</ToggleButton>
       <ToggleButton pressed={disabled} onToggle={setDisabled}>Disabled</ToggleButton>
       <ToggleButton pressed={invalid} onToggle={setInvalid}>Error</ToggleButton>
-      <button type="button" className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted" onClick={() => { editorRef.current?.setMarkdown(otherNote); setMarkdown(otherNote); }}>Load another note</button>
+      <button type="button" className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted" onClick={() => { editorRef.current?.setMarkdown(anotherNoteMarkdown); setMarkdown(anotherNoteMarkdown); }}>Load another note</button>
       <button type="button" className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted" onClick={() => { editorRef.current?.setMarkdown(""); setMarkdown(""); }}>Discard edits</button>
       <button type="button" className="rounded-md border border-border px-3 py-1.5 text-ui hover:bg-muted" onClick={() => setShowReadOnlyAutofocus(!showReadOnlyAutofocus)}>Toggle autofocus example</button>
     </div>
