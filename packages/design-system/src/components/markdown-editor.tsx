@@ -537,8 +537,8 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   const { disabled = false, readOnly = false, invalid = false } = options;
   const { editor, getMarkdown, setMarkdown } = useMarkdownEditor(options);
 
-  const bubbleRef = useRef<HTMLDivElement>(null);
-  const bubbleKey = useMemo(() => new PluginKey("formattingBubble"), []);
+  const selectionBubbleRef = useRef<HTMLDivElement>(null);
+  const selectionBubblePluginKey = useMemo(() => new PluginKey("formattingBubble"), []);
   const [focusedIndex, setFocusedIndex] = useState(0);
 
   const [coarsePointer, setCoarsePointer] = useState(false);
@@ -567,7 +567,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   useLayoutEffect(() => {
     if (!editingLink && returnLinkFocus.current) {
       returnLinkFocus.current = false;
-      bubbleRef.current?.querySelector<HTMLButtonElement>('button[aria-label="Link"]')?.focus();
+      selectionBubbleRef.current?.querySelector<HTMLButtonElement>('button[aria-label="Link"]')?.focus();
     }
   }, [editingLink]);
 
@@ -640,25 +640,25 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       requestAnimationFrame(() => {
         if (editor.isDestroyed) return;
 
-        const element = bubbleRef.current;
+        const bubble = selectionBubbleRef.current;
         const { state, view } = editor;
         const { from, to } = state.selection;
-        if (!element || !shouldShowFormatting({ editor, element, view, state, from, to })) return;
+        if (!bubble || !shouldShowFormatting({ editor, element: bubble, view, state, from, to })) return;
 
         // Spec requirement (AC-5), Tiptap 3.33.0 override: the menu's debounce must
         // not delay keyboard access.
-        view.dispatch(state.tr.setMeta(bubbleKey, "show"));
-        view.dispatch(view.state.tr.setMeta(bubbleKey, "updatePosition"));
+        view.dispatch(state.tr.setMeta(selectionBubblePluginKey, "show"));
+        view.dispatch(view.state.tr.setMeta(selectionBubblePluginKey, "updatePosition"));
 
         // Spec requirement (AC-5): the link shortcut opens URL editing.
         if (linkShortcut) openLink();
-        else element.querySelector<HTMLButtonElement>("button")?.focus();
+        else bubble.querySelector<HTMLButtonElement>("button")?.focus();
       });
     };
 
     editor.view.dom.addEventListener("keydown", onKeyDown);
     return () => editor.view.dom.removeEventListener("keydown", onKeyDown);
-  }, [editor, openLink, bubbleKey]);
+  }, [editor, openLink, selectionBubblePluginKey]);
 
   // A click on the frame's own surface (padding or the empty space below short
   // content) lands outside the editor content; place the caret at the end there.
@@ -668,7 +668,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
     if (disabled || !editor) return;
 
     const target = event.target;
-    if (target instanceof globalThis.Node && bubbleRef.current?.contains(target)) return;
+    if (target instanceof globalThis.Node && selectionBubbleRef.current?.contains(target)) return;
     if (target instanceof globalThis.Node && editor.view.dom.contains(target)) return;
     focusAtEnd(editor);
   };
@@ -728,8 +728,8 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       <EditorContent editor={editor} />
       {editor && !readOnly && !disabled && (
         <BubbleMenu
-          ref={bubbleRef}
-          pluginKey={bubbleKey}
+          ref={selectionBubbleRef}
+          pluginKey={selectionBubblePluginKey}
           editor={editor}
           options={{
             // Decision 7, Tiptap 3.33.0/floating-ui override: fixed positioning escapes clipping.
@@ -742,7 +742,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
             },
             // The menu tabindex override preserves normal Tab order.
             onShow: () => {
-              if (bubbleRef.current) bubbleRef.current.tabIndex = -1;
+              if (selectionBubbleRef.current) selectionBubbleRef.current.tabIndex = -1;
             },
           }}
           shouldShow={shouldShowFormatting}
@@ -758,7 +758,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
                 !event.currentTarget.contains(event.relatedTarget) &&
                 !editor.view.dom.contains(event.relatedTarget)
               ) {
-                editor.view.dispatch(editor.state.tr.setMeta(bubbleKey, "hide"));
+                editor.view.dispatch(editor.state.tr.setMeta(selectionBubblePluginKey, "hide"));
               }
             }}
             onKeyDownCapture={event => handleBubbleKeyDownCapture(event, editor)}
