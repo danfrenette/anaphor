@@ -24,6 +24,12 @@ const PlaceholderText = Extension.create({
   addStorage: () => ({ placeholder: "" }),
 });
 
+// --- Tiptap 3.33.0 serializer workarounds ---
+// Each override marked as a workaround corrects serialized-Markdown data loss
+// without changing interaction behaviour. Each is minimal and pins a regression
+// test in packages/design-system/test/markdown-editor.test.tsx. Overrides marked
+// "Spec requirement" add the interaction the editor spec asks for.
+
 // Tiptap 3.33.0 workaround: serialize a link across inline images as one span.
 function renderLinkedImages(node: JSONContent, helpers: MarkdownRendererHelpers): string | undefined {
   const content = node.content ?? [];
@@ -182,12 +188,6 @@ const MarkdownTable = Table.extend({
     };
   },
 });
-
-// --- Tiptap 3.33.0 serializer workarounds ---
-// Each override marked as a workaround corrects serialized-Markdown data loss
-// without changing interaction behaviour. Each is minimal and pins a regression
-// test in packages/design-system/test/markdown-editor.test.tsx. Overrides marked
-// "Spec requirement" add the interaction the editor spec asks for.
 
 /** Length of the longest run of backtick characters in `text`. */
 function longestBacktickRun(text: string): number {
