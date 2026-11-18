@@ -28,65 +28,123 @@ const PlaceholderText = Extension.create({
 function renderLinkedImages(node: JSONContent, helpers: MarkdownRendererHelpers): string | undefined {
   const content = node.content ?? [];
   if (!content.some(child => (child.type === "image" || child.type === "opaqueInline") && child.marks?.some(mark => mark.type === "link"))) return undefined;
+
   let markdown = "";
   for (let i = 0; i < content.length;) {
     const link = content[i]?.marks?.find(mark => mark.type === "link");
     let end = i + 1;
-    while (end < content.length && JSON.stringify(content[end]?.marks?.find(mark => mark.type === "link")) === JSON.stringify(link)) end++;
-    const children = content.slice(i, end).map(child => ({ ...child, marks: child.marks?.filter(mark => mark.type !== "link") }));
+    while (
+      end < content.length &&
+      JSON.stringify(content[end]?.marks?.find(mark => mark.type === "link")) === JSON.stringify(link)
+    ) {
+      end++;
+    }
+
+    const children = content.slice(i, end).map(child => ({
+      ...child,
+      marks: child.marks?.filter(mark => mark.type !== "link"),
+    }));
     const text = helpers.renderChildren(children);
     if (link) {
       const href = link.attrs?.href ?? "";
       const destination = serializeLinkDestination(href);
       const title = escapeMarkdownTitle(link.attrs?.title ?? "");
       markdown += title ? `[${text}](${destination} "${title}")` : `[${text}](${destination})`;
-    } else markdown += text;
+    } else {
+      markdown += text;
+    }
+
     i = end;
   }
+
   return markdown;
 }
 
 const MarkdownStarterKit = StarterKit.extend({
   addExtensions() {
-    return (this.parent?.() ?? []).map(extension => extension.name === "heading" ? extension.extend({
-      // Tiptap 3.33.0 workaround: group links across inline images in headings.
-      renderMarkdown(node, helpers, context) {
-        const content = renderLinkedImages(node, helpers);
-        return content === undefined ? this.parent?.(node, helpers, context) ?? "" : `${"#".repeat(Number(node.attrs?.level) || 1)} ${content}`;
-      },
-    }) : extension.name !== "paragraph" ? extension : extension.extend({
-      // Spec requirement (AC-7): serialize pasted unsupported blocks as literal text.
-      addAttributes() {
-        return { pasteLiteral: { default: false, parseHTML: () => false, renderHTML: () => ({}) } };
-      },
-      // Tiptap 3.33.0 workaround: preserve authored NBSP-only paragraphs anywhere;
-      // stock serialization loses their visible gap on reparse, including #8719's authored separator.
-      parseMarkdown(token, helpers) {
-        // Spec requirement (AC-1, AC-2): an image-only paragraph stays a paragraph.
-        if (token.tokens?.length === 1 && token.tokens[0]?.type === "image") {
-          return helpers.createNode("paragraph", undefined, helpers.parseInline(token.tokens));
-        }
-        if (token.tokens?.length === 1 && token.tokens[0]?.type === "text" && ["&nbsp;", "\u00a0"].includes(token.tokens[0].raw ?? "")) {
-          return helpers.createNode("paragraph", undefined, [{ type: "text", text: "\u00a0" }]);
-        }
-        return this.parent?.(token, helpers) ?? [];
-      },
-      renderMarkdown(node, helpers, context) {
-        if (node.content?.length === 1 && node.content[0]?.type === "text" && node.content[0].text === "\u00a0") return "&nbsp;";
-        const markdown = renderLinkedImages(node, helpers) ?? this.parent?.(node, helpers, context) ?? "";
-        // Spec requirement (AC-7): keep pasted literal rules from becoming Markdown rules.
-        // Tiptap 3.33.0 workaround: paragraph lines must not reparse as blocks.
-        const paragraph = markdown.replace(/^(?: {4,}| {0,3}\t)[ \t]*/gm, indent => [...indent].map(character => character === "\t" ? "&#9;" : "&#32;").join(""))
-          .replace(/^( {0,3})(\d+)([.)])(?=[ \t])/gm, "$1$2\\$3")
-          .replace(/^( {0,3})([-+>])(?=[ \t])/gm, "$1\\$2")
-          .replace(/^( {0,3})((?:#{1,6}(?=[ \t])|`{3,}|~{3,}|(?:[-*_][ \t]*){3,}$|={3,}[ \t]*$)[^\n]*)/gm, (line, indent: string, content: string) => {
-            const fence = /^`{3,}/.exec(content)?.[0];
-            if (fence && [...content.slice(fence.length).matchAll(/`+/g)].some(run => run[0] === fence)) return line;
-            return `${indent}\\${content}`;
-          });
-        return node.attrs?.pasteLiteral ? paragraph.replace(/^( {0,3})(?=-{3,}(?:\s|$))/gm, "$1\\") : paragraph;
-      },
-    }));
+    return (this.parent?.() ?? []).map(extension =>
+      extension.name === "heading" ? extension.extend({
+        // Tiptap 3.33.0 workaround: group links across inline images in headings.
+        renderMarkdown(node, helpers, context) {
+          const content = renderLinkedImages(node, helpers);
+          return content === undefined
+            ? this.parent?.(node, helpers, context) ?? ""
+            : `${"#".repeat(Number(node.attrs?.level) || 1)} ${content}`;
+        },
+      })
+      : extension.name !== "paragraph" ? extension
+      : extension.extend({
+        // Spec requirement (AC-7): serialize pasted unsupported blocks as literal text.
+        addAttributes() {
+          return {
+            pasteLiteral: {
+              default: false,
+              parseHTML: () => false,
+              renderHTML: () => ({}),
+            },
+          };
+        },
+
+        parseMarkdown(token, helpers) {
+          // Spec requirement (AC-1, AC-2): an image-only paragraph stays a paragraph.
+          if (token.tokens?.length === 1 && token.tokens[0]?.type === "image") {
+            return helpers.createNode("paragraph", undefined, helpers.parseInline(token.tokens));
+          }
+
+          // Tiptap 3.33.0 workaround: preserve authored NBSP-only paragraphs anywhere;
+          // stock serialization loses their visible gap on reparse, including #8719's
+          // authored separator.
+          if (
+            token.tokens?.length === 1 &&
+            token.tokens[0]?.type === "text" &&
+            ["&nbsp;", "\u00a0"].includes(token.tokens[0].raw ?? "")
+          ) {
+            return helpers.createNode("paragraph", undefined, [{ type: "text", text: "\u00a0" }]);
+          }
+
+          return this.parent?.(token, helpers) ?? [];
+        },
+
+        renderMarkdown(node, helpers, context) {
+          // Write an NBSP-only paragraph back as `&nbsp;` (see the workaround in parseMarkdown).
+          if (
+            node.content?.length === 1 &&
+            node.content[0]?.type === "text" &&
+            node.content[0].text === "\u00a0"
+          ) {
+            return "&nbsp;";
+          }
+
+          const markdown = renderLinkedImages(node, helpers) ?? this.parent?.(node, helpers, context) ?? "";
+
+          // Tiptap 3.33.0 workaround: paragraph lines must not reparse as blocks.
+          const paragraph = markdown
+            .replace(/^(?: {4,}| {0,3}\t)[ \t]*/gm, indent => (
+              [...indent].map(character => character === "\t" ? "&#9;" : "&#32;").join("")
+            ))
+            .replace(/^( {0,3})(\d+)([.)])(?=[ \t])/gm, "$1$2\\$3")
+            .replace(/^( {0,3})([-+>])(?=[ \t])/gm, "$1\\$2")
+            .replace(
+              /^( {0,3})((?:#{1,6}(?=[ \t])|`{3,}|~{3,}|(?:[-*_][ \t]*){3,}$|={3,}[ \t]*$)[^\n]*)/gm,
+              (line, indent: string, content: string) => {
+                const fence = /^`{3,}/.exec(content)?.[0];
+                if (
+                  fence &&
+                  [...content.slice(fence.length).matchAll(/`+/g)].some(run => run[0] === fence)
+                ) {
+                  return line;
+                }
+                return `${indent}\\${content}`;
+              },
+            );
+
+          // Spec requirement (AC-7): keep pasted literal rules from becoming Markdown rules.
+          return node.attrs?.pasteLiteral
+            ? paragraph.replace(/^( {0,3})(?=-{3,}(?:\s|$))/gm, "$1\\")
+            : paragraph;
+        },
+      }),
+    );
   },
 });
 
@@ -101,14 +159,17 @@ const MarkdownTable = Table.extend({
       }
       node.content?.forEach(restoreBreaks);
     };
+
     (Array.isArray(table) ? table : [table]).forEach(restoreBreaks);
     return table;
   },
+
   // Tiptap 3.33.0 workaround (#8719): don't double the separator between tables.
   renderMarkdown(node, helpers, context) {
     const markdown = this.parent?.(node, helpers, context) ?? "";
     return context.previousNode?.type === "table" ? markdown.replace(/^\n/, "") : markdown;
   },
+
   addKeyboardShortcuts() {
     return {
       ...this.parent?.(),
@@ -119,9 +180,10 @@ const MarkdownTable = Table.extend({
 });
 
 // --- Tiptap 3.33.0 serializer workarounds ---
-// These overrides correct serialised-Markdown data loss; they do not change
-// interaction behaviour. Each is minimal and pins a regression test in
-// packages/design-system/test/markdown-editor.test.tsx.
+// Each override marked as a workaround corrects serialized-Markdown data loss
+// without changing interaction behaviour. Each is minimal and pins a regression
+// test in packages/design-system/test/markdown-editor.test.tsx. Overrides marked
+// "Spec requirement" add the interaction the editor spec asks for.
 
 /** Length of the longest run of backtick characters in `text`. */
 function longestBacktickRun(text: string): number {
