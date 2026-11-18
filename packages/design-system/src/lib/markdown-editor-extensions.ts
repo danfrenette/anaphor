@@ -45,9 +45,9 @@ function renderLinkedImages(node: JSONContent, helpers: MarkdownRendererHelpers)
   if (!hasLinkedAtom) return undefined;
 
   let markdown = "";
-  for (let i = 0; i < content.length;) {
-    const link = content[i]?.marks?.find(mark => mark.type === "link");
-    let end = i + 1;
+  for (let start = 0; start < content.length;) {
+    const link = content[start]?.marks?.find(mark => mark.type === "link");
+    let end = start + 1;
     while (
       end < content.length &&
       JSON.stringify(content[end]?.marks?.find(mark => mark.type === "link")) === JSON.stringify(link)
@@ -55,7 +55,7 @@ function renderLinkedImages(node: JSONContent, helpers: MarkdownRendererHelpers)
       end++;
     }
 
-    const children = content.slice(i, end).map(child => ({
+    const children = content.slice(start, end).map(child => ({
       ...child,
       marks: child.marks?.filter(mark => mark.type !== "link"),
     }));
@@ -69,7 +69,7 @@ function renderLinkedImages(node: JSONContent, helpers: MarkdownRendererHelpers)
       markdown += text;
     }
 
-    i = end;
+    start = end;
   }
 
   return markdown;
@@ -249,11 +249,11 @@ const MarkdownCodeBlock = CodeBlock.extend({
   // Workaround F1: write a fence longer than the longest backtick run in the
   // content so a line of backticks inside the block cannot close the fence on
   // reload. The stock renderer writes a fixed ``` fence.
-  renderMarkdown: (node, h) => {
+  renderMarkdown: (node, helpers) => {
     const language = node.attrs?.language || "";
     if (!node.content) return `\`\`\`${language}\n\n\`\`\``;
 
-    const content = h.renderChildren(node.content);
+    const content = helpers.renderChildren(node.content);
     const fence = "`".repeat(codeFenceLength(content));
     return `${fence}${language}\n${content}\n${fence}`;
   },
@@ -310,10 +310,10 @@ const MarkdownLink = Link.extend({
   })),
 
   // Tiptap 3.33.0 workaround: serialize link destinations without syntax breakout.
-  renderMarkdown: (node, h) => {
+  renderMarkdown: (node, helpers) => {
     const href = node.attrs?.href ?? "";
     const title = node.attrs?.title ?? "";
-    const text = h.renderChildren(node);
+    const text = helpers.renderChildren(node);
     const destination = serializeLinkDestination(href);
 
     // Tiptap 3.33.0 workaround: escape title delimiters and backslashes.
@@ -390,11 +390,11 @@ function columnWidth(text: string): number {
 }
 
 /** The `- `, `1. ` (or other marker) prefix for a list item, as the stock renderer computes it. */
-function listItemPrefix(ctx: RenderContext): string {
-  if (ctx.parentType === "bulletList") return "- ";
-  if (ctx.parentType === "orderedList") {
-    const start = ctx.meta?.parentAttrs?.start || 1;
-    return getListMarker(ctx.meta?.parentAttrs?.type, start - 1 + (ctx.index || 0), ". ");
+function listItemPrefix(context: RenderContext): string {
+  if (context.parentType === "bulletList") return "- ";
+  if (context.parentType === "orderedList") {
+    const start = context.meta?.parentAttrs?.start || 1;
+    return getListMarker(context.meta?.parentAttrs?.type, start - 1 + (context.index || 0), ". ");
   }
   return "- ";
 }
@@ -403,12 +403,12 @@ function listItemPrefix(ctx: RenderContext): string {
 function indentContinuationLine(
   line: string,
   prefix: string,
-  h: MarkdownRendererHelpers,
+  helpers: MarkdownRendererHelpers,
   alignNestedToPrefix: boolean,
 ): string {
-  if (!alignNestedToPrefix) return h.indent(line);
+  if (!alignNestedToPrefix) return helpers.indent(line);
 
-  const configured = h.indent("");
+  const configured = helpers.indent("");
   const prefixWidth = columnWidth(prefix);
   return (columnWidth(configured) >= prefixWidth ? configured : " ".repeat(prefixWidth)) + line;
 }
@@ -418,27 +418,27 @@ function indentContinuationLine(
 // which re-parses outside the list item and drops the code. Every other shape
 // goes to the stock renderer.
 const MarkdownListItem = ListItem.extend({
-  renderMarkdown(node, h, ctx) {
+  renderMarkdown(node, helpers, context) {
     const [first, second, ...rest] = node.content ?? [];
     if (
       first?.type !== "paragraph" ||
       first.content?.length ||
       second?.type !== "codeBlock"
     ) {
-      return this.parent?.(node, h, ctx) ?? "";
+      return this.parent?.(node, helpers, context) ?? "";
     }
 
-    const prefix = listItemPrefix(ctx);
-    const alignNestedToPrefix = ctx.parentType === "orderedList";
-    const indentLine = (line: string) => indentContinuationLine(line, prefix, h, alignNestedToPrefix);
+    const prefix = listItemPrefix(context);
+    const alignNestedToPrefix = context.parentType === "orderedList";
+    const indentLine = (line: string) => indentContinuationLine(line, prefix, helpers, alignNestedToPrefix);
 
-    const codeContent = h.renderChild?.(second, 1) ?? h.renderChildren([second]);
+    const codeContent = helpers.renderChild?.(second, 1) ?? helpers.renderChildren([second]);
     const codeLines = codeContent.split("\n");
     let output = prefix + codeLines[0];
     for (const line of codeLines.slice(1)) output += `\n${indentLine(line)}`;
 
     rest.forEach((child, index) => {
-      const childContent = h.renderChild?.(child, index + 2) ?? h.renderChildren([child]);
+      const childContent = helpers.renderChild?.(child, index + 2) ?? helpers.renderChildren([child]);
       const indented = childContent
         .split("\n")
         .map(line => (line ? indentLine(line) : indentLine("")))
@@ -474,31 +474,31 @@ const MarkdownOrderedList = OrderedList.extend({
     start: stockOrderedListTokenizer.start,
     tokenize: (source, tokens, lexer) => {
       const result = stockOrderedListTokenizer.tokenize(source, tokens, lexer);
-      const suppressed = suppressPastedOrdinal(source, result || undefined);
-      if (suppressed) return suppressed;
+      const pasteOrdinal = suppressPastedOrdinal(source, result || undefined);
+      if (pasteOrdinal) return pasteOrdinal;
 
       const items = result?.items;
       if (!items) return result;
 
       for (const item of items) {
-        const [first, second, ...trailing] = item.tokens ?? [];
+        const [firstToken, secondToken, ...trailingTokens] = item.tokens ?? [];
 
         // The bug shape: the first token is a paragraph whose first line is a
         // valid fence opener, and the second is the tokenizer's closing-fence
         // `code` token (trailing content may have been swept into either token).
-        if (first?.type !== "paragraph") continue;
-        const firstParagraphRaw = first.raw ?? "";
+        if (firstToken?.type !== "paragraph") continue;
+        const firstParagraphRaw = firstToken.raw ?? "";
         const firstParagraphNewline = firstParagraphRaw.indexOf("\n");
         const firstParagraphLine = firstParagraphNewline === -1
           ? firstParagraphRaw
           : firstParagraphRaw.slice(0, firstParagraphNewline);
         if (!isFenceOpener(firstParagraphLine)) continue;
-        if (second?.type !== "code") continue;
+        if (secondToken?.type !== "code") continue;
 
         const raw = item.raw ?? "";
         const newline = raw.indexOf("\n");
         const firstLine = newline === -1 ? raw : raw.slice(0, newline);
-        const rest = newline === -1 ? "" : raw.slice(newline + 1);
+        const remainingLines = newline === -1 ? "" : raw.slice(newline + 1);
         const content = firstLine.match(/^(\s*)(\S+?)([.)])\s+(.*)$/)?.[4];
         if (content === undefined) continue;
 
@@ -507,11 +507,11 @@ const MarkdownOrderedList = OrderedList.extend({
           const lineIndent = line.length - line.trimStart().length;
           return line.slice(Math.min(lineIndent, contentIndent));
         };
-        const codeSource = [content, ...rest.split("\n").map(dedent)].join("\n");
+        const codeSource = [content, ...remainingLines.split("\n").map(dedent)].join("\n");
         item.tokens = [
           { type: "paragraph", raw: "", text: "", tokens: [] },
           ...lexer.blockTokens(codeSource),
-          ...trailing.filter(t => t.type === "list"),
+          ...trailingTokens.filter(token => token.type === "list"),
         ];
       }
 
