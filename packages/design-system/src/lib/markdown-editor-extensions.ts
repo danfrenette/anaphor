@@ -224,98 +224,153 @@ function linkDestinationNeedsAngleBrackets(href: string): boolean {
   return depth !== 0;
 }
 
-// Workaround F1: write a fence longer than the longest backtick run in the
-// content so a line of backticks inside the block cannot close the fence on
-// reload. The stock renderer writes a fixed ``` fence.
 const MarkdownCodeBlock = CodeBlock.extend({
   // Spec requirement: read-only code blocks must be keyboard-scrollable.
   addProseMirrorPlugins() {
     const editor = this.editor;
-    return [new Plugin({
-      props: {
-        decorations(state) {
-          const attributes = editor.options.editorProps.attributes;
-          if (typeof attributes === "function" || attributes?.["aria-readonly"] !== "true" || attributes?.["aria-disabled"] === "true") return null;
-          const decorations: Decoration[] = [];
-          state.doc.descendants((node, pos) => {
-            if (node.type.name === "codeBlock") decorations.push(Decoration.node(pos, pos + node.nodeSize, { tabindex: "0" }));
-          });
-          return DecorationSet.create(state.doc, decorations);
+
+    return [
+      new Plugin({
+        props: {
+          decorations(state) {
+            const attributes = editor.options.editorProps.attributes;
+            if (
+              typeof attributes === "function" ||
+              attributes?.["aria-readonly"] !== "true" ||
+              attributes?.["aria-disabled"] === "true"
+            ) {
+              return null;
+            }
+
+            const decorations: Decoration[] = [];
+            state.doc.descendants((node, pos) => {
+              if (node.type.name === "codeBlock") {
+                decorations.push(Decoration.node(pos, pos + node.nodeSize, { tabindex: "0" }));
+              }
+            });
+
+            return DecorationSet.create(state.doc, decorations);
+          },
         },
-      },
-    })];
+      }),
+    ];
   },
+
+  // Workaround F1: write a fence longer than the longest backtick run in the
+  // content so a line of backticks inside the block cannot close the fence on
+  // reload. The stock renderer writes a fixed ``` fence.
   renderMarkdown: (node, h) => {
     const language = node.attrs?.language || "";
     if (!node.content) return `\`\`\`${language}\n\n\`\`\``;
+
     const content = h.renderChildren(node.content);
     const fence = "`".repeat(codeFenceLength(content));
     return `${fence}${language}\n${content}\n${fence}`;
   },
 });
 
-// Spec requirement: ProseMirror's gap cursor treats textblocks as open unless their schema asks
-// for a gap, so allow the default gap-cursor plugin to move past a code block.
+// Spec requirement: ProseMirror's gap cursor treats textblocks as open unless
+// their schema asks for a gap, so allow the default gap-cursor plugin to move
+// past a code block.
 const CodeBlockGapCursor = Extension.create({
   name: "codeBlockGapCursor",
   extendNodeSchema: extension => extension.name === "codeBlock" ? { createGapCursor: true } : {},
 });
 
-// Tiptap 3.33.0 workaround: serialize link destinations without syntax breakout.
 const MarkdownLink = Link.extend({
   // Tiptap 3.33.0 workaround: paste rules can create a non-normalized link mark.
   renderHTML(props) {
     const href = props.HTMLAttributes.href;
-    return this.parent!({ ...props, HTMLAttributes: { ...props.HTMLAttributes, href: isSafePasteUri(href) ? normalizeLinkHref(href) : href } });
+    return this.parent!({
+      ...props,
+      HTMLAttributes: {
+        ...props.HTMLAttributes,
+        href: isSafePasteUri(href) ? normalizeLinkHref(href) : href,
+      },
+    });
   },
+
   // Tiptap 3.33.0 workaround: normalize safe destinations parsed from HTML.
   addAttributes() {
-    return { ...this.parent?.(), href: { default: null, parseHTML: element => {
-      const href = element.getAttribute("href");
-      return href && isSafePasteUri(href) ? normalizeLinkHref(href) : href;
-    } } };
+    return {
+      ...this.parent?.(),
+      href: {
+        default: null,
+        parseHTML: element => {
+          const href = element.getAttribute("href");
+          return href && isSafePasteUri(href) ? normalizeLinkHref(href) : href;
+        },
+      },
+    };
   },
+
   // Tiptap 3.33.0 workaround: applyMark skips inline image nodes.
   parseMarkdown: (token, helpers) => helpers.parseInline(token.tokens ?? []).map(node => ({
     ...node,
-    marks: [...(node.marks ?? []), { type: "link", attrs: { href: isSafePasteUri(token.href) ? normalizeLinkHref(token.href ?? "") : token.href, title: token.title || null } }],
+    marks: [
+      ...(node.marks ?? []),
+      {
+        type: "link",
+        attrs: {
+          href: isSafePasteUri(token.href) ? normalizeLinkHref(token.href ?? "") : token.href,
+          title: token.title || null,
+        },
+      },
+    ],
   })),
+
+  // Tiptap 3.33.0 workaround: serialize link destinations without syntax breakout.
   renderMarkdown: (node, h) => {
     const href = node.attrs?.href ?? "";
     const title = node.attrs?.title ?? "";
     const text = h.renderChildren(node);
     const destination = serializeLinkDestination(href);
+
     // Tiptap 3.33.0 workaround: escape title delimiters and backslashes.
     const escapedTitle = escapeMarkdownTitle(title);
     return title ? `[${text}](${destination} "${escapedTitle}")` : `[${text}](${destination})`;
   },
-// Spec requirement (AC-4): paste linking is handled by the safety-checked adapter.
-}).configure({ openOnClick: false, autolink: false, linkOnPaste: false });
+}).configure({
+  openOnClick: false,
+  autolink: false,
+  // Spec requirement (AC-4): paste linking is handled by the safety-checked adapter.
+  linkOnPaste: false,
+});
 
 // Tiptap 3.33.0 workaround: preserve delimiters in image alt text and destinations.
 const MarkdownImage = Image.extend({
-  // Tiptap 3.33.0 workaround: decode CommonMark escapes and entities in image alt text.
   parseMarkdown: (token, helpers) => {
     const literal = literalPastedImage(token);
     if (literal) return literal;
+
+    // Tiptap 3.33.0 workaround: decode CommonMark escapes and entities in image alt text.
     const element = document.createElement("span");
-    const alt = (token.text ?? "").replace(/\\([!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~])|&(?:[a-zA-Z][a-zA-Z0-9]{1,31}|#[0-9]{1,7}|#[xX][a-fA-F0-9]{1,6});/g, (match, escaped: string | undefined) => {
-      if (escaped) return escaped;
-      element.innerHTML = `<span data-entity="${match}"></span>`;
-      return element.firstElementChild!.getAttribute("data-entity")!;
-    });
+    const alt = (token.text ?? "").replace(
+      /\\([!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~])|&(?:[a-zA-Z][a-zA-Z0-9]{1,31}|#[0-9]{1,7}|#[xX][a-fA-F0-9]{1,6});/g,
+      (match, escaped: string | undefined) => {
+        if (escaped) return escaped;
+        element.innerHTML = `<span data-entity="${match}"></span>`;
+        return element.firstElementChild!.getAttribute("data-entity")!;
+      },
+    );
     return helpers.createNode("image", { src: token.href, title: token.title, alt });
   },
+
   renderMarkdown: node => {
     const src = node.attrs?.src ?? "";
     // Tiptap 3.33.0 workaround: preserve literal Markdown syntax in alt text.
-    const alt = (node.attrs?.alt ?? "").replace(/\s*[\r\n]\s*/g, " ").replace(/&/g, "&amp;").replace(/[\\`*_[\]<>~]/g, "\\$&");
+    const alt = (node.attrs?.alt ?? "")
+      .replace(/\s*[\r\n]\s*/g, " ")
+      .replace(/&/g, "&amp;")
+      .replace(/[\\`*_[\]<>~]/g, "\\$&");
     const title = escapeMarkdownTitle(node.attrs?.title ?? "");
     const destination = linkDestinationNeedsAngleBrackets(src) ? `<${src}>` : src;
     const image = title ? `![${alt}](${destination} "${title}")` : `![${alt}](${destination})`;
+
     // Tiptap 3.33.0 workaround: inline atom marks are not rendered by the serializer.
     const link = node.marks?.find(mark => mark.type === "link");
     if (!link) return image;
+
     const href = link.attrs?.href ?? "";
     const linkDestination = serializeLinkDestination(href);
     const linkTitle = escapeMarkdownTitle(link.attrs?.title ?? "");
@@ -341,8 +396,14 @@ function listItemPrefix(ctx: RenderContext): string {
 }
 
 /** Indents a continuation line the way the stock nested-content renderer does. */
-function indentContinuationLine(line: string, prefix: string, h: MarkdownRendererHelpers, alignNestedToPrefix: boolean): string {
+function indentContinuationLine(
+  line: string,
+  prefix: string,
+  h: MarkdownRendererHelpers,
+  alignNestedToPrefix: boolean,
+): string {
   if (!alignNestedToPrefix) return h.indent(line);
+
   const configured = h.indent("");
   const prefixWidth = columnWidth(prefix);
   return (columnWidth(configured) >= prefixWidth ? configured : " ".repeat(prefixWidth)) + line;
@@ -350,14 +411,19 @@ function indentContinuationLine(line: string, prefix: string, h: MarkdownRendere
 
 // Workaround F4: a code block that opens a list item must share the marker line.
 // The stock renderer emits an empty "- " marker line before an indented fence,
-// which re-parses outside the list item and drops the code. Delegates every other
-// shape to the parent renderer via this.parent.
+// which re-parses outside the list item and drops the code. Every other shape
+// goes to the stock renderer.
 const MarkdownListItem = ListItem.extend({
   renderMarkdown(node, h, ctx) {
     const [first, second, ...rest] = node.content ?? [];
-    if (first?.type !== "paragraph" || first.content?.length || second?.type !== "codeBlock") {
+    if (
+      first?.type !== "paragraph" ||
+      first.content?.length ||
+      second?.type !== "codeBlock"
+    ) {
       return this.parent?.(node, h, ctx) ?? "";
     }
+
     const prefix = listItemPrefix(ctx);
     const alignNestedToPrefix = ctx.parentType === "orderedList";
     const indentLine = (line: string) => indentContinuationLine(line, prefix, h, alignNestedToPrefix);
@@ -369,9 +435,13 @@ const MarkdownListItem = ListItem.extend({
 
     rest.forEach((child, index) => {
       const childContent = h.renderChild?.(child, index + 2) ?? h.renderChildren([child]);
-      const indented = childContent.split("\n").map(line => (line ? indentLine(line) : indentLine(""))).join("\n");
+      const indented = childContent
+        .split("\n")
+        .map(line => (line ? indentLine(line) : indentLine("")))
+        .join("\n");
       output += child.type === "paragraph" ? `\n\n${indented}` : `\n${indented}`;
     });
+
     return output;
   },
 });
@@ -379,15 +449,16 @@ const MarkdownListItem = ListItem.extend({
 // Workaround 13: @tiptap/extension-list@3.33.0's ordered-list tokenizer reads a
 // list item whose first content line is a code fence (e.g. `1. ```js`) as a
 // paragraph holding the fence plus a closing-fence code block, so the code is
-// lost on reload. Re-tokenise those items from their raw text so they parse to an
-// empty leading paragraph plus the recovered blocks, matching the bullet path.
-// The repair fires only when the first token is a paragraph whose first line is a
-// valid fence opener and the second token is a code token; after the recovered
-// blocks it keeps only a nested list token. Every other item shape is delegated
-// to the stock tokenizer.
+// lost on reload. Re-tokenise those items from their raw text so they parse to
+// an empty leading paragraph plus the recovered blocks, matching the bullet path.
+// After the recovered blocks only a nested list token is kept; every other item
+// shape is left to the stock tokenizer.
 const stockOrderedListTokenizer = OrderedList.config.markdownTokenizer!;
 
-/** True when `line` is a CommonMark fence opener: 0–3 spaces, then a run of 3+ backticks (or tildes) whose info string holds no fence character. */
+/**
+ * True when `line` is a CommonMark fence opener: 0–3 spaces, then a run of 3+
+ * backticks (or tildes) whose info string holds no fence character.
+ */
 function isFenceOpener(line: string): boolean {
   return /^( {0,3})(`{3,})([^`]*)$/.test(line) || /^( {0,3})(~{3,})([^~]*)$/.test(line);
 }
@@ -401,30 +472,42 @@ const MarkdownOrderedList = OrderedList.extend({
       const result = stockOrderedListTokenizer.tokenize(source, tokens, lexer);
       const suppressed = suppressPastedOrdinal(source, result || undefined);
       if (suppressed) return suppressed;
+
       const items = result?.items;
       if (!items) return result;
+
       for (const item of items) {
         const [first, second, ...trailing] = item.tokens ?? [];
+
         // The bug shape: the first token is a paragraph whose first line is a
         // valid fence opener, and the second is the tokenizer's closing-fence
         // `code` token (trailing content may have been swept into either token).
         if (first?.type !== "paragraph") continue;
         const firstParagraphRaw = first.raw ?? "";
         const firstParagraphNewline = firstParagraphRaw.indexOf("\n");
-        const firstParagraphLine = firstParagraphNewline === -1 ? firstParagraphRaw : firstParagraphRaw.slice(0, firstParagraphNewline);
+        const firstParagraphLine = firstParagraphNewline === -1
+          ? firstParagraphRaw
+          : firstParagraphRaw.slice(0, firstParagraphNewline);
         if (!isFenceOpener(firstParagraphLine)) continue;
         if (second?.type !== "code") continue;
+
         const raw = item.raw ?? "";
         const newline = raw.indexOf("\n");
         const firstLine = newline === -1 ? raw : raw.slice(0, newline);
         const rest = newline === -1 ? "" : raw.slice(newline + 1);
         const content = firstLine.match(/^(\s*)(\S+?)([.)])\s+(.*)$/)?.[4];
         if (content === undefined) continue;
+
         const contentIndent = firstLine.length - content.length;
         const dedent = (line: string) => line.slice(Math.min(line.length - line.trimStart().length, contentIndent));
         const codeSource = [content, ...rest.split("\n").map(dedent)].join("\n");
-        item.tokens = [{ type: "paragraph", raw: "", text: "", tokens: [] }, ...lexer.blockTokens(codeSource), ...trailing.filter(t => t.type === "list")];
+        item.tokens = [
+          { type: "paragraph", raw: "", text: "", tokens: [] },
+          ...lexer.blockTokens(codeSource),
+          ...trailing.filter(t => t.type === "list"),
+        ];
       }
+
       return result;
     },
   },
@@ -448,8 +531,12 @@ const OPAQUE_BLOCK_CLASS = cn(
   // Mono face and muted small text
   "font-mono text-small text-muted-foreground",
 );
+
 // The inline span shares Prose code's size so it follows the same token.
-const OPAQUE_INLINE_CLASS = cn("font-mono text-muted-foreground", "text-[length:var(--text-prose-code)]");
+const OPAQUE_INLINE_CLASS = cn(
+  "font-mono text-muted-foreground",
+  "text-[length:var(--text-prose-code)]",
+);
 
 type OpaqueNodeOptions = {
   name: "opaqueBlock" | "opaqueInline";
@@ -466,18 +553,38 @@ type OpaqueNodeOptions = {
 // Both opaque atom nodes share the same shape: a `source` attribute, a text-only
 // renderHTML, parseHTML keyed on their own data-* hook, and renderMarkdown that
 // writes the source back verbatim. Only the tag, hook, level and matcher differ.
-function createOpaqueNode({ name, group, inline, tag, dataAttribute, className, trimTrailingNewlines, match }: OpaqueNodeOptions): Node {
+function createOpaqueNode({
+  name,
+  group,
+  inline,
+  tag,
+  dataAttribute,
+  className,
+  trimTrailingNewlines,
+  match,
+}: OpaqueNodeOptions): Node {
   return Node.create({
     name,
     group,
     inline,
     atom: true,
     addAttributes: () => ({ source: { default: "" } }),
-    parseHTML: () => [{ tag: `${tag}[${dataAttribute}]`, getAttrs: element => ({ source: element.textContent ?? "" }) }],
-    renderHTML: ({ node }) => [tag, { [dataAttribute]: "", "data-prose-exclude": "", class: className }, node.attrs.source ?? ""],
+    parseHTML: () => [
+      {
+        tag: `${tag}[${dataAttribute}]`,
+        getAttrs: element => ({ source: element.textContent ?? "" }),
+      },
+    ],
+    renderHTML: ({ node }) => [
+      tag,
+      { [dataAttribute]: "", "data-prose-exclude": "", class: className },
+      node.attrs.source ?? "",
+    ],
     renderMarkdown: node => node.attrs?.source ?? "",
     markdownTokenName: name,
-    parseMarkdown: (token, helpers) => helpers.createNode(name, { source: trimTrailingNewlines ? (token.raw ?? "").replace(/\n+$/, "") : (token.raw ?? "") }),
+    parseMarkdown: (token, helpers) => helpers.createNode(name, {
+      source: trimTrailingNewlines ? (token.raw ?? "").replace(/\n+$/, "") : (token.raw ?? ""),
+    }),
     markdownTokenizer: {
       name,
       level: group,
@@ -508,7 +615,9 @@ const OpaqueBlock = createOpaqueNode({
 const OpaqueHtmlTokens = Extension.create({
   name: "opaqueHtmlTokens",
   markdownTokenName: "html",
-  parseMarkdown: (token, helpers) => helpers.createNode("opaqueBlock", { source: (token.raw ?? "").replace(/\n+$/, "") }),
+  parseMarkdown: (token, helpers) => helpers.createNode("opaqueBlock", {
+    source: (token.raw ?? "").replace(/\n+$/, ""),
+  }),
 });
 
 /** Inline syntax the editor does not interpret: inline HTML and footnote references. */
@@ -523,5 +632,17 @@ const OpaqueInline = createOpaqueNode({
   match: matchOpaqueInline,
 });
 
-
-export { CodeBlockGapCursor, MarkdownCodeBlock, MarkdownImage, MarkdownLink, MarkdownListItem, MarkdownOrderedList, MarkdownStarterKit, MarkdownTable, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, PlaceholderText };
+export {
+  CodeBlockGapCursor,
+  MarkdownCodeBlock,
+  MarkdownImage,
+  MarkdownLink,
+  MarkdownListItem,
+  MarkdownOrderedList,
+  MarkdownStarterKit,
+  MarkdownTable,
+  OpaqueBlock,
+  OpaqueHtmlTokens,
+  OpaqueInline,
+  PlaceholderText,
+};
