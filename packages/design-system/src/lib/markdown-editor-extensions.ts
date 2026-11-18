@@ -30,6 +30,11 @@ const PlaceholderText = Extension.create({
 // test in packages/design-system/test/markdown-editor.test.tsx. Overrides marked
 // "Spec requirement" add the interaction the editor spec asks for.
 
+// Tiptap 3.33.0 workaround: bare destinations cannot terminate in injected HTML.
+function serializeLinkDestination(href: string): string {
+  return normalizeLinkHref(href).replace(/[()&]/g, "\\$&");
+}
+
 // Tiptap 3.33.0 workaround: serialize a link across inline images as one span.
 function renderLinkedImages(node: JSONContent, helpers: MarkdownRendererHelpers): string | undefined {
   const content = node.content ?? [];
@@ -207,11 +212,6 @@ function longestBacktickRun(text: string): number {
 /** Fence length that can enclose a code block whose content is `text`. */
 function codeFenceLength(text: string): number {
   return Math.max(3, longestBacktickRun(text) + 1);
-}
-
-// Tiptap 3.33.0 workaround: bare destinations cannot terminate in injected HTML.
-function serializeLinkDestination(href: string): string {
-  return normalizeLinkHref(href).replace(/[()&]/g, "\\$&");
 }
 
 /** True when an image destination must use the `<...>` form to survive a round-trip. */
