@@ -450,6 +450,14 @@ const MarkdownListItem = ListItem.extend({
   },
 });
 
+/**
+ * True when `line` is a CommonMark fence opener: 0–3 spaces, then a run of 3+
+ * backticks (or tildes) whose info string holds no fence character.
+ */
+function isFenceOpener(line: string): boolean {
+  return /^( {0,3})(`{3,})([^`]*)$/.test(line) || /^( {0,3})(~{3,})([^~]*)$/.test(line);
+}
+
 // Workaround 13: @tiptap/extension-list@3.33.0's ordered-list tokenizer reads a
 // list item whose first content line is a code fence (e.g. `1. ```js`) as a
 // paragraph holding the fence plus a closing-fence code block, so the code is
@@ -458,14 +466,6 @@ const MarkdownListItem = ListItem.extend({
 // After the recovered blocks only a nested list token is kept; every other item
 // shape is left to the stock tokenizer.
 const stockOrderedListTokenizer = OrderedList.config.markdownTokenizer!;
-
-/**
- * True when `line` is a CommonMark fence opener: 0–3 spaces, then a run of 3+
- * backticks (or tildes) whose info string holds no fence character.
- */
-function isFenceOpener(line: string): boolean {
-  return /^( {0,3})(`{3,})([^`]*)$/.test(line) || /^( {0,3})(~{3,})([^~]*)$/.test(line);
-}
 
 const MarkdownOrderedList = OrderedList.extend({
   markdownTokenizer: {
