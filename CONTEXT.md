@@ -26,6 +26,21 @@
 - **Private access**: the owner's permission to read or publish a private tour
   during an authenticated session for a selected environment.
 
+## Markdown editor
+
+- **Markdown editor**: the design system's editor that takes a Markdown string
+  and returns one, styled like rendered Markdown, with no controls visible until
+  text is selected.
+- **Field presentation**: the editor inside a form field, with a boundary, focus
+  ring, and height limits like other inputs.
+- **In-place presentation**: the editor with no boundary or background, sitting
+  where rendered Markdown sits and looking the same, so a page becomes editable
+  without changing appearance.
+- **Opaque block** / **opaque span**: Markdown the editor does not understand,
+  shown as inert, read-only source and returned exactly as written.
+- **Selection bubble**: the small formatting toolbar that appears only for a
+  non-empty text selection.
+
 ## Tour evidence
 
 - **Review step**: One action or responsibility in the implementation path of a tour section.
