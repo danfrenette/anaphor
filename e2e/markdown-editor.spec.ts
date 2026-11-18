@@ -11,7 +11,9 @@ for (const theme of ["light", "dark"]) test(`formatting bubble baseline and acce
   await page.keyboard.press("Shift+ArrowLeft");
   const bubble = page.getByRole("toolbar", { name: "Formatting" });
   await expect(bubble).toBeVisible();
-  for (const name of ["Bold", "Italic", "Strikethrough", "Inline code", "Link"]) await expect(bubble.getByRole("button", { name, exact: true })).toBeVisible();
+  for (const name of ["Bold", "Italic", "Strikethrough", "Inline code", "Link"]) {
+    await expect(bubble.getByRole("button", { name, exact: true })).toBeVisible();
+  }
   await checkAccessibility(page, '[aria-label="Field states"]');
   await expect(bubble).toHaveScreenshot(`markdown-bubble-${theme}.png`, { animations: "disabled", caret: "hide" });
   await bubble.getByRole("button", { name: "Link" }).click();
@@ -228,7 +230,12 @@ test("link shortcut works before the selection bubble appears", async ({ page, i
   await expect(page.getByRole("textbox", { name: "URL" })).toBeFocused();
 });
 
-for (const [name, markdown] of [["Bold", "**hello**"], ["Italic", "*hello*"], ["Strikethrough", "~~hello~~"], ["Inline code", "`hello`"]] as const) {
+for (const [name, markdown] of [
+  ["Bold", "**hello**"],
+  ["Italic", "*hello*"],
+  ["Strikethrough", "~~hello~~"],
+  ["Inline code", "`hello`"],
+] as const) {
   test(`pointer selection and ${name} produce Markdown`, async ({ page, isMobile }) => {
     test.skip(isMobile, "Pointer dragging is verified on desktop.");
     await page.goto("/markdown-editor");
@@ -298,7 +305,10 @@ async function assertBubbleGeometry(page: Page) {
   for (const name of ["Bold", "Italic", "Strikethrough", "Inline code", "Link"]) {
     const button = bubble.getByRole("button", { name, exact: true });
     const bounds = (await button.boundingBox())!;
-    const hit = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest("button")?.getAttribute("aria-label"), { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 });
+    const hit = await page.evaluate(
+      ({ x, y }) => document.elementFromPoint(x, y)?.closest("button")?.getAttribute("aria-label"),
+      { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 },
+    );
     expect(hit).toBe(name);
   }
 }
@@ -440,7 +450,13 @@ test("Chromium drops an image file through the demo handler", async ({ page, bro
     const transfer = new DataTransfer();
     transfer.items.add(new File([new Uint8Array([137, 80, 78, 71])], "diagram.png", { type: "image/png" }));
     const rect = element.getBoundingClientRect();
-    const event = new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer, clientX: rect.left + 20, clientY: rect.top + 20 });
+    const event = new DragEvent("drop", {
+      bubbles: true,
+      cancelable: true,
+      dataTransfer: transfer,
+      clientX: rect.left + 20,
+      clientY: rect.top + 20,
+    });
     element.dispatchEvent(event);
     return event.defaultPrevented;
   });
@@ -462,7 +478,13 @@ test("Chromium maps a positioned pending image drop through edits", async ({ pag
     const rect = range.getBoundingClientRect();
     const transfer = new DataTransfer();
     transfer.items.add(new File(["image"], "diagram.png", { type: "image/png" }));
-    const event = new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer, clientX: rect.x, clientY: rect.y + rect.height / 2 });
+    const event = new DragEvent("drop", {
+      bubbles: true,
+      cancelable: true,
+      dataTransfer: transfer,
+      clientX: rect.x,
+      clientY: rect.y + rect.height / 2,
+    });
     element.dispatchEvent(event);
     return event.defaultPrevented;
   });
@@ -602,7 +624,12 @@ for (const theme of ["light", "dark"]) test(`disabled task checkbox uses disable
     sample.style.cssText = "background:var(--anaphor-input-disabled);color:var(--anaphor-font-tertiary)";
     element.parentElement!.append(sample);
     const expected = getComputedStyle(sample);
-    const result = { background: getComputedStyle(element, "::before").backgroundColor, mark: getComputedStyle(element, "::after").borderBottomColor, disabled: expected.backgroundColor, muted: expected.color };
+    const result = {
+      background: getComputedStyle(element, "::before").backgroundColor,
+      mark: getComputedStyle(element, "::after").borderBottomColor,
+      disabled: expected.backgroundColor,
+      muted: expected.color,
+    };
     sample.remove();
     return result;
   });
@@ -611,7 +638,10 @@ for (const theme of ["light", "dark"]) test(`disabled task checkbox uses disable
   await page.getByRole("button", { name: "Disabled", exact: true }).click();
   await checkbox.uncheck();
   await page.getByRole("button", { name: "Disabled", exact: true }).click();
-  const unchecked = await checkbox.evaluate(element => ({ background: getComputedStyle(element, "::before").backgroundColor, mark: getComputedStyle(element, "::after").content }));
+  const unchecked = await checkbox.evaluate(element => ({
+    background: getComputedStyle(element, "::before").backgroundColor,
+    mark: getComputedStyle(element, "::after").content,
+  }));
   expect(unchecked.background).toBe(colors.disabled);
   expect(unchecked.mark).toBe("none");
 });
@@ -706,7 +736,10 @@ test("wide tables stay within the page and remain keyboard accessible", async ({
     await expect(table).toBeVisible();
     const geometry = await table.evaluate(element => {
       const wrapper = element.parentElement!;
-      return { scrolls: wrapper.scrollWidth > wrapper.clientWidth, insideViewport: wrapper.getBoundingClientRect().right <= document.documentElement.clientWidth };
+      return {
+        scrolls: wrapper.scrollWidth > wrapper.clientWidth,
+        insideViewport: wrapper.getBoundingClientRect().right <= document.documentElement.clientWidth,
+      };
     });
     expect(geometry).toEqual({ scrolls: true, insideViewport: true });
   }
@@ -775,7 +808,10 @@ for (const theme of ["light", "dark"]) test(`comparison labels and Markdown code
   for (const root of [editor, rendered]) {
     const code = root.locator("pre");
     await expect(code).toContainText("x".repeat(120));
-    expect(await code.evaluate(element => ({ whiteSpace: getComputedStyle(element).whiteSpace, overflow: element.scrollWidth > element.clientWidth }))).toEqual({ whiteSpace: "pre", overflow: true });
+    expect(await code.evaluate(element => ({
+      whiteSpace: getComputedStyle(element).whiteSpace,
+      overflow: element.scrollWidth > element.clientWidth,
+    }))).toEqual({ whiteSpace: "pre", overflow: true });
   }
   await editor.locator("p").first().click();
   await page.keyboard.press("End");
@@ -795,7 +831,11 @@ test("ordinary lists retain bullets around non-task checkboxes", async ({ page }
     container.innerHTML = `<ul><li><p><input type="checkbox"> enabled</p></li></ul><ul><li><p data-prose-exclude><input type="checkbox" disabled> excluded</p></li></ul><ul><li><p><span>before</span> <input type="checkbox" disabled> later</p></li></ul><ul><li><input type="checkbox" disabled> task</li></ul>`;
     root.append(container);
     container.insertAdjacentHTML("beforeend", `<ul><li>before</li><li><input type="checkbox" disabled> task</li><li>after</li><li>another</li></ul>`);
-    return [...container.querySelectorAll("ul")].map(list => ({ style: getComputedStyle(list).listStyleType, padding: getComputedStyle(list).paddingInlineStart, items: [...list.children].map(item => getComputedStyle(item).listStyleType) }));
+    return [...container.querySelectorAll("ul")].map(list => ({
+      style: getComputedStyle(list).listStyleType,
+      padding: getComputedStyle(list).paddingInlineStart,
+      items: [...list.children].map(item => getComputedStyle(item).listStyleType),
+    }));
   });
   for (const item of styles.slice(0, 3)) {
     expect(item.style).toBe("disc");
@@ -862,7 +902,16 @@ for (const theme of ["light", "dark"]) {
           range.setEnd(node, index + 1);
           const glyph = range.getBoundingClientRect();
           const nested = item.querySelector("ol, ul, p + p")?.getBoundingClientRect();
-          return { top: itemBox.top - origin.top, height: itemBox.height, boxTop: box.top - origin.top, boxHeight: box.height, textX: glyph.left - origin.left, textTop: glyph.top - origin.top, nestedTop: nested ? nested.top - origin.top : -1, nestedX: nested ? nested.left - origin.left : -1 };
+          return {
+            top: itemBox.top - origin.top,
+            height: itemBox.height,
+            boxTop: box.top - origin.top,
+            boxHeight: box.height,
+            textX: glyph.left - origin.left,
+            textTop: glyph.top - origin.top,
+            nestedTop: nested ? nested.top - origin.top : -1,
+            nestedX: nested ? nested.left - origin.left : -1,
+          };
         }
         throw new Error("Missing task text");
       });
@@ -921,11 +970,43 @@ for (const theme of ["light", "dark"]) {
     await editor.focus();
     const chrome = await editor.evaluate(element => [element, element.parentElement, element.parentElement?.parentElement].filter((node): node is HTMLElement => node instanceof HTMLElement).map(node => {
       const style = getComputedStyle(node);
-      return { background: style.backgroundColor, border: style.borderTopWidth, padding: style.padding, outline: style.outlineStyle, minHeight: style.minHeight, maxHeight: style.maxHeight, overflow: style.overflowY };
+      return {
+        background: style.backgroundColor,
+        border: style.borderTopWidth,
+        padding: style.padding,
+        outline: style.outlineStyle,
+        minHeight: style.minHeight,
+        maxHeight: style.maxHeight,
+        overflow: style.overflowY,
+      };
     }));
-    for (const style of chrome) expect(style).toEqual({ background: "rgba(0, 0, 0, 0)", border: "0px", padding: "0px", outline: "none", minHeight: "0px", maxHeight: "none", overflow: "visible" });
+    for (const style of chrome) {
+      expect(style).toEqual({
+        background: "rgba(0, 0, 0, 0)",
+        border: "0px",
+        padding: "0px",
+        outline: "none",
+        minHeight: "0px",
+        maxHeight: "none",
+        overflow: "visible",
+      });
+    }
     await editor.blur();
-    const selectors = ["h1", ":scope > p:nth-of-type(1)", ":scope > p:nth-of-type(2)", "h2", ":scope > ul", "ul ul", ":scope > ol", "blockquote", "pre", "hr", ":scope > p:has(img[src])", "img[src]", ":scope > p:last-child"];
+    const selectors = [
+      "h1",
+      ":scope > p:nth-of-type(1)",
+      ":scope > p:nth-of-type(2)",
+      "h2",
+      ":scope > ul",
+      "ul ul",
+      ":scope > ol",
+      "blockquote",
+      "pre",
+      "hr",
+      ":scope > p:has(img[src])",
+      "img[src]",
+      ":scope > p:last-child",
+    ];
     const measure = (root: Element, queries: string[]) => {
       const rootRect = root.getBoundingClientRect();
       return queries.map(selector => {
@@ -933,7 +1014,13 @@ for (const theme of ["light", "dark"]) {
         if (!element) throw new Error(`Missing ${selector}`);
         const rect = element.getBoundingClientRect();
         const style = getComputedStyle(element);
-        return { selector, top: rect.top - rootRect.top, height: rect.height, marginTop: style.marginTop, marginBottom: style.marginBottom };
+        return {
+          selector,
+          top: rect.top - rootRect.top,
+          height: rect.height,
+          marginTop: style.marginTop,
+          marginBottom: style.marginBottom,
+        };
       });
     };
     const actual = await editor.evaluate(measure, selectors);
@@ -957,7 +1044,12 @@ for (const theme of ["light", "dark"]) {
       range.selectNodeContents(text);
       const left = root.getBoundingClientRect().left;
       const bounds = cell.getBoundingClientRect();
-      return { align: getComputedStyle(cell).textAlign, left: bounds.left - left, right: bounds.right - left, text: range.getBoundingClientRect().left - left };
+      return {
+        align: getComputedStyle(cell).textAlign,
+        left: bounds.left - left,
+        right: bounds.right - left,
+        text: range.getBoundingClientRect().left - left,
+      };
     });
     const editorCells = await editor.evaluate(cellPositions);
     const proseCells = await prose.evaluate(cellPositions);
@@ -965,17 +1057,27 @@ for (const theme of ["light", "dark"]) {
     expect(editorCells).toHaveLength(9);
     for (let i = 0; i < editorCells.length; i++) {
       expect(proseCells[i]!.align).toBe(editorCells[i]!.align);
-      for (const key of ["left", "right", "text"] as const) expect(Math.abs(editorCells[i]![key] - proseCells[i]![key])).toBeLessThanOrEqual(1);
+      for (const key of ["left", "right", "text"] as const) {
+        expect(Math.abs(editorCells[i]![key] - proseCells[i]![key])).toBeLessThanOrEqual(1);
+      }
     }
     console.log(JSON.stringify({ theme, width: page.viewportSize()?.width, editorDetails, proseDetails }));
     expect(editorDetails).toHaveLength(6);
     expect(proseDetails).toHaveLength(6);
     const checkboxStyle = (root: Element) => [...root.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')].map(input => {
       const style = getComputedStyle(input);
-      return { checked: input.checked, background: style.backgroundColor, border: style.borderColor, width: style.width, height: style.height };
+      return {
+        checked: input.checked,
+        background: style.backgroundColor,
+        border: style.borderColor,
+        width: style.width,
+        height: style.height,
+      };
     });
     expect(await editor.evaluate(checkboxStyle)).toEqual(await prose.evaluate(checkboxStyle));
-    const checkboxOffsets = (root: Element) => [...root.querySelectorAll('input[type="checkbox"]')].map(input => input.getBoundingClientRect().left - root.getBoundingClientRect().left);
+    const checkboxOffsets = (root: Element) => [...root.querySelectorAll('input[type="checkbox"]')].map(input => (
+      input.getBoundingClientRect().left - root.getBoundingClientRect().left
+    ));
     const editorOffsets = await editor.evaluate(checkboxOffsets);
     const proseOffsets = await prose.evaluate(checkboxOffsets);
     for (let i = 0; i < editorOffsets.length; i++) expect(Math.abs(editorOffsets[i]! - proseOffsets[i]!)).toBeLessThanOrEqual(1);
@@ -1068,7 +1170,10 @@ for (const theme of ["light", "dark"]) {
       expect((await soft.boundingBox())!.height).toBeCloseTo(await soft.evaluate(element => parseFloat(getComputedStyle(element).lineHeight)), 0);
       const code = root.locator("pre");
       await expect(code).toContainText("x".repeat(120));
-      expect(await code.evaluate(element => ({ whiteSpace: getComputedStyle(element).whiteSpace, overflows: element.scrollWidth > element.clientWidth }))).toEqual({ whiteSpace: "pre", overflows: true });
+      expect(await code.evaluate(element => ({
+        whiteSpace: getComputedStyle(element).whiteSpace,
+        overflows: element.scrollWidth > element.clientWidth,
+      }))).toEqual({ whiteSpace: "pre", overflows: true });
     }
   });
 }
@@ -1122,7 +1227,11 @@ test("typed consecutive spaces stay visible and remain in Markdown", async ({ pa
     if (alpha < 0 || beta < 0 || gamma < 0) throw new Error("Whitespace measurement words are missing");
     const firstStart = alpha + "Alpha".length;
     const secondStart = beta + "beta".length;
-    return { one: context.measureText(" ").width, two: measure(firstStart, beta - firstStart), three: measure(secondStart, gamma - secondStart) };
+    return {
+      one: context.measureText(" ").width,
+      two: measure(firstStart, beta - firstStart),
+      three: measure(secondStart, gamma - secondStart),
+    };
   });
   expect(widths.two).toBeGreaterThan(widths.one * 1.75);
   expect(widths.three).toBeGreaterThan(widths.one * 2.75);
@@ -1532,11 +1641,20 @@ test("frame matches Input states and surfaces in both themes", async ({ page }) 
   const input = page.getByRole("textbox", { name: "Input comparison" });
   const styles = (element: Element) => {
     const style = getComputedStyle(element);
-    return { border: style.borderTopColor, outline: style.outlineColor, outlineWidth: style.outlineWidth, background: style.backgroundColor };
+    return {
+      border: style.borderTopColor,
+      outline: style.outlineColor,
+      outlineWidth: style.outlineWidth,
+      background: style.backgroundColor,
+    };
   };
   for (const dark of [false, true]) {
     await page.locator("html").evaluate((element, value) => element.classList.toggle("dark", value), dark);
-    const normal = { frame: await frame.evaluate(styles), input: await input.evaluate(styles), page: await page.locator("body").evaluate(element => getComputedStyle(element).backgroundColor) };
+    const normal = {
+      frame: await frame.evaluate(styles),
+      input: await input.evaluate(styles),
+      page: await page.locator("body").evaluate(element => getComputedStyle(element).backgroundColor),
+    };
     expect(normal.frame.border).toBe(normal.input.border);
     expect(normal.frame.background).toBe(normal.input.background);
     expect(normal.frame.background).toBe(normal.page);
@@ -1565,7 +1683,17 @@ test("frame matches Input states and surfaces in both themes", async ({ page }) 
       return color;
     });
     expect(disabledFrame.background).toBe(token);
-    console.log(JSON.stringify({ theme: dark ? "dark" : "light", normal, focusFrame, focusInput, invalidFrame, invalidInput, disabledFrame, disabledInput, token }));
+    console.log(JSON.stringify({
+      theme: dark ? "dark" : "light",
+      normal,
+      focusFrame,
+      focusInput,
+      invalidFrame,
+      invalidInput,
+      disabledFrame,
+      disabledInput,
+      token,
+    }));
     await page.getByRole("button", { name: "Disabled", exact: true }).click();
   }
 });
@@ -1621,7 +1749,11 @@ test("the field keeps the input boundary and grows from the minimum to the maxim
     if (i > 1) await editor.press("Enter");
     await editor.pressSequentially(`Line ${i}`);
   }
-  const grown = await frame.evaluate(element => ({ height: element.getBoundingClientRect().height, clientHeight: element.clientHeight, scrollHeight: element.scrollHeight }));
+  const grown = await frame.evaluate(element => ({
+    height: element.getBoundingClientRect().height,
+    clientHeight: element.clientHeight,
+    scrollHeight: element.scrollHeight,
+  }));
   expect(grown.height).toBe(288);
   expect(grown.scrollHeight).toBeGreaterThan(grown.clientHeight);
 });
