@@ -669,13 +669,37 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
     focusAtEnd(editor);
   };
 
+  // Escape returns to the text; Home, End, and the arrow keys move between the
+  // bubble's buttons, as in any toolbar.
+  const handleBubbleKeyDownCapture = (event: React.KeyboardEvent<HTMLDivElement>, editor: Editor) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setEditingLink(false);
+      editor.view.focus();
+      return;
+    }
+
+    const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
+    const index = buttons.findIndex(button => button === document.activeElement);
+    if (index < 0) return;
+
+    const next = event.key === "Home" ? 0
+      : event.key === "End" ? buttons.length - 1
+      : event.key === "ArrowRight" ? (index + 1) % buttons.length
+      : event.key === "ArrowLeft" ? (index + buttons.length - 1) % buttons.length
+      : -1;
+    if (next >= 0) {
+      event.preventDefault();
+      buttons[next]?.focus();
+    }
+  };
+
   return (
     <div
       data-slot="markdown-editor"
       data-presentation={presentation}
       data-invalid={invalid || undefined}
       data-disabled={disabled || undefined}
-      onClick={presentation === "field" ? handleFrameClick : undefined}
       className={cn(
         presentation === "in-place" && "min-w-0 data-disabled:pointer-events-none",
         presentation === "field" && cn(
@@ -695,6 +719,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
           "forced-colors:border-[ButtonText]",
         ),
       )}
+      onClick={presentation === "field" ? handleFrameClick : undefined}
     >
       <EditorContent editor={editor} />
       {editor && !readOnly && !disabled && (
@@ -719,9 +744,9 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
           shouldShow={shouldShowFormatting}
         >
           <div
+            data-slot="markdown-formatting-bubble"
             role="toolbar"
             aria-label="Formatting"
-            data-slot="markdown-formatting-bubble"
             className={cn("flex items-center", popoverSurface)}
             onBlur={event => {
               // Tiptap 3.33.0 workaround: dismiss when focus leaves the menu as well as the editor.
@@ -732,28 +757,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
                 editor.view.dispatch(editor.state.tr.setMeta(bubbleKey, "hide"));
               }
             }}
-            onKeyDownCapture={event => {
-              if (event.key === "Escape") {
-                event.preventDefault();
-                setEditingLink(false);
-                editor.view.focus();
-                return;
-              }
-
-              const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
-              const index = buttons.findIndex(button => button === document.activeElement);
-              if (index < 0) return;
-
-              const next = event.key === "Home" ? 0
-                : event.key === "End" ? buttons.length - 1
-                : event.key === "ArrowRight" ? (index + 1) % buttons.length
-                : event.key === "ArrowLeft" ? (index + buttons.length - 1) % buttons.length
-                : -1;
-              if (next >= 0) {
-                event.preventDefault();
-                buttons[next]?.focus();
-              }
-            }}
+            onKeyDownCapture={event => handleBubbleKeyDownCapture(event, editor)}
           >
             {editingLink ? (
               <form
@@ -770,13 +774,13 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
                   id={`${errorId}-input`}
                   size="sm"
                   aria-labelledby={`${errorId}-label`}
+                  aria-invalid={linkError || undefined}
+                  aria-describedby={linkError ? errorId : undefined}
                   value={url}
                   onChange={event => {
                     setUrl(event.target.value);
                     setLinkError(false);
                   }}
-                  aria-invalid={linkError || undefined}
-                  aria-describedby={linkError ? errorId : undefined}
                 />
                 <Button
                   nativeButton
