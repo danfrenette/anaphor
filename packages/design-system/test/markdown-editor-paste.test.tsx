@@ -57,6 +57,21 @@ function fileEvent(dom: HTMLElement, kind: "paste" | "drop", files: File[]) {
   return event;
 }
 
+async function selectText(dom: HTMLElement, from: number, to = from) {
+  dom.focus();
+  const text = dom.querySelector("p, h1, code")!.firstChild!;
+  const range = document.createRange();
+  range.setStart(text, from);
+  range.setEnd(text, to);
+  const selection = window.getSelection()!;
+  selection.removeAllRanges();
+  selection.addRange(range);
+  await act(async () => {
+    document.dispatchEvent(new Event("selectionchange"));
+    await new Promise(resolve => setTimeout(resolve, 30));
+  });
+}
+
 test("image file order survives asynchronous completion and ignores other files", async () => {
   const files = [
     new File(["a"], "a.png", { type: "image/png" }),
@@ -420,21 +435,6 @@ test.each([
       .replace(/>/g, "&gt;"),
   );
 });
-
-async function selectText(dom: HTMLElement, from: number, to = from) {
-  dom.focus();
-  const text = dom.querySelector("p, h1, code")!.firstChild!;
-  const range = document.createRange();
-  range.setStart(text, from);
-  range.setEnd(text, to);
-  const selection = window.getSelection()!;
-  selection.removeAllRanges();
-  selection.addRange(range);
-  await act(async () => {
-    document.dispatchEvent(new Event("selectionchange"));
-    await new Promise(resolve => setTimeout(resolve, 30));
-  });
-}
 
 const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "paste");
 
