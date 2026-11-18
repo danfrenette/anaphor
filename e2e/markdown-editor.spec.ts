@@ -59,7 +59,11 @@ for (const theme of ["light", "dark"]) test(`bubble keyboard navigation, focus a
   await page.keyboard.press("Alt+F10");
   await expect(bubble.getByRole("button", { name: "Bold" })).toBeFocused();
   await page.keyboard.press("Tab");
-  await expect.poll(() => page.evaluate(() => document.querySelector('[role="toolbar"][aria-label="Formatting"]')?.contains(document.activeElement) ?? false)).toBe(false);
+  const bubbleHasFocus = () => page.evaluate(() => {
+    const toolbar = document.querySelector('[role="toolbar"][aria-label="Formatting"]');
+    return toolbar?.contains(document.activeElement) ?? false;
+  });
+  await expect.poll(bubbleHasFocus).toBe(false);
   await expect(bubble).toBeHidden();
 });
 
@@ -721,7 +725,11 @@ async function checkAccessibility(page: Page, include?: string) {
   const general = await scan().withTags(tags).disableRules("scrollable-region-focusable").analyze();
   // Editable code and table wrappers scroll with the caret; axe cannot detect that keyboard access.
   // Exclude only those editable regions from this rule, not the other rules.
-  const scrollable = await scan().exclude('[data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) pre, [data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) div:has(> table)').withRules("scrollable-region-focusable").analyze();
+  const editableScrollRegions = '[data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) pre, [data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) div:has(> table)';
+  const scrollable = await scan()
+    .exclude(editableScrollRegions)
+    .withRules("scrollable-region-focusable")
+    .analyze();
   expect([...general.violations, ...scrollable.violations]).toEqual([]);
 }
 
@@ -955,7 +963,8 @@ for (const theme of ["light", "dark"]) {
     await page.evaluate(() => document.fonts.ready);
     await expect(page.getByRole("textbox", { name: "In-place note", exact: true })).toBeVisible();
     await prepareContentSnapshot(page);
-    await expect(page.getByRole("region", { name: "In-place comparison" })).toHaveScreenshot(`markdown-in-place-${theme}.png`, { animations: "disabled", caret: "hide" });
+    const comparison = page.getByRole("region", { name: "In-place comparison" });
+    await expect(comparison).toHaveScreenshot(`markdown-in-place-${theme}.png`, { animations: "disabled", caret: "hide" });
   });
 
   test(`in-place parity: ${theme}`, async ({ page }) => {
@@ -968,18 +977,23 @@ for (const theme of ["light", "dark"]) {
     await expect(editor.getByRole("img", { name: "Landscape study" })).toBeVisible();
     await expect(prose.getByRole("img", { name: "Landscape study" })).toBeVisible();
     await editor.focus();
-    const chrome = await editor.evaluate(element => [element, element.parentElement, element.parentElement?.parentElement].filter((node): node is HTMLElement => node instanceof HTMLElement).map(node => {
-      const style = getComputedStyle(node);
-      return {
-        background: style.backgroundColor,
-        border: style.borderTopWidth,
-        padding: style.padding,
-        outline: style.outlineStyle,
-        minHeight: style.minHeight,
-        maxHeight: style.maxHeight,
-        overflow: style.overflowY,
-      };
-    }));
+    const chrome = await editor.evaluate(element => {
+      const layers = [element, element.parentElement, element.parentElement?.parentElement];
+      return layers
+        .filter((node): node is HTMLElement => node instanceof HTMLElement)
+        .map(node => {
+          const style = getComputedStyle(node);
+          return {
+            background: style.backgroundColor,
+            border: style.borderTopWidth,
+            padding: style.padding,
+            outline: style.outlineStyle,
+            minHeight: style.minHeight,
+            maxHeight: style.maxHeight,
+            overflow: style.overflowY,
+          };
+        });
+    });
     for (const style of chrome) {
       expect(style).toEqual({
         background: "rgba(0, 0, 0, 0)",
@@ -1167,7 +1181,9 @@ for (const theme of ["light", "dark"]) {
     expect(Math.abs((await editor.boundingBox())!.height - (await prose.boundingBox())!.height)).toBeLessThanOrEqual(1);
     for (const root of [editor, prose]) {
       const soft = root.getByText("A soft line continues here.");
-      expect((await soft.boundingBox())!.height).toBeCloseTo(await soft.evaluate(element => parseFloat(getComputedStyle(element).lineHeight)), 0);
+      const softHeight = (await soft.boundingBox())!.height;
+      const lineHeight = await soft.evaluate(element => parseFloat(getComputedStyle(element).lineHeight));
+      expect(softHeight).toBeCloseTo(lineHeight, 0);
       const code = root.locator("pre");
       await expect(code).toContainText("x".repeat(120));
       expect(await code.evaluate(element => ({
@@ -1443,7 +1459,8 @@ for (const theme of ["light", "dark"]) test(`updates the placeholder after mount
 test("the empty field shows the placeholder and keeps one Prose line of content", async ({ page }) => {
   await page.goto("/markdown-editor");
   const editor = page.getByRole("textbox", { name: "Notes" });
-  await expect.poll(() => editor.locator("p").first().evaluate(element => getComputedStyle(element, "::before").content)).toBe('"Write a note…"');
+  const placeholder = () => editor.locator("p").first().evaluate(element => getComputedStyle(element, "::before").content);
+  await expect.poll(placeholder).toBe('"Write a note…"');
 
   const { contentHeight, lineHeight } = await editor.evaluate(element => {
     if (!(element instanceof HTMLElement)) throw new Error("The editor must be an HTML element");
@@ -1457,7 +1474,7 @@ test("the empty field shows the placeholder and keeps one Prose line of content"
 
   await editor.click();
   await editor.pressSequentially("Draft");
-  await expect.poll(() => editor.locator("p").first().evaluate(element => getComputedStyle(element, "::before").content)).not.toBe('"Write a note…"');
+  await expect.poll(placeholder).not.toBe('"Write a note…"');
 });
 
 test("the field inside Field is named by its label and associated with its feedback", async ({ page }) => {
@@ -1620,7 +1637,8 @@ test("keyboard reaches the gap after a final opaque block", async ({ page }) => 
   await editor.getByText("<!-- Field note -->").click();
   await editor.press("ArrowDown");
   await page.keyboard.type("x");
-  await expect(page.getByLabel("Field states Markdown", { exact: true })).toHaveText("## A loaded note\n\nLoaded with `setMarkdown`.\n\n<!-- Field note -->\n\nx");
+  const output = page.getByLabel("Field states Markdown", { exact: true });
+  await expect(output).toHaveText("## A loaded note\n\nLoaded with `setMarkdown`.\n\n<!-- Field note -->\n\nx");
 });
 
 test("keyboard reaches the gap after a final code block", async ({ page }) => {
@@ -1732,7 +1750,8 @@ test("setMarkdown loads and discards notes without firing a change", async ({ pa
   await expect(editor.getByRole("heading", { name: "A loaded note" })).toBeVisible();
 
   await page.getByRole("button", { name: "Discard edits" }).click();
-  await expect.poll(() => editor.locator("p").first().evaluate(element => getComputedStyle(element, "::before").content)).toBe('"Write a note…"');
+  const placeholder = () => editor.locator("p").first().evaluate(element => getComputedStyle(element, "::before").content);
+  await expect.poll(placeholder).toBe('"Write a note…"');
 });
 
 test("the field keeps the input boundary and grows from the minimum to the maximum then scrolls", async ({ page }) => {
