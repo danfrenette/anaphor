@@ -1318,6 +1318,19 @@ test("an opaque block's text cannot be edited in place", async ({ page }) => {
   await expect(output).not.toContainText("[^1]: The note text.");
 });
 
+for (const theme of ["light", "dark"]) test(`updates the placeholder after mount: ${theme}`, async ({ page }) => {
+  await page.addInitScript(value => localStorage.setItem("anaphor-theme", value), theme);
+  await page.goto("/markdown-editor-fixture");
+  const editor = page.getByRole("textbox", { name: "Placeholder fixture" });
+  const content = () => editor.locator("p").first().evaluate(element => getComputedStyle(element, "::before").content);
+  await expect.poll(content).toBe('"First placeholder"');
+  await page.getByRole("button", { name: "Change placeholder" }).click();
+  await expect.poll(content).toBe('"Second placeholder"');
+  await editor.click();
+  await editor.pressSequentially("Draft");
+  await expect.poll(content).not.toBe('"Second placeholder"');
+});
+
 test("the empty field shows the placeholder and keeps one Prose line of content", async ({ page }) => {
   await page.goto("/markdown-editor");
   const editor = page.getByRole("textbox", { name: "Notes" });
