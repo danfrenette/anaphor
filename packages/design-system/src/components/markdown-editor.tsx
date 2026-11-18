@@ -240,11 +240,11 @@ function useMarkdownEditor({
     view: Editor["view"],
     event: Event,
     files: FileList | undefined,
-    drop: boolean,
+    isDrop: boolean,
   ): boolean {
     const images = Array.from(files ?? []).filter(file => file.type.startsWith("image/"));
     if (!images.length) {
-      if (drop && files?.length) {
+      if (isDrop && files?.length) {
         event.preventDefault();
         return true;
       }
@@ -252,37 +252,37 @@ function useMarkdownEditor({
     }
 
     event.preventDefault();
-    const handler = imageHandlerRef.current;
-    if (!handler || !editor || !editor.isEditable) return true;
+    const resolveImage = imageHandlerRef.current;
+    if (!resolveImage || !editor || !editor.isEditable) return true;
 
-    const position = drop && event instanceof MouseEvent
+    const dropPosition = isDrop && event instanceof MouseEvent
       ? view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos
       : undefined;
-    let from = position ?? view.state.selection.from;
-    let to = position ?? view.state.selection.to;
+    let from = dropPosition ?? view.state.selection.from;
+    let to = dropPosition ?? view.state.selection.to;
     const generation = imageGeneration.current;
 
-    const map = ({ transaction }: { transaction: Transaction }) => {
+    const mapInsertionRange = ({ transaction }: { transaction: Transaction }) => {
       from = transaction.mapping.map(from, 1);
       to = transaction.mapping.map(to, 1);
     };
-    editor.on("transaction", map);
+    editor.on("transaction", mapInsertionRange);
     const cleanup = () => {
-      editor.off("transaction", map);
+      editor.off("transaction", mapInsertionRange);
       pendingImageCleanup.current.delete(cleanup);
     };
     pendingImageCleanup.current.add(cleanup);
 
-    const resolutions = images.map(file => Promise.resolve().then(() => handler(file)));
+    const resolutions = images.map(file => Promise.resolve().then(() => resolveImage(file)));
     void Promise.allSettled(resolutions).then(results => {
       cleanup();
       const isSuperseded = generation !== imageGeneration.current;
       if (editor.isDestroyed || !editor.isEditable || isSuperseded) return;
 
-      const content = results.flatMap(result =>
+      const imageNodes = results.flatMap(result =>
         result.status === "fulfilled" ? [{ type: "image", attrs: result.value }] : [],
       );
-      if (content.length) {
+      if (imageNodes.length) {
         // Spec requirement (handoff 346 decision 4): an asynchronously resolved
         // image is its own undo step.
         editor
@@ -291,7 +291,7 @@ function useMarkdownEditor({
             closeHistory(tr);
             return true;
           })
-          .insertContentAt({ from, to }, content)
+          .insertContentAt({ from, to }, imageNodes)
           .run();
         editor.view.dispatch(closeHistory(editor.state.tr));
       }
