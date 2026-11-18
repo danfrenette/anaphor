@@ -64,6 +64,10 @@ const existingPostMarkdown = [
 
 const anotherNoteMarkdown = "## A loaded note\n\nLoaded with `setMarkdown`.\n\n<!-- Field note -->";
 
+const tableMarkdown = "| Name | Value |\n| :--- | ---: |\n| Alpha | Beta |";
+
+const markdownOutputClassName = "mt-3 min-h-24 whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-4 font-mono text-small";
+
 export function MarkdownEditorExample() {
   const imageUrls = useRef<string[]>([]);
   useEffect(() => () => { imageUrls.current.forEach(url => URL.revokeObjectURL(url)); }, []);
@@ -75,7 +79,7 @@ export function MarkdownEditorExample() {
   const [markdown, setMarkdown] = useState(startingMarkdown);
   const [existingPost, setExistingPost] = useState(existingPostMarkdown);
   const [inPlaceNote, setInPlaceNote] = useState(anotherNoteMarkdown);
-  const [tableNote, setTableNote] = useState("| Name | Value |\n| :--- | ---: |\n| Alpha | Beta |");
+  const [tableNote, setTableNote] = useState(tableMarkdown);
   return <>
     <section aria-label="Field presentation" className="mt-8">
       <Text as="h2" variant="heading">Field presentation</Text>
@@ -85,7 +89,7 @@ export function MarkdownEditorExample() {
         <MarkdownEditor presentation="field" defaultValue={startingMarkdown} onChange={setMarkdown} onImageFile={onImageFile} aria-label="Research note" />
       </div>
       <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
-      <div role="group" aria-label="Current Markdown" className="mt-3 min-h-24 whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-4 font-mono text-small">{markdown}</div>
+      <div role="group" aria-label="Current Markdown" className={markdownOutputClassName}>{markdown}</div>
     </section>
     <section aria-label="Existing post" className="mt-12">
       <Text as="h2" variant="heading">Existing post</Text>
@@ -94,7 +98,7 @@ export function MarkdownEditorExample() {
         <MarkdownEditor presentation="field" defaultValue={existingPostMarkdown} onChange={setExistingPost} aria-label="Existing post" />
       </div>
       <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
-      <div role="group" aria-label="Existing post Markdown" className="mt-3 min-h-24 whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-4 font-mono text-small">{existingPost}</div>
+      <div role="group" aria-label="Existing post Markdown" className={markdownOutputClassName}>{existingPost}</div>
     </section>
     <section aria-label="Field states" className="mt-12">
       <FieldStatesExample />
@@ -109,7 +113,7 @@ export function MarkdownEditorExample() {
     <section aria-label="Table editing" className="mt-12">
       <Text as="h2" variant="heading">Table editing</Text>
       <button type="button">Before table</button>
-      <MarkdownEditor presentation="field" defaultValue={"| Name | Value |\n| :--- | ---: |\n| Alpha | Beta |"} onChange={setTableNote} aria-label="Table note" />
+      <MarkdownEditor presentation="field" defaultValue={tableMarkdown} onChange={setTableNote} aria-label="Table note" />
       <button type="button">After table</button>
       <div role="group" aria-label="Table Markdown" className="whitespace-pre-wrap">{tableNote}</div>
     </section>
@@ -158,7 +162,7 @@ function FieldStatesExample() {
       </Field>
     </div>
     <Text as="h3" variant="ui" className="mt-8 font-medium">Current Markdown</Text>
-    <div role="group" aria-label="Field states Markdown" className="mt-3 min-h-24 whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-4 font-mono text-small">{markdown}</div>
+    <div role="group" aria-label="Field states Markdown" className={markdownOutputClassName}>{markdown}</div>
   </>;
 }
 
