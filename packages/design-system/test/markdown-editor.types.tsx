@@ -1,6 +1,12 @@
 import { createRef } from "react";
 import { expectTypeOf } from "vitest";
-import { MarkdownEditor, useMarkdownEditor, type MarkdownEditorHandle, type MarkdownEditorImageHandler, type UseMarkdownEditorOptions } from "@anaphor/system";
+import {
+  MarkdownEditor,
+  useMarkdownEditor,
+  type MarkdownEditorHandle,
+  type MarkdownEditorImageHandler,
+  type UseMarkdownEditorOptions,
+} from "@anaphor/system";
 
 const handleImage: MarkdownEditorImageHandler = async file => ({ src: file.name, alt: file.name });
 <MarkdownEditor presentation="field" defaultValue="" aria-label="Note" onImageFile={handleImage} />;
@@ -13,13 +19,28 @@ const ref = createRef<MarkdownEditorHandle>();
 <MarkdownEditor defaultValue="Note" aria-label="Research note" />;
 // @ts-expect-error Only field and in-place presentations are supported.
 <MarkdownEditor presentation="other" defaultValue="Note" aria-label="Research note" />;
-<MarkdownEditor presentation="field" ref={ref} defaultValue="# Note" aria-label="Research note" onChange={markdown => expectTypeOf(markdown).toEqualTypeOf<string>()} />;
+<MarkdownEditor
+  presentation="field"
+  ref={ref}
+  defaultValue="# Note"
+  aria-label="Research note"
+  onChange={markdown => expectTypeOf(markdown).toEqualTypeOf<string>()}
+/>;
 expectTypeOf(ref.current?.getMarkdown()).toEqualTypeOf<string | undefined>();
 expectTypeOf(ref.current?.setMarkdown).toEqualTypeOf<((markdown: string) => void) | undefined>();
 <MarkdownEditor presentation="field" defaultValue="Note" aria-labelledby="note-label" />;
 
 // Field integration and state props are optional and compose with either label.
-<MarkdownEditor presentation="field" defaultValue="Note" aria-labelledby="note-label" id="note-editor" aria-describedby="note-desc note-error" invalid readOnly placeholder="Write a note…" />;
+<MarkdownEditor
+  presentation="field"
+  defaultValue="Note"
+  aria-labelledby="note-label"
+  id="note-editor"
+  aria-describedby="note-desc note-error"
+  invalid
+  readOnly
+  placeholder="Write a note…"
+/>;
 <MarkdownEditor presentation="field" defaultValue="Note" aria-label="Research note" disabled autoFocus />;
 
 // @ts-expect-error Starting Markdown is required for the uncontrolled editor.
@@ -31,7 +52,18 @@ expectTypeOf(ref.current?.setMarkdown).toEqualTypeOf<((markdown: string) => void
 // @ts-expect-error Use either labelling prop, not both.
 <MarkdownEditor presentation="field" defaultValue="Note" aria-label="Research note" aria-labelledby="note-label" />;
 
-const options = { defaultValue: "# Note", "aria-label": "Research note", onChange: (markdown: string) => void markdown, placeholder: "Write…", readOnly: false, disabled: false, autoFocus: false, invalid: false, id: "note", "aria-describedby": "note-desc" } satisfies UseMarkdownEditorOptions;
+const options = {
+  defaultValue: "# Note",
+  "aria-label": "Research note",
+  onChange: (markdown: string) => void markdown,
+  placeholder: "Write…",
+  readOnly: false,
+  disabled: false,
+  autoFocus: false,
+  invalid: false,
+  id: "note",
+  "aria-describedby": "note-desc",
+} satisfies UseMarkdownEditorOptions;
 function Consumer() {
   const { getMarkdown, setMarkdown } = useMarkdownEditor(options);
   expectTypeOf(getMarkdown()).toEqualTypeOf<string>();
