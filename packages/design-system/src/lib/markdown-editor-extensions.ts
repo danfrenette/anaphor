@@ -214,20 +214,6 @@ function codeFenceLength(text: string): number {
   return Math.max(3, longestBacktickRun(text) + 1);
 }
 
-/** True when an image destination must use the `<...>` form to survive a round-trip. */
-function linkDestinationNeedsAngleBrackets(href: string): boolean {
-  if (/\s/.test(href)) return true;
-  let depth = 0;
-  for (const character of href) {
-    if (character === "(") depth += 1;
-    else if (character === ")") {
-      depth -= 1;
-      if (depth < 0) return true;
-    }
-  }
-  return depth !== 0;
-}
-
 const MarkdownCodeBlock = CodeBlock.extend({
   // Spec requirement: read-only code blocks must be keyboard-scrollable.
   addProseMirrorPlugins() {
@@ -340,6 +326,20 @@ const MarkdownLink = Link.extend({
   // Spec requirement (AC-4): paste linking is handled by the safety-checked adapter.
   linkOnPaste: false,
 });
+
+/** True when an image destination must use the `<...>` form to survive a round-trip. */
+function linkDestinationNeedsAngleBrackets(href: string): boolean {
+  if (/\s/.test(href)) return true;
+  let depth = 0;
+  for (const character of href) {
+    if (character === "(") depth += 1;
+    else if (character === ")") {
+      depth -= 1;
+      if (depth < 0) return true;
+    }
+  }
+  return depth !== 0;
+}
 
 // Tiptap 3.33.0 workaround: preserve delimiters in image alt text and destinations.
 const MarkdownImage = Image.extend({
