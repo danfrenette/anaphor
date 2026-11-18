@@ -414,29 +414,108 @@ function useMarkdownEditor({
   return { editor, getMarkdown, setMarkdown };
 }
 
-function FormattingButtons({ editor, focused, setFocused, openLink }: { editor: Editor; focused: number; setFocused: (index: number) => void; openLink: () => void }) {
-  const [mac] = useState(() => typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform));
-  const active = useEditorState({ editor, selector: ({ editor }) => ({
-    bold: editor.isActive("bold"), italic: editor.isActive("italic"),
-    strike: editor.isActive("strike"), code: editor.isActive("code"), link: editor.isActive("link"),
-  }) });
+type FormattingButtonsProps = {
+  editor: Editor;
+  focused: number;
+  setFocused: (index: number) => void;
+  openLink: () => void;
+};
+
+function FormattingButtons({
+  editor,
+  focused,
+  setFocused,
+  openLink,
+}: FormattingButtonsProps) {
+  const [mac] = useState(() => (
+    typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform)
+  ));
+  const active = useEditorState({
+    editor,
+    selector: ({ editor }) => ({
+      bold: editor.isActive("bold"),
+      italic: editor.isActive("italic"),
+      strike: editor.isActive("strike"),
+      code: editor.isActive("code"),
+      link: editor.isActive("link"),
+    }),
+  });
+
   const items = [
     { name: "Bold", key: "bold" as const, shortcut: "B", Icon: TextB, run: () => editor.chain().toggleBold().run() },
     { name: "Italic", key: "italic" as const, shortcut: "I", Icon: TextItalic, run: () => editor.chain().toggleItalic().run() },
-    { name: "Strikethrough", key: "strike" as const, shortcut: "Shift+S", Icon: TextStrikethrough, run: () => editor.chain().toggleStrike().run() },
+    {
+      name: "Strikethrough",
+      key: "strike" as const,
+      shortcut: "Shift+S",
+      Icon: TextStrikethrough,
+      run: () => editor.chain().toggleStrike().run(),
+    },
     { name: "Inline code", key: "code" as const, shortcut: "E", Icon: Code, run: () => editor.chain().toggleCode().run() },
     { name: "Link", key: "link" as const, shortcut: "K", Icon: LinkIcon, run: openLink },
   ];
-  return <TooltipGroup>{items.map(({ name, key, shortcut, Icon, run }, index) => <Tooltip key={key}>
-    <TooltipTrigger render={<Button nativeButton type="button" variant="ghost" tone="neutral" size="sm" shape="square" iconOnly loading={false}
-      className="aria-pressed:bg-[var(--anaphor-input-disabled)]" aria-label={name} aria-pressed={active[key]} tabIndex={focused === index ? 0 : -1} onFocus={() => setFocused(index)} onMouseDown={event => event.preventDefault()} onClick={() => { if (editor.isEditable) run(); }}><Icon aria-hidden="true" /></Button>} />
-    <TooltipPopup side="top" align="center" sideOffset={8}>{name} <KbdGroup aria-label={`${mac ? "Command" : "Control"} ${shortcut}`}><Kbd>{mac ? "⌘" : "Ctrl"}</Kbd>{shortcut.split("+").map(key => <Kbd key={key}>{key}</Kbd>)}</KbdGroup></TooltipPopup>
-  </Tooltip>)}</TooltipGroup>;
+
+  return (
+    <TooltipGroup>
+      {items.map(({ name, key, shortcut, Icon, run }, index) => (
+        <Tooltip key={key}>
+          <TooltipTrigger
+            render={
+              <Button
+                nativeButton
+                type="button"
+                variant="ghost"
+                tone="neutral"
+                size="sm"
+                shape="square"
+                iconOnly
+                loading={false}
+                className="aria-pressed:bg-[var(--anaphor-input-disabled)]"
+                aria-label={name}
+                aria-pressed={active[key]}
+                tabIndex={focused === index ? 0 : -1}
+                onFocus={() => setFocused(index)}
+                onMouseDown={event => event.preventDefault()}
+                onClick={() => { if (editor.isEditable) run(); }}
+              >
+                <Icon aria-hidden="true" />
+              </Button>
+            }
+          />
+          <TooltipPopup side="top" align="center" sideOffset={8}>
+            {name}{" "}
+            <KbdGroup aria-label={`${mac ? "Command" : "Control"} ${shortcut}`}>
+              <Kbd>{mac ? "⌘" : "Ctrl"}</Kbd>
+              {shortcut.split("+").map(key => <Kbd key={key}>{key}</Kbd>)}
+            </KbdGroup>
+          </TooltipPopup>
+        </Tooltip>
+      ))}
+    </TooltipGroup>
+  );
 }
 
-function shouldShowFormatting({ editor, element, view, state, from, to }: Parameters<NonNullable<BubbleMenuProps["shouldShow"]>>[0]) {
-  // Spec requirement (AC-1, AC-2), Tiptap 3.33.0 override: exclude node and cell selections and opaque/code content.
-  if (!editor.isEditable || !(state.selection instanceof TextSelection) || state.selection.empty || !(view.hasFocus() || element.contains(document.activeElement))) return false;
+type ShouldShowFormattingProps = Parameters<NonNullable<BubbleMenuProps["shouldShow"]>>[0];
+
+function shouldShowFormatting({
+  editor,
+  element,
+  view,
+  state,
+  from,
+  to,
+}: ShouldShowFormattingProps) {
+  // Spec requirement (AC-1, AC-2), Tiptap 3.33.0 override: exclude node and cell
+  // selections, and opaque or code content.
+  if (
+    !editor.isEditable ||
+    !(state.selection instanceof TextSelection) ||
+    state.selection.empty ||
+    !(view.hasFocus() || element.contains(document.activeElement))
+  ) {
+    return false;
+  }
+
   let excluded = false;
   state.doc.nodesBetween(from, to, node => {
     if (["codeBlock", "opaqueBlock", "opaqueInline"].includes(node.type.name)) excluded = true;
