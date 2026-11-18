@@ -541,27 +541,27 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   const selectionBubblePluginKey = useMemo(() => new PluginKey("formattingBubble"), []);
   const [focusedIndex, setFocusedIndex] = useState(0);
 
-  const [coarsePointer, setCoarsePointer] = useState(false);
+  const [isCoarsePointer, setIsCoarsePointer] = useState(false);
   useEffect(() => {
     if (!window.matchMedia) return;
 
-    const media = window.matchMedia("(pointer: coarse)");
-    const update = () => setCoarsePointer(media.matches);
-    update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
+    const coarsePointerQuery = window.matchMedia("(pointer: coarse)");
+    const syncCoarsePointer = () => setIsCoarsePointer(coarsePointerQuery.matches);
+    syncCoarsePointer();
+    coarsePointerQuery.addEventListener("change", syncCoarsePointer);
+    return () => coarsePointerQuery.removeEventListener("change", syncCoarsePointer);
   }, []);
 
   const [editingLink, setEditingLink] = useState(false);
-  const [url, setUrl] = useState("");
+  const [linkUrl, setLinkUrl] = useState("");
   const [linkError, setLinkError] = useState(false);
-  const errorId = useId();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const linkErrorId = useId();
+  const linkInputRef = useRef<HTMLInputElement>(null);
   const pointerLinkAction = useRef(false);
   const returnLinkFocus = useRef(false);
 
   useLayoutEffect(() => {
-    if (editingLink) inputRef.current?.focus();
+    if (editingLink) linkInputRef.current?.focus();
   }, [editingLink]);
 
   useLayoutEffect(() => {
@@ -574,7 +574,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   const openLink = useCallback(() => {
     if (!editor?.isEditable) return;
 
-    setUrl(editor.getAttributes("link").href ?? "");
+    setLinkUrl(editor.getAttributes("link").href ?? "");
     setLinkError(false);
     setEditingLink(true);
   }, [editor]);
@@ -582,18 +582,18 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   const finishLink = (remove: boolean) => {
     if (!editor?.isEditable) return;
 
-    const value = url.trim();
-    const host = /^(?:[a-z\d](?:[a-z\d-]*[a-z\d])?\.)+[a-z\d](?:[a-z\d-]*[a-z\d])?(?::\d+)?(?:[/?#][^\s@\\]*)?$/i.test(value);
-    const explicit = /^[a-z][a-z\d+.-]*:/i.test(value) && !host;
-    const relative = /^(?:\.\.?\/|\/|#)/.test(value) || /^[^\s@\\:]+\/[^\s@\\]*$/.test(value);
-    const isUnrecognisedForm = !explicit && !host && !relative;
-    const hasStrayCharacter = !explicit && /[\s@\\]/.test(value);
-    const destination = host ? `https://${value}` : value;
+    const url = linkUrl.trim();
+    const isBareHost = /^(?:[a-z\d](?:[a-z\d-]*[a-z\d])?\.)+[a-z\d](?:[a-z\d-]*[a-z\d])?(?::\d+)?(?:[/?#][^\s@\\]*)?$/i.test(url);
+    const hasExplicitScheme = /^[a-z][a-z\d+.-]*:/i.test(url) && !isBareHost;
+    const isRelative = /^(?:\.\.?\/|\/|#)/.test(url) || /^[^\s@\\:]+\/[^\s@\\]*$/.test(url);
+    const isUnrecognisedForm = !hasExplicitScheme && !isBareHost && !isRelative;
+    const hasStrayCharacter = !hasExplicitScheme && /[\s@\\]/.test(url);
+    const destination = isBareHost ? `https://${url}` : url;
     const href = normalizeLinkHref(destination);
     if (
       !remove &&
       (
-        !value ||
+        !url ||
         !isSafePasteUri(destination) ||
         !isSafePasteUri(href) ||
         isUnrecognisedForm ||
@@ -735,7 +735,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
             // Decision 7, Tiptap 3.33.0/floating-ui override: fixed positioning escapes clipping.
             strategy: "fixed",
             // AC-8: coarse pointers prefer below.
-            placement: coarsePointer ? "bottom" : "top",
+            placement: isCoarsePointer ? "bottom" : "top",
             onHide: () => {
               setEditingLink(false);
               setFocusedIndex(0);
@@ -772,17 +772,17 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
                   finishLink(false);
                 }}
               >
-                <label id={`${errorId}-label`} htmlFor={`${errorId}-input`}>URL</label>
+                <label id={`${linkErrorId}-label`} htmlFor={`${linkErrorId}-input`}>URL</label>
                 <Input
-                  ref={inputRef}
-                  id={`${errorId}-input`}
+                  ref={linkInputRef}
+                  id={`${linkErrorId}-input`}
                   size="sm"
-                  aria-labelledby={`${errorId}-label`}
+                  aria-labelledby={`${linkErrorId}-label`}
                   aria-invalid={linkError || undefined}
-                  aria-describedby={linkError ? errorId : undefined}
-                  value={url}
+                  aria-describedby={linkError ? linkErrorId : undefined}
+                  value={linkUrl}
                   onChange={event => {
-                    setUrl(event.target.value);
+                    setLinkUrl(event.target.value);
                     setLinkError(false);
                   }}
                 />
@@ -798,7 +798,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
                 >
                   Apply
                 </Button>
-                {linkError && <span id={errorId}>Enter a safe URL.</span>}
+                {linkError && <span id={linkErrorId}>Enter a safe URL.</span>}
                 <Button
                   nativeButton
                   type="button"
