@@ -43,6 +43,7 @@ function suppressPastedOrdinal(source: string, token: MarkdownToken | undefined)
 // Spec requirement (AC-1, AC-2): clipboard presentation is not document formatting.
 function cleanPastedHtml(html: string): string {
   const document = new DOMParser().parseFromString(html, "text/html");
+  const keptAttributes = ["href", "data-type", "data-checked", "checked", "type", "start", "colspan", "rowspan"];
 
   for (const element of Array.from(document.body.querySelectorAll("*"))) {
     if (element.matches("img")) {
@@ -66,7 +67,7 @@ function cleanPastedHtml(html: string): string {
     }
 
     for (const attribute of Array.from(element.attributes)) {
-      if (!["href", "data-type", "data-checked", "checked", "type", "start", "colspan", "rowspan"].includes(attribute.name)) {
+      if (!keptAttributes.includes(attribute.name)) {
         element.removeAttribute(attribute.name);
       }
     }
@@ -79,8 +80,16 @@ function cleanPastedHtml(html: string): string {
 function containsMarkdown(node: JSONContent, source: string, hasBracketLink: boolean): boolean {
   if (node.type === "image") return true;
   if (node.type === "codeBlock") return /^ {0,3}(?:`{3,}|~{3,})/m.test(source);
-  if (["heading", "bulletList", "orderedList", "blockquote", "table", "horizontalRule"].includes(node.type ?? "")) return true;
-  if (node.marks?.some(mark => ["bold", "italic", "strike", "code"].includes(mark.type) || (mark.type === "link" && hasBracketLink))) return true;
+
+  const markdownBlocks = ["heading", "bulletList", "orderedList", "blockquote", "table", "horizontalRule"];
+  if (markdownBlocks.includes(node.type ?? "")) return true;
+
+  const hasMarkdownMark = node.marks?.some(mark => (
+    ["bold", "italic", "strike", "code"].includes(mark.type) ||
+    (mark.type === "link" && hasBracketLink)
+  ));
+  if (hasMarkdownMark) return true;
+
   return node.content?.some(child => containsMarkdown(child, source, hasBracketLink)) ?? false;
 }
 
@@ -93,7 +102,8 @@ function literalPastedImage(token: MarkdownToken): JSONContent | undefined {
 }
 
 function unsafePasteLink(node: JSONContent): string | undefined {
-  const href = node.marks?.find(mark => mark.type === "link" && !isSafePasteUri(mark.attrs?.href))?.attrs?.href;
+  const unsafeLink = node.marks?.find(mark => mark.type === "link" && !isSafePasteUri(mark.attrs?.href));
+  const href = unsafeLink?.attrs?.href;
   return typeof href === "string" ? href : undefined;
 }
 

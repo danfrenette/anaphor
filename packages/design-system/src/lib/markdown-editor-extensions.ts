@@ -27,7 +27,11 @@ const PlaceholderText = Extension.create({
 // Tiptap 3.33.0 workaround: serialize a link across inline images as one span.
 function renderLinkedImages(node: JSONContent, helpers: MarkdownRendererHelpers): string | undefined {
   const content = node.content ?? [];
-  if (!content.some(child => (child.type === "image" || child.type === "opaqueInline") && child.marks?.some(mark => mark.type === "link"))) return undefined;
+  const hasLinkedAtom = content.some(child =>
+    (child.type === "image" || child.type === "opaqueInline") &&
+    child.marks?.some(mark => mark.type === "link"),
+  );
+  if (!hasLinkedAtom) return undefined;
 
   let markdown = "";
   for (let i = 0; i < content.length;) {
@@ -499,7 +503,10 @@ const MarkdownOrderedList = OrderedList.extend({
         if (content === undefined) continue;
 
         const contentIndent = firstLine.length - content.length;
-        const dedent = (line: string) => line.slice(Math.min(line.length - line.trimStart().length, contentIndent));
+        const dedent = (line: string) => {
+          const lineIndent = line.length - line.trimStart().length;
+          return line.slice(Math.min(lineIndent, contentIndent));
+        };
         const codeSource = [content, ...rest.split("\n").map(dedent)].join("\n");
         item.tokens = [
           { type: "paragraph", raw: "", text: "", tokens: [] },
