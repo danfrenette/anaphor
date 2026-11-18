@@ -308,7 +308,8 @@ test.each([
   const parsed = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html");
   expect(parsed.querySelectorAll("body > *")).toHaveLength(1);
   expect(parsed.querySelector("img")).toBeNull();
-  expect(new URL(parsed.querySelector("a")!.getAttribute("href")!, "https://base.invalid/").href).toBe(new URL(before, "https://base.invalid/").href);
+  const markedHref = parsed.querySelector("a")!.getAttribute("href")!;
+  expect(new URL(markedHref, "https://base.invalid/").href).toBe(new URL(before, "https://base.invalid/").href);
   act(() => ref.current!.setMarkdown(saved));
   expect(editor.querySelector("a")?.getAttribute("href")).toBe(before);
 });
@@ -381,7 +382,8 @@ test.each(["https://example.com/a`b", "https://éxample.com/a"])("fresh Marked r
   fireEvent.submit(field.closest("form")!);
   const saved = ref.current!.getMarkdown();
   expect(saved).toBe(`[text](${destination})`);
-  const markedHref = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html").querySelector("a")!.getAttribute("href")!;
+  const parsed = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html");
+  const markedHref = parsed.querySelector("a")!.getAttribute("href")!;
   expect(new URL(markedHref, "https://base.invalid/").href).toBe(new URL(destination, "https://base.invalid/").href);
   act(() => ref.current!.setMarkdown(saved));
   expect(editor.querySelector("a")).toHaveAttribute("href", destination);
@@ -395,7 +397,8 @@ test("clean starting link stays unchanged after an unrelated edit", async () => 
   await user.keyboard("!");
   const saved = ref.current!.getMarkdown();
   expect(saved).toContain("(https://anaphor.dev)");
-  expect(new DOMParser().parseFromString(await new Marked().parse(saved), "text/html").querySelector("a")?.getAttribute("href")).toBe("https://anaphor.dev");
+  const parsed = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html");
+  expect(parsed.querySelector("a")?.getAttribute("href")).toBe("https://anaphor.dev");
   act(() => ref.current!.setMarkdown(saved));
   expect(editor.querySelector("a")).toHaveAttribute("href", "https://anaphor.dev");
 });
@@ -410,7 +413,8 @@ test("relative starting link retains its destination after editing and reparse",
   await user.keyboard("!");
   const saved = ref.current!.getMarkdown();
   const parsed = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html");
-  expect(new URL(parsed.querySelector("a")!.getAttribute("href")!, "https://base.invalid/").href).toBe(new URL(before, "https://base.invalid/").href);
+  const markedHref = parsed.querySelector("a")!.getAttribute("href")!;
+  expect(new URL(markedHref, "https://base.invalid/").href).toBe(new URL(before, "https://base.invalid/").href);
   expect(parsed.querySelector("img")).toBeNull();
   act(() => ref.current!.setMarkdown(saved));
   expect(editor.querySelector("a")?.getAttribute("href")).toBe(before);
@@ -1547,7 +1551,8 @@ describe("preserved unsupported content", () => {
   });
 
   test("preserved HTML renders inert: no elements, no handlers", async () => {
-    setupEditor('Text <script>window.__opaque = true</script> <img src=x onerror="window.__opaque = true"> <a href="javascript:window.__opaque = true">link</a>');
+    const source = 'Text <script>window.__opaque = true</script> <img src=x onerror="window.__opaque = true"> <a href="javascript:window.__opaque = true">link</a>';
+    setupEditor(source);
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     expect(editor.querySelector("script")).toBeNull();
@@ -1555,7 +1560,7 @@ describe("preserved unsupported content", () => {
     // the dangerous `<img src onerror>` must not have become an element.
     expect(editor.querySelector("img[src], img[onerror]")).toBeNull();
     expect(editor.querySelector("a")).toBeNull();
-    expect(editor).toHaveTextContent('Text <script>window.__opaque = true</script> <img src=x onerror="window.__opaque = true"> <a href="javascript:window.__opaque = true">link</a>');
+    expect(editor).toHaveTextContent(source);
     expect(Reflect.get(window, "__opaque")).toBeUndefined();
   });
 
