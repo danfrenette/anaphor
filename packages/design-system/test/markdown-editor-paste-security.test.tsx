@@ -64,7 +64,12 @@ test.each(vectors.flatMap(vector => paths.map(path => [vector, path])))('unsafe 
   const markdown = ref.current!.getMarkdown();
   const parsed = new DOMParser().parseFromString(await marked.parse(markdown), "text/html");
   const links = [...parsed.querySelectorAll<HTMLAnchorElement>("a[href]")];
-  if (process.env.SECURITY_MATRIX) console.log("SECURITY_MATRIX", JSON.stringify({ vector, path, markdown, hrefs: links.map(link => link.getAttribute("href")) }));
-  for (const link of links) expect(["http:", "https:", "ftp:", "ftps:", "mailto:", "tel:", "callto:", "sms:", "cid:", "xmpp:"]).toContain(link.protocol);
+  if (process.env.SECURITY_MATRIX) {
+    const hrefs = links.map(link => link.getAttribute("href"));
+    console.log("SECURITY_MATRIX", JSON.stringify({ vector, path, markdown, hrefs }));
+  }
+
+  const safeProtocols = ["http:", "https:", "ftp:", "ftps:", "mailto:", "tel:", "callto:", "sms:", "cid:", "xmpp:"];
+  for (const link of links) expect(safeProtocols).toContain(link.protocol);
   cleanup();
 });
