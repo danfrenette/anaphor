@@ -7,7 +7,10 @@ import { MarkdownEditor, type MarkdownEditorHandle } from "@anaphor/system";
 beforeEach(() => {
   const rect = new DOMRect(0, 0, 10, 20);
   Object.defineProperty(Range.prototype, "getBoundingClientRect", { configurable: true, value: () => rect });
-  Object.defineProperty(Range.prototype, "getClientRects", { configurable: true, value: () => Object.assign([rect], { item: (index: number) => index === 0 ? rect : null }) });
+  Object.defineProperty(Range.prototype, "getClientRects", {
+    configurable: true,
+    value: () => Object.assign([rect], { item: (index: number) => index === 0 ? rect : null }),
+  });
   Object.defineProperty(window, "scrollBy", { configurable: true, value: () => {} });
 });
 
