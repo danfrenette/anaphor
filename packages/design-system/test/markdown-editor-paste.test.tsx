@@ -5,7 +5,12 @@ import { act, render, screen } from "@testing-library/react";
 import { createRef } from "react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, test, vi } from "vitest";
-import { MarkdownEditor, useMarkdownEditor, type MarkdownEditorHandle, type MarkdownEditorImageHandler } from "@anaphor/system";
+import {
+  MarkdownEditor,
+  useMarkdownEditor,
+  type MarkdownEditorHandle,
+  type MarkdownEditorImageHandler,
+} from "@anaphor/system";
 import { EditorContent } from "@tiptap/react";
 import type { Editor } from "@tiptap/core";
 import { Marked } from "marked";
@@ -17,15 +22,31 @@ beforeEach(() => {
   vi.stubGlobal("ClipboardEvent", Event);
   const rect = new DOMRect(0, 0, 10, 20);
   Object.defineProperty(Range.prototype, "getBoundingClientRect", { configurable: true, value: () => rect });
-  Object.defineProperty(Range.prototype, "getClientRects", { configurable: true, value: () => Object.assign([rect], { item: (index: number) => index === 0 ? rect : null }) });
+  Object.defineProperty(Range.prototype, "getClientRects", {
+    configurable: true,
+    value: () => Object.assign([rect], { item: (index: number) => index === 0 ? rect : null }),
+  });
   Object.defineProperty(window, "scrollBy", { configurable: true, value: () => {} });
 });
 
-async function setupPasteEditor(value = "", options: { readOnly?: boolean; disabled?: boolean; onChange?: (value: string) => void; onImageFile?: MarkdownEditorImageHandler } = {}) {
+type PasteEditorOptions = {
+  readOnly?: boolean;
+  disabled?: boolean;
+  onChange?: (value: string) => void;
+  onImageFile?: MarkdownEditorImageHandler;
+};
+
+async function setupPasteEditor(value = "", options: PasteEditorOptions = {}) {
   const ref = createRef<MarkdownEditorHandle>();
   const rendered = render(<MarkdownEditor ref={ref} presentation="field" defaultValue={value} aria-label="Paste editor" {...options} />);
   const dom = await screen.findByRole("textbox", { name: "Paste editor" });
-  return { dom, ref, ...rendered, getMarkdown: () => ref.current!.getMarkdown(), setMarkdown: (markdown: string) => ref.current!.setMarkdown(markdown) };
+  return {
+    dom,
+    ref,
+    ...rendered,
+    getMarkdown: () => ref.current!.getMarkdown(),
+    setMarkdown: (markdown: string) => ref.current!.setMarkdown(markdown),
+  };
 }
 
 function fileEvent(dom: HTMLElement, kind: "paste" | "drop", files: File[]) {
@@ -36,17 +57,26 @@ function fileEvent(dom: HTMLElement, kind: "paste" | "drop", files: File[]) {
 }
 
 test("image file order survives asynchronous completion and ignores other files", async () => {
-  const files = [new File(["a"], "a.png", { type: "image/png" }), new File(["x"], "x.txt", { type: "text/plain" }), new File(["b"], "b.png", { type: "image/png" })];
+  const files = [
+    new File(["a"], "a.png", { type: "image/png" }),
+    new File(["x"], "x.txt", { type: "text/plain" }),
+    new File(["b"], "b.png", { type: "image/png" }),
+  ];
   let resolveFirst!: (value: { src: string; alt: string }) => void;
-  const onImageFile = vi.fn((file: File) => file === files[0] ? new Promise<{ src: string; alt: string }>(resolve => { resolveFirst = resolve; }) : Promise.resolve({ src: "b.png", alt: "b" }));
+  const onImageFile = vi.fn((file: File) => file === files[0]
+    ? new Promise<{ src: string; alt: string }>(resolve => { resolveFirst = resolve; })
+    : Promise.resolve({ src: "b.png", alt: "b" }));
   const api = await setupPasteEditor("", { onImageFile });
   api.dom.focus();
+
   await act(async () => { fileEvent(api.dom, "paste", files); });
   expect(onImageFile.mock.calls.map(([file]) => file.name)).toEqual(["a.png", "b.png"]);
+
   await act(async () => { resolveFirst({ src: "a.png", alt: "a" }); });
   expect(api.getMarkdown()).toBe("![a](a.png)![b](b.png)");
   expect(screen.getByRole("img", { name: "a" })).toBeVisible();
   expect(screen.getByRole("img", { name: "b" })).toBeVisible();
+
   await userEvent.setup().keyboard("{Control>}z{/Control}");
   expect(api.getMarkdown()).toBe("");
 });
@@ -87,9 +117,15 @@ test("rejected image file leaves the editor usable without an unhandled rejectio
   window.removeEventListener("unhandledrejection", unhandled);
 });
 
-test.each(["no handler", "read only", "disabled"].flatMap(state => (["paste", "drop"] as const).map(kind => [state, kind] as const)))("image %s prevents %s", async (state, kind) => {
+test.each(["no handler", "read only", "disabled"].flatMap(state => (
+  (["paste", "drop"] as const).map(kind => [state, kind] as const)
+)))("image %s prevents %s", async (state, kind) => {
   const handler = vi.fn(async () => ({ src: "a.png", alt: "a" }));
-  const api = await setupPasteEditor("", { ...(state !== "no handler" ? { onImageFile: handler } : {}), readOnly: state === "read only", disabled: state === "disabled" });
+  const api = await setupPasteEditor("", {
+    ...(state !== "no handler" ? { onImageFile: handler } : {}),
+    readOnly: state === "read only",
+    disabled: state === "disabled",
+  });
   let event!: Event;
   await act(async () => { event = fileEvent(api.dom, kind, [new File(["a"], "a.png", { type: "image/png" })]); });
   expect(event.defaultPrevented).toBe(true);
@@ -121,8 +157,21 @@ test.each(["unmount", "read only", "disabled"])("pending image is discarded on %
   const onImageFile = () => new Promise<{ src: string; alt: string }>(resolve => { resolveImage = resolve; });
   const api = await setupPasteEditor("", { onImageFile });
   await act(async () => { fileEvent(api.dom, "paste", [new File(["a"], "a.png", { type: "image/png" })]); });
-  if (state === "unmount") api.unmount();
-  else api.rerender(<MarkdownEditor ref={api.ref} presentation="field" defaultValue="" aria-label="Paste editor" onImageFile={onImageFile} readOnly={state === "read only"} disabled={state === "disabled"} />);
+  if (state === "unmount") {
+    api.unmount();
+  } else {
+    api.rerender(
+      <MarkdownEditor
+        ref={api.ref}
+        presentation="field"
+        defaultValue=""
+        aria-label="Paste editor"
+        onImageFile={onImageFile}
+        readOnly={state === "read only"}
+        disabled={state === "disabled"}
+      />,
+    );
+  }
   await act(async () => { resolveImage({ src: "a.png", alt: "a" }); });
   if (state !== "unmount") expect(api.getMarkdown()).toBe("");
   expect(screen.queryByRole("img")).toBeNull();
@@ -168,7 +217,13 @@ test("replacement detaches transaction listeners for never-settling images", asy
 test.each(["read only", "disabled", "unmount"])("%s detaches transaction listeners for never-settling images", async state => {
   let editor: Editor | null = null;
   function Harness({ active }: { active: boolean }) {
-    const api = useMarkdownEditor({ defaultValue: "", "aria-label": "Listener editor", onImageFile: () => new Promise(() => {}), readOnly: active && state === "read only", disabled: active && state === "disabled" });
+    const api = useMarkdownEditor({
+      defaultValue: "",
+      "aria-label": "Listener editor",
+      onImageFile: () => new Promise(() => {}),
+      readOnly: active && state === "read only",
+      disabled: active && state === "disabled",
+    });
     editor = api.editor;
     return <EditorContent editor={api.editor} />;
   }
@@ -196,7 +251,9 @@ test("image file paste calls the host and inserts its result", async () => {
   const onChange = vi.fn();
   const api = await setupPasteEditor("", { onImageFile, onChange });
   const event = new Event("paste", { bubbles: true, cancelable: true });
-  Object.defineProperty(event, "clipboardData", { value: { files: [file], types: ["Files", "text/html"], getData: () => "<p>unwanted</p>" } });
+  Object.defineProperty(event, "clipboardData", {
+    value: { files: [file], types: ["Files", "text/html"], getData: () => "<p>unwanted</p>" },
+  });
   await act(async () => { api.dom.dispatchEvent(event); });
   expect(event.defaultPrevented).toBe(true);
   expect(onImageFile).toHaveBeenCalledWith(file);
@@ -205,7 +262,14 @@ test("image file paste calls the host and inserts its result", async () => {
   expect(onChange).toHaveBeenCalledWith("![note](blob:note)");
 });
 
-test.each(["`code` *star* _under_ &lt; &#65; & < [ ] \\", "x\n\n<img src=x onerror=alert(1)>", "one\ntwo", "<script>alert(1)</script>", "x](javascript:alert(1))", "a\\]b.png"])("handler alt stays inside the rendered image: %s", async alt => {
+test.each([
+  "`code` *star* _under_ &lt; &#65; & < [ ] \\",
+  "x\n\n<img src=x onerror=alert(1)>",
+  "one\ntwo",
+  "<script>alert(1)</script>",
+  "x](javascript:alert(1))",
+  "a\\]b.png",
+])("handler alt stays inside the rendered image: %s", async alt => {
   const api = await setupPasteEditor("", { onImageFile: async file => ({ src: "https://safe.invalid/a", alt: alt || file.name }) });
   await act(async () => { fileEvent(api.dom, "paste", [new File(["a"], alt, { type: "image/png" })]); });
   const html = await new Marked().parse(api.getMarkdown());
@@ -214,7 +278,9 @@ test.each(["`code` *star* _under_ &lt; &#65; & < [ ] \\", "x\n\n<img src=x onerr
   expect(document.querySelector("img")?.getAttribute("alt")).toBe(alt.replace(/\s*\n\s*/g, " "));
 });
 
-test.each(["`code`", "*star*", "_under_", "~strike~", "&lt;", "&amp;", "<", ">", "[", "]", "\\", "a\\*b", "one\n\ntwo"])("image alt round trips: %s", async alt => {
+test.each([
+  "`code`", "*star*", "_under_", "~strike~", "&lt;", "&amp;", "<", ">", "[", "]", "\\", "a\\*b", "one\n\ntwo",
+])("image alt round trips: %s", async alt => {
   const api = await setupPasteEditor("", { onImageFile: async () => ({ src: "https://safe.invalid/a", alt }) });
   await act(async () => { fileEvent(api.dom, "paste", [new File(["a"], "a.png", { type: "image/png" })]); });
   const saved = api.getMarkdown();
@@ -293,7 +359,13 @@ test.each([
 
 function pasteHTML(dom: HTMLElement, html: string) {
   const event = new Event("paste", { bubbles: true, cancelable: true });
-  Object.defineProperty(event, "clipboardData", { value: { getData: (type: string) => type === "text/html" ? html : "", files: [], types: ["text/html"] } });
+  Object.defineProperty(event, "clipboardData", {
+    value: {
+      getData: (type: string) => type === "text/html" ? html : "",
+      files: [],
+      types: ["text/html"],
+    },
+  });
   act(() => { dom.dispatchEvent(event); });
 }
 
@@ -313,7 +385,13 @@ test.each(["https://example.com/a.png", "http://example.com/a.png"])("pasted Mar
   expect(screen.getByRole("img", { name: "alt" })).toHaveAttribute("src", src);
 });
 
-test.each(["javascript:alert(1)", "data:image/png;base64,abc", "&#106;avascript:alert(1)", "//example.com/a.png", "relative.png"])("pasted Markdown image stays literal for %s", async src => {
+test.each([
+  "javascript:alert(1)",
+  "data:image/png;base64,abc",
+  "&#106;avascript:alert(1)",
+  "//example.com/a.png",
+  "relative.png",
+])("pasted Markdown image stays literal for %s", async src => {
   const api = await setupPasteEditor();
   api.dom.focus();
   await userEvent.setup().paste(`![alt](${src})`);
@@ -345,7 +423,10 @@ async function selectText(dom: HTMLElement, from: number, to = from) {
   const selection = window.getSelection()!;
   selection.removeAllRanges();
   selection.addRange(range);
-  await act(async () => { document.dispatchEvent(new Event("selectionchange")); await new Promise(resolve => setTimeout(resolve, 30)); });
+  await act(async () => {
+    document.dispatchEvent(new Event("selectionchange"));
+    await new Promise(resolve => setTimeout(resolve, 30));
+  });
 }
 
 const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "paste");
@@ -468,7 +549,13 @@ test("pasted Markdown tables become tables", async () => {
   expect(api.dom.querySelector("table")).not.toBeNull();
 });
 
-test.each([["snake_case_names", "snake\\_case\\_names"], ["2 * 3 = 6", "2 \\* 3 = 6"], ["    indented", "&#32;&#32;&#32;&#32;indented"], ["#heading", "#heading"], ["2026. A year.", "2026\\. A year."]])("ordinary text stays a paragraph: %s", async (text, expected) => {
+test.each([
+  ["snake_case_names", "snake\\_case\\_names"],
+  ["2 * 3 = 6", "2 \\* 3 = 6"],
+  ["    indented", "&#32;&#32;&#32;&#32;indented"],
+  ["#heading", "#heading"],
+  ["2026. A year.", "2026\\. A year."],
+])("ordinary text stays a paragraph: %s", async (text, expected) => {
   const user = userEvent.setup();
   const api = await setupPasteEditor();
   api.dom.focus();
@@ -562,7 +649,15 @@ test("pasting a rich clipboard URL links selected text", async () => {
   await selectText(api.dom, 0, 8);
   api.dom.focus();
   const event = new Event("paste", { bubbles: true, cancelable: true });
-  Object.defineProperty(event, "clipboardData", { value: { getData: (type: string) => type === "text/plain" ? "https://example.com" : type === "text/html" ? '<a href="https://example.com">example</a>' : "", files: [], types: ["text/plain", "text/html"] } });
+  Object.defineProperty(event, "clipboardData", {
+    value: {
+      getData: (type: string) => type === "text/plain" ? "https://example.com"
+        : type === "text/html" ? '<a href="https://example.com">example</a>'
+        : "",
+      files: [],
+      types: ["text/plain", "text/html"],
+    },
+  });
   act(() => { api.dom.dispatchEvent(event); });
   expect(api.getMarkdown()).toBe("[selected](https://example.com)");
   expect(api.dom.textContent).toBe("selected");
@@ -866,19 +961,24 @@ test.each([
   expect(api.dom.querySelectorAll("ol")).toHaveLength(element === "ol" ? 1 : 0);
 });
 
-test.each(["# heading", "###### heading", "```", "~~~", "---", "* * *", "___", "==="]) ("paragraph block opener survives HTML paste and starting value: %s", async line => {
+test.each([
+  "# heading", "###### heading", "```", "~~~", "---", "* * *", "___", "===",
+])("paragraph block opener survives HTML paste and starting value: %s", async line => {
   const api = await setupPasteEditor();
   pasteHTML(api.dom, `<p>text<br>${line}</p>`);
   const saved = api.getMarkdown();
   expect(saved).toBe(`text  \n${line.replace(/[`~*_]/g, "\\$&").replace(/^(?=[#\-=])/, "\\")}`);
+
   act(() => { api.setMarkdown(saved); });
   expect(api.dom.querySelectorAll("p")).toHaveLength(1);
   expect(api.dom.textContent).toBe(`text${line}`);
   expect(api.dom.querySelector("br")).not.toBeNull();
+
   const html = await new (await import("marked")).Marked().parse(saved);
   const rendered = new DOMParser().parseFromString(html, "text/html");
   expect(rendered.querySelector("p")?.textContent).toBe(`text${line}`);
   expect(rendered.querySelector("br")).not.toBeNull();
+
   await selectText(api.dom, 4);
   await userEvent.setup().keyboard("!");
   const edited = api.getMarkdown();
@@ -888,7 +988,7 @@ test.each(["# heading", "###### heading", "```", "~~~", "---", "* * *", "___", "
   expect(api.dom.querySelector("br")).not.toBeNull();
 });
 
-test.each(["# not a heading", "a`b``c"]) ("inline code after a hard break survives serialization: %s", async code => {
+test.each(["# not a heading", "a`b``c"])("inline code after a hard break survives serialization: %s", async code => {
   const api = await setupPasteEditor();
   pasteHTML(api.dom, `<p>text<br><code>${code}</code></p>`);
   const saved = api.getMarkdown();
@@ -902,7 +1002,9 @@ test.each(["# not a heading", "a`b``c"]) ("inline code after a hard break surviv
   expect(rendered.querySelector("br")).not.toBeNull();
 });
 
-test.each(["# heading", "```", "~~~", "---", "***", "___", "===", "- item", "+ item", "* item", "> quote"]) ("paragraph opener on its first line survives paste: %s", async line => {
+test.each([
+  "# heading", "```", "~~~", "---", "***", "___", "===", "- item", "+ item", "* item", "> quote",
+])("paragraph opener on its first line survives paste: %s", async line => {
   const api = await setupPasteEditor();
   pasteHTML(api.dom, `<p>${line.replace(">", "&gt;")}</p>`);
   const saved = api.getMarkdown();
@@ -916,7 +1018,7 @@ test.each(["# heading", "```", "~~~", "---", "***", "___", "===", "- item", "+ i
 test.each([
   ["\ta", "&#9;a"], [" \ta", "&#32;&#9;a"], ["  \ta", "&#32;&#32;&#9;a"],
   ["   \ta", "&#32;&#32;&#32;&#9;a"], ["    a", "&#32;&#32;&#32;&#32;a"], ["   a", "   a"],
-]) ("pasted indentation stays a paragraph: %j", async (text, expected) => {
+])("pasted indentation stays a paragraph: %j", async (text, expected) => {
   const api = await setupPasteEditor();
   api.dom.focus();
   await userEvent.setup().paste(text);
@@ -948,7 +1050,7 @@ test("typed leading spaces stay a paragraph", async () => {
   expect(new DOMParser().parseFromString(html, "text/html").querySelector("p")?.textContent).toBe(visible);
 });
 
-test.each(["paste", "starting value"]) ("table cell hard break survives %s", async source => {
+test.each(["paste", "starting value"])("table cell hard break survives %s", async source => {
   const input = "| A |\n| --- |\n| a<br>b |";
   const api = await setupPasteEditor(source === "starting value" ? input : "");
   if (source === "paste") pasteHTML(api.dom, "<table><tr><th>A</th></tr><tr><td>a<br>b</td></tr></table>");
@@ -978,7 +1080,10 @@ test("typed table cell hard break survives save", async () => {
   const selection = window.getSelection()!;
   selection.removeAllRanges();
   selection.addRange(range);
-  await act(async () => { document.dispatchEvent(new Event("selectionchange")); await new Promise(resolve => setTimeout(resolve, 30)); });
+  await act(async () => {
+    document.dispatchEvent(new Event("selectionchange"));
+    await new Promise(resolve => setTimeout(resolve, 30));
+  });
   await userEvent.setup().keyboard("{Shift>}{Enter}{/Shift}");
   expect(api.dom.querySelector("td br")).not.toBeNull();
   const saved = api.getMarkdown();
