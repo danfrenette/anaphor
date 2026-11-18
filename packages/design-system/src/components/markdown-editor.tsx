@@ -161,68 +161,110 @@ function useMarkdownEditor({
     injectCSS: false,
     editable: !readOnly && !disabled,
     autofocus: autoFocus ? "end" : false,
-    extensions: [MarkdownStarterKit.configure({
-      // Disabled: underline has no CommonMark source and is not in the supported
-      // set; trailingNode appends an extra empty paragraph after a document ending
-      // in a non-paragraph block; dropcursor is a drag affordance the field does not need.
-      underline: false,
-      trailingNode: false,
-      dropcursor: false,
-      // Replaced below by an .extend()ed copy whose renderer writes a fence long
-      // enough for the content (F1).
-      codeBlock: false,
-      // Replaced below by an .extend()ed copy that escapes link destinations.
-      // Links do not open on click or auto-link while typing; the paste adapter
-      // handles safe URLs and selected-text linking.
-      link: false,
-      // Replaced below by an .extend()ed copy whose renderer keeps a leading code
-      // block on the marker line (F4).
-      listItem: false,
-      // Replaced below by an .extend()ed copy whose tokenizer reads a code fence
-      // that opens an ordered item as a code block (workaround 13).
-      orderedList: false,
-      heading: { levels: [1, 2, 3, 4, 5, 6] },
-    // Spec requirement (AC-1, AC-2): Markdown images are inline content.
-    }), CodeBlockGapCursor, MarkdownCodeBlock, MarkdownLink, MarkdownListItem, MarkdownOrderedList, PasteOrdinal, TaskList, TaskItem.configure({ nested: true }), MarkdownTable, TableRow, TableHeader, TableCell, MarkdownImage, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, Markdown, PlaceholderText, Placeholder.configure({ placeholder: ({ editor }) => editor.storage.placeholderText.placeholder })],
+    extensions: [
+      MarkdownStarterKit.configure({
+        // Underline has no CommonMark source and is not in the supported set.
+        underline: false,
+        // Appends an extra empty paragraph after a document ending in a
+        // non-paragraph block.
+        trailingNode: false,
+        // A drag affordance the field does not need.
+        dropcursor: false,
+        // Replaced below by an .extend()ed copy whose renderer writes a fence long
+        // enough for the content (F1).
+        codeBlock: false,
+        // Replaced below by an .extend()ed copy that escapes link destinations.
+        // Links do not open on click or auto-link while typing; the paste adapter
+        // handles safe URLs and selected-text linking.
+        link: false,
+        // Replaced below by an .extend()ed copy whose renderer keeps a leading code
+        // block on the marker line (F4).
+        listItem: false,
+        // Replaced below by an .extend()ed copy whose tokenizer reads a code fence
+        // that opens an ordered item as a code block (workaround 13).
+        orderedList: false,
+        heading: { levels: [1, 2, 3, 4, 5, 6] },
+      }),
+      CodeBlockGapCursor,
+      MarkdownCodeBlock,
+      MarkdownLink,
+      MarkdownListItem,
+      MarkdownOrderedList,
+      PasteOrdinal,
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      MarkdownTable,
+      TableRow,
+      TableHeader,
+      TableCell,
+      // Spec requirement (AC-1, AC-2): Markdown images are inline content.
+      MarkdownImage,
+      OpaqueBlock,
+      OpaqueHtmlTokens,
+      OpaqueInline,
+      Markdown,
+      PlaceholderText,
+      Placeholder.configure({
+        placeholder: ({ editor }) => editor.storage.placeholderText.placeholder,
+      }),
+    ],
     content: body,
     contentType: "markdown",
-    // Spec requirement (AC-1–5, AC-7): clean and classify pasted content.
-    editorProps: { transformPastedHTML: cleanPastedHtml, handleDOMEvents: {
-      paste: (view, event) => handleImageFiles(view, event, event.clipboardData?.files, false),
-      drop: (view, event) => handleImageFiles(view, event, event.dataTransfer?.files, true),
-    }, handlePaste: (view, event): boolean => {
-      return handleMarkdownPaste(view, event, editor);
-    }, attributes: {
-      class: "anaphor-prose outline-none",
-      role: "textbox",
-      "aria-multiline": "true",
-      ...(id !== undefined ? { id } : {}),
-      ...(ariaDescribedBy !== undefined ? { "aria-describedby": ariaDescribedBy } : {}),
-      // State attributes live here, not on an imperative effect, so ProseMirror
-      // re-applies them on every view update and toggling never drops them.
-      ...(invalid ? { "aria-invalid": "true" } : {}),
-      ...(readOnly ? { "aria-readonly": "true" } : {}),
-      ...(disabled ? { "aria-disabled": "true" } : {}),
-      // Editable and read-only are focusable; disabled is removed from the tab
-      // order. `tabindex` here wins over Tiptap's Tabindex extension.
-      ...(disabled ? {} : { tabindex: "0" }),
-      ...(ariaLabel === undefined ? { "aria-labelledby": ariaLabelledBy } : { "aria-label": ariaLabel }),
-    } },
+    editorProps: {
+      // Spec requirement (AC-1–5, AC-7): clean and classify pasted content.
+      transformPastedHTML: cleanPastedHtml,
+      handleDOMEvents: {
+        paste: (view, event) => handleImageFiles(view, event, event.clipboardData?.files, false),
+        drop: (view, event) => handleImageFiles(view, event, event.dataTransfer?.files, true),
+      },
+      handlePaste: (view, event): boolean => handleMarkdownPaste(view, event, editor),
+      attributes: {
+        class: "anaphor-prose outline-none",
+        role: "textbox",
+        "aria-multiline": "true",
+        ...(id !== undefined ? { id } : {}),
+        ...(ariaDescribedBy !== undefined ? { "aria-describedby": ariaDescribedBy } : {}),
+        // State attributes live here, not on an imperative effect, so ProseMirror
+        // re-applies them on every view update and toggling never drops them.
+        ...(invalid ? { "aria-invalid": "true" } : {}),
+        ...(readOnly ? { "aria-readonly": "true" } : {}),
+        ...(disabled ? { "aria-disabled": "true" } : {}),
+        // Editable and read-only are focusable; disabled is removed from the tab
+        // order. `tabindex` here wins over Tiptap's Tabindex extension.
+        ...(disabled ? {} : { tabindex: "0" }),
+        ...(ariaLabel === undefined
+          ? { "aria-labelledby": ariaLabelledBy }
+          : { "aria-label": ariaLabel }),
+      },
+    },
   });
 
-  function handleImageFiles(view: Editor["view"], event: Event, files: FileList | undefined, drop: boolean): boolean {
+  function handleImageFiles(
+    view: Editor["view"],
+    event: Event,
+    files: FileList | undefined,
+    drop: boolean,
+  ): boolean {
     const images = Array.from(files ?? []).filter(file => file.type.startsWith("image/"));
     if (!images.length) {
-      if (drop && files?.length) { event.preventDefault(); return true; }
+      if (drop && files?.length) {
+        event.preventDefault();
+        return true;
+      }
       return false;
     }
+
     event.preventDefault();
     const handler = imageHandlerRef.current;
     if (!handler || !editor || !editor.isEditable) return true;
-    const position = drop && event instanceof MouseEvent ? view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos : undefined;
+
+    const position = drop && event instanceof MouseEvent
+      ? view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos
+      : undefined;
     let from = position ?? view.state.selection.from;
     let to = position ?? view.state.selection.to;
     const generation = imageGeneration.current;
+
     const map = ({ transaction }: { transaction: Transaction }) => {
       from = transaction.mapping.map(from, 1);
       to = transaction.mapping.map(to, 1);
@@ -233,16 +275,29 @@ function useMarkdownEditor({
       pendingImageCleanup.current.delete(cleanup);
     };
     pendingImageCleanup.current.add(cleanup);
+
     void Promise.allSettled(images.map(file => Promise.resolve().then(() => handler(file)))).then(results => {
       cleanup();
       if (editor.isDestroyed || !editor.isEditable || generation !== imageGeneration.current) return;
-      const content = results.flatMap(result => result.status === "fulfilled" ? [{ type: "image", attrs: result.value }] : []);
+
+      const content = results.flatMap(result =>
+        result.status === "fulfilled" ? [{ type: "image", attrs: result.value }] : [],
+      );
       if (content.length) {
-        // Spec requirement (handoff 346 decision 4): an asynchronously resolved image is its own undo step.
-        editor.chain().command(({ tr }) => { closeHistory(tr); return true; }).insertContentAt({ from, to }, content).run();
+        // Spec requirement (handoff 346 decision 4): an asynchronously resolved
+        // image is its own undo step.
+        editor
+          .chain()
+          .command(({ tr }) => {
+            closeHistory(tr);
+            return true;
+          })
+          .insertContentAt({ from, to }, content)
+          .run();
         editor.view.dispatch(closeHistory(editor.state.tr));
       }
     });
+
     return true;
   }
 
@@ -272,6 +327,7 @@ function useMarkdownEditor({
 
   const setMarkdown = useCallback((markdown: string) => {
     if (editor?.isDestroyed) return;
+
     cancelPendingImages();
     const { frontMatter: nextFrontMatter, body: nextBody } = splitFrontMatter(markdown);
     // Until the next real edit, reading the value returns the replaced string
@@ -289,6 +345,7 @@ function useMarkdownEditor({
   // A replacement requested before the editor mounted wins over the starting value.
   useEffect(() => {
     if (!editor || pendingBodyRef.current === null) return;
+
     const nextBody = pendingBodyRef.current;
     pendingBodyRef.current = null;
     replaceContent(nextBody, editor);
@@ -300,20 +357,35 @@ function useMarkdownEditor({
   // `editorProps.attributes` above, so they survive view updates.
   useLayoutEffect(() => {
     if (!editor) return;
+
     if (readOnly || disabled) cancelPendingImages();
-    if (disabled && document.activeElement instanceof HTMLElement && editor.view.dom.contains(document.activeElement)) document.activeElement.blur();
+    if (
+      disabled &&
+      document.activeElement instanceof HTMLElement &&
+      editor.view.dom.contains(document.activeElement)
+    ) {
+      document.activeElement.blur();
+    }
     editor.setEditable(!readOnly && !disabled, false);
   }, [editor, readOnly, disabled, cancelPendingImages]);
 
+  // Abandon image inserts still resolving when the editor unmounts.
   useEffect(() => () => { cancelPendingImages(); }, [cancelPendingImages]);
 
+  // Task item checkboxes are real inputs that ProseMirror re-creates as the
+  // document re-renders, so keep disabling them for as long as the editor is.
   useLayoutEffect(() => {
     if (!editor || !disabled) return;
+
     const root = editor.view.dom;
-    const disableCheckboxes = () => root.querySelectorAll<HTMLInputElement>('li[data-checked] input[type="checkbox"]').forEach(input => { input.disabled = true; });
+    const disableCheckboxes = () => {
+      root.querySelectorAll<HTMLInputElement>('li[data-checked] input[type="checkbox"]').forEach(input => { input.disabled = true; });
+    };
     disableCheckboxes();
+
     const observer = new MutationObserver(disableCheckboxes);
     observer.observe(root, { childList: true, subtree: true });
+
     return () => {
       observer.disconnect();
       root.querySelectorAll<HTMLInputElement>('li[data-checked] input[type="checkbox"]').forEach(input => { input.disabled = false; });
@@ -322,8 +394,10 @@ function useMarkdownEditor({
 
   useEffect(() => {
     if (!editor) return;
+
     const onUpdate = () => {
       if (isReplacingRef.current) return;
+
       const serializedBody = editor.getMarkdown();
       const currentFrontMatter = frontMatterRef.current;
       // A front-matter-only document ends without a newline on its closing `---`,
@@ -332,9 +406,11 @@ function useMarkdownEditor({
       currentValue.current = currentFrontMatter + (needsSeparator ? "\n" : "") + serializedBody;
       onChangeRef.current?.(currentValue.current);
     };
+
     editor.on("update", onUpdate);
     return () => { editor.off("update", onUpdate); };
   }, [editor]);
+
   return { editor, getMarkdown, setMarkdown };
 }
 
