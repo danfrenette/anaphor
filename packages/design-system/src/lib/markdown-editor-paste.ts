@@ -40,6 +40,14 @@ function suppressPastedOrdinal(source: string, token: MarkdownToken | undefined)
   return { type: "pasteOrdinal", raw: item.raw, tokens: item.tokens, marker };
 }
 
+function literalPastedImage(token: MarkdownToken): JSONContent | undefined {
+  if (!pasteOrdinalContext) return undefined;
+  const src = token.href ?? "";
+  if (/^https?:/i.test(src) && isSafePasteUri(src)) return undefined;
+  pasteOrdinalContext.unsafeImage = true;
+  return { type: "text", text: token.raw };
+}
+
 // Spec requirement (AC-1, AC-2): clipboard presentation is not document formatting.
 function cleanPastedHtml(html: string): string {
   const document = new DOMParser().parseFromString(html, "text/html");
@@ -91,14 +99,6 @@ function containsMarkdown(node: JSONContent, source: string, hasBracketLink: boo
   if (hasMarkdownMark) return true;
 
   return node.content?.some(child => containsMarkdown(child, source, hasBracketLink)) ?? false;
-}
-
-function literalPastedImage(token: MarkdownToken): JSONContent | undefined {
-  if (!pasteOrdinalContext) return undefined;
-  const src = token.href ?? "";
-  if (/^https?:/i.test(src) && isSafePasteUri(src)) return undefined;
-  pasteOrdinalContext.unsafeImage = true;
-  return { type: "text", text: token.raw };
 }
 
 function unsafePasteLink(node: JSONContent): string | undefined {
