@@ -2,11 +2,11 @@ import { createRef } from "react";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Marked } from "marked";
+import { beforeEach, expect, test, vi } from "vitest";
+import { MarkdownEditor, type MarkdownEditorHandle } from "@anaphor/system";
 
 // A fresh renderer: the shared `marked` instance is the one @tiptap/markdown configures.
 const marked = new Marked();
-import { beforeEach, expect, test, vi } from "vitest";
-import { MarkdownEditor, type MarkdownEditorHandle } from "@anaphor/system";
 
 beforeEach(() => {
   vi.stubGlobal("ClipboardEvent", Event);
