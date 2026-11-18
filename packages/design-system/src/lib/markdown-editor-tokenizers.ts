@@ -3,19 +3,25 @@ import type { MarkdownToken } from "@tiptap/core";
 // Pure, framework-free tokenizers for the Markdown the editor does not
 // interpret. They run outside React and Tiptap so they are cheap to reason
 // about and test in isolation; the node and extension definitions that consume
-// them stay in the component file.
+// them live in markdown-editor-extensions.ts.
 
-/** A leading `--- … ---` block at the very start of the file, held out of sight and returned byte-for-byte. */
-// Front matter opens with a `---` line and then either closes right away (empty
-// front matter) or its first interior line is a YAML mapping key or a `#`
-// comment. From there the block runs — blank lines included — to the first line
-// that is exactly `---` (or `...`), so a document that merely opens with a
-// horizontal rule or plain prose is not swallowed. CRLF line endings work.
+/**
+ * A leading `--- … ---` block at the very start of the file, held out of sight
+ * and returned byte-for-byte.
+ *
+ * Front matter opens with a `---` line and then either closes right away (empty
+ * front matter) or its first interior line is a YAML mapping key or a `#`
+ * comment. From there the block runs — blank lines included — to the first line
+ * that is exactly `---` (or `...`), so a document that merely opens with a
+ * horizontal rule or plain prose is not swallowed. CRLF line endings work.
+ */
 const FRONT_MATTER_RE = /^---[ \t]*\r?\n(?:(?:---|\.\.\.)[ \t]*(?:\r?\n|$)|(?:[A-Za-z0-9_"'-][^:\r\n]*:|#)[^\r\n]*\r?\n(?:[^\r\n]*\r?\n)*?(?:---|\.\.\.)[ \t]*(?:\r?\n|$))/;
 
 function splitFrontMatter(markdown: string): { frontMatter: string; body: string } {
   const match = FRONT_MATTER_RE.exec(markdown);
-  return match ? { frontMatter: match[0], body: markdown.slice(match[0].length) } : { frontMatter: "", body: markdown };
+  return match
+    ? { frontMatter: match[0], body: markdown.slice(match[0].length) }
+    : { frontMatter: "", body: markdown };
 }
 
 // Mirrors marked@17.0.6's `rules.inline.tag`, reached through
@@ -23,15 +29,18 @@ function splitFrontMatter(markdown: string): { frontMatter: string; body: string
 // otherwise fold into marks (e.g. `<b>`) or drop (e.g. `<img>`). Re-verify on
 // a Tiptap or marked upgrade.
 const INLINE_HTML_RE = /^(?:<!--(?:-?>|[\s\S]*?(?:-->))|<\/[a-zA-Z][\w:-]*\s*>|<[a-zA-Z][\w-]*(?:\s+[a-zA-Z:_][\w.:-]*(?:\s*=\s*"[^"]*"|\s*=\s*'[^']*'|\s*=\s*[^\s"'=<>`]+)?)*?\s*\/?>|<\?[\s\S]*?\?>|<![a-zA-Z]+\s[\s\S]*?>|<!\[CDATA\[[\s\S]*?\]\]>)/;
+
 const FOOTNOTE_REF_RE = /^\[\^([^\]]+)\]/;
+
 // Footnote definitions can have indented continuation lines; keep the whole definition.
 const FOOTNOTE_DEF_RE = /^\[\^[^\]]+\]:[ \t]*[^\n]*(?:\n[ \t]+[^\n]*)*/;
+
 // Recognise ESM only when it is syntactically ESM so prose like "import the
 // data from the CSV" or "export everything" stays a paragraph.
 const ESM_IMPORT_RE = /^import\s+(?:type\s+)?[^"'\n]+\s+from\s+["']|^import\s*["']/;
 const ESM_EXPORT_RE = /^export\s+(?:const|let|var|function|class|default|async|type|interface)\b|^export\s*[*{]/;
 
-/** Skip a JSX `{…}` expression, honouring nested braces and quoted strings. Returns the index after the closing brace. */
+/** Index just past a JSX `{…}` expression's closing brace, honouring nested braces and quoted strings. */
 function skipJsxExpression(source: string, start: number): number {
   let depth = 0;
   for (let i = start; i < source.length; i += 1) {
@@ -77,13 +86,16 @@ function findMatchingClose(source: string, start: number, tagName: string): numb
       i += 1;
       continue;
     }
+
     const tag = /^<\/?([A-Za-z][\w.-]*)/.exec(source.slice(i));
     if (!tag) {
       i += 1;
       continue;
     }
+
     const end = skipTagEnd(source, i + tag[0].length);
     if (end === -1) return -1;
+
     const selfClosing = source[end - 2] === "/" && source[end - 1] === ">";
     if (tag[1] === tagName) {
       if (source[i + 1] === "/") depth -= 1;
@@ -101,10 +113,12 @@ function matchMdxComponent(source: string): MarkdownToken | undefined {
   if (!open) return undefined;
   const tagName = open[1];
   if (!tagName) return undefined;
+
   const openEnd = skipTagEnd(source, open[0].length);
   if (openEnd === -1) return undefined;
   const selfClosing = source[openEnd - 2] === "/" && source[openEnd - 1] === ">";
   if (selfClosing) return { type: "opaqueBlock", raw: source.slice(0, openEnd) };
+
   const closeEnd = findMatchingClose(source, openEnd, tagName);
   if (closeEnd === -1) return undefined;
   return { type: "opaqueBlock", raw: source.slice(0, closeEnd) };
@@ -114,9 +128,11 @@ function matchMdxComponent(source: string): MarkdownToken | undefined {
 function matchOpaqueBlock(source: string): MarkdownToken | undefined {
   const component = matchMdxComponent(source);
   if (component) return component;
+
   const line = /^[^\n]*/.exec(source)?.[0] ?? "";
   if (/^import\b/.test(line) && ESM_IMPORT_RE.test(line)) return { type: "opaqueBlock", raw: line };
   if (/^export\b/.test(line) && ESM_EXPORT_RE.test(line)) return { type: "opaqueBlock", raw: line };
+
   const footnote = FOOTNOTE_DEF_RE.exec(source);
   if (footnote) return { type: "opaqueBlock", raw: footnote[0] };
   return undefined;
