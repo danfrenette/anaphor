@@ -135,7 +135,15 @@ function useMarkdownEditor({
   const { frontMatter, body } = useMemo(() => splitFrontMatter(defaultValue), [defaultValue]);
   const frontMatterRef = useRef(frontMatter);
   const currentValue = useRef(defaultValue);
+  const getMarkdown = useCallback(() => currentValue.current, []);
+
+  const isReplacingRef = useRef(false);
+  const pendingBodyRef = useRef<string | null>(null);
+  const autofocusHandled = useRef(false);
+
   const onChangeRef = useRef(onChange);
+  useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
+
   const imageHandlerRef = useRef(onImageFile);
   useLayoutEffect(() => { imageHandlerRef.current = onImageFile; }, [onImageFile]);
   const imageGeneration = useRef(0);
@@ -144,11 +152,7 @@ function useMarkdownEditor({
     imageGeneration.current++;
     for (const cleanup of pendingImageCleanup.current) cleanup();
   }, []);
-  useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
-  const isReplacingRef = useRef(false);
-  const pendingBodyRef = useRef<string | null>(null);
-  const autofocusHandled = useRef(false);
-  const getMarkdown = useCallback(() => currentValue.current, []);
+
   const editor: Editor | null = useEditor({
     immediatelyRender: false,
     injectCSS: false,
