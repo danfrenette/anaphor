@@ -6,7 +6,7 @@ import { isSafePasteUri, normalizeLinkHref } from "#lib/markdown-editor-links";
 import { splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 
 // Markdown parsing is synchronous; restore the context even if parsing fails or re-enters.
-let pasteOrdinalContext: { suppressed: boolean; unsafeImage: boolean } | undefined;
+let pasteParseContext: { suppressedOrdinal: boolean; unsafeImage: boolean } | undefined;
 
 const PasteOrdinal = Extension.create({
   name: "pasteOrdinal",
@@ -28,7 +28,7 @@ function suppressPastedOrdinal(source: string, token: MarkdownToken | undefined)
   const item = token?.items?.[0];
   const marker = item?.raw?.match(/^ {0,3}(\d{4,}[.)][ \t]+)/)?.[1];
   if (
-    !pasteOrdinalContext ||
+    !pasteParseContext ||
     !marker ||
     !item?.raw ||
     !source.startsWith(item.raw)
@@ -36,31 +36,31 @@ function suppressPastedOrdinal(source: string, token: MarkdownToken | undefined)
     return undefined;
   }
 
-  pasteOrdinalContext.suppressed = true;
+  pasteParseContext.suppressedOrdinal = true;
   return { type: "pasteOrdinal", raw: item.raw, tokens: item.tokens, marker };
 }
 
 function literalPastedImage(token: MarkdownToken): JSONContent | undefined {
-  if (!pasteOrdinalContext) return undefined;
+  if (!pasteParseContext) return undefined;
   const src = token.href ?? "";
   if (/^https?:/i.test(src) && isSafePasteUri(src)) return undefined;
-  pasteOrdinalContext.unsafeImage = true;
+  pasteParseContext.unsafeImage = true;
   return { type: "text", text: token.raw };
 }
 
 // Spec requirement (AC-1, AC-2): clipboard presentation is not document formatting.
 function cleanPastedHtml(html: string): string {
-  const document = new DOMParser().parseFromString(html, "text/html");
+  const pastedDocument = new DOMParser().parseFromString(html, "text/html");
   const keptAttributes = ["href", "data-type", "data-checked", "checked", "type", "start", "colspan", "rowspan"];
 
-  for (const element of Array.from(document.body.querySelectorAll("*"))) {
+  for (const element of Array.from(pastedDocument.body.querySelectorAll("*"))) {
     if (element.matches("img")) {
-      element.replaceWith(document.createTextNode(element.getAttribute("alt") ?? ""));
+      element.replaceWith(pastedDocument.createTextNode(element.getAttribute("alt") ?? ""));
       continue;
     }
 
     if (element.matches("form, button, input:not([type=checkbox]), textarea, select, iframe, script, style")) {
-      element.replaceWith(document.createTextNode(element.textContent ?? ""));
+      element.replaceWith(pastedDocument.createTextNode(element.textContent ?? ""));
       continue;
     }
 
@@ -81,7 +81,7 @@ function cleanPastedHtml(html: string): string {
     }
   }
 
-  return document.body.innerHTML;
+  return pastedDocument.body.innerHTML;
 }
 
 // Spec requirement (AC-3, AC-5): detect syntax from the parsed paste, not a second lex.
@@ -134,7 +134,7 @@ function literalPasteNodes(node: JSONContent): JSONContent {
   const content: JSONContent[] = [];
   let pendingHref: string | undefined;
   let pendingText = "";
-  const flush = () => {
+  const flushPendingLink = () => {
     if (pendingHref) content.push({ type: "text", text: `[${pendingText}](${pendingHref})` });
     pendingHref = undefined;
     pendingText = "";
@@ -143,15 +143,15 @@ function literalPasteNodes(node: JSONContent): JSONContent {
   for (const child of node.content ?? []) {
     const href = unsafePasteLink(child);
     if (href && child.type === "text") {
-      if (pendingHref !== href) flush();
+      if (pendingHref !== href) flushPendingLink();
       pendingHref = href;
       pendingText += child.text ?? "";
     } else {
-      flush();
+      flushPendingLink();
       content.push(literalPasteNodes(child));
     }
   }
-  flush();
+  flushPendingLink();
 
   const unsafeLink = node.marks?.find(mark => mark.type === "link" && !isSafePasteUri(mark.attrs?.href));
   return {
@@ -195,34 +195,34 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
   const { frontMatter, body } = splitFrontMatter(text);
 
   // Spec requirement (AC-3): a four-digit sentence is not an ordered list.
-  const previous = pasteOrdinalContext;
-  const context = { suppressed: false, unsafeImage: false };
-  pasteOrdinalContext = context;
-  let document: JSONContent;
+  const previous = pasteParseContext;
+  const context = { suppressedOrdinal: false, unsafeImage: false };
+  pasteParseContext = context;
+  let parsedDocument: JSONContent;
   try {
-    document = editor.markdown.parse(body);
+    parsedDocument = editor.markdown.parse(body);
   } finally {
-    pasteOrdinalContext = previous;
+    pasteParseContext = previous;
   }
 
   if (
     !frontMatter &&
-    !context.suppressed &&
+    !context.suppressedOrdinal &&
     !context.unsafeImage &&
-    !containsMarkdown(document, body, /\[[^\]\n]+\]/.test(body))
+    !containsMarkdown(parsedDocument, body, /\[[^\]\n]+\]/.test(body))
   ) {
     return false;
   }
 
   // Spec requirement (AC-7): pasted front matter and unsupported nodes are literal text.
-  const parsed = literalPasteNodes(document);
-  const prefix = frontMatter
+  const literalDocument = literalPasteNodes(parsedDocument);
+  const frontMatterNodes = frontMatter
     ? [literalPasteNodes({ type: "opaqueBlock", attrs: { source: frontMatter.replace(/\r?\n$/, "") } })]
     : [];
-  const nodes = [...prefix, ...(parsed.content ?? [])];
-  const only = nodes.length === 1 ? nodes[0] : undefined;
-  const insertion = only?.type === "paragraph" && !only.attrs?.pasteLiteral
-    ? only.content ?? []
+  const nodes = [...frontMatterNodes, ...(literalDocument.content ?? [])];
+  const onlyNode = nodes.length === 1 ? nodes[0] : undefined;
+  const insertion = onlyNode?.type === "paragraph" && !onlyNode.attrs?.pasteLiteral
+    ? onlyNode.content ?? []
     : nodes;
 
   return editor
