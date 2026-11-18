@@ -118,16 +118,6 @@ type UseMarkdownEditorResult = {
   setMarkdown: (markdown: string) => void;
 };
 
-type MarkdownEditorHandle = {
-  getMarkdown: () => string;
-  setMarkdown: (markdown: string) => void;
-};
-
-type MarkdownEditorProps = UseMarkdownEditorOptions & {
-  presentation: "field" | "in-place";
-  ref?: Ref<MarkdownEditorHandle>;
-};
-
 function useMarkdownEditor({
   defaultValue,
   onChange,
@@ -528,6 +518,16 @@ function shouldShowFormatting({
   });
   return !excluded && !!state.doc.textBetween(from, to);
 }
+
+type MarkdownEditorHandle = {
+  getMarkdown: () => string;
+  setMarkdown: (markdown: string) => void;
+};
+
+type MarkdownEditorProps = UseMarkdownEditorOptions & {
+  presentation: "field" | "in-place";
+  ref?: Ref<MarkdownEditorHandle>;
+};
 
 function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) {
   const { disabled = false, readOnly = false, invalid = false } = options;
