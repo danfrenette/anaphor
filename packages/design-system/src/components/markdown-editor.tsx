@@ -4,14 +4,37 @@ import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import { Placeholder } from "@tiptap/extensions/placeholder";
 import { Markdown } from "@tiptap/markdown";
-import { EditorState, PluginKey, Selection, TextSelection } from "@tiptap/pm/state";
+import { EditorState, PluginKey, Selection, TextSelection, type Transaction } from "@tiptap/pm/state";
 import { GapCursor } from "@tiptap/pm/gapcursor";
 import { closeHistory } from "@tiptap/pm/history";
 import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/react";
 import { BubbleMenu, type BubbleMenuProps } from "@tiptap/react/menus";
 import { TextB, TextItalic, TextStrikethrough, Code, Link as LinkIcon } from "@phosphor-icons/react/dist/ssr";
-import { useCallback, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type Ref } from "react";
-import { CodeBlockGapCursor, MarkdownCodeBlock, MarkdownImage, MarkdownLink, MarkdownListItem, MarkdownOrderedList, MarkdownStarterKit, MarkdownTable, OpaqueBlock, OpaqueHtmlTokens, OpaqueInline, PlaceholderText } from "#lib/markdown-editor-extensions";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Ref,
+} from "react";
+import {
+  CodeBlockGapCursor,
+  MarkdownCodeBlock,
+  MarkdownImage,
+  MarkdownLink,
+  MarkdownListItem,
+  MarkdownOrderedList,
+  MarkdownStarterKit,
+  MarkdownTable,
+  OpaqueBlock,
+  OpaqueHtmlTokens,
+  OpaqueInline,
+  PlaceholderText,
+} from "#lib/markdown-editor-extensions";
 import { isSafePasteUri, normalizeLinkHref } from "#lib/markdown-editor-links";
 import { cleanPastedHtml, handleMarkdownPaste, PasteOrdinal } from "#lib/markdown-editor-paste";
 import { splitFrontMatter } from "#lib/markdown-editor-tokenizers";
@@ -53,8 +76,12 @@ function resetHistory(editor: Editor): void {
   editor.view.updateState(nextState);
 }
 
-type MarkdownEditorLabel = { "aria-label": string; "aria-labelledby"?: never } | { "aria-label"?: never; "aria-labelledby": string };
+type MarkdownEditorLabel =
+  | { "aria-label": string; "aria-labelledby"?: never }
+  | { "aria-label"?: never; "aria-labelledby": string };
+
 type MarkdownEditorImageHandler = (file: File) => Promise<{ src: string; alt: string }>;
+
 type UseMarkdownEditorOptions = {
   defaultValue: string;
   onChange?: (markdown: string) => void;
@@ -75,16 +102,28 @@ type UseMarkdownEditorOptions = {
   /** Ids of the description and error elements inside `Field`. */
   "aria-describedby"?: string;
 } & MarkdownEditorLabel;
+
 type UseMarkdownEditorResult = {
-  /** Mounting/frame use only. `editor.getMarkdown()` is serializer-normalised and not byte-stable before the first edit. */
+  /**
+   * Mounting/frame use only. `editor.getMarkdown()` is serializer-normalised and
+   * not byte-stable before the first edit.
+   */
   editor: Editor | null;
   /** Read Markdown only here: original bytes before any edit, serializer normal form afterwards. */
   getMarkdown: () => string;
   /** Replace the document from outside. Does not fire `onChange` and resets undo history. */
   setMarkdown: (markdown: string) => void;
 };
-type MarkdownEditorHandle = { getMarkdown: () => string; setMarkdown: (markdown: string) => void };
-type MarkdownEditorProps = UseMarkdownEditorOptions & { presentation: "field" | "in-place"; ref?: Ref<MarkdownEditorHandle> };
+
+type MarkdownEditorHandle = {
+  getMarkdown: () => string;
+  setMarkdown: (markdown: string) => void;
+};
+
+type MarkdownEditorProps = UseMarkdownEditorOptions & {
+  presentation: "field" | "in-place";
+  ref?: Ref<MarkdownEditorHandle>;
+};
 
 function useMarkdownEditor({
   defaultValue,
@@ -184,7 +223,7 @@ function useMarkdownEditor({
     let from = position ?? view.state.selection.from;
     let to = position ?? view.state.selection.to;
     const generation = imageGeneration.current;
-    const map = ({ transaction }: { transaction: import("@tiptap/pm/state").Transaction }) => {
+    const map = ({ transaction }: { transaction: Transaction }) => {
       from = transaction.mapping.map(from, 1);
       to = transaction.mapping.map(to, 1);
     };
@@ -468,4 +507,12 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   </div>;
 }
 
-export { MarkdownEditor, useMarkdownEditor, type MarkdownEditorHandle, type MarkdownEditorImageHandler, type MarkdownEditorProps, type UseMarkdownEditorOptions, type UseMarkdownEditorResult };
+export {
+  MarkdownEditor,
+  useMarkdownEditor,
+  type MarkdownEditorHandle,
+  type MarkdownEditorImageHandler,
+  type MarkdownEditorProps,
+  type UseMarkdownEditorOptions,
+  type UseMarkdownEditorResult,
+};
