@@ -526,18 +526,22 @@ function shouldShowFormatting({
 function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) {
   const { disabled = false, readOnly = false, invalid = false } = options;
   const { editor, getMarkdown, setMarkdown } = useMarkdownEditor(options);
+
   const bubbleRef = useRef<HTMLDivElement>(null);
   const bubbleKey = useMemo(() => new PluginKey("formattingBubble"), []);
   const [focused, setFocused] = useState(0);
+
   const [coarsePointer, setCoarsePointer] = useState(false);
   useEffect(() => {
     if (!window.matchMedia) return;
+
     const media = window.matchMedia("(pointer: coarse)");
     const update = () => setCoarsePointer(media.matches);
     update();
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
   }, []);
+
   const [editingLink, setEditingLink] = useState(false);
   const [url, setUrl] = useState("");
   const [linkError, setLinkError] = useState(false);
@@ -545,60 +549,102 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   const inputRef = useRef<HTMLInputElement>(null);
   const pointerLinkAction = useRef(false);
   const returnLinkFocus = useRef(false);
-  useLayoutEffect(() => { if (editingLink) inputRef.current?.focus(); }, [editingLink]);
+
+  useLayoutEffect(() => {
+    if (editingLink) inputRef.current?.focus();
+  }, [editingLink]);
+
   useLayoutEffect(() => {
     if (!editingLink && returnLinkFocus.current) {
       returnLinkFocus.current = false;
       bubbleRef.current?.querySelector<HTMLButtonElement>('button[aria-label="Link"]')?.focus();
     }
   }, [editingLink]);
+
   const openLink = useCallback(() => {
     if (!editor?.isEditable) return;
+
     setUrl(editor.getAttributes("link").href ?? "");
     setLinkError(false);
     setEditingLink(true);
   }, [editor]);
+
   const finishLink = (remove: boolean) => {
     if (!editor?.isEditable) return;
+
     const value = url.trim();
     const host = /^(?:[a-z\d](?:[a-z\d-]*[a-z\d])?\.)+[a-z\d](?:[a-z\d-]*[a-z\d])?(?::\d+)?(?:[/?#][^\s@\\]*)?$/i.test(value);
     const explicit = /^[a-z][a-z\d+.-]*:/i.test(value) && !host;
     const relative = /^(?:\.\.?\/|\/|#)/.test(value) || /^[^\s@\\:]+\/[^\s@\\]*$/.test(value);
     const href = normalizeLinkHref(host ? `https://${value}` : value);
-    if (!remove && (!value || !isSafePasteUri(host ? `https://${value}` : value) || !isSafePasteUri(href) || (!explicit && !host && !relative) || (!explicit && /[\s@\\]/.test(value)))) { setLinkError(true); return; }
-    const chain = editor.chain().command(({ tr }) => { closeHistory(tr); return true; });
-    if (remove) chain.unsetLink().run(); else chain.setLink({ href }).run();
+    if (
+      !remove &&
+      (
+        !value ||
+        !isSafePasteUri(host ? `https://${value}` : value) ||
+        !isSafePasteUri(href) ||
+        (!explicit && !host && !relative) ||
+        (!explicit && /[\s@\\]/.test(value))
+      )
+    ) {
+      setLinkError(true);
+      return;
+    }
+
+    const chain = editor.chain().command(({ tr }) => {
+      closeHistory(tr);
+      return true;
+    });
+    if (remove) chain.unsetLink().run();
+    else chain.setLink({ href }).run();
     editor.view.dispatch(closeHistory(editor.state.tr));
+
     returnLinkFocus.current = !pointerLinkAction.current;
     setEditingLink(false);
     if (pointerLinkAction.current) editor.view.focus();
   };
+
   useImperativeHandle(ref, () => ({ getMarkdown, setMarkdown }), [getMarkdown, setMarkdown]);
 
   useEffect(() => {
     if (!editor) return;
+
     const onKeyDown = (event: KeyboardEvent) => {
       const linkShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
       const toolbarShortcut = event.altKey && event.key === "F10";
       if (!linkShortcut && !toolbarShortcut) return;
+
       const selection = window.getSelection();
-      if (!editor.isEditable || !selection || selection.isCollapsed || !editor.view.dom.contains(selection.anchorNode)) return;
+      if (
+        !editor.isEditable ||
+        !selection ||
+        selection.isCollapsed ||
+        !editor.view.dom.contains(selection.anchorNode)
+      ) {
+        return;
+      }
+
       event.preventDefault();
       // The browser can dispatch the shortcut before ProseMirror reads selectionchange.
       document.dispatchEvent(new Event("selectionchange"));
       requestAnimationFrame(() => {
         if (editor.isDestroyed) return;
+
         const element = bubbleRef.current;
         const { state, view } = editor;
         if (!element || !shouldShowFormatting({ editor, element, view, state, from: state.selection.from, to: state.selection.to })) return;
-        // Spec requirement (AC-5), Tiptap 3.33.0 override: the menu's debounce must not delay keyboard access.
+
+        // Spec requirement (AC-5), Tiptap 3.33.0 override: the menu's debounce must
+        // not delay keyboard access.
         view.dispatch(state.tr.setMeta(bubbleKey, "show"));
         view.dispatch(view.state.tr.setMeta(bubbleKey, "updatePosition"));
-      // Spec requirement (AC-5): the link shortcut opens URL editing.
+
+        // Spec requirement (AC-5): the link shortcut opens URL editing.
         if (linkShortcut) openLink();
         else element.querySelector<HTMLButtonElement>("button")?.focus();
       });
     };
+
     editor.view.dom.addEventListener("keydown", onKeyDown);
     return () => editor.view.dom.removeEventListener("keydown", onKeyDown);
   }, [editor, openLink, bubbleKey]);
@@ -609,57 +655,162 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   // keep their own click and selection behaviour.
   const handleFrameClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (disabled || !editor) return;
+
     const target = event.target;
     if (target instanceof globalThis.Node && bubbleRef.current?.contains(target)) return;
     if (target instanceof globalThis.Node && editor.view.dom.contains(target)) return;
     focusAtEnd(editor);
   };
 
-  return <div
-    data-slot="markdown-editor"
-    data-presentation={presentation}
-    data-invalid={invalid || undefined}
-    data-disabled={disabled || undefined}
-    onClick={presentation === "field" ? handleFrameClick : undefined}
-    className={cn(
-      presentation === "in-place" && "min-w-0 data-disabled:pointer-events-none",
-      presentation === "field" && cn(
-      // Layout and surface
-      "w-full min-w-0 rounded-control border border-border bg-background px-3.5 py-3",
-      // Field box: start small, grow to the maximum, then scroll.
-      "min-h-[var(--anaphor-markdown-editor-min-height)] max-h-[var(--anaphor-markdown-editor-max-height)] overflow-y-auto",
-      // Focus state
-      "focus-within:border-ring focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring",
-      // Invalid state
-      "data-invalid:border-danger data-invalid:focus-within:outline-danger",
-      // Disabled state
-      "data-disabled:pointer-events-none data-disabled:bg-[var(--anaphor-input-disabled)]",
-      // Motion
-      "motion-safe:transition-[border-color,background-color,outline-color] motion-safe:duration-150",
-      // Forced colors
-      "forced-colors:border-[ButtonText]",
-      ),
-    )}>
-    <EditorContent editor={editor} />
-    {/* Decision 7, Tiptap 3.33.0/floating-ui override: fixed positioning escapes clipping. AC-8: coarse pointers prefer below. The menu tabindex override preserves normal Tab order. */}
-    {editor && !readOnly && !disabled && <BubbleMenu ref={bubbleRef} pluginKey={bubbleKey} editor={editor} options={{ strategy: "fixed", placement: coarsePointer ? "bottom" : "top", onHide: () => { setEditingLink(false); setFocused(0); }, onShow: () => { if (bubbleRef.current) bubbleRef.current.tabIndex = -1; } }} shouldShow={shouldShowFormatting}><div role="toolbar" aria-label="Formatting" data-slot="markdown-formatting-bubble" className={cn("flex items-center", popoverSurface)} onBlur={event => {
-      // Tiptap 3.33.0 workaround: dismiss when focus leaves the menu as well as the editor.
-      if (!event.currentTarget.contains(event.relatedTarget) && !editor.view.dom.contains(event.relatedTarget)) editor.view.dispatch(editor.state.tr.setMeta(bubbleKey, "hide"));
-    }} onKeyDownCapture={event => {
-      if (event.key === "Escape") { event.preventDefault(); setEditingLink(false); editor.view.focus(); return; }
-      const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
-      const index = buttons.findIndex(button => button === document.activeElement);
-      if (index < 0) return;
-      const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1 : event.key === "ArrowRight" ? (index + 1) % buttons.length : event.key === "ArrowLeft" ? (index + buttons.length - 1) % buttons.length : -1;
-      if (next >= 0) { event.preventDefault(); buttons[next]?.focus(); }
-    }}>{editingLink ? <form onPointerDownCapture={() => { pointerLinkAction.current = true; }} onKeyDownCapture={() => { pointerLinkAction.current = false; }} onSubmit={event => { event.preventDefault(); finishLink(false); }}>
-      <label id={`${errorId}-label`} htmlFor={`${errorId}-input`}>URL</label>
-      <Input ref={inputRef} id={`${errorId}-input`} size="sm" aria-labelledby={`${errorId}-label`} value={url} onChange={event => { setUrl(event.target.value); setLinkError(false); }} aria-invalid={linkError || undefined} aria-describedby={linkError ? errorId : undefined} />
-      <Button nativeButton type="submit" variant="ghost" tone="neutral" size="sm" shape="square" iconOnly={false} loading={false}>Apply</Button>
-      {linkError && <span id={errorId}>Enter a safe URL.</span>}
-      <Button nativeButton type="button" variant="ghost" tone="neutral" size="sm" shape="square" iconOnly={false} loading={false} onClick={() => finishLink(true)}>Remove link</Button>
-    </form> : <FormattingButtons editor={editor} focused={focused} setFocused={setFocused} openLink={openLink} />}</div></BubbleMenu>}
-  </div>;
+  return (
+    <div
+      data-slot="markdown-editor"
+      data-presentation={presentation}
+      data-invalid={invalid || undefined}
+      data-disabled={disabled || undefined}
+      onClick={presentation === "field" ? handleFrameClick : undefined}
+      className={cn(
+        presentation === "in-place" && "min-w-0 data-disabled:pointer-events-none",
+        presentation === "field" && cn(
+          // Layout and surface
+          "w-full min-w-0 rounded-control border border-border bg-background px-3.5 py-3",
+          // Field box: start small, grow to the maximum, then scroll.
+          "min-h-[var(--anaphor-markdown-editor-min-height)] max-h-[var(--anaphor-markdown-editor-max-height)] overflow-y-auto",
+          // Focus state
+          "focus-within:border-ring focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring",
+          // Invalid state
+          "data-invalid:border-danger data-invalid:focus-within:outline-danger",
+          // Disabled state
+          "data-disabled:pointer-events-none data-disabled:bg-[var(--anaphor-input-disabled)]",
+          // Motion
+          "motion-safe:transition-[border-color,background-color,outline-color] motion-safe:duration-150",
+          // Forced colors
+          "forced-colors:border-[ButtonText]",
+        ),
+      )}
+    >
+      <EditorContent editor={editor} />
+      {editor && !readOnly && !disabled && (
+        <BubbleMenu
+          ref={bubbleRef}
+          pluginKey={bubbleKey}
+          editor={editor}
+          options={{
+            // Decision 7, Tiptap 3.33.0/floating-ui override: fixed positioning escapes clipping.
+            strategy: "fixed",
+            // AC-8: coarse pointers prefer below.
+            placement: coarsePointer ? "bottom" : "top",
+            onHide: () => {
+              setEditingLink(false);
+              setFocused(0);
+            },
+            // The menu tabindex override preserves normal Tab order.
+            onShow: () => {
+              if (bubbleRef.current) bubbleRef.current.tabIndex = -1;
+            },
+          }}
+          shouldShow={shouldShowFormatting}
+        >
+          <div
+            role="toolbar"
+            aria-label="Formatting"
+            data-slot="markdown-formatting-bubble"
+            className={cn("flex items-center", popoverSurface)}
+            onBlur={event => {
+              // Tiptap 3.33.0 workaround: dismiss when focus leaves the menu as well as the editor.
+              if (
+                !event.currentTarget.contains(event.relatedTarget) &&
+                !editor.view.dom.contains(event.relatedTarget)
+              ) {
+                editor.view.dispatch(editor.state.tr.setMeta(bubbleKey, "hide"));
+              }
+            }}
+            onKeyDownCapture={event => {
+              if (event.key === "Escape") {
+                event.preventDefault();
+                setEditingLink(false);
+                editor.view.focus();
+                return;
+              }
+
+              const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
+              const index = buttons.findIndex(button => button === document.activeElement);
+              if (index < 0) return;
+
+              const next = event.key === "Home" ? 0
+                : event.key === "End" ? buttons.length - 1
+                : event.key === "ArrowRight" ? (index + 1) % buttons.length
+                : event.key === "ArrowLeft" ? (index + buttons.length - 1) % buttons.length
+                : -1;
+              if (next >= 0) {
+                event.preventDefault();
+                buttons[next]?.focus();
+              }
+            }}
+          >
+            {editingLink ? (
+              <form
+                onPointerDownCapture={() => { pointerLinkAction.current = true; }}
+                onKeyDownCapture={() => { pointerLinkAction.current = false; }}
+                onSubmit={event => {
+                  event.preventDefault();
+                  finishLink(false);
+                }}
+              >
+                <label id={`${errorId}-label`} htmlFor={`${errorId}-input`}>URL</label>
+                <Input
+                  ref={inputRef}
+                  id={`${errorId}-input`}
+                  size="sm"
+                  aria-labelledby={`${errorId}-label`}
+                  value={url}
+                  onChange={event => {
+                    setUrl(event.target.value);
+                    setLinkError(false);
+                  }}
+                  aria-invalid={linkError || undefined}
+                  aria-describedby={linkError ? errorId : undefined}
+                />
+                <Button
+                  nativeButton
+                  type="submit"
+                  variant="ghost"
+                  tone="neutral"
+                  size="sm"
+                  shape="square"
+                  iconOnly={false}
+                  loading={false}
+                >
+                  Apply
+                </Button>
+                {linkError && <span id={errorId}>Enter a safe URL.</span>}
+                <Button
+                  nativeButton
+                  type="button"
+                  variant="ghost"
+                  tone="neutral"
+                  size="sm"
+                  shape="square"
+                  iconOnly={false}
+                  loading={false}
+                  onClick={() => finishLink(true)}
+                >
+                  Remove link
+                </Button>
+              </form>
+            ) : (
+              <FormattingButtons
+                editor={editor}
+                focused={focused}
+                setFocused={setFocused}
+                openLink={openLink}
+              />
+            )}
+          </div>
+        </BubbleMenu>
+      )}
+    </div>
+  );
 }
 
 export {
