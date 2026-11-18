@@ -67,12 +67,12 @@
   --anaphor-sidebar-mobile-width: 18rem;
   --anaphor-sidebar-min-width: 14rem;
   --anaphor-sidebar-max-width: 22.5rem;
+  --anaphor-sidebar-duration: 240ms;
+  --anaphor-sidebar-exit-duration: 160ms;
   /* Markdown editor field heights: tuned to suit a two-line note and a long
      paste. Consumers may override these custom properties. */
   --anaphor-markdown-editor-min-height: 6rem;
   --anaphor-markdown-editor-max-height: 18rem;
-  --anaphor-sidebar-duration: 240ms;
-  --anaphor-sidebar-exit-duration: 160ms;
   /* Global layers. Local stacking contexts may use small numeric indices. */
   --anaphor-z-raised: 10;
   --anaphor-z-floating: 20;
@@ -527,6 +527,25 @@
   transition: opacity 180ms var(--anaphor-ease-out), transform 180ms var(--anaphor-ease-out);
 }
 
+[data-slot="popover-popup"]:is([data-starting-style], [data-ending-style]) {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+[data-slot="popover-popup"][data-ending-style] {
+  transition-duration: 125ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="popover-popup"] {
+    transition: none;
+  }
+
+  [data-slot="popover-popup"]:is([data-starting-style], [data-ending-style]) {
+    transform: none;
+  }
+}
+
 /* The selection bubble shares the popover surface but not Base UI's starting
    styles. Tiptap inserts it into the page each time it shows, so a keyframe
    animation plays on every appearance. */
@@ -545,25 +564,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   [data-slot="markdown-formatting-bubble"]:not([hidden]) { animation: none; }
-}
-
-[data-slot="popover-popup"]:is([data-starting-style], [data-ending-style]) {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-[data-slot="popover-popup"][data-ending-style] {
-  transition-duration: 125ms;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  [data-slot="popover-popup"] {
-    transition: none;
-  }
-
-  [data-slot="popover-popup"]:is([data-starting-style], [data-ending-style]) {
-    transform: none;
-  }
 }
 
 [data-slot="menu-popup"] {
