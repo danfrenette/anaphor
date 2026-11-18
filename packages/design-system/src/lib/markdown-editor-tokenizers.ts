@@ -96,10 +96,10 @@ function findMatchingClose(source: string, start: number, tagName: string): numb
     const end = skipTagEnd(source, i + tag[0].length);
     if (end === -1) return -1;
 
-    const selfClosing = source[end - 2] === "/" && source[end - 1] === ">";
+    const isSelfClosing = source[end - 2] === "/" && source[end - 1] === ">";
     if (tag[1] === tagName) {
       if (source[i + 1] === "/") depth -= 1;
-      else if (!selfClosing) depth += 1;
+      else if (!isSelfClosing) depth += 1;
     }
     if (depth === 0) return end;
     i = end;
@@ -116,8 +116,8 @@ function matchMdxComponent(source: string): MarkdownToken | undefined {
 
   const openEnd = skipTagEnd(source, open[0].length);
   if (openEnd === -1) return undefined;
-  const selfClosing = source[openEnd - 2] === "/" && source[openEnd - 1] === ">";
-  if (selfClosing) return { type: "opaqueBlock", raw: source.slice(0, openEnd) };
+  const isSelfClosing = source[openEnd - 2] === "/" && source[openEnd - 1] === ">";
+  if (isSelfClosing) return { type: "opaqueBlock", raw: source.slice(0, openEnd) };
 
   const closeEnd = findMatchingClose(source, openEnd, tagName);
   if (closeEnd === -1) return undefined;
@@ -129,9 +129,9 @@ function matchOpaqueBlock(source: string): MarkdownToken | undefined {
   const component = matchMdxComponent(source);
   if (component) return component;
 
-  const line = /^[^\n]*/.exec(source)?.[0] ?? "";
-  if (/^import\b/.test(line) && ESM_IMPORT_RE.test(line)) return { type: "opaqueBlock", raw: line };
-  if (/^export\b/.test(line) && ESM_EXPORT_RE.test(line)) return { type: "opaqueBlock", raw: line };
+  const firstLine = /^[^\n]*/.exec(source)?.[0] ?? "";
+  if (/^import\b/.test(firstLine) && ESM_IMPORT_RE.test(firstLine)) return { type: "opaqueBlock", raw: firstLine };
+  if (/^export\b/.test(firstLine) && ESM_EXPORT_RE.test(firstLine)) return { type: "opaqueBlock", raw: firstLine };
 
   const footnote = FOOTNOTE_DEF_RE.exec(source);
   if (footnote) return { type: "opaqueBlock", raw: footnote[0] };
