@@ -53,9 +53,12 @@ function updatePlaceholder(editor: Editor, placeholder: string) {
 function focusAtEnd(editor: Editor) {
   const end = editor.state.doc.resolve(editor.state.doc.content.size);
   const last = editor.state.doc.lastChild;
-  const selection = last && (last.isAtom || last.type.name === "codeBlock") ? new GapCursor(end) : Selection.atEnd(editor.state.doc);
+  const needsGapCursor = last && (last.isAtom || last.type.name === "codeBlock");
+  const selection = needsGapCursor ? new GapCursor(end) : Selection.atEnd(editor.state.doc);
+
   editor.view.dom.focus();
   editor.view.dispatch(editor.state.tr.setSelection(selection));
+
   if (!(selection instanceof GapCursor)) {
     const position = editor.view.domAtPos(selection.from);
     window.getSelection()?.collapse(position.node, position.offset);
@@ -276,9 +279,11 @@ function useMarkdownEditor({
     };
     pendingImageCleanup.current.add(cleanup);
 
-    void Promise.allSettled(images.map(file => Promise.resolve().then(() => handler(file)))).then(results => {
+    const resolutions = images.map(file => Promise.resolve().then(() => handler(file)));
+    void Promise.allSettled(resolutions).then(results => {
       cleanup();
-      if (editor.isDestroyed || !editor.isEditable || generation !== imageGeneration.current) return;
+      const isSuperseded = generation !== imageGeneration.current;
+      if (editor.isDestroyed || !editor.isEditable || isSuperseded) return;
 
       const content = results.flatMap(result =>
         result.status === "fulfilled" ? [{ type: "image", attrs: result.value }] : [],
@@ -378,8 +383,9 @@ function useMarkdownEditor({
     if (!editor || !disabled) return;
 
     const root = editor.view.dom;
+    const checkboxSelector = 'li[data-checked] input[type="checkbox"]';
     const disableCheckboxes = () => {
-      root.querySelectorAll<HTMLInputElement>('li[data-checked] input[type="checkbox"]').forEach(input => { input.disabled = true; });
+      root.querySelectorAll<HTMLInputElement>(checkboxSelector).forEach(input => { input.disabled = true; });
     };
     disableCheckboxes();
 
@@ -388,7 +394,7 @@ function useMarkdownEditor({
 
     return () => {
       observer.disconnect();
-      root.querySelectorAll<HTMLInputElement>('li[data-checked] input[type="checkbox"]').forEach(input => { input.disabled = false; });
+      root.querySelectorAll<HTMLInputElement>(checkboxSelector).forEach(input => { input.disabled = false; });
     };
   }, [editor, disabled]);
 
@@ -576,15 +582,18 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
     const host = /^(?:[a-z\d](?:[a-z\d-]*[a-z\d])?\.)+[a-z\d](?:[a-z\d-]*[a-z\d])?(?::\d+)?(?:[/?#][^\s@\\]*)?$/i.test(value);
     const explicit = /^[a-z][a-z\d+.-]*:/i.test(value) && !host;
     const relative = /^(?:\.\.?\/|\/|#)/.test(value) || /^[^\s@\\:]+\/[^\s@\\]*$/.test(value);
-    const href = normalizeLinkHref(host ? `https://${value}` : value);
+    const isUnrecognisedForm = !explicit && !host && !relative;
+    const hasStrayCharacter = !explicit && /[\s@\\]/.test(value);
+    const destination = host ? `https://${value}` : value;
+    const href = normalizeLinkHref(destination);
     if (
       !remove &&
       (
         !value ||
-        !isSafePasteUri(host ? `https://${value}` : value) ||
+        !isSafePasteUri(destination) ||
         !isSafePasteUri(href) ||
-        (!explicit && !host && !relative) ||
-        (!explicit && /[\s@\\]/.test(value))
+        isUnrecognisedForm ||
+        hasStrayCharacter
       )
     ) {
       setLinkError(true);
@@ -615,14 +624,11 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       if (!linkShortcut && !toolbarShortcut) return;
 
       const selection = window.getSelection();
-      if (
-        !editor.isEditable ||
-        !selection ||
-        selection.isCollapsed ||
-        !editor.view.dom.contains(selection.anchorNode)
-      ) {
-        return;
-      }
+      const hasSelectionInEditor =
+        selection !== null &&
+        !selection.isCollapsed &&
+        editor.view.dom.contains(selection.anchorNode);
+      if (!editor.isEditable || !hasSelectionInEditor) return;
 
       event.preventDefault();
       // The browser can dispatch the shortcut before ProseMirror reads selectionchange.
@@ -632,7 +638,8 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
 
         const element = bubbleRef.current;
         const { state, view } = editor;
-        if (!element || !shouldShowFormatting({ editor, element, view, state, from: state.selection.from, to: state.selection.to })) return;
+        const { from, to } = state.selection;
+        if (!element || !shouldShowFormatting({ editor, element, view, state, from, to })) return;
 
         // Spec requirement (AC-5), Tiptap 3.33.0 override: the menu's debounce must
         // not delay keyboard access.
