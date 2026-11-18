@@ -331,8 +331,10 @@ upgrade makes whitespace changes visible.
 
 ## Preserving unsupported Markdown
 
-Markdown the editor does not understand is kept exactly as written and never
-dropped.
+Markdown the editor does not understand is kept as written: the constructs
+below are preserved byte for byte, and everything else is kept as editable text.
+The few known exceptions are listed under **Limitations**, each pinned by a
+test.
 
 **Front matter.** A leading `---` … `---` (or `...`) block is split out before
 parsing and prepended byte for byte on output. It is never shown and cannot be
