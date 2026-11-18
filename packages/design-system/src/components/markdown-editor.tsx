@@ -516,11 +516,11 @@ function shouldShowFormatting({
     return false;
   }
 
-  let excluded = false;
+  let hasExcludedContent = false;
   state.doc.nodesBetween(from, to, node => {
-    if (["codeBlock", "opaqueBlock", "opaqueInline"].includes(node.type.name)) excluded = true;
+    if (["codeBlock", "opaqueBlock", "opaqueInline"].includes(node.type.name)) hasExcludedContent = true;
   });
-  return !excluded && !!state.doc.textBetween(from, to);
+  return !hasExcludedContent && !!state.doc.textBetween(from, to);
 }
 
 type MarkdownEditorHandle = {
@@ -622,10 +622,10 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   useEffect(() => {
     if (!editor) return;
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      const linkShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
-      const toolbarShortcut = event.altKey && event.key === "F10";
-      if (!linkShortcut && !toolbarShortcut) return;
+    const handleShortcutKeyDown = (event: KeyboardEvent) => {
+      const isLinkShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
+      const isToolbarShortcut = event.altKey && event.key === "F10";
+      if (!isLinkShortcut && !isToolbarShortcut) return;
 
       const selection = window.getSelection();
       const hasSelectionInEditor =
@@ -651,13 +651,13 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
         view.dispatch(view.state.tr.setMeta(selectionBubblePluginKey, "updatePosition"));
 
         // Spec requirement (AC-5): the link shortcut opens URL editing.
-        if (linkShortcut) openLink();
+        if (isLinkShortcut) openLink();
         else bubble.querySelector<HTMLButtonElement>("button")?.focus();
       });
     };
 
-    editor.view.dom.addEventListener("keydown", onKeyDown);
-    return () => editor.view.dom.removeEventListener("keydown", onKeyDown);
+    editor.view.dom.addEventListener("keydown", handleShortcutKeyDown);
+    return () => editor.view.dom.removeEventListener("keydown", handleShortcutKeyDown);
   }, [editor, openLink, selectionBubblePluginKey]);
 
   // A click on the frame's own surface (padding or the empty space below short
@@ -684,17 +684,17 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
     }
 
     const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
-    const index = buttons.findIndex(button => button === document.activeElement);
-    if (index < 0) return;
+    const currentIndex = buttons.findIndex(button => button === document.activeElement);
+    if (currentIndex < 0) return;
 
-    const next = event.key === "Home" ? 0
+    const nextIndex = event.key === "Home" ? 0
       : event.key === "End" ? buttons.length - 1
-      : event.key === "ArrowRight" ? (index + 1) % buttons.length
-      : event.key === "ArrowLeft" ? (index + buttons.length - 1) % buttons.length
+      : event.key === "ArrowRight" ? (currentIndex + 1) % buttons.length
+      : event.key === "ArrowLeft" ? (currentIndex + buttons.length - 1) % buttons.length
       : -1;
-    if (next >= 0) {
+    if (nextIndex >= 0) {
       event.preventDefault();
-      buttons[next]?.focus();
+      buttons[nextIndex]?.focus();
     }
   };
 
