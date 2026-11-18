@@ -62,6 +62,8 @@ const existingPostMarkdown = [
   "",
 ].join("\n");
 
+const otherNote = "## A loaded note\n\nLoaded with `setMarkdown`.\n\n<!-- Field note -->";
+
 export function MarkdownEditorExample() {
   const imageUrls = useRef<string[]>([]);
   useEffect(() => () => { imageUrls.current.forEach(url => URL.revokeObjectURL(url)); }, []);
@@ -113,8 +115,6 @@ export function MarkdownEditorExample() {
     </section>
   </>;
 }
-
-const otherNote = "## A loaded note\n\nLoaded with `setMarkdown`.\n\n<!-- Field note -->";
 
 // Demonstrates the field inside Anaphor's Field: label, description, error,
 // placeholder, read-only and disabled toggles, and imperative replace.
