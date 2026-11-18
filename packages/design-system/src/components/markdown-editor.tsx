@@ -416,21 +416,21 @@ function useMarkdownEditor({
 
 type FormattingButtonsProps = {
   editor: Editor;
-  focused: number;
-  setFocused: (index: number) => void;
+  focusedIndex: number;
+  setFocusedIndex: (index: number) => void;
   openLink: () => void;
 };
 
 function FormattingButtons({
   editor,
-  focused,
-  setFocused,
+  focusedIndex,
+  setFocusedIndex,
   openLink,
 }: FormattingButtonsProps) {
-  const [mac] = useState(() => (
+  const [isMac] = useState(() => (
     typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform)
   ));
-  const active = useEditorState({
+  const activeMarks = useEditorState({
     editor,
     selector: ({ editor }) => ({
       bold: editor.isActive("bold"),
@@ -441,7 +441,7 @@ function FormattingButtons({
     }),
   });
 
-  const items = [
+  const formats = [
     { name: "Bold", key: "bold" as const, shortcut: "B", Icon: TextB, run: () => editor.chain().toggleBold().run() },
     { name: "Italic", key: "italic" as const, shortcut: "I", Icon: TextItalic, run: () => editor.chain().toggleItalic().run() },
     {
@@ -457,7 +457,7 @@ function FormattingButtons({
 
   return (
     <TooltipGroup>
-      {items.map(({ name, key, shortcut, Icon, run }, index) => (
+      {formats.map(({ name, key, shortcut, Icon, run }, index) => (
         <Tooltip key={key}>
           <TooltipTrigger
             render={
@@ -472,9 +472,9 @@ function FormattingButtons({
                 loading={false}
                 className="aria-pressed:bg-[var(--anaphor-input-disabled)]"
                 aria-label={name}
-                aria-pressed={active[key]}
-                tabIndex={focused === index ? 0 : -1}
-                onFocus={() => setFocused(index)}
+                aria-pressed={activeMarks[key]}
+                tabIndex={focusedIndex === index ? 0 : -1}
+                onFocus={() => setFocusedIndex(index)}
                 onMouseDown={event => event.preventDefault()}
                 onClick={() => { if (editor.isEditable) run(); }}
               >
@@ -484,9 +484,9 @@ function FormattingButtons({
           />
           <TooltipPopup side="top" align="center" sideOffset={8}>
             {name}{" "}
-            <KbdGroup aria-label={`${mac ? "Command" : "Control"} ${shortcut}`}>
-              <Kbd>{mac ? "⌘" : "Ctrl"}</Kbd>
-              {shortcut.split("+").map(key => <Kbd key={key}>{key}</Kbd>)}
+            <KbdGroup aria-label={`${isMac ? "Command" : "Control"} ${shortcut}`}>
+              <Kbd>{isMac ? "⌘" : "Ctrl"}</Kbd>
+              {shortcut.split("+").map(keyName => <Kbd key={keyName}>{keyName}</Kbd>)}
             </KbdGroup>
           </TooltipPopup>
         </Tooltip>
@@ -539,7 +539,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
 
   const bubbleRef = useRef<HTMLDivElement>(null);
   const bubbleKey = useMemo(() => new PluginKey("formattingBubble"), []);
-  const [focused, setFocused] = useState(0);
+  const [focusedIndex, setFocusedIndex] = useState(0);
 
   const [coarsePointer, setCoarsePointer] = useState(false);
   useEffect(() => {
@@ -738,7 +738,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
             placement: coarsePointer ? "bottom" : "top",
             onHide: () => {
               setEditingLink(false);
-              setFocused(0);
+              setFocusedIndex(0);
             },
             // The menu tabindex override preserves normal Tab order.
             onShow: () => {
@@ -816,8 +816,8 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
             ) : (
               <FormattingButtons
                 editor={editor}
-                focused={focused}
-                setFocused={setFocused}
+                focusedIndex={focusedIndex}
+                setFocusedIndex={setFocusedIndex}
                 openLink={openLink}
               />
             )}
