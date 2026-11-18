@@ -402,7 +402,10 @@ function useMarkdownEditor({
       const currentFrontMatter = frontMatterRef.current;
       // A front-matter-only document ends without a newline on its closing `---`,
       // so the body must be separated with one to keep the block intact on reload.
-      const needsSeparator = currentFrontMatter !== "" && !currentFrontMatter.endsWith("\n") && serializedBody !== "";
+      const needsSeparator =
+        currentFrontMatter !== "" &&
+        !currentFrontMatter.endsWith("\n") &&
+        serializedBody !== "";
       currentValue.current = currentFrontMatter + (needsSeparator ? "\n" : "") + serializedBody;
       onChangeRef.current?.(currentValue.current);
     };
@@ -444,13 +447,7 @@ function FormattingButtons({
   const formats = [
     { name: "Bold", key: "bold" as const, shortcut: "B", Icon: TextB, run: () => editor.chain().toggleBold().run() },
     { name: "Italic", key: "italic" as const, shortcut: "I", Icon: TextItalic, run: () => editor.chain().toggleItalic().run() },
-    {
-      name: "Strikethrough",
-      key: "strike" as const,
-      shortcut: "Shift+S",
-      Icon: TextStrikethrough,
-      run: () => editor.chain().toggleStrike().run(),
-    },
+    { name: "Strikethrough", key: "strike" as const, shortcut: "Shift+S", Icon: TextStrikethrough, run: () => editor.chain().toggleStrike().run() },
     { name: "Inline code", key: "code" as const, shortcut: "E", Icon: Code, run: () => editor.chain().toggleCode().run() },
     { name: "Link", key: "link" as const, shortcut: "K", Icon: LinkIcon, run: openLink },
   ];
