@@ -5,7 +5,6 @@ import { Marked } from "marked";
 import { beforeEach, expect, test, vi } from "vitest";
 import { MarkdownEditor, type MarkdownEditorHandle } from "@anaphor/system";
 
-// A fresh renderer: the shared `marked` instance is the one @tiptap/markdown configures.
 const marked = new Marked();
 
 beforeEach(() => {

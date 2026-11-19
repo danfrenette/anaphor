@@ -8,15 +8,11 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import { Field, FieldDescription, FieldLabel, MarkdownEditor, type MarkdownEditorHandle } from "@anaphor/system";
 import { Marked } from "marked";
 
-// Anchored to the test file so the path survives running Vitest from elsewhere.
-// (jsdom replaces the global URL, so new URL(relative, import.meta.url) resolves
-// against the window origin rather than the file.)
 const mixedFixture = readFileSync(
   join(dirname(fileURLToPath(import.meta.url)), "fixtures", "markdown-editor", "mixed.md"),
   "utf8",
 );
 
-// jsdom has no pointer hit testing or range layout; real editing geometry is covered in Playwright.
 beforeEach(() => {
   Object.defineProperty(document, "elementFromPoint", {
     configurable: true,
@@ -40,7 +36,6 @@ type SetupEditorProps = {
   onChange?: (markdown: string) => void;
 };
 
-// Renders the editor with a starting value and the shared accessible name.
 function setupEditor(defaultValue = "", props: SetupEditorProps = {}) {
   const user = userEvent.setup();
   const ref = createRef<MarkdownEditorHandle>();
@@ -379,7 +374,6 @@ test("entity-shaped query text keeps the browser URL on edit", async () => {
   const saved = ref.current!.getMarkdown();
   expect(saved).toBe("[text](https://x/?a=1\\&lt;b)");
   const parsed = new DOMParser().parseFromString(await new Marked().parse(saved), "text/html");
-  // Known gap: fresh Marked interprets the entity-shaped query when rendering HTML.
   expect(parsed.querySelector("a")?.getAttribute("href")).toBe("https://x/?a=1<b");
   expect(parsed.querySelector("img")).toBeNull();
   act(() => ref.current!.setMarkdown(saved));
@@ -557,10 +551,6 @@ test.each([
   expect(ref.current?.getMarkdown()).toBe(`${source}\n\nx`);
 });
 
-// Serialises a document without changing its content: typing then undoing still
-// fires the update listener, so getMarkdown() returns the serializer's normal
-// form of the supplied input. Undo is used instead of Backspace because Backspace
-// at a list item boundary runs the list keymap rather than deleting the typed char.
 async function serializeWithoutEdit(markdown: string) {
   const user = userEvent.setup();
   const ref = createRef<MarkdownEditorHandle>();
@@ -799,7 +789,6 @@ test("reports Markdown after a real edit", async () => {
 test("an edit before a new onChange commits reaches the committed handler", async () => {
   const committed = vi.fn();
   const next = vi.fn();
-  // Edits from a layout effect, in the same commit that passes the new handler.
   function Parent({ onChange, edit }: { onChange: (markdown: string) => void; edit: boolean }) {
     useLayoutEffect(() => {
       if (!edit) return;
@@ -951,7 +940,6 @@ describe("typed triggers", () => {
     await user.keyboard(`${trigger}Item`);
 
     expect(screen.getByRole("list")).toBeVisible();
-    // The serializer normalises any bullet marker to `-`.
     expect(ref.current?.getMarkdown()).toBe(expected);
   });
 
@@ -1275,8 +1263,6 @@ describe("serializer round-trip", () => {
   });
 
   test("known Tiptap 3.33.0 issue: an ordered item's text-then-code block drifts a leading space onto the code line", async () => {
-    // The code content line gains a leading space on each save (a stock 3.33.0
-    // tokenizer bug). Pinned so a Tiptap upgrade changing this output is reviewed.
     const { user, ref } = setupEditor("1. text\n   ```js\n   a\n   ```");
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
@@ -1341,9 +1327,6 @@ describe("serializer round-trip", () => {
   });
 
   test("known Tiptap 3.33.0 issue: an ordered list nested in an ordered list loses its code-first inner item", async () => {
-    // The inner item opens with a code fence; the repair is top-level only, so
-    // the code is lost exactly as stock 3.33.0 loses it. Pinned so a Tiptap
-    // upgrade changing this output is reviewed.
     const { user, ref } = setupEditor("1. outer\n   1. ```js\n      a\n      ```");
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
@@ -1392,9 +1375,7 @@ describe("fixture", () => {
     await user.keyboard("!");
 
     const markdown = ref.current?.getMarkdown() ?? "";
-    // The hard break survives as two trailing spaces and a newline.
     expect(markdown).toContain("A hard  \nbreak here.");
-    // Stability: parsing the output again and serialising it gives the same string.
     expect(await serializeWithoutEdit(markdown)).toBe(markdown);
   });
 });
@@ -1404,9 +1385,6 @@ describe("front matter", () => {
     setupEditor("---\n\nParagraph\n---");
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
-    // Nothing is hidden: the leading rule renders and the paragraph text shows.
-    // The trailing `---` underlines the paragraph as a setext heading, which is
-    // still visible content rather than swallowed front matter.
     expect(screen.getByRole("separator")).toBeVisible();
     expect(screen.getByText("Paragraph")).toBeVisible();
     expect(editor).toHaveTextContent("Paragraph");
@@ -1466,16 +1444,12 @@ describe("front matter", () => {
     setupEditor("---\n\nParagraph\n\n---");
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
-    // Nothing is hidden: the paragraph shows and both `---` lines render as
-    // horizontal rules now that a blank line separates them from the paragraph.
     expect(screen.getByText("Paragraph")).toBeVisible();
     expect(editor).toHaveTextContent("Paragraph");
     expect(screen.getAllByRole("separator").length).toBeGreaterThanOrEqual(1);
   });
 
   test("a rule followed by prose with no key is not front matter", async () => {
-    // `---` then prose with no mapping key is not front matter; the trailing
-    // `---` underlines the prose as a setext heading.
     setupEditor("---\nJust prose\n---");
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
@@ -1488,7 +1462,6 @@ describe("front matter", () => {
     const { user, ref } = setupEditor("---\ntitle: x\n---");
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
-    // The pre-edit read stays byte for byte.
     expect(ref.current?.getMarkdown()).toBe("---\ntitle: x\n---");
 
     await user.click(editor);
@@ -1496,8 +1469,6 @@ describe("front matter", () => {
 
     const output = "---\ntitle: x\n---\nhello";
     expect(ref.current?.getMarkdown()).toBe(output);
-    // Re-splitting the output treats the whole block as front matter again, so
-    // the document is stable on reload.
     expect(await serializeWithoutEdit(output)).toBe(output);
   });
 });
@@ -1585,16 +1556,11 @@ describe("preserved unsupported content", () => {
   });
 
   test("known Tiptap 3.33.0 issue: a component on an ordered continuation line drifts its indent", async () => {
-    // The continuation line loses a leading space on each save until it leaves
-    // the item. No content is lost, and the same drift affects plain
-    // continuation text in stock 3.33.0.
     const output = await serializeWithoutEdit('1. item\n   <Foo bar="1" />\n2. second');
     expect(output).toBe('1. item\n <Foo bar="1" />\n2. second');
   });
 
   test("known Tiptap 3.33.0 issue: an unclosed multi-line component loses its leading `>`", async () => {
-    // `<Card\n  title="x"\n>` is invalid MDX and outside supported input, so it
-    // falls back to stock behaviour, which escapes the tag and drops the `>`.
     const output = await serializeWithoutEdit('<Card\n  title="x"\n>');
     expect(output).toBe('&lt;Card\n  title="x"\n\n');
   });
@@ -1624,8 +1590,6 @@ describe("preserved unsupported content", () => {
 
     const editor = await screen.findByRole("textbox", { name: "Research note" });
     expect(editor.querySelector("script")).toBeNull();
-    // ProseMirror adds its own `<img class="ProseMirror-separator">` chrome;
-    // the dangerous `<img src onerror>` must not have become an element.
     expect(editor.querySelector("img[src], img[onerror]")).toBeNull();
     expect(editor.querySelector("a")).toBeNull();
     expect(editor).toHaveTextContent(source);
@@ -1775,7 +1739,6 @@ describe("field presentation", () => {
   test("autofocus turned on after mount does not focus a read-only editor", async () => {
     const { ref, rerender } = setupEditor("Draft");
     const editor = await screen.findByRole("textbox", { name: "Research note" });
-    // Let the editor finish creating, so autofocus arrives strictly after mount.
     await new Promise((resolve) => setTimeout(resolve, 10));
 
     rerender(<MarkdownEditor presentation="field" ref={ref} defaultValue="Draft" readOnly aria-label="Research note" />);

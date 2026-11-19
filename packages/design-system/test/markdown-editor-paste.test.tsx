@@ -15,7 +15,6 @@ import { EditorContent } from "@tiptap/react";
 import type { Editor } from "@tiptap/core";
 import { Marked } from "marked";
 
-// A fresh renderer: the shared `marked` instance is the one @tiptap/markdown configures.
 const marked = new Marked();
 
 beforeEach(() => {
@@ -205,7 +204,6 @@ test.each(["paste", "drop"] as const)("setMarkdown discards a pending image from
   expect(screen.queryByRole("img")).toBeNull();
 });
 
-// Narrow exception: a never-settling upload exposes no public signal for listener release.
 test("replacement detaches transaction listeners for never-settling images", async () => {
   let editor: Editor | null = null;
   let replace!: (markdown: string) => void;
@@ -229,7 +227,6 @@ test("replacement detaches transaction listeners for never-settling images", asy
   expect(removed.filter(listener => listener !== undefined && added.includes(listener))).toEqual(added);
 });
 
-// The same listener-release exception applies to state transitions and unmount.
 test.each(["read only", "disabled", "unmount"])("%s detaches transaction listeners for never-settling images", async state => {
   let editor: Editor | null = null;
   function Harness({ active }: { active: boolean }) {
@@ -318,7 +315,6 @@ test.each([
   ["\\&copy;", "&copy;", "&amp;copy;"],
   ["&amp;copy;", "&copy;", "&amp;copy;"],
   ["&unknownentity;", "&unknownentity;", "&amp;unknownentity;"],
-  // Pinned drift: numeric references 128–159 use HTML's legacy mapping (€), as marked renders them, not CommonMark's U+0080.
   ["&#128;", "€", "€"],
 ])("starting image alt decodes CommonMark once: %s", async (sourceAlt, expectedAlt, savedAlt) => {
   const api = await setupPasteEditor(`![${sourceAlt}](https://safe.invalid/a)`);
@@ -466,7 +462,6 @@ test("entity-encoded reference destinations stay literal on paste", async () => 
   expect(api.dom.textContent).toContain("label");
 });
 
-// jsdom requires an explicit clipboardData object for HTML paste events.
 test.each([
   ["anaphor-manual", "# Typography\n\nReading, navigation, and literal values share a small kit. Document structure chooses the heading level; purpose chooses its appearance.", "TypographyReading, navigation, and literal values share a small kit. Document structure chooses the heading level; purpose chooses its appearance."],
   ["google-docs", "Quarterly **report**\n\nPlain text and *emphasis*.", "Quarterly reportPlain text and emphasis."],
@@ -541,7 +536,6 @@ test("a tab after text at the start of a list item becomes spaces on reparse", a
   expect(saved).toBe("- ! \ta");
   expect(api.dom.textContent).toBe("! \ta");
   act(() => { api.setMarkdown(saved); });
-  // Pinned Tiptap 3.33.0 drift: CommonMark expands the tab inside the list item; no text is lost.
   expect(api.dom.textContent).toBe("!     a");
   expect(api.getMarkdown()).toBe(saved);
 });

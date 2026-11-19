@@ -30,7 +30,6 @@ expectTypeOf(ref.current?.getMarkdown()).toEqualTypeOf<string | undefined>();
 expectTypeOf(ref.current?.setMarkdown).toEqualTypeOf<((markdown: string) => void) | undefined>();
 <MarkdownEditor presentation="field" defaultValue="Note" aria-labelledby="note-label" />;
 
-// Field integration and state props are optional and compose with either label.
 <MarkdownEditor
   presentation="field"
   defaultValue="Note"

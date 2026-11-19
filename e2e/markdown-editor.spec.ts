@@ -195,7 +195,6 @@ for (const theme of ["light", "dark"]) {
     await page.getByRole("button", { name: "Read-only", exact: true }).click();
     await page.getByRole("button", { name: "Disabled", exact: true }).click();
     await expect(editor).toHaveAttribute("aria-disabled", "true");
-    // Disabled fields do not accept pointer or focus; establish a native DOM selection directly.
     await editor.evaluate(element => {
       const range = document.createRange();
       range.selectNodeContents(element.querySelector("p")!);
@@ -723,8 +722,6 @@ async function checkAccessibility(page: Page, include?: string) {
   };
   const tags = ["wcag2a", "wcag2aa", "wcag22aa"];
   const general = await scan().withTags(tags).disableRules("scrollable-region-focusable").analyze();
-  // Editable code and table wrappers scroll with the caret; axe cannot detect that keyboard access.
-  // Exclude only those editable regions from this rule, not the other rules.
   const editableScrollRegions = '[data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) pre, [data-slot="markdown-editor"] [role="textbox"]:not([aria-readonly="true"]) div:has(> table)';
   const scrollable = await scan()
     .exclude(editableScrollRegions)
@@ -886,7 +883,6 @@ for (const theme of ["light", "dark"]) {
     expect(rendered.map(item => item.marker)).toEqual([true, false, true]);
     for (let i = 0; i < 3; i++) {
       expect(Math.abs(editor[i]!.x - rendered[i]!.x)).toBeLessThanOrEqual(1);
-      // Tiptap's schema splits mixed kinds into separate lists; the observed cumulative gap is 24px.
       expect(Math.abs(editor[i]!.top - rendered[i]!.top)).toBeLessThanOrEqual(24);
     }
   });
@@ -1259,7 +1255,6 @@ test("a typed line break stays inside a paragraph", async ({ page, browserName }
   const editor = page.getByRole("textbox", { name: "Notes" });
   await editor.click();
   await editor.pressSequentially("Alpha");
-  // ProseMirror's iOS fallback redispatches Enter without Shift; Mod+Enter exercises the same HardBreak command there.
   await editor.press(browserName === "webkit" ? "ControlOrMeta+Enter" : "Shift+Enter");
   await editor.pressSequentially("Beta");
 
@@ -1313,8 +1308,6 @@ test("the editor keeps keyboard focus order and passes accessibility checks", as
   await page.keyboard.press(tabBackward);
   await expect(editor).toBeFocused();
 
-  // Chromium may Tab to its intrinsically focusable overflowing scroller;
-  // WebKit skips it. Neither behavior requires an authored tabindex.
   const code = page.getByRole("textbox", { name: "In-place code ending" }).locator("pre");
   await expect(code).not.toHaveAttribute("tabindex");
   await page.getByRole("textbox", { name: "In-place code ending" }).focus();
@@ -1359,11 +1352,9 @@ test("a fenced code block keeps white-space: pre and scrolls instead of wrapping
   await page.goto("/markdown-editor");
   const editor = page.getByRole("textbox", { name: "Research note" });
 
-  // The starting fixture's code block already proves the editable pre rule.
   await expect(editor.locator("pre").first()).toBeVisible();
   expect(await editor.locator("pre").first().evaluate(element => getComputedStyle(element).whiteSpace)).toBe("pre");
 
-  // A long line must overflow horizontally, not wrap.
   const emptyEditor = page.getByRole("textbox", { name: "Notes" });
   await emptyEditor.click();
   await emptyEditor.pressSequentially("``` ");
@@ -1418,12 +1409,10 @@ test("an opaque block is selected and deleted as a whole", async ({ page }) => {
   await editor.press("Delete");
 
   await expect(block).toHaveCount(0);
-  // The definition is gone as a whole; the surrounding content is untouched.
   await expect(output).not.toContainText("[^1]: The note text.");
   await expect(output).toContainText("Raw HTML");
   await expect(output).toContainText("A note with a footnote.[^1]");
 
-  // One undo restores the block and its exact source in the output.
   await editor.press("ControlOrMeta+z");
   await expect(block).toBeVisible();
   await expect(output).toContainText("[^1]: The note text.");
@@ -1435,8 +1424,6 @@ test("an opaque block's text cannot be edited in place", async ({ page }) => {
   const output = page.getByLabel("Existing post Markdown", { exact: true });
   const block = editor.getByText("[^1]: The note text.", { exact: true });
 
-  // Clicking the block and typing replaces the whole atom instead of editing
-  // its source text: the block disappears as a unit, never a character edit.
   await block.click();
   await editor.press("z");
   await expect(block).toHaveCount(0);
@@ -1469,7 +1456,6 @@ test("the empty field shows the placeholder and keeps one Prose line of content"
       lineHeight: Number.parseFloat(getComputedStyle(element).lineHeight),
     };
   });
-  // The placeholder adds no margin: the empty editor's content is one Prose line.
   expect(contentHeight).toBeLessThan(lineHeight * 1.5);
 
   await editor.click();
@@ -1573,7 +1559,6 @@ test("read-only text can be selected and copied", async ({ page, context, browse
   }));
   await editor.press("ControlOrMeta+c");
   expect(await copied).toBe(false);
-  // WebKit does not expose the native clipboard to this test.
   if (browserName === "chromium") expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("A loaded note");
 });
 
@@ -1725,7 +1710,6 @@ test("disabled removes focus and interaction", async ({ page }) => {
   await expect(editor).toHaveAttribute("contenteditable", "false");
   await expect(editor).not.toHaveAttribute("tabindex");
 
-  // A raw pointer click on the box does nothing: the editor stays unfocused.
   const box = await frame.boundingBox();
   expect(box).not.toBeNull();
   await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
@@ -1745,7 +1729,6 @@ test("setMarkdown loads and discards notes without firing a change", async ({ pa
   await expect(editor.getByRole("heading", { name: "A loaded note" })).toBeVisible();
   await expect(output).toContainText("setMarkdown");
 
-  // Undo after a replace cannot return to the previous document.
   await editor.press("ControlOrMeta+z");
   await expect(editor.getByRole("heading", { name: "A loaded note" })).toBeVisible();
 
