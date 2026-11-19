@@ -49,7 +49,6 @@ function useMarkdownEditor({
 
   const isReplacingRef = useRef(false);
   const pendingBodyRef = useRef<string | null>(null);
-  const autofocusHandled = useRef(false);
 
   const { handleImageFiles, cancelPendingImages } = useImageFiles(onImageFile);
 
@@ -68,6 +67,12 @@ function useMarkdownEditor({
     extensions: createEditorExtensions(),
     content: body,
     contentType: "markdown",
+    // Tiptap's `autofocus` only focuses an editable editor. Focus a read-only one
+    // at the same moment: once, when the editor is created, like native `autofocus`.
+    // Turning `autoFocus` on later does nothing.
+    onCreate: ({ editor }) => {
+      if (autoFocus && readOnly && !disabled) focusAtEnd(editor);
+    },
     onUpdate: ({ editor }) => {
       if (isReplacingRef.current) return;
 
@@ -117,15 +122,6 @@ function useMarkdownEditor({
       updatePlaceholder(editor, placeholder ?? "");
     }
   }, [editor, placeholder]);
-
-  // Tiptap's `autofocus` only focuses an editable editor; focus a read-only one
-  // once, when the editor first exists.
-  useEffect(() => {
-    if (editor && autoFocus && !autofocusHandled.current) {
-      autofocusHandled.current = true;
-      if (readOnly && !disabled) focusAtEnd(editor);
-    }
-  }, [editor, autoFocus, readOnly, disabled]);
 
   // Replace the document without emitting an update, then clear undo history.
   const replaceContent = useCallback((nextBody: string, target: Editor) => {

@@ -1772,6 +1772,18 @@ describe("field presentation", () => {
     }
   });
 
+  test("autofocus turned on after mount does not focus a read-only editor", async () => {
+    const { ref, rerender } = setupEditor("Draft");
+    const editor = await screen.findByRole("textbox", { name: "Research note" });
+    // Let the editor finish creating, so autofocus arrives strictly after mount.
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    rerender(<MarkdownEditor presentation="field" ref={ref} defaultValue="Draft" readOnly aria-label="Research note" />);
+    rerender(<MarkdownEditor presentation="field" ref={ref} defaultValue="Draft" readOnly autoFocus aria-label="Research note" />);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(editor).not.toHaveFocus();
+  });
+
   test("read-only autofocus and frame padding focus the editor", async () => {
     const { user, container } = setupEditor("Draft", { readOnly: true, autoFocus: true });
     const editor = await screen.findByRole("textbox", { name: "Research note" });

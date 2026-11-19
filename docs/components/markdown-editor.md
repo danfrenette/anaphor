@@ -57,7 +57,9 @@ The remaining optional props compose for use inside Anaphor's field:
 - `disabled` — the editor is removed from the tab order (`aria-disabled="true"`
   and no `tabindex`) and ignores pointer clicks. The field uses the input
   disabled background; in place adds no background.
-- `autoFocus` — focuses the editor on mount with the caret at the end.
+- `autoFocus` — focuses the editor on mount with the caret at the end, unless
+  it is disabled. Like native `autofocus`, it applies on mount only: turning it
+  on later does nothing.
 - `invalid` — announces `aria-invalid="true"`; the field also applies the
   input's invalid border.
 - `id` and `aria-describedby` — pass through to the textbox for field
