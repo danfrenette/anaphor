@@ -1,9 +1,5 @@
 "use client";
 
-import { TaskItem, TaskList } from "@tiptap/extension-list";
-import { TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
-import { Placeholder } from "@tiptap/extensions/placeholder";
-import { Markdown } from "@tiptap/markdown";
 import { closeHistory } from "@tiptap/pm/history";
 import type { Transaction } from "@tiptap/pm/state";
 import { useEditor, type Editor } from "@tiptap/react";
@@ -14,22 +10,9 @@ import {
   useMemo,
   useRef,
 } from "react";
-import {
-  CodeBlockGapCursor,
-  MarkdownCodeBlock,
-  MarkdownImage,
-  MarkdownLink,
-  MarkdownListItem,
-  MarkdownOrderedList,
-  MarkdownStarterKit,
-  MarkdownTable,
-  OpaqueBlock,
-  OpaqueHtmlTokens,
-  OpaqueInline,
-  PlaceholderText,
-} from "#lib/markdown-editor-extensions";
-import { cleanPastedHtml, handleMarkdownPaste, PasteOrdinal } from "#lib/markdown-editor-paste";
+import { cleanPastedHtml, handleMarkdownPaste } from "#lib/markdown-editor-paste";
 import { splitFrontMatter } from "#lib/markdown-editor-tokenizers";
+import { createEditorExtensions } from "./editor-extensions";
 import { focusAtEnd, resetHistory, updatePlaceholder } from "./editor-utils";
 import type { UseMarkdownEditorOptions } from "./types";
 
@@ -85,53 +68,7 @@ function useMarkdownEditor({
     injectCSS: false,
     editable: !readOnly && !disabled,
     autofocus: autoFocus ? "end" : false,
-    extensions: [
-      MarkdownStarterKit.configure({
-        // Underline has no CommonMark source and is not in the supported set.
-        underline: false,
-        // Appends an extra empty paragraph after a document ending in a
-        // non-paragraph block.
-        trailingNode: false,
-        // A drag affordance the field does not need.
-        dropcursor: false,
-        // Replaced below by an .extend()ed copy whose renderer writes a fence long
-        // enough for the content (F1).
-        codeBlock: false,
-        // Replaced below by an .extend()ed copy that escapes link destinations.
-        // Links do not open on click or auto-link while typing; the paste adapter
-        // handles safe URLs and selected-text linking.
-        link: false,
-        // Replaced below by an .extend()ed copy whose renderer keeps a leading code
-        // block on the marker line (F4).
-        listItem: false,
-        // Replaced below by an .extend()ed copy whose tokenizer reads a code fence
-        // that opens an ordered item as a code block (workaround 13).
-        orderedList: false,
-        heading: { levels: [1, 2, 3, 4, 5, 6] },
-      }),
-      CodeBlockGapCursor,
-      MarkdownCodeBlock,
-      MarkdownLink,
-      MarkdownListItem,
-      MarkdownOrderedList,
-      PasteOrdinal,
-      TaskList,
-      TaskItem.configure({ nested: true }),
-      MarkdownTable,
-      TableRow,
-      TableHeader,
-      TableCell,
-      // Spec requirement (AC-1, AC-2): Markdown images are inline content.
-      MarkdownImage,
-      OpaqueBlock,
-      OpaqueHtmlTokens,
-      OpaqueInline,
-      Markdown,
-      PlaceholderText,
-      Placeholder.configure({
-        placeholder: ({ editor }) => editor.storage.placeholderText.placeholder,
-      }),
-    ],
+    extensions: createEditorExtensions(),
     content: body,
     contentType: "markdown",
     editorProps: {
