@@ -9,8 +9,12 @@ import {
 import { cn } from "../../lib/utils";
 import { focusAtEnd } from "./focus-at-end";
 import { SelectionBubble } from "./selection-bubble";
-import type { MarkdownEditorImageHandler, UseMarkdownEditorOptions } from "./types";
-import { useMarkdownEditor, type UseMarkdownEditorResult } from "./use-markdown-editor";
+import type { MarkdownEditorImageHandler } from "./types";
+import {
+  useMarkdownEditor,
+  type UseMarkdownEditorOptions,
+  type UseMarkdownEditorResult,
+} from "./use-markdown-editor";
 
 type MarkdownEditorHandle = {
   getMarkdown: () => string;
