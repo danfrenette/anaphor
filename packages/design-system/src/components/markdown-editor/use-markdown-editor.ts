@@ -105,12 +105,15 @@ function useMarkdownEditor({
     },
   });
 
+  // Keep the placeholder extension's storage in step with the prop.
   useEffect(() => {
     if (editor && !editor.isDestroyed) {
       updatePlaceholder(editor, placeholder ?? "");
     }
   }, [editor, placeholder]);
 
+  // Tiptap's `autofocus` only focuses an editable editor; focus a read-only one
+  // once, when the editor first exists.
   useEffect(() => {
     if (editor && autoFocus && !autofocusHandled.current) {
       autofocusHandled.current = true;
@@ -146,7 +149,8 @@ function useMarkdownEditor({
     }
   }, [editor, replaceContent, cancelPendingImages]);
 
-  // A replacement requested before the editor mounted wins over the starting value.
+  // A replacement requested before the editor mounted wins over the starting value,
+  // so apply it as soon as the Tiptap editor exists.
   useEffect(() => {
     if (!editor || pendingBodyRef.current === null) return;
 
@@ -155,10 +159,10 @@ function useMarkdownEditor({
     replaceContent(nextBody, editor);
   }, [editor, replaceContent]);
 
-  // Keep editable state in step with props after mount. `setEditable(…, false)`
-  // skips the update event, so toggling state never fires `onChange` or flips
-  // the pre-edit byte guarantee. The accessible attributes are declared in
-  // `editorProps.attributes` above, so they survive view updates.
+  // Keep the Tiptap editor's editable state in step with props after mount.
+  // `setEditable(…, false)` skips the update event, so toggling state never fires
+  // `onChange` or flips the pre-edit byte guarantee. The accessible attributes are
+  // declared in `editorProps.attributes` above, so they survive view updates.
   useLayoutEffect(() => {
     if (!editor) return;
 

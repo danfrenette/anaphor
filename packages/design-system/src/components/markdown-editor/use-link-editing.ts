@@ -41,6 +41,9 @@ function useLinkEditing(editor: Editor, bubbleRef: RefObject<HTMLDivElement | nu
   const pointerLinkAction = useRef(false);
   const returnLinkFocus = useRef(false);
 
+  // After a keyboard apply or remove, focus the Link button in the same commit
+  // that swaps it back in. A later focus is too late: Tiptap's passive effect
+  // re-checks the bubble first, finds focus outside it, and hides it.
   useLayoutEffect(() => {
     if (!isEditing && returnLinkFocus.current) {
       returnLinkFocus.current = false;

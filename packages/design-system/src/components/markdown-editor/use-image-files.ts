@@ -16,6 +16,8 @@ import type { MarkdownEditorImageHandler } from "./types";
  * insert the results, unless the editor is locked, replaced or gone by then.
  */
 function useImageFiles(onImageFile: MarkdownEditorImageHandler | undefined) {
+  // ProseMirror's paste and drop handlers read the latest handler outside React
+  // effects, where an Effect Event may not be called; hence a ref.
   const imageHandlerRef = useRef(onImageFile);
   useLayoutEffect(() => { imageHandlerRef.current = onImageFile; }, [onImageFile]);
   const imageGeneration = useRef(0);
@@ -25,7 +27,8 @@ function useImageFiles(onImageFile: MarkdownEditorImageHandler | undefined) {
     for (const cleanup of pendingImageCleanup.current) cleanup();
   }, []);
 
-  // Abandon image inserts still resolving when the editor unmounts.
+  // Abandon image inserts still resolving when the editor unmounts, releasing
+  // their Tiptap transaction listeners.
   useEffect(() => () => { cancelPendingImages(); }, [cancelPendingImages]);
 
   function handleImageFiles(
