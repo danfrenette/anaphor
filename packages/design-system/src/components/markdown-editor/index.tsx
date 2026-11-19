@@ -38,12 +38,12 @@ import {
 import { isSafePasteUri, normalizeLinkHref } from "#lib/markdown-editor-links";
 import { cleanPastedHtml, handleMarkdownPaste, PasteOrdinal } from "#lib/markdown-editor-paste";
 import { splitFrontMatter } from "#lib/markdown-editor-tokenizers";
-import { cn } from "../lib/utils";
-import { Button } from "./button";
-import { Kbd, KbdGroup } from "./kbd";
-import { Input } from "./input";
-import { popoverSurface } from "./popover";
-import { Tooltip, TooltipGroup, TooltipPopup, TooltipTrigger } from "./tooltip";
+import { cn } from "../../lib/utils";
+import { Button } from "../button";
+import { Kbd, KbdGroup } from "../kbd";
+import { Input } from "../input";
+import { popoverSurface } from "../popover";
+import { Tooltip, TooltipGroup, TooltipPopup, TooltipTrigger } from "../tooltip";
 
 function updatePlaceholder(editor: Editor, placeholder: string) {
   editor.storage.placeholderText.placeholder = placeholder;
