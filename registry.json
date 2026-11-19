@@ -64,9 +64,9 @@
           "target": "@ui/markdown-editor/index.tsx"
         },
         {
-          "path": "packages/design-system/src/components/markdown-editor/types.ts",
+          "path": "packages/design-system/src/components/markdown-editor/editor-extensions.ts",
           "type": "registry:ui",
-          "target": "@ui/markdown-editor/types.ts"
+          "target": "@ui/markdown-editor/editor-extensions.ts"
         },
         {
           "path": "packages/design-system/src/components/markdown-editor/editor-utils.ts",
@@ -74,34 +74,9 @@
           "target": "@ui/markdown-editor/editor-utils.ts"
         },
         {
-          "path": "packages/design-system/src/components/markdown-editor/use-markdown-editor.ts",
-          "type": "registry:ui",
-          "target": "@ui/markdown-editor/use-markdown-editor.ts"
-        },
-        {
-          "path": "packages/design-system/src/components/markdown-editor/editor-extensions.ts",
-          "type": "registry:ui",
-          "target": "@ui/markdown-editor/editor-extensions.ts"
-        },
-        {
-          "path": "packages/design-system/src/components/markdown-editor/use-image-files.ts",
-          "type": "registry:ui",
-          "target": "@ui/markdown-editor/use-image-files.ts"
-        },
-        {
           "path": "packages/design-system/src/components/markdown-editor/formatting-buttons.tsx",
           "type": "registry:ui",
           "target": "@ui/markdown-editor/formatting-buttons.tsx"
-        },
-        {
-          "path": "packages/design-system/src/components/markdown-editor/use-coarse-pointer.ts",
-          "type": "registry:ui",
-          "target": "@ui/markdown-editor/use-coarse-pointer.ts"
-        },
-        {
-          "path": "packages/design-system/src/components/markdown-editor/selection-bubble.tsx",
-          "type": "registry:ui",
-          "target": "@ui/markdown-editor/selection-bubble.tsx"
         },
         {
           "path": "packages/design-system/src/components/markdown-editor/link-form.tsx",
@@ -109,9 +84,34 @@
           "target": "@ui/markdown-editor/link-form.tsx"
         },
         {
+          "path": "packages/design-system/src/components/markdown-editor/selection-bubble.tsx",
+          "type": "registry:ui",
+          "target": "@ui/markdown-editor/selection-bubble.tsx"
+        },
+        {
+          "path": "packages/design-system/src/components/markdown-editor/types.ts",
+          "type": "registry:ui",
+          "target": "@ui/markdown-editor/types.ts"
+        },
+        {
+          "path": "packages/design-system/src/components/markdown-editor/use-coarse-pointer.ts",
+          "type": "registry:ui",
+          "target": "@ui/markdown-editor/use-coarse-pointer.ts"
+        },
+        {
+          "path": "packages/design-system/src/components/markdown-editor/use-image-files.ts",
+          "type": "registry:ui",
+          "target": "@ui/markdown-editor/use-image-files.ts"
+        },
+        {
           "path": "packages/design-system/src/components/markdown-editor/use-link-editing.ts",
           "type": "registry:ui",
           "target": "@ui/markdown-editor/use-link-editing.ts"
+        },
+        {
+          "path": "packages/design-system/src/components/markdown-editor/use-markdown-editor.ts",
+          "type": "registry:ui",
+          "target": "@ui/markdown-editor/use-markdown-editor.ts"
         },
         {
           "path": "packages/design-system/src/lib/markdown-editor-extensions.ts",
