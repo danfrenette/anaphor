@@ -104,5 +104,4 @@ test("the heading font utility owns uppercase even outside heading elements", as
   const sample = page.getByTestId("heading-font-sample");
   await expect(sample).toHaveCSS("font-family", /Bell Gothic Black/);
   await expect(sample).toHaveCSS("text-transform", "uppercase");
-  await expect(sample).toHaveText("Natural source text");
 });

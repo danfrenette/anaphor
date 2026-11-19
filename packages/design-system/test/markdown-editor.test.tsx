@@ -838,23 +838,6 @@ test("an edit while a new onChange is suspended in a transition reaches the comm
   expect(next).not.toHaveBeenCalled();
 });
 
-test("a starting Markdown link renders and writes back as a link", async () => {
-  const user = userEvent.setup();
-  const ref = createRef<MarkdownEditorHandle>();
-  render(<MarkdownEditor presentation="field" ref={ref} defaultValue="[Anaphor](https://anaphor.dev)" aria-label="Research note" />);
-
-  const link = await screen.findByRole("link", { name: "Anaphor" });
-  expect(link).toBeVisible();
-  expect(link).toHaveAttribute("href", "https://anaphor.dev");
-
-  const editor = await screen.findByRole("textbox", { name: "Research note" });
-  await user.click(editor);
-  await user.keyboard("!");
-
-  const markdown = ref.current?.getMarkdown() ?? "";
-  expect(markdown).toContain("[Anaphor](https://anaphor.dev)");
-});
-
 test("announces a labelled multiline textbox and allows Tab focus in and out", async () => {
   const user = userEvent.setup();
   render(

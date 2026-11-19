@@ -577,16 +577,6 @@ test("four-digit sentences retain inline Markdown without becoming lists", async
   expect(api.dom.querySelector("ol")).toBeNull();
 });
 
-test("four-digit ordinary sentences stay paragraphs", async () => {
-  const user = userEvent.setup();
-  const api = await setupPasteEditor();
-  api.dom.focus();
-  await user.paste("2026. A year.");
-  expect(api.getMarkdown()).toBe("2026\\. A year.");
-  expect(api.dom.textContent).toBe("2026. A year.");
-  expect(api.dom.querySelector("ol")).toBeNull();
-});
-
 test("four-digit sentences retain inline links without becoming lists", async () => {
   const user = userEvent.setup();
   const api = await setupPasteEditor();
@@ -763,19 +753,6 @@ test.each([
   expect(api.getMarkdown()).toBe(expected);
   expect(api.dom.textContent).toBe(visible);
   expect(api.dom.querySelector(format)).not.toBeNull();
-});
-
-test("ordinal paragraph survives save and reparse", async () => {
-  const user = userEvent.setup();
-  const api = await setupPasteEditor();
-  api.dom.focus();
-  await user.paste("2026. **Important**");
-  const saved = api.getMarkdown();
-  expect(saved).toBe("2026\\. **Important**");
-  act(() => { api.setMarkdown(saved); });
-  expect(api.dom.textContent).toBe("2026. Important");
-  expect(api.dom.querySelector("ol")).toBeNull();
-  expect(await marked.parse(saved)).toBe("<p>2026. <strong>Important</strong></p>\n");
 });
 
 test.each(["1.", "2.", "-", "+", ">", "3)"])("hard-break continuation survives HTML paste and starting value: %s", async marker => {

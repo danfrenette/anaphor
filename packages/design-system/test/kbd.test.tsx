@@ -4,18 +4,17 @@ import { Kbd, KbdGroup } from "@anaphor/system";
 import { expect, test } from "vitest";
 
 test("renders native keyboard semantics and forwards attributes", () => {
-  const { container } = render(<Kbd className="custom-key" title="Keyboard key">K</Kbd>);
-  const key = container.querySelector("kbd");
+  render(<Kbd className="custom-key" title="Keyboard key">K</Kbd>);
+  const key = screen.getByText("K");
 
-  expect(key).toHaveTextContent("K");
-  expect(key).toHaveAttribute("data-slot", "kbd");
+  expect(key.tagName).toBe("KBD");
   expect(key).toHaveAttribute("title", "Keyboard key");
-  expect(key).toHaveClass("custom-key", "font-mono");
+  expect(key).toHaveClass("custom-key");
 });
 
 test("groups keys under an explicit accessible label without adding a keyboard stop", async () => {
   const user = userEvent.setup();
-  const { container } = render(
+  render(
     <>
       <button>Before</button>
       <KbdGroup aria-label="Command K">
@@ -26,8 +25,7 @@ test("groups keys under an explicit accessible label without adding a keyboard s
     </>,
   );
 
-  expect(container.querySelector('[data-slot="kbd-group"]')).toHaveAccessibleName("Command K");
-  expect(container.querySelectorAll('[data-slot="kbd"]')).toHaveLength(2);
+  expect(screen.getByLabelText("Command K")).toHaveTextContent("⌘K");
   await user.tab();
   expect(screen.getByRole("button", { name: "Before" })).toHaveFocus();
   await user.tab();

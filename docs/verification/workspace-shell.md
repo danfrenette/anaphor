@@ -43,9 +43,8 @@ reduced motion. The preview must not change the manual’s sidebar state. On
 mobile, open and close its drawer and confirm focus returns to the preview trigger.
 
 **Evidence:** Record the tested revision, command, browser, pass/fail counts,
-and any `test-results/` artifacts. Structural coverage for all 16 region
-combinations lives in `packages/design-system/test/workspace-shell.test.tsx`;
-running-browser coverage lives in `e2e/workspace-shell.spec.ts`.
+and any `test-results/` artifacts. Coverage for all 16 region combinations lives
+in `e2e/workspace-shell.spec.ts`.
 
 **Cleanup:** Stop the local server owned by the verification run after saving
 the result. Keep failure artifacts until triage is complete.

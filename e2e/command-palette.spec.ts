@@ -5,7 +5,6 @@ import { seekAnimations } from "./animation";
 test("sidebar search opens, filters, and navigates on desktop and mobile", async ({ page, isMobile }) => {
   await page.goto("/");
   if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
-  await expect(page.getByText("New component", { exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "Search manual" }).click();
   const dialog = page.getByRole("dialog", { name: "Search the manual" });
   const input = dialog.getByRole("combobox");

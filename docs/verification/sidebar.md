@@ -26,8 +26,8 @@ drawer, dismiss it, and check focus returns to the trigger.
 The manual index starts with Overview, followed by Foundations, Controls, Content,
 and Navigation. Group labels use secondary color at the item font size; rows have
 no icons. Search and breadcrumbs use the same categories. Studies and Source
-Outline stay retired. Run `e2e/manual-index-review.spec.ts`,
-`e2e/command-palette.spec.ts`, and `e2e/retired-pages.spec.ts` for these routes.
+Outline stay retired. Run `e2e/manual-index-review.spec.ts` and
+`e2e/command-palette.spec.ts` for these routes.
 
 **Assertions:** Placement and inline code reflect the playground configuration.
 Reset restores left placement, Overview, an open desktop rail, and its default

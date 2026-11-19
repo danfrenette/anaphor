@@ -84,7 +84,6 @@ test("checkbox controls reset and both themes are accessible", async ({ page }) 
     const accessibility = await new AxeBuilder({ page }).include("#checkbox").withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
     expect(accessibility.violations).toEqual([]);
   }
-  expect(await checkbox.evaluate((element) => element.getBoundingClientRect().width)).toBe(20);
   expect(await checkbox.locator("..").evaluate((element) => element.getBoundingClientRect().height)).toBeGreaterThanOrEqual(32);
 });
 

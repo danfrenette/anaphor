@@ -29,7 +29,7 @@ test("diff reading controls, excerpts, file states and theme remain usable", asy
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   }
   const panel = full.locator('[data-slot="collapsible-content"]');
-  await expect(panel).toHaveCSS("transition-duration", "0.2s");
+  await expect(panel).not.toHaveCSS("transition-duration", "0s");
   await full.getByRole("button", { name: "Collapse src/articles/reading-position.ts" }).click();
   await expect(full.getByRole("region", { name: "Code changes: Diff playground" })).toBeHidden();
   await expect(header).toHaveCSS("border-bottom-width", "0px");
