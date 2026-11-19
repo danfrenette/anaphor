@@ -9,6 +9,7 @@ import {
   type RefObject,
 } from "react";
 import { isSafePasteUri, normalizeLinkHref } from "#lib/markdown-editor-links";
+import { linkButtonName } from "./formatting-buttons";
 
 /** The href a typed URL saves as, or `null` when the URL is not accepted. */
 function parseLinkUrl(input: string): string | null {
@@ -47,7 +48,7 @@ function useLinkEditing(editor: Editor, bubbleRef: RefObject<HTMLDivElement | nu
   useLayoutEffect(() => {
     if (!isEditing && returnLinkFocus.current) {
       returnLinkFocus.current = false;
-      bubbleRef.current?.querySelector<HTMLButtonElement>('button[aria-label="Link"]')?.focus();
+      bubbleRef.current?.querySelector<HTMLButtonElement>(`button[aria-label="${linkButtonName}"]`)?.focus();
     }
   }, [isEditing, bubbleRef]);
 

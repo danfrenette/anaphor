@@ -7,6 +7,9 @@ import { Button } from "../button";
 import { Kbd, KbdGroup } from "../kbd";
 import { Tooltip, TooltipGroup, TooltipPopup, TooltipTrigger } from "../tooltip";
 
+/** The Link button's accessible name; link editing finds the button by it to return focus. */
+const linkButtonName = "Link";
+
 type FormattingButtonsProps = {
   editor: Editor;
   focusedIndex: number;
@@ -39,7 +42,7 @@ function FormattingButtons({
     { name: "Italic", key: "italic" as const, shortcut: "I", Icon: TextItalic, run: () => editor.chain().toggleItalic().run() },
     { name: "Strikethrough", key: "strike" as const, shortcut: "Shift+S", Icon: TextStrikethrough, run: () => editor.chain().toggleStrike().run() },
     { name: "Inline code", key: "code" as const, shortcut: "E", Icon: Code, run: () => editor.chain().toggleCode().run() },
-    { name: "Link", key: "link" as const, shortcut: "K", Icon: LinkIcon, run: openLink },
+    { name: linkButtonName, key: "link" as const, shortcut: "K", Icon: LinkIcon, run: openLink },
   ];
 
   return (
@@ -84,4 +87,5 @@ function FormattingButtons({
 
 export {
   FormattingButtons,
+  linkButtonName,
 };
