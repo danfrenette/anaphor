@@ -161,6 +161,21 @@ test("the link shortcut focuses the URL field", async () => {
   expect(await screen.findByRole("textbox", { name: "URL" })).toHaveFocus();
 });
 
+test("the URL field keeps its id when link editing reopens", async () => {
+  const { user } = setupEditor("text");
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+  await user.click(editor);
+  selectText(editor.querySelector("p")!, 0, 4);
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  const firstId = screen.getByRole("textbox", { name: "URL" }).id;
+  await user.keyboard("{Escape}");
+  expect(screen.queryByRole("textbox", { name: "URL" })).not.toBeInTheDocument();
+
+  selectText(editor.querySelector("p")!, 0, 4);
+  await user.click(await screen.findByRole("button", { name: "Link" }));
+  expect(screen.getByRole("textbox", { name: "URL" })).toHaveAttribute("id", firstId);
+});
+
 test("dismissing link editing resets the toolbar for the next selection", async () => {
   const { user } = setupEditor("text");
   const editor = await screen.findByRole("textbox", { name: "Research note" });

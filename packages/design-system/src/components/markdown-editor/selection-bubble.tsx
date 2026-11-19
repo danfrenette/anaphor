@@ -6,6 +6,7 @@ import { BubbleMenu, type BubbleMenuProps } from "@tiptap/react/menus";
 import {
   useEffect,
   useEffectEvent,
+  useId,
   useState,
   type RefObject,
 } from "react";
@@ -120,6 +121,8 @@ function SelectionBubble({
 }: SelectionBubbleProps) {
   const [selectionBubblePluginKey] = useState(() => new PluginKey("formattingBubble"));
   const [focusedIndex, setFocusedIndex] = useState(0);
+  // Created here, not in the form, so the URL field keeps its id when editing reopens.
+  const linkFieldId = useId();
 
   const isCoarsePointer = useCoarsePointer();
 
@@ -198,6 +201,7 @@ function SelectionBubble({
       >
         {link.isEditing ? (
           <LinkForm
+            id={linkFieldId}
             url={link.url}
             hasError={link.hasError}
             onUrlChange={link.changeUrl}

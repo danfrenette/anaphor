@@ -1,10 +1,11 @@
 "use client";
 
-import { useId } from "react";
 import { Button } from "../button";
 import { Input } from "../input";
 
 type LinkFormProps = {
+  /** Ids the error message; the label and URL field add suffixes. Kept across reopening. */
+  id: string;
   url: string;
   hasError: boolean;
   onUrlChange: (url: string) => void;
@@ -16,6 +17,7 @@ type LinkFormProps = {
 
 /** The selection bubble's URL form, shown in place of the mark buttons while editing a link. */
 function LinkForm({
+  id: linkErrorId,
   url,
   hasError,
   onUrlChange,
@@ -23,8 +25,6 @@ function LinkForm({
   onApply,
   onRemove,
 }: LinkFormProps) {
-  const linkErrorId = useId();
-
   return (
     <form
       onPointerDownCapture={() => onModalityChange(true)}
