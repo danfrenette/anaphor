@@ -3,8 +3,6 @@
 import { Button, ButtonLabel, MarkdownEditor } from "@anaphor/system";
 import { useRef, useState } from "react";
 
-// Fixtures for e2e/markdown-editor.spec.ts: an upload the test completes on demand,
-// for the positioned-drop regression, and a placeholder that changes after mount.
 export default function MarkdownEditorFixture() {
   const resolveImage = useRef<(() => void) | null>(null);
   const [pending, setPending] = useState(false);

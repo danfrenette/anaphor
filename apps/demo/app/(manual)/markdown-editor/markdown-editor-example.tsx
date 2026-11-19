@@ -13,10 +13,6 @@ import {
 } from "@anaphor/system";
 import { useEffect, useRef, useState } from "react";
 
-// Source of truth for e2e/markdown-editor.spec.ts, which locates its constructs
-// ("Field notes", "Bullet one", "A quote", "const x = 1;"). Rename a label only
-// together with that spec; the unit fixture in markdown-editor.test.tsx is a
-// separate near-duplicate.
 const startingMarkdown = [
   "## Field notes",
   "",
@@ -43,9 +39,6 @@ const startingMarkdown = [
   "---",
 ].join("\n");
 
-// Source of truth for the opaque-block checks in e2e/markdown-editor.spec.ts,
-// which locate "An existing post", "The note text.", and the opaque blocks.
-// Rename only together with that spec.
 const existingPostMarkdown = [
   "---",
   'title: "An existing post"',
@@ -72,8 +65,6 @@ const existingPostMarkdown = [
   "",
 ].join("\n");
 
-// Loaded by "Load another note" and shown in the in-place opaque example.
-// e2e/markdown-editor.spec.ts reads its exact text; change it only with that spec.
 const anotherNoteMarkdown = "## A loaded note\n\nLoaded with `setMarkdown`.\n\n<!-- Field note -->";
 
 const tableMarkdown = "| Name | Value |\n| :--- | ---: |\n| Alpha | Beta |";
@@ -208,8 +199,6 @@ export function MarkdownEditorExample() {
   );
 }
 
-// Demonstrates the field inside Anaphor's Field: label, description, error,
-// placeholder, read-only and disabled toggles, and imperative replace.
 function FieldStatesExample() {
   const editorRef = useRef<MarkdownEditorHandle>(null);
 
