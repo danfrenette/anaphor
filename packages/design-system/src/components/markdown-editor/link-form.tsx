@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useId,
-  useLayoutEffect,
-  useRef,
-} from "react";
+import { useId } from "react";
 import { Button } from "../button";
 import { Input } from "../input";
 
@@ -28,11 +24,6 @@ function LinkForm({
   onRemove,
 }: LinkFormProps) {
   const linkErrorId = useId();
-  const linkInputRef = useRef<HTMLInputElement>(null);
-
-  useLayoutEffect(() => {
-    linkInputRef.current?.focus();
-  }, []);
 
   return (
     <form
@@ -44,8 +35,9 @@ function LinkForm({
       }}
     >
       <label id={`${linkErrorId}-label`} htmlFor={`${linkErrorId}-input`}>URL</label>
+      {/* The form mounts when link editing starts; React focuses the URL as it inserts it. */}
       <Input
-        ref={linkInputRef}
+        autoFocus
         id={`${linkErrorId}-input`}
         size="sm"
         aria-labelledby={`${linkErrorId}-label`}
