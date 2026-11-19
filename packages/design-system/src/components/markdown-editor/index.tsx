@@ -23,6 +23,7 @@ import { popoverSurface } from "../popover";
 import { focusAtEnd } from "./editor-utils";
 import { FormattingButtons } from "./formatting-buttons";
 import type { MarkdownEditorImageHandler, UseMarkdownEditorOptions } from "./types";
+import { useCoarsePointer } from "./use-coarse-pointer";
 import { useMarkdownEditor, type UseMarkdownEditorResult } from "./use-markdown-editor";
 
 type ShouldShowFormattingProps = Parameters<NonNullable<BubbleMenuProps["shouldShow"]>>[0];
@@ -71,16 +72,7 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
   const selectionBubblePluginKey = useMemo(() => new PluginKey("formattingBubble"), []);
   const [focusedIndex, setFocusedIndex] = useState(0);
 
-  const [isCoarsePointer, setIsCoarsePointer] = useState(false);
-  useEffect(() => {
-    if (!window.matchMedia) return;
-
-    const coarsePointerQuery = window.matchMedia("(pointer: coarse)");
-    const syncCoarsePointer = () => setIsCoarsePointer(coarsePointerQuery.matches);
-    syncCoarsePointer();
-    coarsePointerQuery.addEventListener("change", syncCoarsePointer);
-    return () => coarsePointerQuery.removeEventListener("change", syncCoarsePointer);
-  }, []);
+  const isCoarsePointer = useCoarsePointer();
 
   const [editingLink, setEditingLink] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
