@@ -50,9 +50,6 @@ function useMarkdownEditor({
   const pendingBodyRef = useRef<string | null>(null);
   const autofocusHandled = useRef(false);
 
-  const onChangeRef = useRef(onChange);
-  useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
-
   const { handleImageFiles, cancelPendingImages } = useImageFiles(onImageFile);
 
   const editor: Editor | null = useEditor({
@@ -63,6 +60,21 @@ function useMarkdownEditor({
     extensions: createEditorExtensions(),
     content: body,
     contentType: "markdown",
+    // Tiptap calls the latest render's handler, so a new `onChange` needs no ref.
+    onUpdate: ({ editor }) => {
+      if (isReplacingRef.current) return;
+
+      const serializedBody = editor.getMarkdown();
+      const currentFrontMatter = frontMatterRef.current;
+      // A front-matter-only document ends without a newline on its closing `---`,
+      // so the body must be separated with one to keep the block intact on reload.
+      const needsSeparator =
+        currentFrontMatter !== "" &&
+        !currentFrontMatter.endsWith("\n") &&
+        serializedBody !== "";
+      currentValue.current = currentFrontMatter + (needsSeparator ? "\n" : "") + serializedBody;
+      onChange?.(currentValue.current);
+    },
     editorProps: {
       // Spec requirement (AC-1–5, AC-7): clean and classify pasted content.
       transformPastedHTML: cleanPastedHtml,
@@ -180,28 +192,6 @@ function useMarkdownEditor({
       root.querySelectorAll<HTMLInputElement>(checkboxSelector).forEach(input => { input.disabled = false; });
     };
   }, [editor, disabled]);
-
-  useEffect(() => {
-    if (!editor) return;
-
-    const onUpdate = () => {
-      if (isReplacingRef.current) return;
-
-      const serializedBody = editor.getMarkdown();
-      const currentFrontMatter = frontMatterRef.current;
-      // A front-matter-only document ends without a newline on its closing `---`,
-      // so the body must be separated with one to keep the block intact on reload.
-      const needsSeparator =
-        currentFrontMatter !== "" &&
-        !currentFrontMatter.endsWith("\n") &&
-        serializedBody !== "";
-      currentValue.current = currentFrontMatter + (needsSeparator ? "\n" : "") + serializedBody;
-      onChangeRef.current?.(currentValue.current);
-    };
-
-    editor.on("update", onUpdate);
-    return () => { editor.off("update", onUpdate); };
-  }, [editor]);
 
   return { editor, getMarkdown, setMarkdown };
 }
