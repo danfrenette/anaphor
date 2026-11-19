@@ -69,6 +69,11 @@
           "target": "@ui/markdown-editor/types.ts"
         },
         {
+          "path": "packages/design-system/src/components/markdown-editor/editor-utils.ts",
+          "type": "registry:ui",
+          "target": "@ui/markdown-editor/editor-utils.ts"
+        },
+        {
           "path": "packages/design-system/src/lib/markdown-editor-extensions.ts",
           "type": "registry:lib",
           "target": "@components/lib/markdown-editor-extensions.ts"
