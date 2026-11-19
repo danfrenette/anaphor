@@ -7,7 +7,7 @@ import {
   type Ref,
 } from "react";
 import { cn } from "../../lib/utils";
-import { focusAtEnd } from "./editor-utils";
+import { focusAtEnd } from "./focus-at-end";
 import { SelectionBubble } from "./selection-bubble";
 import type { MarkdownEditorImageHandler, UseMarkdownEditorOptions } from "./types";
 import { useMarkdownEditor, type UseMarkdownEditorResult } from "./use-markdown-editor";

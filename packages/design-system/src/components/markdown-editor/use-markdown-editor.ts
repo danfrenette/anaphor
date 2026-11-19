@@ -1,5 +1,6 @@
 "use client";
 
+import { EditorState } from "@tiptap/pm/state";
 import { useEditor, type Editor } from "@tiptap/react";
 import {
   useCallback,
@@ -11,9 +12,28 @@ import {
 import { cleanPastedHtml, handleMarkdownPaste } from "#lib/markdown-editor-paste";
 import { splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 import { createEditorExtensions } from "./editor-extensions";
-import { focusAtEnd, resetHistory, updatePlaceholder } from "./editor-utils";
+import { focusAtEnd } from "./focus-at-end";
 import type { UseMarkdownEditorOptions } from "./types";
 import { useImageFiles } from "./use-image-files";
+
+function updatePlaceholder(editor: Editor, placeholder: string) {
+  editor.storage.placeholderText.placeholder = placeholder;
+  editor.view.dispatch(editor.state.tr.setMeta("placeholderRefresh", true));
+}
+
+/** Empty the editor's undo/redo history while leaving its document and selection intact. */
+function resetHistory(editor: Editor): void {
+  // Recreate the state from the current document so every plugin's state field,
+  // including the history plugin's, is re-initialised. Undo and redo start empty.
+  const state = editor.state;
+  const nextState = EditorState.create({
+    doc: state.doc,
+    selection: state.selection,
+    storedMarks: state.storedMarks,
+    plugins: state.plugins,
+  });
+  editor.view.updateState(nextState);
+}
 
 type UseMarkdownEditorResult = {
   /**
