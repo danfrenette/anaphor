@@ -422,3 +422,8 @@ pinned by a test so an upgrade that changes one is noticed:
 The standalone `markdown-editor` registry item installs the component, shared
 styles, utilities, and exact Tiptap 3.33.0 dependencies. It is also part of the
 complete `ui` aggregate.
+
+The component is a folder, `src/components/markdown-editor/`, and installs as
+`components/ui/markdown-editor/`. Its `index.tsx` holds `MarkdownEditor` and
+re-exports `useMarkdownEditor` and the public types, so imports of
+`components/ui/markdown-editor` resolve to it. The other files there are internal.
