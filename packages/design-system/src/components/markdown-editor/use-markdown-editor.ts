@@ -53,6 +53,13 @@ function useMarkdownEditor({
 
   const { handleImageFiles, cancelPendingImages } = useImageFiles(onImageFile);
 
+  // Keeps the committed `onChange` for `onUpdate`. Tiptap swaps in each render's
+  // options as it renders, so reading the prop there could call a handler from a
+  // render React never commits. `useEffectEvent` can't be used: Tiptap calls
+  // `onUpdate` outside effects.
+  const onChangeRef = useRef(onChange);
+  useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
+
   const editor: Editor | null = useEditor({
     immediatelyRender: false,
     injectCSS: false,
@@ -61,7 +68,6 @@ function useMarkdownEditor({
     extensions: createEditorExtensions(),
     content: body,
     contentType: "markdown",
-    // Tiptap calls the latest render's handler, so a new `onChange` needs no ref.
     onUpdate: ({ editor }) => {
       if (isReplacingRef.current) return;
 
@@ -74,7 +80,7 @@ function useMarkdownEditor({
         !currentFrontMatter.endsWith("\n") &&
         serializedBody !== "";
       currentValue.current = currentFrontMatter + (needsSeparator ? "\n" : "") + serializedBody;
-      onChange?.(currentValue.current);
+      onChangeRef.current?.(currentValue.current);
     },
     editorProps: {
       // Spec requirement (AC-1–5, AC-7): clean and classify pasted content.

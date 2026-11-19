@@ -1,4 +1,4 @@
-import { createRef, useLayoutEffect } from "react";
+import { createRef, startTransition, Suspense, use, useLayoutEffect, useState } from "react";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -779,6 +779,59 @@ test("reports Markdown after a real edit", async () => {
 
   expect(onChange).toHaveBeenLastCalledWith("!Draft");
   expect(ref.current?.getMarkdown()).toBe("!Draft");
+});
+
+test("an edit before a new onChange commits reaches the committed handler", async () => {
+  const committed = vi.fn();
+  const next = vi.fn();
+  // Edits from a layout effect, in the same commit that passes the new handler.
+  function Parent({ onChange, edit }: { onChange: (markdown: string) => void; edit: boolean }) {
+    useLayoutEffect(() => {
+      if (!edit) return;
+      fireEvent.keyDown(screen.getByRole("textbox", { name: "Research note" }), { key: "Enter" });
+    }, [edit]);
+    return <MarkdownEditor presentation="field" defaultValue="Draft" onChange={onChange} aria-label="Research note" />;
+  }
+  const { rerender } = render(<Parent onChange={committed} edit={false} />);
+  await screen.findByRole("textbox", { name: "Research note" });
+
+  rerender(<Parent onChange={next} edit />);
+
+  expect(committed).toHaveBeenCalledTimes(1);
+  expect(next).not.toHaveBeenCalled();
+});
+
+test("an edit while a new onChange is suspended in a transition reaches the committed handler", async () => {
+  const user = userEvent.setup();
+  const committed = vi.fn();
+  const next = vi.fn();
+  const never = new Promise<never>(() => {});
+  function Suspender({ suspend }: { suspend: boolean }) {
+    if (suspend) use(never);
+    return null;
+  }
+  type ParentProps = { onChange: (markdown: string) => void; suspend: boolean };
+  let update: (props: ParentProps) => void = () => {};
+  function Parent() {
+    const [props, setProps] = useState<ParentProps>({ onChange: committed, suspend: false });
+    update = setProps;
+    return (
+      <Suspense fallback={<p>Loading</p>}>
+        <MarkdownEditor presentation="field" defaultValue="Draft" onChange={props.onChange} aria-label="Research note" />
+        <Suspender suspend={props.suspend} />
+      </Suspense>
+    );
+  }
+  render(<Parent />);
+  const editor = await screen.findByRole("textbox", { name: "Research note" });
+
+  act(() => { startTransition(() => update({ onChange: next, suspend: true })); });
+  expect(screen.queryByText("Loading")).not.toBeInTheDocument();
+  await user.click(editor);
+  await user.keyboard("!");
+
+  expect(committed).toHaveBeenLastCalledWith("!Draft");
+  expect(next).not.toHaveBeenCalled();
 });
 
 test("a starting Markdown link renders and writes back as a link", async () => {
