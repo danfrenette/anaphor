@@ -1,7 +1,5 @@
 "use client";
 
-import { closeHistory } from "@tiptap/pm/history";
-import type { Transaction } from "@tiptap/pm/state";
 import { useEditor, type Editor } from "@tiptap/react";
 import {
   useCallback,
@@ -15,6 +13,7 @@ import { splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 import { createEditorExtensions } from "./editor-extensions";
 import { focusAtEnd, resetHistory, updatePlaceholder } from "./editor-utils";
 import type { UseMarkdownEditorOptions } from "./types";
+import { useImageFiles } from "./use-image-files";
 
 type UseMarkdownEditorResult = {
   /**
@@ -54,14 +53,7 @@ function useMarkdownEditor({
   const onChangeRef = useRef(onChange);
   useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
 
-  const imageHandlerRef = useRef(onImageFile);
-  useLayoutEffect(() => { imageHandlerRef.current = onImageFile; }, [onImageFile]);
-  const imageGeneration = useRef(0);
-  const pendingImageCleanup = useRef(new Set<() => void>());
-  const cancelPendingImages = useCallback(() => {
-    imageGeneration.current++;
-    for (const cleanup of pendingImageCleanup.current) cleanup();
-  }, []);
+  const { handleImageFiles, cancelPendingImages } = useImageFiles(onImageFile);
 
   const editor: Editor | null = useEditor({
     immediatelyRender: false,
@@ -75,8 +67,8 @@ function useMarkdownEditor({
       // Spec requirement (AC-1–5, AC-7): clean and classify pasted content.
       transformPastedHTML: cleanPastedHtml,
       handleDOMEvents: {
-        paste: (view, event) => handleImageFiles(view, event, event.clipboardData?.files, false),
-        drop: (view, event) => handleImageFiles(view, event, event.dataTransfer?.files, true),
+        paste: (view, event) => handleImageFiles(editor, view, event, event.clipboardData?.files, false),
+        drop: (view, event) => handleImageFiles(editor, view, event, event.dataTransfer?.files, true),
       },
       handlePaste: (view, event): boolean => handleMarkdownPaste(view, event, editor),
       attributes: {
@@ -99,70 +91,6 @@ function useMarkdownEditor({
       },
     },
   });
-
-  function handleImageFiles(
-    view: Editor["view"],
-    event: Event,
-    files: FileList | undefined,
-    isDrop: boolean,
-  ): boolean {
-    const images = Array.from(files ?? []).filter(file => file.type.startsWith("image/"));
-    if (!images.length) {
-      if (isDrop && files?.length) {
-        event.preventDefault();
-        return true;
-      }
-      return false;
-    }
-
-    event.preventDefault();
-    const resolveImage = imageHandlerRef.current;
-    if (!resolveImage || !editor || !editor.isEditable) return true;
-
-    const dropPosition = isDrop && event instanceof MouseEvent
-      ? view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos
-      : undefined;
-    let from = dropPosition ?? view.state.selection.from;
-    let to = dropPosition ?? view.state.selection.to;
-    const generation = imageGeneration.current;
-
-    const mapInsertionRange = ({ transaction }: { transaction: Transaction }) => {
-      from = transaction.mapping.map(from, 1);
-      to = transaction.mapping.map(to, 1);
-    };
-    editor.on("transaction", mapInsertionRange);
-    const cleanup = () => {
-      editor.off("transaction", mapInsertionRange);
-      pendingImageCleanup.current.delete(cleanup);
-    };
-    pendingImageCleanup.current.add(cleanup);
-
-    const resolutions = images.map(file => Promise.resolve().then(() => resolveImage(file)));
-    void Promise.allSettled(resolutions).then(results => {
-      cleanup();
-      const isSuperseded = generation !== imageGeneration.current;
-      if (editor.isDestroyed || !editor.isEditable || isSuperseded) return;
-
-      const imageNodes = results.flatMap(result =>
-        result.status === "fulfilled" ? [{ type: "image", attrs: result.value }] : [],
-      );
-      if (imageNodes.length) {
-        // Spec requirement (handoff 346 decision 4): an asynchronously resolved
-        // image is its own undo step.
-        editor
-          .chain()
-          .command(({ tr }) => {
-            closeHistory(tr);
-            return true;
-          })
-          .insertContentAt({ from, to }, imageNodes)
-          .run();
-        editor.view.dispatch(closeHistory(editor.state.tr));
-      }
-    });
-
-    return true;
-  }
 
   useEffect(() => {
     if (editor && !editor.isDestroyed) {
@@ -231,9 +159,6 @@ function useMarkdownEditor({
     }
     editor.setEditable(!readOnly && !disabled, false);
   }, [editor, readOnly, disabled, cancelPendingImages]);
-
-  // Abandon image inserts still resolving when the editor unmounts.
-  useEffect(() => () => { cancelPendingImages(); }, [cancelPendingImages]);
 
   // Task item checkboxes are real inputs that ProseMirror re-creates as the
   // document re-renders, so keep disabling them for as long as the editor is.
