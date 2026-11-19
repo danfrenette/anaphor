@@ -5,6 +5,7 @@ import type { Editor } from "@tiptap/react";
 import { BubbleMenu, type BubbleMenuProps } from "@tiptap/react/menus";
 import {
   useEffect,
+  useEffectEvent,
   useMemo,
   useState,
   type RefObject,
@@ -44,6 +45,66 @@ function shouldShowFormatting({
   return !hasExcludedContent && !!state.doc.textBetween(from, to);
 }
 
+type BubbleShortcutsOptions = {
+  editor: Editor;
+  bubbleRef: RefObject<HTMLDivElement | null>;
+  pluginKey: PluginKey;
+  onLinkShortcut: () => void;
+};
+
+// Mod-K and Alt-F10 open the bubble over a selection: Mod-K for URL editing,
+// Alt-F10 to move focus to the first button.
+function useBubbleShortcuts({
+  editor,
+  bubbleRef,
+  pluginKey,
+  onLinkShortcut,
+}: BubbleShortcutsOptions) {
+  const onShortcut = useEffectEvent((isLinkShortcut: boolean) => {
+    const bubble = bubbleRef.current;
+    const { state, view } = editor;
+    const { from, to } = state.selection;
+    if (!bubble || !shouldShowFormatting({ editor, element: bubble, view, state, from, to })) return;
+
+    // Spec requirement (AC-5), Tiptap 3.33.0 override: the menu's debounce must
+    // not delay keyboard access.
+    view.dispatch(state.tr.setMeta(pluginKey, "show"));
+    view.dispatch(view.state.tr.setMeta(pluginKey, "updatePosition"));
+
+    // Spec requirement (AC-5): the link shortcut opens URL editing.
+    if (isLinkShortcut) onLinkShortcut();
+    else bubble.querySelector<HTMLButtonElement>("button")?.focus();
+  });
+
+  // Listens on the ProseMirror-owned editor element.
+  useEffect(() => {
+    const handleShortcutKeyDown = (event: KeyboardEvent) => {
+      const isLinkShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
+      const isToolbarShortcut = event.altKey && event.key === "F10";
+      if (!isLinkShortcut && !isToolbarShortcut) return;
+
+      const selection = window.getSelection();
+      const hasSelectionInEditor =
+        selection !== null &&
+        !selection.isCollapsed &&
+        editor.view.dom.contains(selection.anchorNode);
+      if (!editor.isEditable || !hasSelectionInEditor) return;
+
+      event.preventDefault();
+      // The browser can dispatch the shortcut before ProseMirror reads selectionchange.
+      document.dispatchEvent(new Event("selectionchange"));
+      requestAnimationFrame(() => {
+        if (editor.isDestroyed) return;
+
+        onShortcut(isLinkShortcut);
+      });
+    };
+
+    editor.view.dom.addEventListener("keydown", handleShortcutKeyDown);
+    return () => editor.view.dom.removeEventListener("keydown", handleShortcutKeyDown);
+  }, [editor]);
+}
+
 type SelectionBubbleProps = {
   editor: Editor;
   /** False while read-only or disabled: the bubble is not rendered, but its state is kept. */
@@ -64,46 +125,13 @@ function SelectionBubble({
   const isCoarsePointer = useCoarsePointer();
 
   const link = useLinkEditing(editor, bubbleRef);
-  const openLink = link.open;
 
-  useEffect(() => {
-    const handleShortcutKeyDown = (event: KeyboardEvent) => {
-      const isLinkShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
-      const isToolbarShortcut = event.altKey && event.key === "F10";
-      if (!isLinkShortcut && !isToolbarShortcut) return;
-
-      const selection = window.getSelection();
-      const hasSelectionInEditor =
-        selection !== null &&
-        !selection.isCollapsed &&
-        editor.view.dom.contains(selection.anchorNode);
-      if (!editor.isEditable || !hasSelectionInEditor) return;
-
-      event.preventDefault();
-      // The browser can dispatch the shortcut before ProseMirror reads selectionchange.
-      document.dispatchEvent(new Event("selectionchange"));
-      requestAnimationFrame(() => {
-        if (editor.isDestroyed) return;
-
-        const bubble = bubbleRef.current;
-        const { state, view } = editor;
-        const { from, to } = state.selection;
-        if (!bubble || !shouldShowFormatting({ editor, element: bubble, view, state, from, to })) return;
-
-        // Spec requirement (AC-5), Tiptap 3.33.0 override: the menu's debounce must
-        // not delay keyboard access.
-        view.dispatch(state.tr.setMeta(selectionBubblePluginKey, "show"));
-        view.dispatch(view.state.tr.setMeta(selectionBubblePluginKey, "updatePosition"));
-
-        // Spec requirement (AC-5): the link shortcut opens URL editing.
-        if (isLinkShortcut) openLink();
-        else bubble.querySelector<HTMLButtonElement>("button")?.focus();
-      });
-    };
-
-    editor.view.dom.addEventListener("keydown", handleShortcutKeyDown);
-    return () => editor.view.dom.removeEventListener("keydown", handleShortcutKeyDown);
-  }, [editor, openLink, selectionBubblePluginKey, bubbleRef]);
+  useBubbleShortcuts({
+    editor,
+    bubbleRef,
+    pluginKey: selectionBubblePluginKey,
+    onLinkShortcut: link.open,
+  });
 
   // Escape returns to the text; Home, End, and the arrow keys move between the
   // bubble's buttons, as in any toolbar.
@@ -183,7 +211,7 @@ function SelectionBubble({
             editor={editor}
             focusedIndex={focusedIndex}
             setFocusedIndex={setFocusedIndex}
-            openLink={openLink}
+            openLink={link.open}
           />
         )}
       </div>

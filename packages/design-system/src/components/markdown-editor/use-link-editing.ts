@@ -3,7 +3,6 @@
 import { closeHistory } from "@tiptap/pm/history";
 import type { ChainedCommands, Editor } from "@tiptap/react";
 import {
-  useCallback,
   useLayoutEffect,
   useRef,
   useState,
@@ -49,13 +48,13 @@ function useLinkEditing(editor: Editor, bubbleRef: RefObject<HTMLDivElement | nu
     }
   }, [isEditing, bubbleRef]);
 
-  const open = useCallback(() => {
+  function open() {
     if (!editor.isEditable) return;
 
     setUrl(editor.getAttributes("link").href ?? "");
     setHasError(false);
     setIsEditing(true);
-  }, [editor]);
+  }
 
   function close() {
     setIsEditing(false);
