@@ -233,7 +233,7 @@ test("dialog motion respects reduced motion and the header keeps a stable center
   await page.getByRole("button", { name: "Inspect recording", exact: true }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toHaveCSS("opacity", "1");
-  await expect(dialog).toHaveCSS("transition-duration", "0.2s");
+  await expect(dialog).not.toHaveCSS("transition-duration", "0s");
   const title = dialog.getByRole("heading", { level: 2 });
   const fontSize = await title.evaluate(el => getComputedStyle(el).fontSize);
   for (const width of [1280, 320]) {

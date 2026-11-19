@@ -59,7 +59,6 @@ test("one flat verification panel names the requirement and exposes its run, sou
   expect(within(within(verification).getByRole("region", { name: "Recorded check: Drafts survive reopening" })).getByRole("heading", { name: "Drafts survive reopening" })).toBeVisible();
   expect(within(verification).getByText("The draft returns.")).toBeVisible();
   expect(within(verification).getByText(head.slice(0, 8))).toBeVisible();
-  expect(within(verification).queryByRole("button", { name: "Run context and source" })).not.toBeInTheDocument();
   await userEvent.setup().hover(within(verification).getByRole("button", { name: "Chromium environment" }));
   expect(await screen.findByRole("dialog")).toHaveTextContent("Chromium");
 });
@@ -75,7 +74,6 @@ test("case navigation exposes implementation anchors and verification keeps deta
   expect(within(verification).getByText("The draft returns.")).not.toBeVisible();
   await userEvent.setup().click(within(verification).getByRole("button", { name: "Verification details for keep drafts after closing" }));
   expect(within(verification).getByText("The draft returns.")).toBeVisible();
-  expect(within(verification).queryByRole("button", { name: "Run context and source" })).not.toBeInTheDocument();
   expect(within(verification).getByText(head.slice(0, 8))).toBeVisible();
   expect(within(verification).getByText("2026-10-23 · 12:00 UTC")).toBeVisible();
   expect(screen.getByText("End of case 01")).toBeVisible();

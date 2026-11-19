@@ -74,7 +74,7 @@ test("renders stable consumer-owned trailing content without searching it", asyn
 
   await user.click(screen.getByRole("button", { name: "Search" }));
   const option = await screen.findByRole("option", { name: /Button/ });
-  expect(option.querySelector('[data-slot="command-palette-trailing"]')).toHaveTextContent("GB");
+  expect(option).toHaveTextContent("GB");
   expect(option.querySelector("svg")).not.toBeInTheDocument();
 
   await user.type(screen.getByRole("combobox"), "gb");

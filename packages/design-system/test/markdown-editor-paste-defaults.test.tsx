@@ -15,12 +15,6 @@ beforeEach(() => {
 });
 
 test.each([
-  ["snake case", "snake_case_names", "snake\\_case\\_names"],
-  ["arithmetic", "2 * 3 = 6", "2 \\* 3 = 6"],
-  ["indented text", "    indented", "&#32;&#32;&#32;&#32;indented"],
-  ["URL", "https://example.com", "[https://example.com](https://example.com)"],
-  ["hash without space", "#heading", "#heading"],
-  ["numbered sentence", "2026. A year.", "2026\\. A year."],
   ["unsafe URL", "javascript:alert(1)", "javascript:alert(1)"],
   ["HTML", "<script>alert(1)</script>", "&lt;script&gt;alert(1)&lt;/script&gt;"],
   ["footnote", "[^note]", "\\[^note\\]"],

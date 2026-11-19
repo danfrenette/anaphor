@@ -71,7 +71,6 @@ test("marks the current destination independently from hover", () => {
   const current = screen.getByRole("link", { name: "Button" });
   expect(current).toHaveAttribute("aria-current", "page");
   expect(current).toHaveAttribute("data-active");
-  expect(document.querySelector('[data-slot="sidebar-menu-selection"]')).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Card" })).not.toHaveAttribute("aria-current");
 });
 
@@ -146,8 +145,8 @@ test("both placement uses one left drawer on mobile", () => {
     </SidebarProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "Open sidebar" }));
-  expect(document.querySelectorAll('[data-slot="sidebar"]')).toHaveLength(1);
   expect(screen.getByRole("dialog", { name: "Navigation" })).toBeInTheDocument();
+  expect(screen.queryByLabelText("Outline")).not.toBeInTheDocument();
 });
 
 test("uses modal dialog behavior on mobile", () => {

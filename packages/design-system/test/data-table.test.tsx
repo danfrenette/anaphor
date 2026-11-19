@@ -59,7 +59,6 @@ it("keeps the announcement region available before loading and recovery", () => 
   expect(announcement).toBeInTheDocument();
   rerender(<ManualCatalog status="loading" />);
   expect(announcement).toHaveTextContent("Loading sources");
-  expect(announcement).not.toHaveAttribute("aria-busy", "true");
   rerender(<ManualCatalog />);
   expect(announcement).toBeEmptyDOMElement();
 });

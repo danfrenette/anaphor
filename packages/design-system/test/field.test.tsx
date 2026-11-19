@@ -27,7 +27,7 @@ test("horizontal composition preserves disabled field behavior and state-aware c
   </Field>);
   const checkbox = screen.getByRole("checkbox", { name: "Unavailable" });
   expect(checkbox).toHaveAttribute("aria-disabled", "true");
-  expect(checkbox.closest('[data-slot="field"]')).toHaveClass("disabled-field");
+  expect(checkbox.closest(".disabled-field")).toBeInTheDocument();
   await user.click(screen.getByText("Unavailable"));
   expect(checkbox).not.toBeChecked();
 });

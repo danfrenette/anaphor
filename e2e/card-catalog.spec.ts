@@ -16,10 +16,10 @@ test("card catalog exposes examples, code, and the existing playground", async (
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
   await page.getByRole("tab", { name: "Open Card controls" }).click();
   await selectControl(page, "Variant", "showcase");
-  const playground = page.locator('[aria-labelledby="card-project-title"]');
-  await expect(playground).toHaveAttribute("data-variant", "showcase");
+  const preview = page.locator('[aria-labelledby="card-project-title"]').getByText("Space for your next idea.");
+  await expect(preview).toBeVisible();
   await page.getByRole("button", { name: "Reset controls" }).click();
-  await expect(playground).toHaveAttribute("data-variant", "default");
+  await expect(preview).toHaveCount(0);
   await page.getByRole("button", { name: "Close controls" }).click();
   expect(await section.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
 });

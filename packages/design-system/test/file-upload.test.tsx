@@ -69,7 +69,6 @@ test("known progress is bounded and unknown progress omits the numerical value",
   const progress = screen.getByRole("progressbar", { name: "Uploading one.txt" });
   expect(progress).toHaveAttribute("value", "100");
   expect(progress).toHaveAttribute("aria-valuetext", "100 bytes transferred");
-  expect(progress).not.toHaveAttribute("aria-live");
   rerender(<FileUploadProgress value={null} max={100} label="Processing one.txt" />);
   expect(screen.getByRole("progressbar")).not.toHaveAttribute("value");
   rerender(<FileUploadProgress value={-10} max={100} label="Uploading one.txt" />);

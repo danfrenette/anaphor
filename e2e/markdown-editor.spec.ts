@@ -1310,9 +1310,6 @@ test("the editor keeps keyboard focus order and passes accessibility checks", as
 
   const code = page.getByRole("textbox", { name: "In-place code ending" }).locator("pre");
   await expect(code).not.toHaveAttribute("tabindex");
-  await page.getByRole("textbox", { name: "In-place code ending" }).focus();
-  await page.keyboard.press(tabForward);
-  console.log(`editable overflowing code focused after Tab: ${await code.evaluate(element => element === document.activeElement)}`);
 
   await checkAccessibility(page);
 });

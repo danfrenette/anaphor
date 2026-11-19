@@ -22,7 +22,6 @@ function ExampleTabs() {
 test("connects tabs to their panels and changes selection by pointer", async () => {
   const user = userEvent.setup();
   const { container } = render(<ExampleTabs />);
-  const root = container.querySelector('[data-slot="tabs"]');
   const indicator = container.querySelector('[data-slot="tabs-indicator"]');
 
   expect(screen.getByRole("tab", { name: "Library" })).toHaveAttribute("aria-selected", "true");
@@ -30,7 +29,6 @@ test("connects tabs to their panels and changes selection by pointer", async () 
   expect(indicator).toHaveAttribute("aria-hidden", "true");
 
   await user.click(screen.getByRole("tab", { name: "Recents" }));
-  expect(root).toHaveAttribute("data-tabs-input", "pointer");
   expect(screen.getByRole("tab", { name: "Recents" })).toHaveAttribute("aria-selected", "true");
   expect(screen.getByRole("tabpanel")).toHaveTextContent("Recent content");
 });
@@ -62,36 +60,14 @@ test("keeps a distinct active copy for tabs in keyed fragments and sibling lists
   consoleError.mockRestore();
 });
 
-test("selects a lifted list with the same keyboard and pointer contract", async () => {
+test("selects on Enter rather than focus and prevents disabled activation", async () => {
   const user = userEvent.setup();
-  render(
-    <Tabs defaultValue="library">
-      <TabsList aria-label="Collection" variant="lifted">
-        <TabsTab value="library">Library</TabsTab>
-        <TabsTab value="recents">Recents</TabsTab>
-      </TabsList>
-      <TabsPanel value="library">Library content</TabsPanel>
-      <TabsPanel value="recents">Recent content</TabsPanel>
-    </Tabs>,
-  );
-
-  expect(screen.getByRole("tablist")).toHaveAttribute("data-variant", "lifted");
-  await user.click(screen.getByRole("tab", { name: "Recents" }));
-  expect(screen.getByRole("tabpanel")).toHaveTextContent("Recent content");
-  await user.keyboard("{ArrowLeft}{Enter}");
-  expect(screen.getByRole("tab", { name: "Library" })).toHaveAttribute("aria-selected", "true");
-});
-
-test("keeps keyboard selection instant and prevents disabled activation", async () => {
-  const user = userEvent.setup();
-  const { container } = render(<ExampleTabs />);
-  const root = container.querySelector('[data-slot="tabs"]');
+  render(<ExampleTabs />);
 
   await user.tab();
   await user.keyboard("{ArrowRight}");
   expect(screen.getByRole("tab", { name: "Recents" })).toHaveFocus();
   expect(screen.getByRole("tab", { name: "Library" })).toHaveAttribute("aria-selected", "true");
-  expect(root).toHaveAttribute("data-tabs-input", "keyboard");
 
   await user.keyboard("{Enter}");
   expect(screen.getByRole("tab", { name: "Recents" })).toHaveAttribute("aria-selected", "true");

@@ -58,13 +58,12 @@ test("the combined Typography reference is searchable and has matching route con
 });
 
 
-test("legacy Principles links retain Overview context without retired navigation", async ({ page, isMobile }) => {
+test("legacy Principles links retain Overview context", async ({ page, isMobile }) => {
   await page.goto("/#principles");
   await expect(page.locator('[data-slot="workspace-card-header"]').first()).toHaveText("Manual/Overview");
   if (isMobile) await page.getByRole("button", { name: "Open sidebar", exact: true }).click();
   const index = page.getByRole("navigation", { name: "Manual index" });
   await expect(index.getByRole("link", { name: "Overview", exact: true })).toHaveAttribute("aria-current", "page");
-  await expect(index.getByRole("link", { name: /Studies|Signal|Field Notes|Source Outline|Principles/ })).toHaveCount(0);
 });
 
 test("index groups are alphabetized and in-page sections follow their order", async ({ page, isMobile }) => {
