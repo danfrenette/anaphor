@@ -69,8 +69,6 @@
   --anaphor-sidebar-max-width: 22.5rem;
   --anaphor-sidebar-duration: 240ms;
   --anaphor-sidebar-exit-duration: 160ms;
-  /* Markdown editor field heights: tuned to suit a two-line note and a long
-     paste. Consumers may override these custom properties. */
   --anaphor-markdown-editor-min-height: 6rem;
   --anaphor-markdown-editor-max-height: 18rem;
   /* Global layers. Local stacking contexts may use small numeric indices. */
@@ -285,9 +283,6 @@
   .anaphor-prose :where(li > p:first-child, blockquote > p:first-child):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block-start: 0; }
   .anaphor-prose :where(li > p:last-child, blockquote > p:last-child):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block-end: 0; }
 
-  /* Task lists lose their markers and indent. Tiptap's TaskList writes
-     ul[data-type="taskList"]; rendered Markdown marks the item instead, as
-     remark-gfm's li.task-list-item or marked's disabled first-child checkbox. */
   .anaphor-prose :where(ul[data-type="taskList"]):not(:where([data-prose-exclude], [data-prose-exclude] *)) { list-style: none; padding-inline-start: 0; }
   .anaphor-prose :where(
     li.task-list-item,
@@ -298,13 +293,8 @@
     margin-inline-start: calc(var(--spacing-prose) * -1.5);
   }
 
-  /* The editor's task item: Tiptap's TaskItem writes li[data-checked] holding a
-     label (the checkbox) and then a div (the content). */
   .anaphor-prose :where(li[data-checked]):not(:where([data-prose-exclude], [data-prose-exclude] *)) { display: flex; gap: 0.5em; align-items: baseline; }
 
-  /* A rendered task whose checkbox is the item's first child, as in marked's tight
-     lists: the item wraps as a row, and nested lists and later paragraphs take a
-     line of their own. */
   .anaphor-prose :where(
     li:has(> input[type="checkbox"][disabled]:first-child:not(:where([data-prose-exclude], [data-prose-exclude] *)))
   ):not(:where([data-prose-exclude], [data-prose-exclude] *)) {
@@ -331,14 +321,10 @@
     margin-inline-start: 1.5em;
   }
 
-  /* The editor's task content: the div beside the checkbox label. */
   .anaphor-prose :where(li[data-checked] > div):not(:where([data-prose-exclude], [data-prose-exclude] *)) { min-width: 0; }
   .anaphor-prose :where(li[data-checked] > div > p):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: 0; }
   .anaphor-prose :where(li[data-checked] > div > ul, li[data-checked] > div > ol):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: calc(var(--spacing-prose) * 0.5) 0; }
 
-  /* A rendered task whose checkbox opens its first paragraph, as in marked's loose
-     lists: the checkbox hangs in the item's start padding, and a nested list of
-     such tasks spaces itself to match. */
   .anaphor-prose :where(
     li:has(> p:first-child > input[type="checkbox"][disabled]:first-child:not(:where([data-prose-exclude], [data-prose-exclude] *)))
   ):not(:where([data-prose-exclude], [data-prose-exclude] *)) {
@@ -373,8 +359,6 @@
     margin-block-start: calc(var(--spacing-prose) * 0.5);
   }
 
-  /* The drawn checkbox, shared by all three task markups. `appearance: none`
-     hides the native box; ::before draws the box and ::after the check mark. */
   .anaphor-prose :where(li input[type="checkbox"]):not(:where([data-prose-exclude], [data-prose-exclude] *)) {
     appearance: none;
     display: inline-grid;
@@ -386,8 +370,6 @@
     opacity: 1;
   }
   @media (pointer: coarse) {
-    /* Tasks get 44px rows and the editor's checkbox label a 44px hit area; nested
-       lists clear the taller row by the same amount in editable and rendered tasks. */
     .anaphor-prose :where(
       li[data-checked],
       li.task-list-item,
@@ -438,8 +420,6 @@
     transform: translateY(-0.05em) rotate(-45deg);
   }
 
-  /* A disabled editor mutes its boxes. Rendered boxes are disabled inputs too, but
-     they show status, so they keep their normal look. */
   :where([data-slot="markdown-editor"][data-disabled]) .anaphor-prose :where(li input[type="checkbox"]):not(:where([data-prose-exclude], [data-prose-exclude] *))::before { background: var(--anaphor-input-disabled); border-color: var(--anaphor-input-border); }
   :where([data-slot="markdown-editor"][data-disabled]) .anaphor-prose :where(li input[type="checkbox"]:checked):not(:where([data-prose-exclude], [data-prose-exclude] *))::after { border-color: var(--anaphor-font-tertiary); }
 
@@ -463,28 +443,19 @@
   .anaphor-prose :where(pre code):not(:where([data-prose-exclude], [data-prose-exclude] *)) { font-size: inherit; }
   .anaphor-prose :where(figcaption):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block-start: calc(var(--spacing-prose) * 0.5); font-size: var(--text-small); }
   .anaphor-prose :where(table):not(:where([data-prose-exclude], [data-prose-exclude] *)) { width: 100%; border-collapse: collapse; }
-  /* Table wrappers scroll sideways. Tiptap 3.33.0 writes .tableWrapper around its
-     live tables; renderers may add [data-prose-table]. */
   .anaphor-prose :where(.tableWrapper, [data-prose-table]):not(:where([data-prose-exclude], [data-prose-exclude] *)) { overflow-x: auto; margin-block: var(--spacing-prose); }
   .anaphor-prose :where(.tableWrapper > table, [data-prose-table] > table):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: 0; }
   .anaphor-prose :where(th, td):not(:where([data-prose-exclude], [data-prose-exclude] *)) { padding: calc(var(--spacing-prose) * 0.5); border-bottom: 1px solid var(--anaphor-input-border); text-align: start; }
-  /* Rendered Markdown writes column alignment as an align attribute, which the
-     `text-align: start` above would override. Tiptap writes an inline style. */
   .anaphor-prose :where(th[align="left"], td[align="left"]):not(:where([data-prose-exclude], [data-prose-exclude] *)) { text-align: left; }
   .anaphor-prose :where(th[align="center"], td[align="center"]):not(:where([data-prose-exclude], [data-prose-exclude] *)) { text-align: center; }
   .anaphor-prose :where(th[align="right"], td[align="right"]):not(:where([data-prose-exclude], [data-prose-exclude] *)) { text-align: right; }
-  /* The editor wraps each cell's content in a paragraph; without margins its cells
-     line up with rendered ones. */
   .anaphor-prose :where(th > p, td > p):not(:where([data-prose-exclude], [data-prose-exclude] *)) { margin-block: 0; }
   .anaphor-prose > :first-child:not([data-prose-exclude]) { margin-block-start: 0; }
   .anaphor-prose > :last-child:not([data-prose-exclude]) { margin-block-end: 0; }
 
-  /* Collapse source soft newlines like rendered Markdown; typed repeated spaces remain visible. */
   .anaphor-prose[contenteditable="true"] { white-space: normal; }
   .anaphor-prose[contenteditable="true"] :where(pre) { white-space: pre; }
 
-  /* ProseMirror's gap cursor. The editor turns off Tiptap's injected CSS, so the
-     styling lives here. */
   .ProseMirror-gapcursor { display: none; pointer-events: none; position: absolute; }
   .ProseMirror-focused .ProseMirror-gapcursor { display: block; }
   .ProseMirror-gapcursor::after {
@@ -499,11 +470,6 @@
   }
   @keyframes anaphor-gapcursor-blink { to { visibility: hidden; } }
 
-  /* The placeholder is a ::before pseudo-element on the empty paragraph, so it is
-     never matched by Prose's article rules (which select real block elements).
-     It inherits only the paragraph's body metrics, which keeps the empty editor
-     exactly one Prose line tall. `float` and `height: 0` stop it contributing
-     layout, and the muted foreground matches other input placeholders. */
   .anaphor-prose[contenteditable="true"] [data-placeholder]::before {
     content: attr(data-placeholder);
     float: left;
@@ -512,12 +478,9 @@
     color: var(--anaphor-font-tertiary);
   }
 
-  /* A disabled field mutes its content alongside the input disabled background. */
   [data-slot="markdown-editor"][data-disabled] .anaphor-prose { color: var(--anaphor-font-tertiary); }
 }
 
-/* In-place presentation has no field frame to carry a focus ring, so focusable
-   read-only content draws its own. Unlayered, it outranks the outline-none utility. */
 [data-slot="markdown-editor"][data-presentation="in-place"] .anaphor-prose[aria-readonly="true"]:focus-visible {
   outline: 2px solid var(--anaphor-focus);
   outline-offset: 2px;
@@ -546,9 +509,6 @@
   }
 }
 
-/* The selection bubble shares the popover surface but not Base UI's starting
-   styles. Tiptap inserts it into the page each time it shows, so a keyframe
-   animation plays on every appearance. */
 [data-slot="markdown-formatting-bubble"] {
   transform-origin: bottom center;
 }
