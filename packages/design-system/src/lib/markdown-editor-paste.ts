@@ -5,7 +5,6 @@ import type { Editor } from "@tiptap/react";
 import { isSafePasteUri, normalizeLinkHref } from "#lib/markdown-editor-links";
 import { splitFrontMatter } from "#lib/markdown-editor-tokenizers";
 
-// Markdown parsing is synchronous; restore the context even if parsing fails or re-enters.
 let pasteParseContext: { suppressedOrdinal: boolean; unsafeImage: boolean } | undefined;
 
 const PasteOrdinal = Extension.create({
@@ -23,7 +22,6 @@ const PasteOrdinal = Extension.create({
   },
 });
 
-// Spec requirement (AC-3): retain the first item's tokens while suppressing its list marker.
 function suppressPastedOrdinal(source: string, token: MarkdownToken | undefined): MarkdownToken | undefined {
   const item = token?.items?.[0];
   const marker = item?.raw?.match(/^ {0,3}(\d{4,}[.)][ \t]+)/)?.[1];
@@ -48,7 +46,6 @@ function literalPastedImage(token: MarkdownToken): JSONContent | undefined {
   return { type: "text", text: token.raw };
 }
 
-// Spec requirement (AC-1, AC-2): clipboard presentation is not document formatting.
 function cleanPastedHtml(html: string): string {
   const pastedDocument = new DOMParser().parseFromString(html, "text/html");
   const keptAttributes = ["href", "data-type", "data-checked", "checked", "type", "start", "colspan", "rowspan"];
@@ -64,7 +61,6 @@ function cleanPastedHtml(html: string): string {
       continue;
     }
 
-    // Google Docs wraps a whole copied selection in this non-bold <b>; keep only its children.
     if (element.matches('b[id^="docs-internal-guid-"]')) {
       element.replaceWith(...Array.from(element.childNodes));
       continue;
@@ -84,7 +80,6 @@ function cleanPastedHtml(html: string): string {
   return pastedDocument.body.innerHTML;
 }
 
-// Spec requirement (AC-3, AC-5): detect syntax from the parsed paste, not a second lex.
 function containsMarkdown(node: JSONContent, source: string, hasBracketLink: boolean): boolean {
   if (node.type === "image") return true;
   if (node.type === "codeBlock") return /^ {0,3}(?:`{3,}|~{3,})/m.test(source);
@@ -107,7 +102,6 @@ function unsafePasteLink(node: JSONContent): string | undefined {
   return typeof href === "string" ? href : undefined;
 }
 
-// Spec requirement (AC-4, AC-7): unsafe links and unsupported pasted syntax stay literal.
 function literalPasteNodes(node: JSONContent): JSONContent {
   if (node.type === "image") {
     const src = String(node.attrs?.src ?? "");
@@ -130,7 +124,6 @@ function literalPasteNodes(node: JSONContent): JSONContent {
     };
   }
 
-  // Adjacent text under one unsafe link becomes a single literal `[text](href)`.
   const content: JSONContent[] = [];
   let pendingHref: string | undefined;
   let pendingText = "";
@@ -162,7 +155,6 @@ function literalPasteNodes(node: JSONContent): JSONContent {
   };
 }
 
-// Spec requirement (AC-1–5, AC-7): apply paste-only conversion and safety.
 function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Editor | null): boolean {
   const text = event.clipboardData?.getData("text/plain");
   if (
@@ -173,7 +165,6 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
     return false;
   }
 
-  // Spec requirement (AC-4): a pasted URL links the selection, even with rich HTML.
   if (
     !view.state.selection.empty &&
     /^[a-z][a-z\d+.-]*:/i.test(text) &&
@@ -194,7 +185,6 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
 
   const { frontMatter, body } = splitFrontMatter(text);
 
-  // Spec requirement (AC-3): a four-digit sentence is not an ordered list.
   const previous = pasteParseContext;
   const context = { suppressedOrdinal: false, unsafeImage: false };
   pasteParseContext = context;
@@ -214,7 +204,6 @@ function handleMarkdownPaste(view: EditorView, event: ClipboardEvent, editor: Ed
     return false;
   }
 
-  // Spec requirement (AC-7): pasted front matter and unsupported nodes are literal text.
   const literalDocument = literalPasteNodes(parsedDocument);
   const frontMatterNodes = frontMatter
     ? [literalPasteNodes({ type: "opaqueBlock", attrs: { source: frontMatter.replace(/\r?\n$/, "") } })]

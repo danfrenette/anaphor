@@ -11,7 +11,6 @@ import {
 import { isSafePasteUri, normalizeLinkHref } from "#lib/markdown-editor-links";
 import { linkButtonName } from "./formatting-buttons";
 
-/** The href a typed URL saves as, or `null` when the URL is not accepted. */
 function parseLinkUrl(input: string): string | null {
   const url = input.trim();
   const isBareHost = /^(?:[a-z\d](?:[a-z\d-]*[a-z\d])?\.)+[a-z\d](?:[a-z\d-]*[a-z\d])?(?::\d+)?(?:[/?#][^\s@\\]*)?$/i.test(url);
@@ -34,7 +33,6 @@ function parseLinkUrl(input: string): string | null {
   return href;
 }
 
-/** Link editing in the selection bubble: the URL being typed, and applying or removing it. */
 function useLinkEditing(editor: Editor, bubbleRef: RefObject<HTMLDivElement | null>) {
   const [isEditing, setIsEditing] = useState(false);
   const [url, setUrl] = useState("");
@@ -42,9 +40,6 @@ function useLinkEditing(editor: Editor, bubbleRef: RefObject<HTMLDivElement | nu
   const pointerLinkAction = useRef(false);
   const returnLinkFocus = useRef(false);
 
-  // After a keyboard apply or remove, focus the Link button in the same commit
-  // that swaps it back in. A later focus is too late: Tiptap's passive effect
-  // re-checks the bubble first, finds focus outside it, and hides it.
   useLayoutEffect(() => {
     if (!isEditing && returnLinkFocus.current) {
       returnLinkFocus.current = false;
@@ -69,13 +64,10 @@ function useLinkEditing(editor: Editor, bubbleRef: RefObject<HTMLDivElement | nu
     setHasError(false);
   }
 
-  // Whether the latest input in the form was a pointer or the keyboard.
   function changeModality(isPointerAction: boolean) {
     pointerLinkAction.current = isPointerAction;
   }
 
-  // Each change is its own undo step. Focus returns to the text after a pointer
-  // action, and to the Link button after a keyboard one.
   function commit(change: (chain: ChainedCommands) => ChainedCommands) {
     const chain = editor.chain().command(({ tr }) => {
       closeHistory(tr);

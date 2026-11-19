@@ -1,20 +1,5 @@
 import type { MarkdownToken } from "@tiptap/core";
 
-// Pure, framework-free tokenizers for the Markdown the editor does not
-// interpret. They run outside React and Tiptap so they are cheap to reason
-// about and test in isolation; the node and extension definitions that consume
-// them live in markdown-editor-extensions.ts.
-
-/**
- * A leading `--- … ---` block at the very start of the file, held out of sight
- * and returned byte-for-byte.
- *
- * Front matter opens with a `---` line and then either closes right away (empty
- * front matter) or its first interior line is a YAML mapping key or a `#`
- * comment. From there the block runs — blank lines included — to the first line
- * that is exactly `---` (or `...`), so a document that merely opens with a
- * horizontal rule or plain prose is not swallowed. CRLF line endings work.
- */
 const FRONT_MATTER_RE = /^---[ \t]*\r?\n(?:(?:---|\.\.\.)[ \t]*(?:\r?\n|$)|(?:[A-Za-z0-9_"'-][^:\r\n]*:|#)[^\r\n]*\r?\n(?:[^\r\n]*\r?\n)*?(?:---|\.\.\.)[ \t]*(?:\r?\n|$))/;
 
 function splitFrontMatter(markdown: string): { frontMatter: string; body: string } {
@@ -24,23 +9,15 @@ function splitFrontMatter(markdown: string): { frontMatter: string; body: string
     : { frontMatter: "", body: markdown };
 }
 
-// Mirrors marked@17.0.6's `rules.inline.tag`, reached through
-// @tiptap/markdown@3.33.0, so an opaque span captures exactly what stock would
-// otherwise fold into marks (e.g. `<b>`) or drop (e.g. `<img>`). Re-verify on
-// a Tiptap or marked upgrade.
 const INLINE_HTML_RE = /^(?:<!--(?:-?>|[\s\S]*?(?:-->))|<\/[a-zA-Z][\w:-]*\s*>|<[a-zA-Z][\w-]*(?:\s+[a-zA-Z:_][\w.:-]*(?:\s*=\s*"[^"]*"|\s*=\s*'[^']*'|\s*=\s*[^\s"'=<>`]+)?)*?\s*\/?>|<\?[\s\S]*?\?>|<![a-zA-Z]+\s[\s\S]*?>|<!\[CDATA\[[\s\S]*?\]\]>)/;
 
 const FOOTNOTE_REF_RE = /^\[\^([^\]]+)\]/;
 
-// Footnote definitions can have indented continuation lines; keep the whole definition.
 const FOOTNOTE_DEF_RE = /^\[\^[^\]]+\]:[ \t]*[^\n]*(?:\n[ \t]+[^\n]*)*/;
 
-// Recognise ESM only when it is syntactically ESM so prose like "import the
-// data from the CSV" or "export everything" stays a paragraph.
 const ESM_IMPORT_RE = /^import\s+(?:type\s+)?[^"'\n]+\s+from\s+["']|^import\s*["']/;
 const ESM_EXPORT_RE = /^export\s+(?:const|let|var|function|class|default|async|type|interface)\b|^export\s*[*{]/;
 
-/** Index just past a JSX `{…}` expression's closing brace, honouring nested braces and quoted strings. */
 function skipJsxExpression(source: string, start: number): number {
   let depth = 0;
   for (let i = start; i < source.length; i += 1) {
@@ -60,7 +37,6 @@ function skipJsxExpression(source: string, start: number): number {
   return source.length;
 }
 
-/** Index just past a tag's `>` (or `/>`), skipping quoted values and `{…}`. Returns -1 when unclosed. */
 function skipTagEnd(source: string, start: number): number {
   for (let i = start; i < source.length; i += 1) {
     const character = source[i];
@@ -77,7 +53,6 @@ function skipTagEnd(source: string, start: number): number {
   return -1;
 }
 
-/** Index just past the balanced `</tagName>` for the tag opened at `start`, or -1 when unclosed. */
 function findMatchingClose(source: string, start: number, tagName: string): number {
   let depth = 1;
   let i = start;
@@ -107,7 +82,6 @@ function findMatchingClose(source: string, start: number, tagName: string): numb
   return -1;
 }
 
-/** A capitalised MDX component at the block start: self-closing, or opening tag through its balanced closing tag. */
 function matchMdxComponent(source: string): MarkdownToken | undefined {
   const open = /^<([A-Z][\w.-]*)/.exec(source);
   if (!open) return undefined;
@@ -124,7 +98,6 @@ function matchMdxComponent(source: string): MarkdownToken | undefined {
   return { type: "opaqueBlock", raw: source.slice(0, closeEnd) };
 }
 
-/** Match an unsupported top-level construct: an MDX component, an ESM line, or a footnote definition. */
 function matchOpaqueBlock(source: string): MarkdownToken | undefined {
   const component = matchMdxComponent(source);
   if (component) return component;
@@ -138,7 +111,6 @@ function matchOpaqueBlock(source: string): MarkdownToken | undefined {
   return undefined;
 }
 
-/** Match unsupported inline syntax at the cursor: inline HTML, or a footnote reference. */
 function matchOpaqueInline(source: string): MarkdownToken | undefined {
   const html = INLINE_HTML_RE.exec(source);
   if (html) return { type: "opaqueInline", raw: html[0] };

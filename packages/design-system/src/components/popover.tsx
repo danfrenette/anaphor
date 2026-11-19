@@ -7,7 +7,6 @@ import { cn } from "../lib/utils";
 const Popover: typeof PopoverPrimitive.Root = PopoverPrimitive.Root;
 const PopoverClose: typeof PopoverPrimitive.Close = PopoverPrimitive.Close;
 
-// Shared with the Markdown editor's selection bubble, so both surfaces stay identical.
 const popoverSurface = "rounded-control border bg-muted text-foreground border-[color-mix(in_oklch,var(--anaphor-input-border)_72%,var(--anaphor-background))] shadow-[var(--anaphor-shadow-menu)]";
 
 function PopoverTrigger<Payload>(props: PopoverPrimitive.Trigger.Props<Payload>): ReactElement {

@@ -2,7 +2,6 @@ import { GapCursor } from "@tiptap/pm/gapcursor";
 import { Selection } from "@tiptap/pm/state";
 import type { Editor } from "@tiptap/react";
 
-/** Focus the editor with the caret at the end, or a gap cursor after a final atom or code block. */
 function focusAtEnd(editor: Editor) {
   const end = editor.state.doc.resolve(editor.state.doc.content.size);
   const last = editor.state.doc.lastChild;

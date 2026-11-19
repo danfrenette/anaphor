@@ -24,18 +24,10 @@ const PlaceholderText = Extension.create({
   addStorage: () => ({ placeholder: "" }),
 });
 
-// --- Tiptap 3.33.0 serializer workarounds ---
-// Each override marked as a workaround corrects serialized-Markdown data loss
-// without changing interaction behaviour. Each is minimal and pins a regression
-// test in packages/design-system/test/markdown-editor.test.tsx. Overrides marked
-// "Spec requirement" add the interaction the editor spec asks for.
-
-// Tiptap 3.33.0 workaround: bare destinations cannot terminate in injected HTML.
 function serializeLinkDestination(href: string): string {
   return normalizeLinkHref(href).replace(/[()&]/g, "\\$&");
 }
 
-// Tiptap 3.33.0 workaround: serialize a link across inline images as one span.
 function renderLinkedImages(node: JSONContent, helpers: MarkdownRendererHelpers): string | undefined {
   const content = node.content ?? [];
   const hasLinkedAtom = content.some(child =>
@@ -79,7 +71,6 @@ const MarkdownStarterKit = StarterKit.extend({
   addExtensions() {
     return (this.parent?.() ?? []).map(extension =>
       extension.name === "heading" ? extension.extend({
-        // Tiptap 3.33.0 workaround: group links across inline images in headings.
         renderMarkdown(node, helpers, context) {
           const content = renderLinkedImages(node, helpers);
           return content === undefined
@@ -89,7 +80,6 @@ const MarkdownStarterKit = StarterKit.extend({
       })
       : extension.name !== "paragraph" ? extension
       : extension.extend({
-        // Spec requirement (AC-7): serialize pasted unsupported blocks as literal text.
         addAttributes() {
           return {
             pasteLiteral: {
@@ -101,14 +91,10 @@ const MarkdownStarterKit = StarterKit.extend({
         },
 
         parseMarkdown(token, helpers) {
-          // Spec requirement (AC-1, AC-2): an image-only paragraph stays a paragraph.
           if (token.tokens?.length === 1 && token.tokens[0]?.type === "image") {
             return helpers.createNode("paragraph", undefined, helpers.parseInline(token.tokens));
           }
 
-          // Tiptap 3.33.0 workaround: preserve authored NBSP-only paragraphs anywhere;
-          // stock serialization loses their visible gap on reparse, including #8719's
-          // authored separator.
           if (
             token.tokens?.length === 1 &&
             token.tokens[0]?.type === "text" &&
@@ -121,7 +107,6 @@ const MarkdownStarterKit = StarterKit.extend({
         },
 
         renderMarkdown(node, helpers, context) {
-          // Write an NBSP-only paragraph back as `&nbsp;` (see the workaround in parseMarkdown).
           if (
             node.content?.length === 1 &&
             node.content[0]?.type === "text" &&
@@ -132,7 +117,6 @@ const MarkdownStarterKit = StarterKit.extend({
 
           const markdown = renderLinkedImages(node, helpers) ?? this.parent?.(node, helpers, context) ?? "";
 
-          // Tiptap 3.33.0 workaround: paragraph lines must not reparse as blocks.
           const paragraph = markdown
             .replace(/^(?: {4,}| {0,3}\t)[ \t]*/gm, indent => (
               [...indent].map(character => character === "\t" ? "&#9;" : "&#32;").join("")
@@ -153,7 +137,6 @@ const MarkdownStarterKit = StarterKit.extend({
               },
             );
 
-          // Spec requirement (AC-7): keep pasted literal rules from becoming Markdown rules.
           return node.attrs?.pasteLiteral
             ? paragraph.replace(/^( {0,3})(?=-{3,}(?:\s|$))/gm, "$1\\")
             : paragraph;
@@ -164,7 +147,6 @@ const MarkdownStarterKit = StarterKit.extend({
 });
 
 const MarkdownTable = Table.extend({
-  // Tiptap 3.33.0 workaround: table serialization writes hard breaks as HTML.
   parseMarkdown(token, helpers) {
     const table = this.parent?.(token, helpers) ?? [];
     const restoreBreaks = (node: JSONContent) => {
@@ -179,7 +161,6 @@ const MarkdownTable = Table.extend({
     return table;
   },
 
-  // Tiptap 3.33.0 workaround (#8719): don't double the separator between tables.
   renderMarkdown(node, helpers, context) {
     const markdown = this.parent?.(node, helpers, context) ?? "";
     return context.previousNode?.type === "table" ? markdown.replace(/^\n/, "") : markdown;
@@ -188,13 +169,11 @@ const MarkdownTable = Table.extend({
   addKeyboardShortcuts() {
     return {
       ...this.parent?.(),
-      // The editor spec excludes adding rows: at the last cell, allow native Tab to leave.
       Tab: () => this.editor.commands.goToNextCell(),
     };
   },
 });
 
-/** Length of the longest run of backtick characters in `text`. */
 function longestBacktickRun(text: string): number {
   let longest = 0;
   let current = 0;
@@ -209,13 +188,11 @@ function longestBacktickRun(text: string): number {
   return longest;
 }
 
-/** Fence length that can enclose a code block whose content is `text`. */
 function codeFenceLength(text: string): number {
   return Math.max(3, longestBacktickRun(text) + 1);
 }
 
 const MarkdownCodeBlock = CodeBlock.extend({
-  // Spec requirement: read-only code blocks must be keyboard-scrollable.
   addProseMirrorPlugins() {
     const editor = this.editor;
 
@@ -246,9 +223,6 @@ const MarkdownCodeBlock = CodeBlock.extend({
     ];
   },
 
-  // Workaround F1: write a fence longer than the longest backtick run in the
-  // content so a line of backticks inside the block cannot close the fence on
-  // reload. The stock renderer writes a fixed ``` fence.
   renderMarkdown: (node, helpers) => {
     const language = node.attrs?.language || "";
     if (!node.content) return `\`\`\`${language}\n\n\`\`\``;
@@ -259,16 +233,12 @@ const MarkdownCodeBlock = CodeBlock.extend({
   },
 });
 
-// Spec requirement: ProseMirror's gap cursor treats textblocks as open unless
-// their schema asks for a gap, so allow the default gap-cursor plugin to move
-// past a code block.
 const CodeBlockGapCursor = Extension.create({
   name: "codeBlockGapCursor",
   extendNodeSchema: extension => extension.name === "codeBlock" ? { createGapCursor: true } : {},
 });
 
 const MarkdownLink = Link.extend({
-  // Tiptap 3.33.0 workaround: paste rules can create a non-normalized link mark.
   renderHTML(props) {
     const href = props.HTMLAttributes.href;
     return this.parent!({
@@ -280,7 +250,6 @@ const MarkdownLink = Link.extend({
     });
   },
 
-  // Tiptap 3.33.0 workaround: normalize safe destinations parsed from HTML.
   addAttributes() {
     return {
       ...this.parent?.(),
@@ -294,7 +263,6 @@ const MarkdownLink = Link.extend({
     };
   },
 
-  // Tiptap 3.33.0 workaround: applyMark skips inline image nodes.
   parseMarkdown: (token, helpers) => helpers.parseInline(token.tokens ?? []).map(node => ({
     ...node,
     marks: [
@@ -309,25 +277,21 @@ const MarkdownLink = Link.extend({
     ],
   })),
 
-  // Tiptap 3.33.0 workaround: serialize link destinations without syntax breakout.
   renderMarkdown: (node, helpers) => {
     const href = node.attrs?.href ?? "";
     const title = node.attrs?.title ?? "";
     const text = helpers.renderChildren(node);
     const destination = serializeLinkDestination(href);
 
-    // Tiptap 3.33.0 workaround: escape title delimiters and backslashes.
     const escapedTitle = escapeMarkdownTitle(title);
     return title ? `[${text}](${destination} "${escapedTitle}")` : `[${text}](${destination})`;
   },
 }).configure({
   openOnClick: false,
   autolink: false,
-  // Spec requirement (AC-4): paste linking is handled by the safety-checked adapter.
   linkOnPaste: false,
 });
 
-/** True when an image destination must use the `<...>` form to survive a round-trip. */
 function linkDestinationNeedsAngleBrackets(href: string): boolean {
   if (/\s/.test(href)) return true;
   let depth = 0;
@@ -341,13 +305,11 @@ function linkDestinationNeedsAngleBrackets(href: string): boolean {
   return depth !== 0;
 }
 
-// Tiptap 3.33.0 workaround: preserve delimiters in image alt text and destinations.
 const MarkdownImage = Image.extend({
   parseMarkdown: (token, helpers) => {
     const literal = literalPastedImage(token);
     if (literal) return literal;
 
-    // Tiptap 3.33.0 workaround: decode CommonMark escapes and entities in image alt text.
     const element = document.createElement("span");
     const alt = (token.text ?? "").replace(
       /\\([!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~])|&(?:[a-zA-Z][a-zA-Z0-9]{1,31}|#[0-9]{1,7}|#[xX][a-fA-F0-9]{1,6});/g,
@@ -362,7 +324,6 @@ const MarkdownImage = Image.extend({
 
   renderMarkdown: node => {
     const src = node.attrs?.src ?? "";
-    // Tiptap 3.33.0 workaround: preserve literal Markdown syntax in alt text.
     const alt = (node.attrs?.alt ?? "")
       .replace(/\s*[\r\n]\s*/g, " ")
       .replace(/&/g, "&amp;")
@@ -371,7 +332,6 @@ const MarkdownImage = Image.extend({
     const destination = linkDestinationNeedsAngleBrackets(src) ? `<${src}>` : src;
     const image = title ? `![${alt}](${destination} "${title}")` : `![${alt}](${destination})`;
 
-    // Tiptap 3.33.0 workaround: inline atom marks are not rendered by the serializer.
     const link = node.marks?.find(mark => mark.type === "link");
     if (!link) return image;
 
@@ -382,14 +342,12 @@ const MarkdownImage = Image.extend({
   },
 }).configure({ inline: true });
 
-/** Width of a prefix in Markdown columns, where a tab runs to the next 4-column stop. */
 function columnWidth(text: string): number {
   let width = 0;
   for (const character of text) width = character === "\t" ? width + 4 - (width % 4) : width + 1;
   return width;
 }
 
-/** The `- `, `1. ` (or other marker) prefix for a list item, as the stock renderer computes it. */
 function listItemPrefix(context: RenderContext): string {
   if (context.parentType === "bulletList") return "- ";
   if (context.parentType === "orderedList") {
@@ -399,7 +357,6 @@ function listItemPrefix(context: RenderContext): string {
   return "- ";
 }
 
-/** Indents a continuation line the way the stock nested-content renderer does. */
 function indentContinuationLine(
   line: string,
   prefix: string,
@@ -413,10 +370,6 @@ function indentContinuationLine(
   return (columnWidth(configured) >= prefixWidth ? configured : " ".repeat(prefixWidth)) + line;
 }
 
-// Workaround F4: a code block that opens a list item must share the marker line.
-// The stock renderer emits an empty "- " marker line before an indented fence,
-// which re-parses outside the list item and drops the code. Every other shape
-// goes to the stock renderer.
 const MarkdownListItem = ListItem.extend({
   renderMarkdown(node, helpers, context) {
     const [first, second, ...rest] = node.content ?? [];
@@ -450,21 +403,10 @@ const MarkdownListItem = ListItem.extend({
   },
 });
 
-/**
- * True when `line` is a CommonMark fence opener: 0–3 spaces, then a run of 3+
- * backticks (or tildes) whose info string holds no fence character.
- */
 function isFenceOpener(line: string): boolean {
   return /^( {0,3})(`{3,})([^`]*)$/.test(line) || /^( {0,3})(~{3,})([^~]*)$/.test(line);
 }
 
-// Workaround 13: @tiptap/extension-list@3.33.0's ordered-list tokenizer reads a
-// list item whose first content line is a code fence (e.g. `1. ```js`) as a
-// paragraph holding the fence plus a closing-fence code block, so the code is
-// lost on reload. Re-tokenise those items from their raw text so they parse to
-// an empty leading paragraph plus the recovered blocks, matching the bullet path.
-// After the recovered blocks only a nested list token is kept; every other item
-// shape is left to the stock tokenizer.
 const stockOrderedListTokenizer = OrderedList.config.markdownTokenizer!;
 
 const MarkdownOrderedList = OrderedList.extend({
@@ -483,9 +425,6 @@ const MarkdownOrderedList = OrderedList.extend({
       for (const item of items) {
         const [firstToken, secondToken, ...trailingTokens] = item.tokens ?? [];
 
-        // The bug shape: the first token is a paragraph whose first line is a
-        // valid fence opener, and the second is the tokenizer's closing-fence
-        // `code` token (trailing content may have been swept into either token).
         if (firstToken?.type !== "paragraph") continue;
         const firstParagraphRaw = firstToken.raw ?? "";
         const firstParagraphNewline = firstParagraphRaw.indexOf("\n");
@@ -520,26 +459,12 @@ const MarkdownOrderedList = OrderedList.extend({
   },
 });
 
-// --- Preserving unsupported Markdown ---
-// Unsupported content is held in opaque atom nodes that store their exact
-// source and write it back unchanged. renderHTML emits the source as a text
-// child only — never innerHTML, and never through generateJSON/DOMParser into
-// live nodes — so preserved HTML stays inert (see the security regression
-// test). parseHTML matches only the editor's own data-* markup, so pasted HTML
-// never becomes an opaque node.
-
-// Opaque chrome is quiet and visibly distinct, using existing tokens only. The
-// data attribute set in renderHTML opts out of Prose's article rules.
 const OPAQUE_BLOCK_CLASS = cn(
-  // Spacing and wrapping
   "my-4 whitespace-pre-wrap break-words",
-  // Quiet surface: control radius, hairline border, subtle fill
   "rounded-control border border-border bg-muted px-2.5 py-1.5",
-  // Mono face and muted small text
   "font-mono text-small text-muted-foreground",
 );
 
-// The inline span shares Prose code's size so it follows the same token.
 const OPAQUE_INLINE_CLASS = cn(
   "font-mono text-muted-foreground",
   "text-[length:var(--text-prose-code)]",
@@ -552,14 +477,10 @@ type OpaqueNodeOptions = {
   tag: "div" | "span";
   dataAttribute: "data-opaque-block" | "data-opaque-inline";
   className: string;
-  /** `block` tokens include a trailing separator; `inline` tokens do not. */
   trimTrailingNewlines: boolean;
   match: (source: string) => MarkdownToken | undefined;
 };
 
-// Both opaque atom nodes share the same shape: a `source` attribute, a text-only
-// renderHTML, parseHTML keyed on their own data-* hook, and renderMarkdown that
-// writes the source back verbatim. Only the tag, hook, level and matcher differ.
 function createOpaqueNode({
   name,
   group,
@@ -595,15 +516,12 @@ function createOpaqueNode({
     markdownTokenizer: {
       name,
       level: group,
-      // No start anchor: inline text already stops before `<` and `[`, and deriving
-      // a start by calling tokenize once corrupts marked's lexer state.
       start: () => -1,
       tokenize: source => match(source),
     },
   });
 }
 
-/** Block content the editor does not interpret: raw HTML, comments, footnotes, ESM lines, MDX components. */
 const OpaqueBlock = createOpaqueNode({
   name: "opaqueBlock",
   group: "block",
@@ -615,10 +533,6 @@ const OpaqueBlock = createOpaqueNode({
   match: matchOpaqueBlock,
 });
 
-// Raw HTML blocks and comments already lex as marked `html` tokens; this
-// handler turns them into opaque blocks instead of letting the stock HTML
-// parser fold recognised tags and drop the rest. Inline HTML never reaches
-// block parsing, so only block-level tokens arrive here.
 const OpaqueHtmlTokens = Extension.create({
   name: "opaqueHtmlTokens",
   markdownTokenName: "html",
@@ -627,7 +541,6 @@ const OpaqueHtmlTokens = Extension.create({
   }),
 });
 
-/** Inline syntax the editor does not interpret: inline HTML and footnote references. */
 const OpaqueInline = createOpaqueNode({
   name: "opaqueInline",
   group: "inline",

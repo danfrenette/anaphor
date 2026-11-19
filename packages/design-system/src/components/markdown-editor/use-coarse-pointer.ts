@@ -22,7 +22,6 @@ function getServerSnapshot() {
   return false;
 }
 
-/** Whether the primary pointer is coarse (touch), following changes. */
 function useCoarsePointer() {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }

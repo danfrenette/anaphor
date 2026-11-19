@@ -7,7 +7,6 @@ import { Button } from "../button";
 import { Kbd, KbdGroup } from "../kbd";
 import { Tooltip, TooltipGroup, TooltipPopup, TooltipTrigger } from "../tooltip";
 
-/** The Link button's accessible name; link editing finds the button by it to return focus. */
 const linkButtonName = "Link";
 
 type FormattingButtonsProps = {

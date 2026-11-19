@@ -27,8 +27,6 @@ function shouldShowFormatting({
   from,
   to,
 }: ShouldShowFormattingProps) {
-  // Spec requirement (AC-1, AC-2), Tiptap 3.33.0 override: exclude node and cell
-  // selections, and opaque or code content.
   if (
     !editor.isEditable ||
     !(state.selection instanceof TextSelection) ||
@@ -52,8 +50,6 @@ type BubbleShortcutsOptions = {
   onLinkShortcut: () => void;
 };
 
-// Mod-K and Alt-F10 open the bubble over a selection: Mod-K for URL editing,
-// Alt-F10 to move focus to the first button.
 function useBubbleShortcuts({
   editor,
   bubbleRef,
@@ -66,17 +62,13 @@ function useBubbleShortcuts({
     const { from, to } = state.selection;
     if (!bubble || !shouldShowFormatting({ editor, element: bubble, view, state, from, to })) return;
 
-    // Spec requirement (AC-5), Tiptap 3.33.0 override: the menu's debounce must
-    // not delay keyboard access.
     view.dispatch(state.tr.setMeta(pluginKey, "show"));
     view.dispatch(view.state.tr.setMeta(pluginKey, "updatePosition"));
 
-    // Spec requirement (AC-5): the link shortcut opens URL editing.
     if (isLinkShortcut) onLinkShortcut();
     else bubble.querySelector<HTMLButtonElement>("button")?.focus();
   });
 
-  // Listens on the ProseMirror-owned editor element.
   useEffect(() => {
     const handleShortcutKeyDown = (event: KeyboardEvent) => {
       const isLinkShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
@@ -91,7 +83,6 @@ function useBubbleShortcuts({
       if (!editor.isEditable || !hasSelectionInEditor) return;
 
       event.preventDefault();
-      // The browser can dispatch the shortcut before ProseMirror reads selectionchange.
       document.dispatchEvent(new Event("selectionchange"));
       requestAnimationFrame(() => {
         if (editor.isDestroyed) return;
@@ -107,13 +98,10 @@ function useBubbleShortcuts({
 
 type SelectionBubbleProps = {
   editor: Editor;
-  /** False while read-only or disabled: the bubble is not rendered, but its state is kept. */
   isEditable: boolean;
-  /** The bubble's element; the frame also reads it to ignore clicks inside the bubble. */
   bubbleRef: RefObject<HTMLDivElement | null>;
 };
 
-/** The selection bubble: mark buttons for selected text, and the link URL form. */
 function SelectionBubble({
   editor,
   isEditable,
@@ -121,7 +109,6 @@ function SelectionBubble({
 }: SelectionBubbleProps) {
   const [selectionBubblePluginKey] = useState(() => new PluginKey("formattingBubble"));
   const [focusedIndex, setFocusedIndex] = useState(0);
-  // Created here, not in the form, so the URL field keeps its id when editing reopens.
   const linkFieldId = useId();
 
   const isCoarsePointer = useCoarsePointer();
@@ -135,8 +122,6 @@ function SelectionBubble({
     onLinkShortcut: link.open,
   });
 
-  // Escape returns to the text; Home, End, and the arrow keys move between the
-  // bubble's buttons, as in any toolbar.
   const handleBubbleKeyDownCapture = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Escape") {
       event.preventDefault();
@@ -168,15 +153,12 @@ function SelectionBubble({
       pluginKey={selectionBubblePluginKey}
       editor={editor}
       options={{
-        // Decision 7, Tiptap 3.33.0/floating-ui override: fixed positioning escapes clipping.
         strategy: "fixed",
-        // AC-8: coarse pointers prefer below.
         placement: isCoarsePointer ? "bottom" : "top",
         onHide: () => {
           link.close();
           setFocusedIndex(0);
         },
-        // The menu tabindex override preserves normal Tab order.
         onShow: () => {
           if (bubbleRef.current) bubbleRef.current.tabIndex = -1;
         },
@@ -189,7 +171,6 @@ function SelectionBubble({
         aria-label="Formatting"
         className={cn("flex items-center", popoverSurface)}
         onBlur={event => {
-          // Tiptap 3.33.0 workaround: dismiss when focus leaves the menu as well as the editor.
           if (
             !event.currentTarget.contains(event.relatedTarget) &&
             !editor.view.dom.contains(event.relatedTarget)

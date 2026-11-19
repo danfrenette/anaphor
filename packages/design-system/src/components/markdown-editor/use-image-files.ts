@@ -11,13 +11,7 @@ import {
 } from "react";
 import type { MarkdownEditorImageHandler } from "./types";
 
-/**
- * Pasted and dropped image files: resolve each through the host's handler and
- * insert the results, unless the editor is locked, replaced or gone by then.
- */
 function useImageFiles(onImageFile: MarkdownEditorImageHandler | undefined) {
-  // ProseMirror's paste and drop handlers read the latest handler outside React
-  // effects, where an Effect Event may not be called; hence a ref.
   const imageHandlerRef = useRef(onImageFile);
   useLayoutEffect(() => { imageHandlerRef.current = onImageFile; }, [onImageFile]);
   const imageGeneration = useRef(0);
@@ -27,8 +21,6 @@ function useImageFiles(onImageFile: MarkdownEditorImageHandler | undefined) {
     for (const cleanup of pendingImageCleanup.current) cleanup();
   }, []);
 
-  // Abandon image inserts still resolving when the editor unmounts, releasing
-  // their Tiptap transaction listeners.
   useEffect(() => () => { cancelPendingImages(); }, [cancelPendingImages]);
 
   function handleImageFiles(
@@ -79,8 +71,6 @@ function useImageFiles(onImageFile: MarkdownEditorImageHandler | undefined) {
         result.status === "fulfilled" ? [{ type: "image", attrs: result.value }] : [],
       );
       if (imageNodes.length) {
-        // Spec requirement (handoff 346 decision 4): an asynchronously resolved
-        // image is its own undo step.
         editor
           .chain()
           .command(({ tr }) => {

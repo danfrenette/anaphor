@@ -34,10 +34,6 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
 
   useImperativeHandle(ref, () => ({ getMarkdown, setMarkdown }), [getMarkdown, setMarkdown]);
 
-  // A click on the frame's own surface (padding or the empty space below short
-  // content) lands outside the editor content; place the caret at the end there.
-  // Clicks inside the content are handled by ProseMirror itself, so opaque blocks
-  // keep their own click and selection behaviour.
   const handleFrameClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (disabled || !editor) return;
 
@@ -56,19 +52,12 @@ function MarkdownEditor({ ref, presentation, ...options }: MarkdownEditorProps) 
       className={cn(
         presentation === "in-place" && "min-w-0 data-disabled:pointer-events-none",
         presentation === "field" && cn(
-          // Layout and surface
           "w-full min-w-0 rounded-control border border-border bg-background px-3.5 py-3",
-          // Field box: start small, grow to the maximum, then scroll.
           "min-h-[var(--anaphor-markdown-editor-min-height)] max-h-[var(--anaphor-markdown-editor-max-height)] overflow-y-auto",
-          // Focus state
           "focus-within:border-ring focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring",
-          // Invalid state
           "data-invalid:border-danger data-invalid:focus-within:outline-danger",
-          // Disabled state
           "data-disabled:pointer-events-none data-disabled:bg-[var(--anaphor-input-disabled)]",
-          // Motion
           "motion-safe:transition-[border-color,background-color,outline-color] motion-safe:duration-150",
-          // Forced colors
           "forced-colors:border-[ButtonText]",
         ),
       )}
