@@ -6,7 +6,6 @@ import { BubbleMenu, type BubbleMenuProps } from "@tiptap/react/menus";
 import {
   useEffect,
   useEffectEvent,
-  useMemo,
   useState,
   type RefObject,
 } from "react";
@@ -119,7 +118,7 @@ function SelectionBubble({
   isEditable,
   bubbleRef,
 }: SelectionBubbleProps) {
-  const selectionBubblePluginKey = useMemo(() => new PluginKey("formattingBubble"), []);
+  const [selectionBubblePluginKey] = useState(() => new PluginKey("formattingBubble"));
   const [focusedIndex, setFocusedIndex] = useState(0);
 
   const isCoarsePointer = useCoarsePointer();

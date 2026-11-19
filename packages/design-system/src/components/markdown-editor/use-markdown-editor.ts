@@ -5,8 +5,8 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useMemo,
   useRef,
+  useState,
 } from "react";
 import { cleanPastedHtml, handleMarkdownPaste } from "#lib/markdown-editor-paste";
 import { splitFrontMatter } from "#lib/markdown-editor-tokenizers";
@@ -41,7 +41,8 @@ function useMarkdownEditor({
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
 }: UseMarkdownEditorOptions): UseMarkdownEditorResult {
-  const { frontMatter, body } = useMemo(() => splitFrontMatter(defaultValue), [defaultValue]);
+  // `defaultValue` is read once, like an uncontrolled input's.
+  const [{ frontMatter, body }] = useState(() => splitFrontMatter(defaultValue));
   const frontMatterRef = useRef(frontMatter);
   const currentValue = useRef(defaultValue);
   const getMarkdown = useCallback(() => currentValue.current, []);
