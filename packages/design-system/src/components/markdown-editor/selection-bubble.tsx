@@ -1,26 +1,20 @@
 "use client";
 
-import { closeHistory } from "@tiptap/pm/history";
 import { PluginKey, TextSelection } from "@tiptap/pm/state";
 import type { Editor } from "@tiptap/react";
 import { BubbleMenu, type BubbleMenuProps } from "@tiptap/react/menus";
 import {
-  useCallback,
   useEffect,
-  useId,
-  useLayoutEffect,
   useMemo,
-  useRef,
   useState,
   type RefObject,
 } from "react";
-import { isSafePasteUri, normalizeLinkHref } from "#lib/markdown-editor-links";
 import { cn } from "../../lib/utils";
-import { Button } from "../button";
-import { Input } from "../input";
 import { popoverSurface } from "../popover";
 import { FormattingButtons } from "./formatting-buttons";
+import { LinkForm } from "./link-form";
 import { useCoarsePointer } from "./use-coarse-pointer";
+import { useLinkEditing } from "./use-link-editing";
 
 type ShouldShowFormattingProps = Parameters<NonNullable<BubbleMenuProps["shouldShow"]>>[0];
 
@@ -69,70 +63,8 @@ function SelectionBubble({
 
   const isCoarsePointer = useCoarsePointer();
 
-  const [editingLink, setEditingLink] = useState(false);
-  const [linkUrl, setLinkUrl] = useState("");
-  const [linkError, setLinkError] = useState(false);
-  const linkErrorId = useId();
-  const linkInputRef = useRef<HTMLInputElement>(null);
-  const pointerLinkAction = useRef(false);
-  const returnLinkFocus = useRef(false);
-
-  useLayoutEffect(() => {
-    if (editingLink) linkInputRef.current?.focus();
-  }, [editingLink]);
-
-  useLayoutEffect(() => {
-    if (!editingLink && returnLinkFocus.current) {
-      returnLinkFocus.current = false;
-      bubbleRef.current?.querySelector<HTMLButtonElement>('button[aria-label="Link"]')?.focus();
-    }
-  }, [editingLink, bubbleRef]);
-
-  const openLink = useCallback(() => {
-    if (!editor.isEditable) return;
-
-    setLinkUrl(editor.getAttributes("link").href ?? "");
-    setLinkError(false);
-    setEditingLink(true);
-  }, [editor]);
-
-  const finishLink = (remove: boolean) => {
-    if (!editor.isEditable) return;
-
-    const url = linkUrl.trim();
-    const isBareHost = /^(?:[a-z\d](?:[a-z\d-]*[a-z\d])?\.)+[a-z\d](?:[a-z\d-]*[a-z\d])?(?::\d+)?(?:[/?#][^\s@\\]*)?$/i.test(url);
-    const hasExplicitScheme = /^[a-z][a-z\d+.-]*:/i.test(url) && !isBareHost;
-    const isRelative = /^(?:\.\.?\/|\/|#)/.test(url) || /^[^\s@\\:]+\/[^\s@\\]*$/.test(url);
-    const isUnrecognisedForm = !hasExplicitScheme && !isBareHost && !isRelative;
-    const hasStrayCharacter = !hasExplicitScheme && /[\s@\\]/.test(url);
-    const destination = isBareHost ? `https://${url}` : url;
-    const href = normalizeLinkHref(destination);
-    if (
-      !remove &&
-      (
-        !url ||
-        !isSafePasteUri(destination) ||
-        !isSafePasteUri(href) ||
-        isUnrecognisedForm ||
-        hasStrayCharacter
-      )
-    ) {
-      setLinkError(true);
-      return;
-    }
-
-    const chain = editor.chain().command(({ tr }) => {
-      closeHistory(tr);
-      return true;
-    });
-    if (remove) chain.unsetLink().run();
-    else chain.setLink({ href }).run();
-    editor.view.dispatch(closeHistory(editor.state.tr));
-
-    returnLinkFocus.current = !pointerLinkAction.current;
-    setEditingLink(false);
-    if (pointerLinkAction.current) editor.view.focus();
-  };
+  const link = useLinkEditing(editor, bubbleRef);
+  const openLink = link.open;
 
   useEffect(() => {
     const handleShortcutKeyDown = (event: KeyboardEvent) => {
@@ -178,7 +110,7 @@ function SelectionBubble({
   const handleBubbleKeyDownCapture = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Escape") {
       event.preventDefault();
-      setEditingLink(false);
+      link.close();
       editor.view.focus();
       return;
     }
@@ -211,7 +143,7 @@ function SelectionBubble({
         // AC-8: coarse pointers prefer below.
         placement: isCoarsePointer ? "bottom" : "top",
         onHide: () => {
-          setEditingLink(false);
+          link.close();
           setFocusedIndex(0);
         },
         // The menu tabindex override preserves normal Tab order.
@@ -237,56 +169,15 @@ function SelectionBubble({
         }}
         onKeyDownCapture={handleBubbleKeyDownCapture}
       >
-        {editingLink ? (
-          <form
-            onPointerDownCapture={() => { pointerLinkAction.current = true; }}
-            onKeyDownCapture={() => { pointerLinkAction.current = false; }}
-            onSubmit={event => {
-              event.preventDefault();
-              finishLink(false);
-            }}
-          >
-            <label id={`${linkErrorId}-label`} htmlFor={`${linkErrorId}-input`}>URL</label>
-            <Input
-              ref={linkInputRef}
-              id={`${linkErrorId}-input`}
-              size="sm"
-              aria-labelledby={`${linkErrorId}-label`}
-              aria-invalid={linkError || undefined}
-              aria-describedby={linkError ? linkErrorId : undefined}
-              value={linkUrl}
-              onChange={event => {
-                setLinkUrl(event.target.value);
-                setLinkError(false);
-              }}
-            />
-            <Button
-              nativeButton
-              type="submit"
-              variant="ghost"
-              tone="neutral"
-              size="sm"
-              shape="square"
-              iconOnly={false}
-              loading={false}
-            >
-              Apply
-            </Button>
-            {linkError && <span id={linkErrorId}>Enter a safe URL.</span>}
-            <Button
-              nativeButton
-              type="button"
-              variant="ghost"
-              tone="neutral"
-              size="sm"
-              shape="square"
-              iconOnly={false}
-              loading={false}
-              onClick={() => finishLink(true)}
-            >
-              Remove link
-            </Button>
-          </form>
+        {link.isEditing ? (
+          <LinkForm
+            url={link.url}
+            hasError={link.hasError}
+            onUrlChange={link.changeUrl}
+            onModalityChange={link.changeModality}
+            onApply={link.apply}
+            onRemove={link.remove}
+          />
         ) : (
           <FormattingButtons
             editor={editor}
