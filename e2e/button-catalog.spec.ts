@@ -41,3 +41,25 @@ test("code controls share equal vertical insets and icon buttons keep touch targ
   expect(squircleBox!.width).toBe(copyBox!.width);
   expect(copyBox!.height).toBeGreaterThanOrEqual(isMobile ? 44 : 36);
 });
+
+test("button icon edges use optical padding in both writing directions", async ({ page }) => {
+  await page.goto("/#button");
+  const section = page.locator("#button");
+  const leading = section.getByRole("button", { name: "Leading icon", exact: true });
+  const trailing = section.getByRole("button", { name: "Trailing icon", exact: true });
+  for (const direction of ["ltr", "rtl"]) {
+    await section.evaluate((element, dir) => { element.setAttribute("dir", dir); }, direction);
+    await expect(leading).toHaveCSS("padding-inline-start", "12px");
+    await expect(leading).toHaveCSS("padding-inline-end", "14px");
+    await expect(trailing).toHaveCSS("padding-inline-start", "14px");
+    await expect(trailing).toHaveCSS("padding-inline-end", "12px");
+    const iconOnly = section.getByRole("button", { name: "Squircle icon button", exact: true });
+    await expect(iconOnly).toHaveCSS("padding-inline-start", "0px");
+    await expect(iconOnly).toHaveCSS("padding-inline-end", "0px");
+    const textOnly = section.getByRole("region", { name: "Sizes", exact: true }).getByRole("button", { name: "Continue", exact: true });
+    for (const [index, padding] of ["8px", "10px", "14px", "16px"].entries()) {
+      await expect(textOnly.nth(index)).toHaveCSS("padding-inline-start", padding);
+      await expect(textOnly.nth(index)).toHaveCSS("padding-inline-end", padding);
+    }
+  }
+});

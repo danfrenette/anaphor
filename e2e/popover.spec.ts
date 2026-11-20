@@ -1,6 +1,29 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 import { selectControl } from "./playground-select";
+
+async function expectTriggerOrigin(popup: Locator, trigger: Locator) {
+  await expect(popup).toHaveCSS("transform", "none");
+  await expect.poll(async () => {
+    const anchor = await trigger.boundingBox();
+    const panel = await popup.boundingBox();
+    if (!anchor || !panel) return false;
+    const { side, x, y } = await popup.evaluate(element => {
+      const [x = NaN, y = NaN] = getComputedStyle(element).transformOrigin.split(" ").map(Number.parseFloat);
+      return { side: element.getAttribute("data-side"), x, y };
+    });
+    const originX = panel.x + x;
+    const originY = panel.y + y;
+    if (side === "top" || side === "bottom") {
+      const anchorEdge = side === "top" ? anchor.y : anchor.y + anchor.height;
+      return Math.abs(originY - anchorEdge) < 2
+        && originX >= anchor.x - 2 && originX <= anchor.x + anchor.width + 2;
+    }
+    const anchorEdge = side === "left" ? anchor.x : anchor.x + anchor.width;
+    return Math.abs(originX - anchorEdge) < 2
+      && originY >= anchor.y - 2 && originY <= anchor.y + anchor.height + 2;
+  }).toBe(true);
+}
 
 test("popover supports fields, nested menus, and focus restoration", async ({ page }) => {
   await page.goto("/#popover");
@@ -39,7 +62,7 @@ test("popover uses restrained pointer motion and respects reduced motion", async
   const popup = page.locator('[data-slot="popover-popup"]');
   await expect(popup).toHaveCSS("transition-duration", "0.18s, 0.18s");
   await expect(popup).toHaveCSS("transition-property", "opacity, transform");
-  expect(await popup.evaluate(element => getComputedStyle(element).transformOrigin)).not.toBe("50% 50%");
+  await expectTriggerOrigin(popup, trigger);
   const accessibility = await new AxeBuilder({ page }).include('[data-slot="popover-popup"]').withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
   expect(accessibility.violations).toEqual([]);
   await page.keyboard.press("Escape");
@@ -162,4 +185,41 @@ test("catalog examples stay independent and inline code follows placement", asyn
   await page.getByRole("button", { name: "Reset controls", exact: true }).click();
   await expect(section.getByRole("group", { name: "Edit preferences preview", exact: true })).toContainText("Reading room");
   expect(await section.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+});
+
+
+test("scale origin follows placement and can be compared with center then reset", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/#popover");
+  const controls = page.getByRole("tab", { name: "Open Popover controls", exact: true });
+  const trigger = page.getByRole("button", { name: "Workspace settings", exact: true });
+  const popup = page.locator('[data-slot="popover-popup"]');
+  for (const side of ["top", "right", "bottom", "left"]) {
+    await controls.click();
+    await selectControl(page, "Side", side);
+    await selectControl(page, "Alignment", "start");
+    await controls.click();
+    await trigger.click();
+    await expectTriggerOrigin(popup, trigger);
+    await page.keyboard.press("Escape");
+    await expect(popup).toHaveCount(0);
+  }
+  await controls.click();
+  await selectControl(page, "Scale origin", "Center");
+  await controls.click();
+  await trigger.click();
+  await expect(popup).toHaveCSS("transform", "none");
+  expect(await popup.evaluate(element => {
+    const [x = NaN, y = NaN] = getComputedStyle(element).transformOrigin.split(" ").map(Number.parseFloat);
+    const rect = element.getBoundingClientRect();
+    return Math.abs(x - rect.width / 2) < 1 && Math.abs(y - rect.height / 2) < 1;
+  })).toBe(true);
+  await page.keyboard.press("Escape");
+  await page.locator("#popover").getByRole("button", { name: "Show playground code", exact: true }).click();
+  await expect(page.locator("#popover").getByLabel("Playground code", { exact: true })).toContainText('className="origin-center"');
+  await controls.click();
+  await page.getByRole("button", { name: "Reset controls", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Scale origin", exact: true })).toHaveAccessibleDescription("Trigger");
+  await controls.click();
+  await expect(page.locator("#popover").getByLabel("Playground code", { exact: true })).not.toContainText('origin-center');
 });

@@ -79,3 +79,42 @@ for (const theme of ["light", "dark"] as const) {
     expect(magnetic, "Magnetic snapping should preserve the standard slider's pixels").toEqual(standard);
   });
 }
+
+test("slider fill and thumb travel use transforms and preserve endpoint geometry", async ({ page }) => {
+  await page.goto("/#slider");
+  const amount = page.getByRole("slider", { name: "Amount", exact: true });
+  await expect(amount).toBeVisible();
+  await amount.scrollIntoViewIfNeeded();
+  await amount.hover();
+  for (const direction of ["ltr", "rtl"]) {
+    await amount.evaluate((element, dir) => { element.setAttribute("dir", dir); }, direction);
+    for (const [key, fraction] of [["Home", 0], ["End", 1]] as const) {
+      await amount.press(key);
+      await expect.poll(() => amount.evaluate((element, value) => {
+        const track = element.getBoundingClientRect();
+        const fill = element.querySelector<HTMLElement>(".dialkit-slider-fill")!;
+        const handle = element.querySelector<HTMLElement>(".dialkit-slider-handle")!;
+        const position = handle.parentElement!;
+        return Math.max(
+          Math.abs(fill.getBoundingClientRect().width - track.width * value),
+          Math.abs(position.getBoundingClientRect().left - track.left - Math.max(5, track.width * value - 9)),
+        );
+      }, fraction)).toBeLessThan(1);
+    }
+  }
+  const box = (await amount.boundingBox())!;
+  await amount.click({ position: { x: box.width * 0.3, y: box.height / 2 } });
+  const frames = await amount.evaluate(async element => {
+    const fill = element.querySelector<HTMLElement>(".dialkit-slider-fill")!;
+    const handle = element.querySelector<HTMLElement>(".dialkit-slider-handle")!;
+    const frames: { width: string; left: string; fill: string; position: string }[] = [];
+    for (let index = 0; index < 16; index++) {
+      await new Promise(requestAnimationFrame);
+      frames.push({ width: fill.style.width, left: handle.style.left, fill: fill.style.transform, position: handle.parentElement!.style.transform });
+    }
+    return frames;
+  });
+  expect(frames.every(frame => frame.width === "100%" && frame.left === "0px")).toBe(true);
+  expect(new Set(frames.map(frame => frame.fill)).size).toBeGreaterThan(1);
+  expect(new Set(frames.map(frame => frame.position)).size).toBeGreaterThan(1);
+});

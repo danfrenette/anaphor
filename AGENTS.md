@@ -6,6 +6,9 @@ Read [CODING_STANDARDS.md](CODING_STANDARDS.md) and the references it identifies
 for the affected area. For interface work, also read [PRODUCT.md](PRODUCT.md).
 Follow directory-specific instructions, including [apps/demo/AGENTS.md](apps/demo/AGENTS.md).
 
+For animation additions or changes, follow the property-selection and
+verification steps in [DESIGN.md — Motion](DESIGN.md#motion).
+
 ## Setup
 
 Use [README.md#development](README.md#development) for setup and check commands.

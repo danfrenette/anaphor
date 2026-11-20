@@ -4,6 +4,9 @@ Read this before changing or reviewing package components, demo consumers, or
 verification code. The linked documents own the detailed rules; this file maps
 those rules to review decisions.
 
+For interface changes, read DESIGN.md and follow its affected-area routing table
+before editing. Load the matching references, not the entire design directory.
+
 ## Sources of truth
 
 | Change | Required reference | Review question |
